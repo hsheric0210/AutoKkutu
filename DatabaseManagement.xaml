@@ -1,12 +1,219 @@
-﻿<Window x:Class="AutoKkutu.DatabaseManagement"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:AutoKkutu"
-        mc:Ignorable="d"
-        Title="단어 데이터베이스 관리" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+﻿<Window
+	x:Class="AutoKkutu.DatabaseManagement" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	Title="DatabaseManagement"
+	Height="450"
+	Width="800"
+	ResizeMode="NoResize">
+	<Grid
+		Background="#252526">
+		<Label
+			Content="데이터베이스 관리"
+			HorizontalAlignment="Left"
+			Height="31"
+			Margin="10,13,0,0"
+			VerticalAlignment="Top"
+			Width="179"
+			FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+			FontSize="18"
+			Foreground="#FFFFFFFF" />
+		<Grid
+			Background="#2d2d30"
+			Margin="16,67,463,217">
+			<Label
+				Content="단어 수동 추가 / 제거 "
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="7,6,0,0"
+				VerticalAlignment="Top"
+				Width="152"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="14"
+				Foreground="#FFFFFFFF" />
+			<Label
+				Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다 "
+				HorizontalAlignment="Left"
+				Height="29"
+				Margin="7,108,0,0"
+				VerticalAlignment="Top"
+				Width="255"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="12"
+				Foreground="#FFFFFFFF" />
+			<TextBox
+				Name="Manual_Input"
+				HorizontalAlignment="Left"
+				Height="23"
+				Margin="10,42,0,0"
+				TextWrapping="Wrap"
+				Text="단어 입력"
+				VerticalAlignment="Top"
+				Width="191" />
+			<CheckBox
+				Name="Manual_EndWord"
+				Content="한방 단어"
+				HorizontalAlignment="Left"
+				Margin="10,74,0,0"
+				VerticalAlignment="Top"
+				Foreground="#FFFFFFFF"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+			<Button
+				Name="Manual_Submit"
+				Content="추가"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="102,71,0,0"
+				VerticalAlignment="Top"
+				Width="99"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Manual_Submit_Click" />
+			<Button
+				Name="Manual_Delete"
+				Content="제거"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="206,71,0,0"
+				VerticalAlignment="Top"
+				Width="56"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Manual_Delete_Click" />
+		</Grid>
+		<Grid
+			Background="#2d2d30"
+			Margin="369,67,50,217">
+			<Label
+				Content="한방노드 수동추가"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="7,6,0,0"
+				VerticalAlignment="Top"
+				Width="121"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="14"
+				Foreground="#FFFFFFFF" />
+			<Label
+				Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다 "
+				HorizontalAlignment="Left"
+				Height="29"
+				Margin="7,108,0,0"
+				VerticalAlignment="Top"
+				Width="255"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="12"
+				Foreground="#FFFFFFFF" />
+			<TextBox
+				Name="Node_Input"
+				HorizontalAlignment="Left"
+				Height="23"
+				Margin="10,42,0,0"
+				TextWrapping="Wrap"
+				Text="노드 입력"
+				VerticalAlignment="Top"
+				Width="191" />
+			<Button
+				Name="Node_Submit"
+				Content="전송"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="219,40,0,0"
+				VerticalAlignment="Top"
+				Width="99"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Node_Submit_Click" />
+		</Grid>
+		<Grid
+			Background="#2d2d30"
+			Margin="16,230,463,44">
+			<Label
+				Content="단어 자동추가"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="7,6,0,0"
+				VerticalAlignment="Top"
+				Width="121"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="14"
+				Foreground="#FFFFFFFF" />
+			<Label
+				Content="반드시 끄투 사전을 켜주세요."
+				HorizontalAlignment="Left"
+				Height="29"
+				Margin="7,121,0,-3"
+				VerticalAlignment="Top"
+				Width="255"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="12"
+				Foreground="#FFFFFFFF" />
+			<TextBox
+				Name="Auto_Input"
+				HorizontalAlignment="Left"
+				Height="66"
+				Margin="10,42,0,0"
+				TextWrapping="NoWrap"
+				Text="단어 입력&#xD;&#xA;(여러 줄 동시 추가 가능)"
+				VerticalAlignment="Top"
+				Width="191"
+				AcceptsReturn="True" />
+			<Button
+				Name="Auto_Submit"
+				Content="전송"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="206,40,0,0"
+				VerticalAlignment="Top"
+				Width="99"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Auto_Submit_Click" />
+		</Grid>
+		<Grid
+			Background="#2d2d30"
+			Margin="374,230,50,44">
+			<Label
+				Content="데이터베이스 검증 및 이전"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="7,6,0,0"
+				VerticalAlignment="Top"
+				Width="224"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="14"
+				Foreground="#FFFFFFFF" />
+			<Label
+				Content="데이터베이스의 모든 단어를 다시 검증합니다."
+				HorizontalAlignment="Left"
+				Height="29"
+				Margin="7,32,0,0"
+				VerticalAlignment="Top"
+				Width="300"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="12"
+				Foreground="#FFFFFFFF" />
+			<Button
+				Name="CheckDB_Start"
+				Content="검증"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="10,111,0,0"
+				VerticalAlignment="Top"
+				Width="99"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="CheckDB_Start_Click" />
+			<CheckBox
+				Name="Use_OnlineDic"
+				Content="온라인 검증 사용 (매우 긴 소요시간 예상)"
+				HorizontalAlignment="Left"
+				Margin="120,117,0,0"
+				VerticalAlignment="Top"
+				Foreground="#FFFFFFFF"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+		</Grid>
+		<Label
+			Content="데이터베이스 작업 중일때에는 다른 작업을 수행 할 수 없습니다."
+			HorizontalAlignment="Left"
+			Height="26"
+			Margin="10,38,0,0"
+			VerticalAlignment="Top"
+			Width="402"
+			FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+			Foreground="#FFFFFFFF" />
+	</Grid>
 </Window>

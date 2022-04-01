@@ -1,20 +1,17 @@
 ﻿<Window
-	x:Class="AutoKkutu.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:theme="clr-namespace:CloudPlatform_UI.Theme.Window;assembly=CloudPlatform_UI" xmlns:local="clr-namespace:KKutu_Helper" xmlns:fa="http://schemas.fontawesome.io/icons/"
+	x:Class="AutoKkutu.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	Title="MainWindow"
 	Height="920"
 	Width="1600"
 	ResizeMode="NoResize">
 	<Grid
 		UseLayoutRounding="True">
-	<Grid
+		<Grid
 			Name="LoadOverlay"
 			Background="#FFFFFFFF"
 			Visibility="Hidden"
 			ZIndex="1000">
-		<Image
-				Source="CloudInteractive_logo.png"
-				Margin="594,526,640,305" />
-	</Grid>
+		</Grid>
 	<Grid
 			UseLayoutRounding="True">
 		<Grid.RowDefinitions>
@@ -65,7 +62,7 @@
 						Background="#FF333337"
 						Margin="0,0,0,790" />
 				<Label
-						Content="검색된 페스"
+						Content="검색된 패스"
 						Foreground="#FFFFFFFF"
 						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
 						FontSize="20"
@@ -111,18 +108,11 @@
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ListBox>
-				<Grid
+					<Grid
 						Name="SearchStatus"
 						Margin="0,366,4,397"
 						Background="#FF444444">
-					<Image
-							Name="SearchIcon"
-							Width="25"
-							Height="25"
-							Margin="9,12,206,11"
-							Source="Warning_480.png"
-							RenderOptions.BitmapScalingMode="HighQuality" />
-					<Border
+						<Border
 							Height="50"
 							Margin="43,0,0,-3"
 							HorizontalAlignment="Left"
@@ -139,7 +129,6 @@
 				</Grid>
 				<Button
 						Name="DBManager"
-						Style="{StaticResource BlackButton}"
 						Content="데이터베이스 관리자"
 						Grid.Column="0"
 						Margin="0,731,0,41"
@@ -148,7 +137,6 @@
 						Click="DBManager_Click" />
 				<Button
 						Name="About"
-						Style="{StaticResource BlackButton}"
 						Content="정보"
 						Grid.Column="0"
 						Margin="0,772,0,0"
@@ -159,7 +147,7 @@
 						Background="#FF333337">
 					<CheckBox
 							Name="Automode"
-							Content="자동 페스 대응 활성화"
+							Content="자동 패스 대응 활성화"
 							HorizontalAlignment="Left"
 							Height="18"
 							Margin="6,12,0,0"
@@ -169,7 +157,7 @@
 							Foreground="#FFFFFFFF"
 							FontSize="14" />
 					<Label
-							Content="자동으로 가장 적절한 페스를 냅니다."
+							Content="자동으로 가장 적절한 패스를 냅니다."
 							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
 							Margin="5,27,12,112" />
@@ -222,7 +210,6 @@
 					Background="#252526">
 				<Button
 						Name="Submit"
-						Style="{StaticResource BlackButton}"
 						Content="전송"
 						Grid.Column="0"
 						Margin="41,13,1233,14"
@@ -232,7 +219,6 @@
 						Click="Submit_Click" />
 				<Button
 						Name="ClipboardSubmit"
-						Style="{StaticResource BlackButton}"
 						Grid.Column="0"
 						Margin="12,13,1309,14"
 						IsCancel="True"
@@ -288,32 +274,17 @@
 						Width="319"
 						HorizontalContentAlignment="Right" />
 			</Grid>
-			<Grid
+				<Grid
 					Row="1"
 					Column="1"
 					Background="#252526">
-				<Image
-						HorizontalAlignment="Left"
-						Height="30"
-						VerticalAlignment="Top"
-						Width="196"
-						Source="CloudInteractive_White_English.png"
-						RenderOptions.BitmapScalingMode="Fant"
-						Margin="24,15,0,0" />
-			</Grid>
+				</Grid>
 		</Grid>
-		<Grid
+			<Grid
 				Name="StatusGrid"
 				Row="1"
 				Background="#FF797979">
-			<Image
-					Name="StatusIcon"
-					Width="20"
-					Height="20"
-					Margin="6,1,1568,14"
-					Source="StatusIcon.png"
-					RenderOptions.BitmapScalingMode="Linear" />
-			<Label
+				<Label
 					Name="StatusLabel"
 					FontFamily="NanumGothic"
 					FontSize="12"

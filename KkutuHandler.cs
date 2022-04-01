@@ -2,8 +2,6 @@
 using CefSharp.Wpf;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AutoKkutu
@@ -55,19 +53,34 @@ namespace AutoKkutu
 			MyTurn
 		}
 
-		public KkutuHandler(ChromiumWebBrowser browser)
-		{
-			Browser = browser;
-		}
+		public KkutuHandler(ChromiumWebBrowser browser) => Browser = browser;
 
 		public void StartWatchdog()
 		{
-			if (IsWatchdogAlive)
-				return;
+			if (!_isWatchdogStarted)
+			{
+				_isWatchdogStarted = true;
+				_watchdogTask = new Task(Watchdog);
+				_watchdogTask.Start();
+				Log(ConsoleManager.LogType.Info, "Task created and start.");
+			}
+		}
 
-			IsWatchdogAlive = true;
-			new Task(new Action(() => { })).Start();
-			// log
+		private async void Watchdog()
+		{
+			while (true)
+			{
+				CheckGameState(CheckType.GameStarted);
+				if (_isGamestarted)
+				{
+					CheckGameState(CheckType.MyTurn);
+					GetPreviousWord();
+					GetRound();
+					await Task.Delay(_ingameinterval);
+				}
+				else
+					await Task.Delay(_checkgameinterval);
+			}
 		}
 
 		private string EvaluateJS(string javaScript)
@@ -80,186 +93,119 @@ namespace AutoKkutu
 			{
 				return " ";
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				// log
+				Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + ex.ToString());
 				return " ";
 			}
 		}
 
 		private void CheckGameState(CheckType type)
 		{
-			string result;
-			if (type == CheckType.GameStarted)
-				result = EvaluateJS("document.getElementById('GameBox').style.display");
-			else
-				result = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display");
-
-			if (string.IsNullOrWhiteSpace(result) || result == "none")
+			string str = type != KkutuHandler.CheckType.GameStarted ? EvaluateJS("document.getElementsByClassName('game-input')[0].style.display") : EvaluateJS("document.getElementById('GameBox').style.display");
+			if (string.IsNullOrWhiteSpace(str) || str == "none")
 			{
-				if (type == CheckType.GameStarted)
+				if (type == KkutuHandler.CheckType.GameStarted)
 				{
-					bool isGameStarted = IsGameStarted;
-					if (isGameStarted)
-					{
-						Log(ConsoleManager.LogType.Info, "Game ended.");
-						bool flag4 = GameEndedEvent != null;
-						if (flag4)
-						{
-							GameEndedEvent(this, EventArgs.Empty);
-						}
-						_isGamestarted = false;
-					}
+					if (!IsGameStarted)
+						return;
+					Log(ConsoleManager.LogType.Info, "Game ended.");
+					if (GameEndedEvent != null)
+						GameEndedEvent(this, EventArgs.Empty);
+					_isGamestarted = false;
 				}
-				else
+				else if (IsMyTurn)
 				{
-					bool isMyTurn = IsMyTurn;
-					if (isMyTurn)
-					{
-						Log(ConsoleManager.LogType.Info, "My turn ended.");
-						bool flag5 = MyTurnEndedEvent != null;
-						if (flag5)
-						{
-							MyTurnEndedEvent(this, EventArgs.Empty);
-						}
-						_isMyTurn = false;
-					}
+					Log(ConsoleManager.LogType.Info, "My turn ended.");
+					if (MyTurnEndedEvent != null)
+						MyTurnEndedEvent(this, EventArgs.Empty);
+					_isMyTurn = false;
 				}
 			}
-			else
+			else if (type == KkutuHandler.CheckType.GameStarted)
 			{
-				bool flag6 = type == CheckType.GameStarted;
-				if (flag6)
-				{
-					bool flag7 = !_isGamestarted;
-					if (flag7)
-					{
-						Log(ConsoleManager.LogType.Info, "Game started.");
-						Log(ConsoleManager.LogType.Info, "Reset PreviousWordList.");
-						bool flag8 = GameStartedEvent != null;
-						if (flag8)
-						{
-							GameStartedEvent(this, EventArgs.Empty);
-						}
-						_isGamestarted = true;
-					}
-				}
+				if (_isGamestarted)
+					return;
+				Log(ConsoleManager.LogType.Info, "Game started.");
+				Log(ConsoleManager.LogType.Info, "Reset PreviousWordList.");
+				if (GameStartedEvent != null)
+					GameStartedEvent(this, EventArgs.Empty);
+				_isGamestarted = true;
+			}
+			else if (!_isMyTurn)
+			{
+				ResponsePresentedWord presentedWord = GetPresentedWord();
+				if (presentedWord.CanSubstitution)
+					Log(ConsoleManager.LogType.Info, "My Turn. presented word is " + presentedWord.Content + " (Subsitution: " + presentedWord.Substitution + ")");
 				else
-				{
-					bool flag9 = !_isMyTurn;
-					if (flag9)
-					{
-						ResponsePresentedWord word = GetPresentedWord();
-						bool canSubstitution = word.CanSubstitution;
-						if (canSubstitution)
-						{
-							// Log(VerboseConsole.Level.Info, string.Concat(new string[]
-							//{
-							//	"My Turn. presented word is ",
-							//	word.Content,
-							//	" (Subsitution: ",
-							//	word.Substitution,
-							//	")"
-							//}));
-						}
-						else
-						{
-							//Log(VerboseConsole.Level.Info, "My Turn. presented word is " + word.Content);
-						}
-						_currentPresentedWord = word.Content;
-						if (MyTurnEvent != null)
-							MyTurnEvent(this, new MyTurnEventArgs(word));
-						_isMyTurn = true;
-					}
-				}
+					Log(ConsoleManager.LogType.Info, "My Turn. presented word is " + presentedWord.Content);
+				_currentPresentedWord = presentedWord.Content;
+				if (MyTurnEvent != null)
+					MyTurnEvent(this, new MyTurnEventArgs(presentedWord));
+				_isMyTurn = true;
 			}
 		}
 
 		private void GetPreviousWord()
 		{
-			string rawresult = EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
-			bool flag = string.IsNullOrWhiteSpace(rawresult);
-			if (!flag)
-			{
-				string result = rawresult.Split(new char[]
-				{
-					'<'
-				})[0];
-				if (result != _wordCache)
-				{
-					//Log(VerboseConsole.Level.Info, "Found PreviousWord : " + result);
-					_wordCache = result;
-					bool flag3 = result != MainWindow.LastUsedPath;
-					if (flag3)
-					{
-						bool flag4 = !PathFinder.AutoDBUpdateList.Contains(result);
-						if (flag4)
-						{
-							PathFinder.AutoDBUpdateList.Add(result);
-						}
-					}
-					PathFinder.AddPreviousPath(result);
-				}
-			}
+			string str = EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
+			if (string.IsNullOrWhiteSpace(str))
+				return;
+			string word = str.Split('<')[0];
+			if (word == _wordCache)
+				return;
+			Log(ConsoleManager.LogType.Info, "Found PreviousWord : " + word);
+			_wordCache = word;
+			if (word != MainWindow.LastUsedPath && !PathFinder.AutoDBUpdateList.Contains(word))
+				PathFinder.AutoDBUpdateList.Add(word);
+			PathFinder.AddPreviousPath(word);
 		}
 
 		private void GetRound()
 		{
-			string result = EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
-			if (!string.IsNullOrWhiteSpace(result))
-			{
-				if (result != _roundCache)
-				{
-					Log(ConsoleManager.LogType.Info, "Round Changed: " + result);
-					PathFinder.PreviousPath = new List<string>();
-					_roundCache = result;
-				}
-			}
+			string str = EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+			if (string.IsNullOrWhiteSpace(str) || !(str != _roundCache))
+				return;
+			Log(ConsoleManager.LogType.Info, "Round Changed: " + str);
+			PathFinder.PreviousPath = new List<string>();
+			_roundCache = str;
 		}
 
-		private void Log(ConsoleManager.LogType Level, string Content) => ConsoleManager.Log(Level, Content, "GameRuiner - #" + _watchdogTask.Id.ToString());
+		private void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, "KkutuHandler - #" + _watchdogTask.Id.ToString());
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
-			string i = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent").Trim();
-			bool flag = i.Length > 1;
-			ResponsePresentedWord result;
-			if (flag)
-			{
-				result = new ResponsePresentedWord(i[0].ToString(), true, i[2].ToString());
-			}
-			else
-			{
-				result = new ResponsePresentedWord(i[0].ToString(), false, "");
-			}
-			return result;
+			string str = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent").Trim();
+			if (str.Length <= 1)
+				return new ResponsePresentedWord(str[0].ToString(), false);
+			char ch = str[0];
+			string content = ch.ToString();
+			ch = str[2];
+			string subsituration = ch.ToString();
+			return new ResponsePresentedWord(content, true, subsituration);
 		}
 
 		public class ResponsePresentedWord
 		{
+			public string Content;
+			public bool CanSubstitution;
+			public string Substitution;
+
 			public ResponsePresentedWord(string content, bool canSubsitution, string subsituration = "")
 			{
 				Content = content;
 				CanSubstitution = canSubsitution;
-				bool canSubstitution = CanSubstitution;
-				if (canSubstitution)
-				{
-					Substitution = subsituration;
-				}
+				if (!CanSubstitution)
+					return;
+				Substitution = subsituration;
 			}
-
-			public string Content;
-
-			public bool CanSubstitution;
-
-			public string Substitution;
 		}
 
 		public class MyTurnEventArgs : EventArgs
 		{
-			public MyTurnEventArgs(ResponsePresentedWord word) => Word = word;
-
 			public ResponsePresentedWord Word;
+
+			public MyTurnEventArgs(ResponsePresentedWord word) => Word = word;
 		}
 	}
 }

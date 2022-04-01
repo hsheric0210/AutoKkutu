@@ -105,24 +105,16 @@ namespace AutoKkutu
 		{
 			bool flag = arg == null;
 			string Result;
-			ImageSource Img;
 			if (flag)
 			{
 				if (IsEnd)
-				{
 					Result = "이 턴에 가능한 페스 없음.";
-					Img = Default_DialogTemplate.Warning.Image;
-				}
 				else
-				{
 					Result = "페스 검색 대기중.";
-					Img = Default_DialogTemplate.Info.Image;
-				}
 			}
 			else
 			{
-				bool flag2 = arg.Result == PathFinder.FindResult.Normal;
-				if (flag2)
+				if (arg.Result == PathFinder.FindResult.Normal)
 				{
 					Result = string.Format("총 {0}개의 단어 중, {1}개의 페스 고려{2}{3}ms 소요. ", new object[]
 					{
@@ -131,61 +123,47 @@ namespace AutoKkutu
 						Environment.NewLine,
 						arg.Time
 					});
-					bool isUseEndWord = arg.IsUseEndWord;
-					if (isUseEndWord)
-					{
+
+					if (arg.IsUseEndWord)
 						Result += "(한 방 단어 사용)";
-					}
-					Img = CloudPlatform_UI.UI.Resources.Image.Checked_Radio_Image;
 				}
 				else
 				{
-					bool flag3 = arg.Result == PathFinder.FindResult.None;
-					if (flag3)
+					if (arg.Result == PathFinder.FindResult.None)
 					{
 						Result = string.Format("총 {0}개의 단어 중, 가능한 페스 없음.{1}{2}ms 소요. ", arg.TotalWordCount, Environment.NewLine, arg.Time);
 						bool isUseEndWord2 = arg.IsUseEndWord;
 						if (isUseEndWord2)
-						{
 							Result += "(한 방 단어 사용)";
-						}
-						Img = Default_DialogTemplate.Warning.Image;
 					}
 					else
-					{
 						Result = "오류가 발생하여 페스 검색 실패.";
-						Img = Default_DialogTemplate.Warning.Image;
-					}
 				}
 			}
 			Dispatcher.Invoke(delegate ()
 			{
 				SearchResult.Text = Result;
-				SearchIcon.Source = Img;
 			});
 		}
 
-		//[DebuggerStepThrough]
-		//private void UpdateUI(PathFinder.UpdatedPathEventArgs arg)
-		//{
-		//	MainWindow.< UpdateUI > d__16 < UpdateUI > d__ = new MainWindow.< UpdateUI > d__16();
-		//	< UpdateUI > d__.<> 4__this = this;
-		//	< UpdateUI > d__.arg = arg;
-		//	< UpdateUI > d__.<> t__builder = AsyncVoidMethodBuilder.Create();
-		//	< UpdateUI > d__.<> 1__state = -1;
-		//	< UpdateUI > d__.<> t__builder.Start < MainWindow.< UpdateUI > d__16 > (ref < UpdateUI > d__);
-		//}
+		private async void UpdateUI(PathFinder.UpdatedPathEventArgs arg)
+		{
+			if (arg.Result == PathFinder.FindResult.Normal)
+				ChangeStatusBar(CurrentStatus.Normal);
+			else if (arg.Result == PathFinder.FindResult.None)
+				ChangeStatusBar(CurrentStatus.Warning);
+			else if (arg.Result == PathFinder.FindResult.Error)
+				ChangeStatusBar(CurrentStatus.Error);
+			SetSearchState(arg);
+		}
 
 		private void PathFinder_UpdatedPath(object sender, EventArgs e)
 		{
 			bool AutomodeChecked = false;
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Path update reciviced. ( PathFinder_UpdatedPath() )", "MainThread");
 			var i = (PathFinder.UpdatedPathEventArgs)e;
-			Task.Run(delegate ()
-			{
-				UpdateUI(i);
-			});
-			Dispatcher.Invoke(delegate ()
+			Task.Run(() => UpdateUI(i));
+			Dispatcher.Invoke(() =>
 			{
 				PathList.ItemsSource = PathFinder.FinalList;
 				AutomodeChecked = Automode.IsChecked.Value;
@@ -374,9 +352,6 @@ namespace AutoKkutu
 			}
 		}
 
-		private void DBManager_Click(object sender, RoutedEventArgs e)
-		{
-			new DatabaseManagement().Show();
-		}
+		private void DBManager_Click(object sender, RoutedEventArgs e) => new DatabaseManagement().Show();
 	}
 }
