@@ -16,6 +16,7 @@
     <PackageReference Include="CefSharp.Wpf" Version="99.2.140" />
     <PackageReference Include="chromiumembeddedframework.runtime" Version="99.2.14" />
     <PackageReference Include="chromiumembeddedframework.runtime.win-x64" Version="99.2.14" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.3" />
   </ItemGroup>
 
 </Project>
