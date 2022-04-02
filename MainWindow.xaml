@@ -64,7 +64,7 @@
 				<Label
 						Content="검색된 패스"
 						Foreground="#FFFFFFFF"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="20"
 						Margin="7,31,41,745" />
 				<ListBox
@@ -120,7 +120,7 @@
 							BorderBrush="{x:Null}">
 						<TextBlock
 								Name="SearchResult"
-								FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+								FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 								FontSize="11"
 								Foreground="#FFFFFFFF"
 								TextWrapping="Wrap"
@@ -132,7 +132,7 @@
 						Content="데이터베이스 관리자"
 						Grid.Column="0"
 						Margin="0,731,0,41"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="DBManager_Click" />
 				<Button
@@ -140,7 +140,7 @@
 						Content="정보"
 						Grid.Column="0"
 						Margin="0,772,0,0"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14" />
 				<Grid
 						Margin="10,466,17,179"
@@ -153,12 +153,12 @@
 							Margin="6,12,0,0"
 							VerticalAlignment="Top"
 							Width="168"
-							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFFFFFFF"
 							FontSize="14" />
 					<Label
 							Content="자동으로 가장 적절한 패스를 냅니다."
-							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
 							Margin="5,27,12,112" />
 					<CheckBox
@@ -169,7 +169,7 @@
 							Margin="6,58,0,0"
 							VerticalAlignment="Top"
 							Width="168"
-							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFFFFFFF"
 							FontSize="14" />
 					<CheckBox
@@ -180,19 +180,19 @@
 							Margin="6,104,0,0"
 							VerticalAlignment="Top"
 							Width="202"
-							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFFFFFFF"
 							FontSize="14"
 							IsChecked="True"
 							RenderTransformOrigin="0.482,1.656" />
 					<Label
 							Content="한 방 단어를 패스 우선순위로 정합니다."
-							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
 							Margin="5,73,5,66" />
 					<Label
 							Content="이전 게임에서 제시된 단어를 기반으로,&#xD;&#xA;자동으로 데이터베이스를 업데이트 합니다."
-							FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							FontSize="12"
 							Foreground="#FFBDBDBD"
 							Margin="5,119,2,10" />
@@ -200,7 +200,7 @@
 				<Label
 						Content="옵션"
 						Foreground="#FFFFFFFF"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="20"
 						Margin="10,433,38,341" />
 			</Grid>
@@ -214,7 +214,7 @@
 						Grid.Column="0"
 						Margin="41,13,1233,14"
 						IsDefault="True"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="Submit_Click" />
 				<Button
@@ -222,7 +222,7 @@
 						Grid.Column="0"
 						Margin="12,13,1309,14"
 						IsCancel="True"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="ClipboardSubmit_Click">
 					<Grid
@@ -238,7 +238,7 @@
 						Margin="117,13,656,14"
 						Background="#333337"
 						Foreground="#FFFFFFFF"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="16"
 						VerticalContentAlignment="Center"
 						BorderBrush="#434346"
@@ -249,7 +249,7 @@
 						Name="VersionLabel"
 						Content="VersionInfomation"
 						Foreground="#FFFFFFFF"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Margin="0,4,12,0"
 						RenderOptions.ClearTypeHint="Enabled"
@@ -263,7 +263,7 @@
 						Name="DBStatus"
 						Content="DBStatus"
 						Foreground="#FFFFFFFF"
-						FontFamily="/KKutu-Helper;component/Resources/Font/#NanumBarunGothic"
+						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Margin="-81,25,12,0"
 						RenderOptions.ClearTypeHint="Enabled"

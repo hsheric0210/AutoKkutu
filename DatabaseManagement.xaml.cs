@@ -85,17 +85,15 @@ namespace AutoKkutu
 			Thread.Sleep(1500);
 			string result = ExecuteScript("document.getElementById('dict-output').innerHTML");
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Server Response : " + result, _loginstancename);
-			bool flag = string.IsNullOrWhiteSpace(result) || result == "404: 유효하지 않은 단어입니다.";
 			bool result2;
-			if (flag)
+			if (string.IsNullOrWhiteSpace(result) || result == "404: 유효하지 않은 단어입니다.")
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't find '" + i + "' in kkutu dict.", _loginstancename);
 				result2 = false;
 			}
 			else
 			{
-				bool flag2 = result == "검색 중";
-				if (flag2)
+				if (result == "검색 중")
 				{
 					ConsoleManager.Log(ConsoleManager.LogType.Error, "Invaild server response. Resend the request.", _loginstancename);
 					result2 = KkutuDicCheck(i);
@@ -167,7 +165,7 @@ namespace AutoKkutu
 				}
 			}
 			ConsoleManager.Log(ConsoleManager.LogType.Error, $"Database Operation Complete. {SuccessCount} Success /  {FailedCount} Failed.", _loginstancename);
-			MessageBox.Show("성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {FailedCount} 개 실패", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {FailedCount} 개 실패", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 
 		private void Auto_Submit_Click(object sender, RoutedEventArgs e)

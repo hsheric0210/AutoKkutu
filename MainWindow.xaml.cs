@@ -56,16 +56,16 @@ namespace AutoKkutu
 			}, true, (IApp)null);
 			browser = new ChromiumWebBrowser
 			{
-				Address = "https://kkutu.co.kr",
+				Address = "https://kkutu.org",
 				UseLayoutRounding = true
 			};
 			InitializeComponent();
 			ConsoleManager.Show();
-			Title = "KKutuHelper - Executive Beta";
-			VersionLabel.Content = "KKutuHelper V - 5.6.8500";
+			Title = "AutoKkuto - Succeedor of KKutoHelper";
+			VersionLabel.Content = "Succeeded KKutuHelper V5.6.8500 - v1.0";
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Starting Load Page...", "MainThread");
 			LoadOverlay.Visibility = Visibility.Visible;
-			TextInput.Text = "여기에 텍스트 입력";
+			TextInput.Text = "여기에 텍스트를 입력해주세요";
 			ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
 			browser.FrameLoadEnd += Browser_FrameLoadEnd;
@@ -103,20 +103,19 @@ namespace AutoKkutu
 
 		private void SetSearchState(PathFinder.UpdatedPathEventArgs arg, bool IsEnd = false)
 		{
-			bool flag = arg == null;
 			string Result;
-			if (flag)
+			if (arg == null)
 			{
 				if (IsEnd)
-					Result = "이 턴에 가능한 페스 없음.";
+					Result = "이 턴에 가능한 패스 없음.";
 				else
-					Result = "페스 검색 대기중.";
+					Result = "패스 검색 대기중.";
 			}
 			else
 			{
 				if (arg.Result == PathFinder.FindResult.Normal)
 				{
-					Result = string.Format("총 {0}개의 단어 중, {1}개의 페스 고려{2}{3}ms 소요. ", new object[]
+					Result = string.Format("총 {0}개의 단어 중, {1}개의 패스 고려{2}{3}ms 소요. ", new object[]
 					{
 						arg.TotalWordCount,
 						arg.CalcWordCount,
@@ -131,13 +130,13 @@ namespace AutoKkutu
 				{
 					if (arg.Result == PathFinder.FindResult.None)
 					{
-						Result = string.Format("총 {0}개의 단어 중, 가능한 페스 없음.{1}{2}ms 소요. ", arg.TotalWordCount, Environment.NewLine, arg.Time);
+						Result = string.Format("총 {0}개의 단어 중, 가능한 패스 없음.{1}{2}ms 소요. ", arg.TotalWordCount, Environment.NewLine, arg.Time);
 						bool isUseEndWord2 = arg.IsUseEndWord;
 						if (isUseEndWord2)
 							Result += "(한 방 단어 사용)";
 					}
 					else
-						Result = "오류가 발생하여 페스 검색 실패.";
+						Result = "오류가 발생하여 패스 검색 실패.";
 				}
 			}
 			Dispatcher.Invoke(delegate ()
@@ -172,8 +171,7 @@ namespace AutoKkutu
 			bool automodeChecked = AutomodeChecked;
 			if (automodeChecked)
 			{
-				bool flag = i.Result == PathFinder.FindResult.None;
-				if (flag)
+				if (i.Result == PathFinder.FindResult.None)
 				{
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. but can't find any path.", "MainThread");
 					ChangeStatusBar(CurrentStatus.Warning);
@@ -249,8 +247,10 @@ namespace AutoKkutu
 
 		private void SendMessage(string input)
 		{
-			browser.ExecuteScriptAsync("document.querySelectorAll('[id*=\"UserMessage\"]')[0].value='" + input.Trim() + "'");
+			//browser.ExecuteScriptAsync("document.querySelectorAll('[id*=\"UserMessage\"]')[0].value='" + input.Trim() + "'");
+			browser.ExecuteScriptAsync("document.querySelectorAll('[id*=\"Talk\"]')[0].value='" + input.Trim() + "'");
 			browser.ExecuteScriptAsync("document.getElementById('ChatBtn').click()");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Sent " + input + ".", "MainThread");
 		}
 
 		private void RemoveAd()
@@ -301,8 +301,7 @@ namespace AutoKkutu
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
 		{
-			bool flag = string.IsNullOrWhiteSpace(TextInput.Text) || TextInput.Text == "여기에 텍스트 입력";
-			if (!flag)
+			if (!(string.IsNullOrWhiteSpace(TextInput.Text) || TextInput.Text == "여기에 텍스트를 입력해주세요"))
 			{
 				SendMessage(TextInput.Text);
 				TextInput.Text = "";

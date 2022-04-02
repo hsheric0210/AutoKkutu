@@ -102,10 +102,10 @@ namespace AutoKkutu
 
 		private void CheckGameState(CheckType type)
 		{
-			string str = type != KkutuHandler.CheckType.GameStarted ? EvaluateJS("document.getElementsByClassName('game-input')[0].style.display") : EvaluateJS("document.getElementById('GameBox').style.display");
+			string str = type != CheckType.GameStarted ? EvaluateJS("document.getElementsByClassName('game-input')[0].style.display") : EvaluateJS("document.getElementById('GameBox').style.display");
 			if (string.IsNullOrWhiteSpace(str) || str == "none")
 			{
-				if (type == KkutuHandler.CheckType.GameStarted)
+				if (type == CheckType.GameStarted)
 				{
 					if (!IsGameStarted)
 						return;
@@ -122,7 +122,7 @@ namespace AutoKkutu
 					_isMyTurn = false;
 				}
 			}
-			else if (type == KkutuHandler.CheckType.GameStarted)
+			else if (type == CheckType.GameStarted)
 			{
 				if (_isGamestarted)
 					return;

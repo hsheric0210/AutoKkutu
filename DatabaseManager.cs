@@ -142,8 +142,8 @@ namespace AutoKkutu
 						ExecucteCommand($"UPDATE word_list SET word_index = '{content[0]}' WHERE word = '{content}';");
 					}
 					bool IsEndWord = PathFinder.EndWordList.Contains(content.Last().ToString());
-					int Is_endWord = System.Convert.ToInt32(IsEndWord);
-					if (IsEndWord != System.Convert.ToBoolean(reader["is_endword"].ToString()))
+					int Is_endWord = Convert.ToInt32(IsEndWord);
+					if (IsEndWord != Convert.ToBoolean(reader["is_endword"].ToString()))
 					{
 						ConsoleManager.Log(ConsoleManager.LogType.Info, "Invaild EndWord Tag. Fixing it..", "DatabaseManager");
 						ExecucteCommand("UPDATE word_list SET is_endword = '" + Is_endWord + "' WHERE word = '" + content + "';");

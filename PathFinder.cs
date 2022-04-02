@@ -278,7 +278,7 @@ namespace AutoKkutu
 				IsEndWord = _isEndWord;
 				bool isEndWord = IsEndWord;
 				if (isEndWord)
-					ToolTip = "이 페스는 선택 할 수 있는 다음 페스가 없습니다.";
+					ToolTip = "이 패스는 선택 할 수 있는 다음 패스가 없습니다.";
 				else
 					ToolTip = _content;
 			}
