@@ -62,7 +62,7 @@ namespace AutoKkutu
 				_isWatchdogStarted = true;
 				_watchdogTask = new Task(Watchdog);
 				_watchdogTask.Start();
-				Log(ConsoleManager.LogType.Info, "Task created and start.");
+				Log(ConsoleManager.LogType.Info, "Task created and started.");
 			}
 		}
 
@@ -102,8 +102,11 @@ namespace AutoKkutu
 
 		private void CheckGameState(CheckType type)
 		{
-			string str = type != CheckType.GameStarted ? EvaluateJS("document.getElementsByClassName('game-input')[0].style.display") : EvaluateJS("document.getElementById('GameBox').style.display");
-			if (string.IsNullOrWhiteSpace(str) || str == "none")
+			string gameBoxId = "document.getElementsByClassName('GameBox Product')[0]"; // "document.getElementById('{gameBoxId}')"
+			string searchOn = (type == CheckType.GameStarted ? gameBoxId : "document.getElementsByClassName('game-input')[0]");
+			string displayOpt = EvaluateJS(searchOn + ".style.display");
+			// Log(ConsoleManager.LogType.Verbose, $"{searchOn}: {displayOpt}");
+			if (string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase))
 			{
 				if (type == CheckType.GameStarted)
 				{
@@ -126,8 +129,8 @@ namespace AutoKkutu
 			{
 				if (_isGamestarted)
 					return;
-				Log(ConsoleManager.LogType.Info, "Game started.");
-				Log(ConsoleManager.LogType.Info, "Reset PreviousWordList.");
+				Log(ConsoleManager.LogType.Info, "Next round started.");
+				Log(ConsoleManager.LogType.Info, "Previous word list flushed.");
 				if (GameStartedEvent != null)
 					GameStartedEvent(this, EventArgs.Empty);
 				_isGamestarted = true;
@@ -136,9 +139,9 @@ namespace AutoKkutu
 			{
 				ResponsePresentedWord presentedWord = GetPresentedWord();
 				if (presentedWord.CanSubstitution)
-					Log(ConsoleManager.LogType.Info, "My Turn. presented word is " + presentedWord.Content + " (Subsitution: " + presentedWord.Substitution + ")");
+					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content} (Subsitution: {presentedWord.Substitution})");
 				else
-					Log(ConsoleManager.LogType.Info, "My Turn. presented word is " + presentedWord.Content);
+					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content}");
 				_currentPresentedWord = presentedWord.Content;
 				if (MyTurnEvent != null)
 					MyTurnEvent(this, new MyTurnEventArgs(presentedWord));
@@ -148,13 +151,13 @@ namespace AutoKkutu
 
 		private void GetPreviousWord()
 		{
-			string str = EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
-			if (string.IsNullOrWhiteSpace(str))
+			string previousWord = EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
+			if (string.IsNullOrWhiteSpace(previousWord))
 				return;
-			string word = str.Split('<')[0];
+			string word = previousWord.Split('<')[0];
 			if (word == _wordCache)
 				return;
-			Log(ConsoleManager.LogType.Info, "Found PreviousWord : " + word);
+			Log(ConsoleManager.LogType.Info, "Found Previous Word : " + word);
 			_wordCache = word;
 			if (word != MainWindow.LastUsedPath && !PathFinder.AutoDBUpdateList.Contains(word))
 				PathFinder.AutoDBUpdateList.Add(word);
@@ -163,25 +166,27 @@ namespace AutoKkutu
 
 		private void GetRound()
 		{
-			string str = EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
-			if (string.IsNullOrWhiteSpace(str) || !(str != _roundCache))
+			string round = EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+			if (string.IsNullOrWhiteSpace(round))
 				return;
-			Log(ConsoleManager.LogType.Info, "Round Changed: " + str);
+			if (string.Equals(round, _roundCache, StringComparison.InvariantCulture))
+				return;
+			Log(ConsoleManager.LogType.Info, "Round Changed: " + round);
 			PathFinder.PreviousPath = new List<string>();
-			_roundCache = str;
+			_roundCache = round;
 		}
 
 		private void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, "KkutuHandler - #" + _watchdogTask.Id.ToString());
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
-			string str = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent").Trim();
-			if (str.Length <= 1)
-				return new ResponsePresentedWord(str[0].ToString(), false);
-			char ch = str[0];
-			string content = ch.ToString();
-			ch = str[2];
-			string subsituration = ch.ToString();
+			string presentWord = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent").Trim();
+			if (presentWord.Length <= 1)
+				return new ResponsePresentedWord(presentWord[0].ToString(), false);
+			char firstChar = presentWord[0]; // TODO: 앞말잇기, 중간말잇기 feature 추가
+			string content = firstChar.ToString();
+			firstChar = presentWord[2];
+			string subsituration = firstChar.ToString();
 			return new ResponsePresentedWord(content, true, subsituration);
 		}
 

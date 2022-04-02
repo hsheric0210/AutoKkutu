@@ -20,6 +20,7 @@ namespace AutoKkutu
 
 		public enum LogType
 		{
+			Verbose,
 			Info,
 			Warning,
 			Error

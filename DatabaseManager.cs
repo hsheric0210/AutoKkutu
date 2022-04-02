@@ -11,6 +11,8 @@ namespace AutoKkutu
 	{
 		public static string GetDBInfo() => "Offline Database (Sqlite)";
 
+		private const string LOG_MODULE_NAME = "DatabaseManager";
+
 		public static void Init()
 		{
 			bool isInited = _isInited;
@@ -18,21 +20,21 @@ namespace AutoKkutu
 			{
 				try
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "_currentOperationMode = DBMethod.Local.", "DatabaseManager");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "_currentOperationMode = DBMethod.Local.", LOG_MODULE_NAME);
 					var _fileinfo = new FileInfo(_sqlLiteDBLocation);
 					bool flag3 = !_fileinfo.Exists;
 					if (flag3)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, _sqlLiteDBLocation + " does not exist. Create new file.", "DatabaseManager");
+						ConsoleManager.Log(ConsoleManager.LogType.Info, _sqlLiteDBLocation + " does not exist. Create new file.", LOG_MODULE_NAME);
 						FileStream fs = File.Create(_sqlLiteDBLocation);
 						fs.Close();
 					}
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _sqlLiteConnection.", "DatabaseManager");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _sqlLiteConnection.", LOG_MODULE_NAME);
 					_sqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
 					_sqlLiteConnection.Open();
 
 					CheckTable();
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "DB Open Complete.", "DatabaseManager");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "DB Open Complete.", LOG_MODULE_NAME);
 				}
 				catch (Exception e)
 				{
@@ -41,7 +43,7 @@ namespace AutoKkutu
 					{
 						DBError(null, EventArgs.Empty);
 					}
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect DB : " + e.ToString(), "DatabaseManager");
+					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect DB : " + e.ToString(), LOG_MODULE_NAME);
 				}
 			}
 		}
@@ -58,7 +60,7 @@ namespace AutoKkutu
 					result.Add(reader2["word_index"].ToString());
 				}
 			}
-			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found Total {0} end word.", result.Count), "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found Total {0} end word.", result.Count), LOG_MODULE_NAME);
 			return result;
 		}
 
@@ -71,13 +73,13 @@ namespace AutoKkutu
 			}
 			catch (Exception e)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Execute DB Command ' " + command + " ' : " + e.ToString(), "DatabaseManager");
+				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Execute DB Command ' " + command + " ' : " + e.ToString(), LOG_MODULE_NAME);
 			}
 		}
 
 		public static void DeleteWord(string word)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Delete '" + word + "' from db...", "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Delete '" + word + "' from db...", LOG_MODULE_NAME);
 			ExecucteCommand("DELETE FROM word_list WHERE word = '" + word + "'");
 		}
 
@@ -94,25 +96,25 @@ namespace AutoKkutu
 
 		public static async void CheckDB(bool UseOnlineDB)
 		{
-			if (string.IsNullOrWhiteSpace(DatabaseManagement.ExecuteScript("document.getElementById('dict-output').style")))
+			if (string.IsNullOrWhiteSpace(DatabaseManagement.EvaluateJS("document.getElementById('dict-output').style")))
 			{
 				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", LOG_MODULE_NAME);
 			int dbTotalCount;
 
 			var command2 = new SqliteCommand("SELECT COUNT(*) FROM word_list", _sqlLiteConnection);
 			int.TryParse(command2.ExecuteScalar().ToString(), out dbTotalCount);
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database has Total {dbTotalCount} elements.", "DatabaseManager");
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Getting all elements from database..", "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database has Total {dbTotalCount} elements.", LOG_MODULE_NAME);
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Getting all elements from database..", LOG_MODULE_NAME);
 			int elementCount = 0;
 			int SuccessCount = 0;
 			int FailedCount = 0;
 
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", LOG_MODULE_NAME);
 			var _ChecksqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
 			_ChecksqlLiteConnection.Open();
 			var command = new SqliteCommand("SELECT * FROM word_list ORDER BY(word) DESC", _ChecksqlLiteConnection);
@@ -122,10 +124,10 @@ namespace AutoKkutu
 				{
 					elementCount++;
 					string content = reader["word"].ToString();
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", "DatabaseManager");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", LOG_MODULE_NAME);
 					if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == ' ' || content[0] == '-' || content[0] == '.')
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Word is too short or first char is numberic. Remove.", "DatabaseManager");
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "Word is too short or first char is numberic. Remove.", LOG_MODULE_NAME);
 						ExecucteCommand("DELETE FROM word_list WHERE word = '" + content + "'");
 						FailedCount++;
 						continue;
@@ -135,17 +137,17 @@ namespace AutoKkutu
 						FailedCount++;
 						continue;
 					}
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Index Check...", "DatabaseManager");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Index Check...", LOG_MODULE_NAME);
 					if (content[0].ToString() != reader["word_index"].ToString())
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Invaild Word Index. Fixing it..", "DatabaseManager");
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "Invaild Word Index. Fixing it..", LOG_MODULE_NAME);
 						ExecucteCommand($"UPDATE word_list SET word_index = '{content[0]}' WHERE word = '{content}';");
 					}
 					bool IsEndWord = PathFinder.EndWordList.Contains(content.Last().ToString());
 					int Is_endWord = Convert.ToInt32(IsEndWord);
 					if (IsEndWord != Convert.ToBoolean(reader["is_endword"].ToString()))
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Invaild EndWord Tag. Fixing it..", "DatabaseManager");
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "Invaild EndWord Tag. Fixing it..", LOG_MODULE_NAME);
 						ExecucteCommand("UPDATE word_list SET is_endword = '" + Is_endWord + "' WHERE word = '" + content + "';");
 					}
 					SuccessCount++;
@@ -153,13 +155,13 @@ namespace AutoKkutu
 			}
 			_ChecksqlLiteConnection.Close();
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} / Success {SuccessCount} / Failed {FailedCount}.", "DatabaseManager");
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Check Completed.", "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} / Success {SuccessCount} / Failed {FailedCount}.", LOG_MODULE_NAME);
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Check Completed.", LOG_MODULE_NAME);
 		}
 
 		private static bool CheckElement(string i)
 		{
-			bool flag = !DatabaseManagement.KkutuDicCheck(i.Trim());
+			bool flag = !DatabaseManagement.KkutuOnlineDictCheck(i.Trim());
 			bool result;
 			if (flag)
 			{
@@ -173,37 +175,27 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static List<PathFinder.PathObject> FindWord(KkutuHandler.ResponsePresentedWord data, bool FindEndWordOnly)
+		public static List<PathFinder.PathObject> FindWord(KkutuHandler.ResponsePresentedWord data, bool preferEndWord)
 		{
 			int UseEndWord;
-			if (FindEndWordOnly)
-			{
+			if (preferEndWord)
 				UseEndWord = 1;
-			}
 			else
-			{
 				UseEndWord = 0;
-			}
 			var result = new List<PathFinder.PathObject>();
-
-
-			bool canSubstitution2 = data.CanSubstitution;
-			SqliteCommand command2;
-			if (canSubstitution2)
-			{
-				command2 = new SqliteCommand(string.Format("SELECT * FROM word_list WHERE (word_index = '{0}' OR word_index = '{1})' AND is_endword = {2} ORDER BY LENGTH(word) DESC LIMIT {3}", new object[]
-				{
+			string command;
+			if (data.CanSubstitution)
+				command = string.Format("SELECT * FROM word_list WHERE (word_index = '{0}' OR word_index = '{1})' AND is_endword = {2} ORDER BY LENGTH(word) DESC LIMIT {3}", new object[]
+								{
 						data.Content,
 						data.Substitution,
 						UseEndWord,
 						128
-				}), _sqlLiteConnection);
-			}
+								});
 			else
-			{
-				command2 = new SqliteCommand(string.Format("SELECT * FROM word_list WHERE word_index = '{0}' AND is_endword = {1} ORDER BY LENGTH(word) DESC LIMIT {2}", data.Content, UseEndWord, 128), _sqlLiteConnection);
-			}
-			using (SqliteDataReader reader2 = command2.ExecuteReader())
+				command = string.Format("SELECT * FROM word_list WHERE word_index = '{0}' AND is_endword = {1} ORDER BY LENGTH(word) DESC LIMIT {2}", data.Content, UseEndWord, 128);
+			ConsoleManager.Log(ConsoleManager.LogType.Verbose, "SQL Query: " + command, LOG_MODULE_NAME);
+			using (SqliteDataReader reader2 = new SqliteCommand(command, _sqlLiteConnection).ExecuteReader())
 			{
 				while (reader2.Read())
 				{
@@ -247,7 +239,7 @@ namespace AutoKkutu
 
 		private static void MakeTable(string tablename)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Create Table : " + tablename, "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Create Table : " + tablename, LOG_MODULE_NAME);
 			bool flag = tablename == "word_list";
 			if (flag)
 			{
@@ -265,14 +257,14 @@ namespace AutoKkutu
 
 		private static bool CheckTable_Check(string tablename)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Check Table : " + tablename, "DatabaseManager");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Check Table : " + tablename, LOG_MODULE_NAME);
 			try
 			{
 				return int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM sqlite_master WHERE name='" + tablename + "';", _sqlLiteConnection).ExecuteScalar().ToString(), out int i) && i > 0;
 			}
 			catch (Exception e2)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Failed to Execute Check DB Table ' " + tablename + " ' : " + e2.ToString(), "DatabaseManager");
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Failed to Execute Check DB Table ' " + tablename + " ' : " + e2.ToString(), LOG_MODULE_NAME);
 				return false;
 			}
 		}

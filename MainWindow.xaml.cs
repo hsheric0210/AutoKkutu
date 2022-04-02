@@ -11,18 +11,22 @@ using System.Windows.Media;
 
 namespace AutoKkutu
 {
+	// 미션 기능 추가하기
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private const string TITLE = "AutoKkutu - Succeedor of KKutuHelper";
+		public const string VERSION = "5.6.8500";
+		private const string MAINTHREAD_NAME = "MainThread";
+		private const string INPUT_TEXT_PLACEHOLDER = "여기에 텍스트를 입력해주세요";
+		private const string PATHFINDER_WAITING = "패스 검색 대기중.";
+		private const string PATHFINDER_ERROR = "오류가 발생하여 패스 검색 실패.";
+		private const string PATHFINDER_UNAVAILABLE = "이 턴에 가능한 패스 없음.";
+
 		public static ChromiumWebBrowser browser;
-
-		public const string Version = "5.6.8500";
-
-		private const string _mainthreadName = "MainThread";
-
-		private const string _textinputPlaceholder = "여기에 텍스트를 입력해주세요";
 
 		public static string LastUsedPath = "";
 
@@ -61,11 +65,11 @@ namespace AutoKkutu
 			};
 			InitializeComponent();
 			ConsoleManager.Show();
-			Title = "AutoKkuto - Succeedor of KKutoHelper";
-			VersionLabel.Content = "Succeeded KKutuHelper V5.6.8500 - v1.0";
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Starting Load Page...", "MainThread");
+			Title = TITLE;
+			VersionLabel.Content = "v1.0";
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Starting Load Page...", MAINTHREAD_NAME);
 			LoadOverlay.Visibility = Visibility.Visible;
-			TextInput.Text = "여기에 텍스트를 입력해주세요";
+			TextInput.Text = INPUT_TEXT_PLACEHOLDER;
 			ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
 			browser.FrameLoadEnd += Browser_FrameLoadEnd;
@@ -79,11 +83,11 @@ namespace AutoKkutu
 
 		private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "First browser frame-load end.", "MainThread");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "First browser frame-load end.", MAINTHREAD_NAME);
 			RemoveAd();
 			Dispatcher.Invoke(delegate ()
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Hide LoadOverlay.", "MainThread");
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Hide LoadOverlay.", MAINTHREAD_NAME);
 				DBStatus.Content = DatabaseManager.GetDBInfo();
 				LoadOverlay.Visibility = Visibility.Hidden;
 			});
@@ -107,42 +111,31 @@ namespace AutoKkutu
 			if (arg == null)
 			{
 				if (IsEnd)
-					Result = "이 턴에 가능한 패스 없음.";
+					Result = PATHFINDER_UNAVAILABLE;
 				else
-					Result = "패스 검색 대기중.";
+					Result = PATHFINDER_WAITING;
 			}
 			else
 			{
 				if (arg.Result == PathFinder.FindResult.Normal)
 				{
-					Result = string.Format("총 {0}개의 단어 중, {1}개의 패스 고려{2}{3}ms 소요. ", new object[]
-					{
-						arg.TotalWordCount,
-						arg.CalcWordCount,
-						Environment.NewLine,
-						arg.Time
-					});
-
+					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 패스 고려함.{Environment.NewLine}{arg.Time}ms 소요.";
 					if (arg.IsUseEndWord)
-						Result += "(한 방 단어 사용)";
+						Result += " (한 방 단어 사용)";
 				}
 				else
 				{
 					if (arg.Result == PathFinder.FindResult.None)
 					{
-						Result = string.Format("총 {0}개의 단어 중, 가능한 패스 없음.{1}{2}ms 소요. ", arg.TotalWordCount, Environment.NewLine, arg.Time);
-						bool isUseEndWord2 = arg.IsUseEndWord;
-						if (isUseEndWord2)
-							Result += "(한 방 단어 사용)";
+						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 패스 없음.{Environment.NewLine}{arg.Time}ms 소요.";
+						if (arg.IsUseEndWord)
+							Result += " (한 방 단어 사용)";
 					}
 					else
-						Result = "오류가 발생하여 패스 검색 실패.";
+						Result = PATHFINDER_ERROR;
 				}
 			}
-			Dispatcher.Invoke(delegate ()
-			{
-				SearchResult.Text = Result;
-			});
+			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
 		private async void UpdateUI(PathFinder.UpdatedPathEventArgs arg)
@@ -159,7 +152,8 @@ namespace AutoKkutu
 		private void PathFinder_UpdatedPath(object sender, EventArgs e)
 		{
 			bool AutomodeChecked = false;
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Path update reciviced. ( PathFinder_UpdatedPath() )", "MainThread");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Path update received. ( PathFinder_UpdatedPath() )", MAINTHREAD_NAME);
+			
 			var i = (PathFinder.UpdatedPathEventArgs)e;
 			Task.Run(() => UpdateUI(i));
 			Dispatcher.Invoke(() =>
@@ -167,19 +161,19 @@ namespace AutoKkutu
 				PathList.ItemsSource = PathFinder.FinalList;
 				AutomodeChecked = Automode.IsChecked.Value;
 			});
+
 			_pathSelected = false;
-			bool automodeChecked = AutomodeChecked;
-			if (automodeChecked)
+			if (AutomodeChecked)
 			{
 				if (i.Result == PathFinder.FindResult.None)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. but can't find any path.", "MainThread");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. but can't find any path.", MAINTHREAD_NAME);
 					ChangeStatusBar(CurrentStatus.Warning);
 				}
 				else
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use first path.", "MainThread");
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + PathFinder.FinalList.First().Content, "MainThread");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use first path.", MAINTHREAD_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + PathFinder.FinalList.First().Content, MAINTHREAD_NAME);
 					LastUsedPath = PathFinder.FinalList.First().Content;
 					_pathSelected = true;
 					SendMessage(PathFinder.FinalList.First().Content);
@@ -189,12 +183,9 @@ namespace AutoKkutu
 
 		private void ResetPathList()
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Reset Path list... ", "MainThread");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Reset Path list... ", MAINTHREAD_NAME);
 			PathFinder.FinalList = new List<PathFinder.PathObject>();
-			Dispatcher.Invoke(delegate ()
-			{
-				PathList.ItemsSource = PathFinder.FinalList;
-			});
+			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 		}
 
 		private void KkutuHandler_MyTurnEndEvent(object sender, EventArgs e)
@@ -211,22 +202,19 @@ namespace AutoKkutu
 			});
 			try
 			{
-				bool flag = PathFinder.EndWordList.Contains(i.Word.Content);
-				if (flag)
+				if (PathFinder.EndWordList.Contains(i.Word.Content))
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path : Presented word is End word.", "MainThread");
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path : Presented word is End word.", MAINTHREAD_NAME);
 					ResetPathList();
 					SetSearchState(null, true);
 					ChangeStatusBar(CurrentStatus.NoPath);
 				}
 				else
-				{
 					PathFinder.FindPath(i.Word, EndwordChecked);
-				}
 			}
 			catch (Exception ex)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't Find Path : " + ex.ToString(), "MainThread");
+				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't Find Path : " + ex.ToString(), MAINTHREAD_NAME);
 			}
 		}
 
@@ -247,10 +235,10 @@ namespace AutoKkutu
 
 		private void SendMessage(string input)
 		{
-			//browser.ExecuteScriptAsync("document.querySelectorAll('[id*=\"UserMessage\"]')[0].value='" + input.Trim() + "'");
-			browser.ExecuteScriptAsync("document.querySelectorAll('[id*=\"Talk\"]')[0].value='" + input.Trim() + "'");
+			string chatID = "Talk"; // "UserMessage"
+			browser.ExecuteScriptAsync($"document.querySelectorAll('[id*=\"{chatID}\"]')[0].value='" + input.Trim() + "'");
 			browser.ExecuteScriptAsync("document.getElementById('ChatBtn').click()");
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Sent " + input + ".", "MainThread");
+			ConsoleManager.Log(ConsoleManager.LogType.Verbose, $"Sent '{input}'.", MAINTHREAD_NAME);
 		}
 
 		private void RemoveAd()
@@ -291,7 +279,7 @@ namespace AutoKkutu
 
 			}
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Statusbar status change to " + status.ToString() + ".", "MainThread");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Statusbar status change to " + status.ToString() + ".", MAINTHREAD_NAME);
 			Dispatcher.Invoke(delegate ()
 			{
 				StatusGrid.Background = new SolidColorBrush(StatusColor);
@@ -301,7 +289,7 @@ namespace AutoKkutu
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
 		{
-			if (!(string.IsNullOrWhiteSpace(TextInput.Text) || TextInput.Text == "여기에 텍스트를 입력해주세요"))
+			if (!(string.IsNullOrWhiteSpace(TextInput.Text) || TextInput.Text == INPUT_TEXT_PLACEHOLDER))
 			{
 				SendMessage(TextInput.Text);
 				TextInput.Text = "";
@@ -323,14 +311,14 @@ namespace AutoKkutu
 
 		private void TextInput_GotFocus(object sender, RoutedEventArgs e)
 		{
-			if (TextInput.Text == "여기에 텍스트 입력해주세요")
+			if (TextInput.Text == INPUT_TEXT_PLACEHOLDER)
 				TextInput.Text = "";
 		}
 
 		private void TextInput_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(TextInput.Text))
-				TextInput.Text = "여기에 텍스트 입력해주세요";
+				TextInput.Text = INPUT_TEXT_PLACEHOLDER;
 		}
 
 		private void PathList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -338,12 +326,12 @@ namespace AutoKkutu
 			var i = (PathFinder.PathObject)PathList.SelectedItem;
 			if (i != null)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Selected Path : " + i.Content, "MainThread");
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Selected Path : " + i.Content, MAINTHREAD_NAME);
 				if (_pathSelected)
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Can't execute path! : _pathSelected = true.", "MainThread");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Can't execute path! : _pathSelected = true.", MAINTHREAD_NAME);
 				else
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + i.Content, "MainThread");
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + i.Content, MAINTHREAD_NAME);
 					_pathSelected = true;
 					LastUsedPath = i.Content;
 					SendMessage(i.Content);

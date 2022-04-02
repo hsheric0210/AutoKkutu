@@ -12,31 +12,31 @@
 			Visibility="Hidden"
 			ZIndex="1000">
 		</Grid>
-	<Grid
-			UseLayoutRounding="True">
-		<Grid.RowDefinitions>
-			<RowDefinition
-					Height="865" />
-			<RowDefinition
-					Height="35" />
-		</Grid.RowDefinitions>
 		<Grid
+			UseLayoutRounding="True">
+			<Grid.RowDefinitions>
+				<RowDefinition
+					Height="865" />
+				<RowDefinition
+					Height="35" />
+			</Grid.RowDefinitions>
+			<Grid
 				Name="ContentGrid"
 				Row="0"
 				UseLayoutRounding="True">
-			<Grid.RowDefinitions>
-				<RowDefinition
+				<Grid.RowDefinitions>
+					<RowDefinition
 						Height="810" />
-				<RowDefinition
+					<RowDefinition
 						Height="55" />
-			</Grid.RowDefinitions>
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition
 						Width="1350" />
-				<ColumnDefinition
+					<ColumnDefinition
 						Width="250" />
-			</Grid.ColumnDefinitions>
-			<Grid
+				</Grid.ColumnDefinitions>
+				<Grid
 					Row="0"
 					Column="0"
 					Width="1350"
@@ -44,7 +44,7 @@
 					Background="#FF333337"
 					Margin="0,0,0,790"
 					ZIndex="100" />
-			<ContentControl
+				<ContentControl
 					Name="browserContainer"
 					Grid.Row="0"
 					Grid.Column="0"
@@ -53,47 +53,47 @@
 					RenderOptions.BitmapScalingMode="NearestNeighbor"
 					UseLayoutRounding="True"
 					Margin="0,19,0,0" />
-			<Grid
+				<Grid
 					Name="ControlPanel"
 					Row="0"
 					Column="1"
 					Background="#252526">
-				<Grid
+					<Grid
 						Background="#FF333337"
 						Margin="0,0,0,790" />
-				<Label
-						Content="검색된 패스"
+					<Label
+						Content="고려된 단어"
 						Foreground="#FFFFFFFF"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="20"
 						Margin="7,31,41,745" />
-				<ListBox
+					<ListBox
 						Name="PathList"
 						Background="#FF333337"
 						Margin="0,71,4,443"
 						BorderThickness="1"
 						BorderBrush="{x:Null}"
 						MouseDoubleClick="PathList_MouseDoubleClick">
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<StackPanel
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<StackPanel
 									Orientation="Horizontal"
 									ScrollViewer.VerticalScrollBarVisibility="Hidden"
 									ScrollViewer.HorizontalScrollBarVisibility="Auto"
 									Width="185"
 									ToolTip="{Binding ToolTip}">
-								<Image
+									<Image
 										Width="25"
 										Height="25"
 										RenderOptions.BitmapScalingMode="HighQuality"
 										Margin="5,5,5,5"
 										Source="{Binding Image}" />
-								<Border
+									<Border
 										Height="35"
 										Width="150"
 										VerticalAlignment="Center"
 										BorderBrush="{x:Null}">
-									<TextBlock
+										<TextBlock
 											Foreground="#FFFFFFFF"
 											FontFamily="NanumGothic"
 											FontSize="11"
@@ -103,11 +103,11 @@
 											VerticalAlignment="Center"
 											HorizontalAlignment="Left"
 											Text="{Binding Title}" />
-								</Border>
-							</StackPanel>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ListBox>
+									</Border>
+								</StackPanel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ListBox>
 					<Grid
 						Name="SearchStatus"
 						Margin="0,366,4,397"
@@ -118,16 +118,16 @@
 							HorizontalAlignment="Left"
 							Width="197"
 							BorderBrush="{x:Null}">
-						<TextBlock
+							<TextBlock
 								Name="SearchResult"
 								FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 								FontSize="11"
 								Foreground="#FFFFFFFF"
 								TextWrapping="Wrap"
-								VerticalAlignment="Center">총 112개의 단어 중, 30개의 패스 고려 27ms 소요. (한 방 단어 사용)</TextBlock>
-					</Border>
-				</Grid>
-				<Button
+								VerticalAlignment="Center">총 112개의 단어 중, 30개 고려 27ms 소요. (한방 단어 사용)</TextBlock>
+						</Border>
+					</Grid>
+					<Button
 						Name="DBManager"
 						Content="데이터베이스 관리자"
 						Grid.Column="0"
@@ -135,19 +135,19 @@
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="DBManager_Click" />
-				<Button
+					<Button
 						Name="About"
 						Content="정보"
 						Grid.Column="0"
 						Margin="0,772,0,0"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14" />
-				<Grid
-						Margin="10,466,17,179"
+					<Grid
+						Margin="10,466,4,179"
 						Background="#FF333337">
-					<CheckBox
+						<CheckBox
 							Name="Automode"
-							Content="자동 패스 대응 활성화"
+							Content="자동 단어 입력 활성화"
 							HorizontalAlignment="Left"
 							Height="18"
 							Margin="6,12,0,0"
@@ -156,12 +156,12 @@
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFFFFFFF"
 							FontSize="14" />
-					<Label
-							Content="자동으로 가장 적절한 패스를 냅니다."
+						<Label
+							Content="자동으로 가장 적절한 단어를 입력합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
 							Margin="5,27,12,112" />
-					<CheckBox
+						<CheckBox
 							Name="EndWord"
 							Content="한 방 단어 우선"
 							HorizontalAlignment="Left"
@@ -172,7 +172,7 @@
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFFFFFFF"
 							FontSize="14" />
-					<CheckBox
+						<CheckBox
 							Name="AutoDBUpdate"
 							Content="데이터베이스 자동 업데이트"
 							HorizontalAlignment="Left"
@@ -185,30 +185,30 @@
 							FontSize="14"
 							IsChecked="True"
 							RenderTransformOrigin="0.482,1.656" />
-					<Label
-							Content="한 방 단어를 패스 우선순위로 정합니다."
+						<Label
+							Content="한 방 단어를 우선적으로 사용합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
 							Margin="5,73,5,66" />
-					<Label
+						<Label
 							Content="이전 게임에서 제시된 단어를 기반으로,&#xD;&#xA;자동으로 데이터베이스를 업데이트 합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							FontSize="12"
 							Foreground="#FFBDBDBD"
-							Margin="5,119,2,10" />
-				</Grid>
-				<Label
+							Margin="-1,122,2,6" />
+					</Grid>
+					<Label
 						Content="옵션"
 						Foreground="#FFFFFFFF"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="20"
 						Margin="10,433,38,341" />
-			</Grid>
-			<Grid
+				</Grid>
+				<Grid
 					Row="1"
 					Column="0"
 					Background="#252526">
-				<Button
+					<Button
 						Name="Submit"
 						Content="전송"
 						Grid.Column="0"
@@ -217,7 +217,7 @@
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="Submit_Click" />
-				<Button
+					<Button
 						Name="ClipboardSubmit"
 						Grid.Column="0"
 						Margin="12,13,1309,14"
@@ -225,15 +225,8 @@
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="ClipboardSubmit_Click">
-					<Grid
-							Height="28"
-							Width="29">
-						<Border
-								BorderBrush="#007acc"
-								BorderThickness="2" />
-					</Grid>
-				</Button>
-				<TextBox
+					</Button>
+					<TextBox
 						Name="TextInput"
 						Margin="117,13,656,14"
 						Background="#333337"
@@ -245,7 +238,7 @@
 						Padding="5,0,10,0"
 						GotFocus="TextInput_GotFocus"
 						LostFocus="TextInput_LostFocus" />
-				<Label
+					<Label
 						Name="VersionLabel"
 						Content="VersionInfomation"
 						Foreground="#FFFFFFFF"
@@ -259,7 +252,7 @@
 						HorizontalAlignment="Right"
 						Width="235"
 						HorizontalContentAlignment="Right" />
-				<Label
+					<Label
 						Name="DBStatus"
 						Content="DBStatus"
 						Foreground="#FFFFFFFF"
@@ -273,25 +266,29 @@
 						HorizontalAlignment="Right"
 						Width="319"
 						HorizontalContentAlignment="Right" />
-			</Grid>
+				</Grid>
 				<Grid
 					Row="1"
 					Column="1"
 					Background="#252526">
 				</Grid>
-		</Grid>
+			</Grid>
 			<Grid
 				Name="StatusGrid"
 				Row="1"
 				Background="#FF797979">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition Width="319*"/>
+				</Grid.ColumnDefinitions>
 				<Label
 					Name="StatusLabel"
 					FontFamily="NanumGothic"
 					FontSize="12"
 					Foreground="#FFFFFFFF"
 					Content="CurrentStatusLabel"
-					Margin="30,0,-30,10" />
+					Margin="10,-5,-20,0" Grid.Column="1" />
+			</Grid>
 		</Grid>
-	</Grid>
 	</Grid>
 </Window>

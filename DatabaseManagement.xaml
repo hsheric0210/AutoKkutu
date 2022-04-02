@@ -35,7 +35,7 @@
 				Height="29"
 				Margin="7,108,0,0"
 				VerticalAlignment="Top"
-				Width="255"
+				Width="280"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="12"
 				Foreground="#FFFFFFFF" />
@@ -45,9 +45,11 @@
 				Height="23"
 				Margin="10,42,0,0"
 				TextWrapping="Wrap"
-				Text="단어 입력"
+				Text="단어를 입력하세요"
 				VerticalAlignment="Top"
-				Width="191" />
+				Width="191"
+				GotFocus="Manual_Input_GotFocus"
+				LostFocus="Manual_Input_LostFocus" />
 			<CheckBox
 				Name="Manual_EndWord"
 				Content="한방 단어"
@@ -86,17 +88,17 @@
 				Height="26"
 				Margin="7,6,0,0"
 				VerticalAlignment="Top"
-				Width="121"
+				Width="125"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="14"
 				Foreground="#FFFFFFFF" />
 			<Label
 				Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다 "
 				HorizontalAlignment="Left"
-				Height="29"
+				Height="30"
 				Margin="7,108,0,0"
 				VerticalAlignment="Top"
-				Width="255"
+				Width="300"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="12"
 				Foreground="#FFFFFFFF" />
@@ -106,9 +108,11 @@
 				Height="23"
 				Margin="10,42,0,0"
 				TextWrapping="Wrap"
-				Text="노드 입력"
+				Text="노드를 입력하세요"
 				VerticalAlignment="Top"
-				Width="191" />
+				Width="191"
+				GotFocus="Node_Input_GotFocus"
+				LostFocus="Node_Input_LostFocus" />
 			<Button
 				Name="Node_Submit"
 				Content="전송"
@@ -124,7 +128,7 @@
 			Background="#2d2d30"
 			Margin="16,230,463,44">
 			<Label
-				Content="단어 자동추가"
+				Content="단어 일괄 추가"
 				HorizontalAlignment="Left"
 				Height="26"
 				Margin="7,6,0,0"
@@ -134,41 +138,51 @@
 				FontSize="14"
 				Foreground="#FFFFFFFF" />
 			<Label
-				Content="반드시 끄투 사전을 켜주세요."
+				Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다"
 				HorizontalAlignment="Left"
-				Height="29"
-				Margin="7,121,0,-3"
+				Height="40"
+				Margin="7,115,0,0"
 				VerticalAlignment="Top"
-				Width="255"
+				Width="270"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="12"
 				Foreground="#FFFFFFFF" />
 			<TextBox
-				Name="Auto_Input"
+				Name="Batch_Input"
 				HorizontalAlignment="Left"
 				Height="66"
 				Margin="10,42,0,0"
 				TextWrapping="NoWrap"
-				Text="단어 입력&#xD;&#xA;(여러 줄 동시 추가 가능)"
+				Text="단어 입력 (여러 줄 동시에 가능)"
 				VerticalAlignment="Top"
 				Width="191"
-				AcceptsReturn="True" />
+				AcceptsReturn="True"
+				GotFocus="Batch_Input_GotFocus"
+				LostFocus="Batch_Input_LostFocus"/>
 			<Button
-				Name="Auto_Submit"
-				Content="전송"
+				Name="Batch_Submit"
+				Content="추가"
 				HorizontalAlignment="Left"
 				Height="26"
 				Margin="206,40,0,0"
 				VerticalAlignment="Top"
 				Width="99"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-				Click="Auto_Submit_Click" />
+				Click="Batch_Submit_Click" />
+			<CheckBox
+				Name="Batch_Verify"
+				Content="사전 검증"
+				HorizontalAlignment="Left"
+				Margin="220,80,0,0"
+				VerticalAlignment="Top"
+				Foreground="#FFFFFFFF"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
 		</Grid>
 		<Grid
 			Background="#2d2d30"
 			Margin="374,230,50,44">
 			<Label
-				Content="데이터베이스 검증 및 이전"
+				Content="데이터베이스 검증"
 				HorizontalAlignment="Left"
 				Height="26"
 				Margin="7,6,0,0"
@@ -199,7 +213,7 @@
 				Click="CheckDB_Start_Click" />
 			<CheckBox
 				Name="Use_OnlineDic"
-				Content="온라인 검증 사용 (매우 긴 소요시간 예상)"
+				Content="온라인 검증 사용 (시간이 매우 오래 걸림)"
 				HorizontalAlignment="Left"
 				Margin="120,117,0,0"
 				VerticalAlignment="Top"
