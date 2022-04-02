@@ -18,7 +18,7 @@
 			Foreground="#FFFFFFFF" />
 		<Grid
 			Background="#2d2d30"
-			Margin="16,67,463,217">
+			Margin="16,67,436,217">
 			<Label
 				Content="단어 수동 추가 / 제거 "
 				HorizontalAlignment="Left"
@@ -81,7 +81,7 @@
 		</Grid>
 		<Grid
 			Background="#2d2d30"
-			Margin="369,67,50,217">
+			Margin="369,67,15,217">
 			<Label
 				Content="한방노드 수동추가"
 				HorizontalAlignment="Left"
@@ -126,7 +126,7 @@
 		</Grid>
 		<Grid
 			Background="#2d2d30"
-			Margin="16,230,463,44">
+			Margin="15,230,245,10">
 			<Label
 				Content="단어 일괄 추가"
 				HorizontalAlignment="Left"
@@ -140,22 +140,19 @@
 			<Label
 				Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다"
 				HorizontalAlignment="Left"
-				Height="40"
-				Margin="7,115,0,0"
+				Margin="10,130,0,0"
 				VerticalAlignment="Top"
-				Width="270"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-				FontSize="12"
+				FontSize="10"
 				Foreground="#FFFFFFFF" />
 			<TextBox
 				Name="Batch_Input"
 				HorizontalAlignment="Left"
 				Height="66"
-				Margin="10,42,0,0"
+				Margin="10,40,0,0"
 				TextWrapping="NoWrap"
 				Text="단어 입력 (여러 줄 동시에 가능)"
 				VerticalAlignment="Top"
-				Width="191"
 				AcceptsReturn="True"
 				GotFocus="Batch_Input_GotFocus"
 				LostFocus="Batch_Input_LostFocus"/>
@@ -164,7 +161,7 @@
 				Content="추가"
 				HorizontalAlignment="Left"
 				Height="26"
-				Margin="206,40,0,0"
+				Margin="205,40,0,0"
 				VerticalAlignment="Top"
 				Width="99"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
@@ -173,52 +170,99 @@
 				Name="Batch_Verify"
 				Content="사전 검증"
 				HorizontalAlignment="Left"
-				Margin="220,80,0,0"
+				Margin="10,115,0,0"
 				VerticalAlignment="Top"
 				Foreground="#FFFFFFFF"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+			<Button
+				x:Name="Batch_Submit_File"
+				Content="파일에서 읽어들이기"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="310,40,0,0"
+				VerticalAlignment="Top"
+				Width="140"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Batch_Submit_File_Click" />
+			<Button
+				x:Name="Batch_Submit_Folder"
+				Content="폴더의 파일에서 읽어들이기"
+				HorizontalAlignment="Left"
+				Height="26"
+				Margin="205,75,0,0"
+				VerticalAlignment="Top"
+				Width="170"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Batch_Submit_Folder_Click" />
+			<CheckBox
+				x:Name="Batch_EndWord"
+				Content="한 방 단어"
+				HorizontalAlignment="Left"
+				Margin="385,75,0,0"
+				VerticalAlignment="Top"
+				Foreground="#FFFFFFFF"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+			<CheckBox
+				x:Name="Batch_Injeong"
+				Content="어인정 단어"
+				HorizontalAlignment="Left"
+				Margin="385,102,0,0"
+				VerticalAlignment="Top"
+				Foreground="#FFFFFFFF"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+			<Label
+				Content="데이터베이스는 기본적으로 path.sqlite에 저장됩니다.&#xD;&#xA;한글과 영어 데이터베이스를 따로 분리해 두는 것을 추천합니다."
+				HorizontalAlignment="Left"
+				Margin="250,135,0,0"
+				VerticalAlignment="Top"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				FontSize="8"
+				Foreground="#FFFFFFFF" />
 		</Grid>
 		<Grid
 			Background="#2d2d30"
-			Margin="374,230,50,44">
+			Margin="560,230,15,10">
 			<Label
 				Content="데이터베이스 검증"
 				HorizontalAlignment="Left"
-				Height="26"
-				Margin="7,6,0,0"
+				Margin="5,5,0,0"
 				VerticalAlignment="Top"
-				Width="224"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="14"
 				Foreground="#FFFFFFFF" />
 			<Label
-				Content="데이터베이스의 모든 단어를 다시 검증합니다."
+				Content="데이터베이스의 모든 단어를&#xD;&#xA;다시 검증합니다."
 				HorizontalAlignment="Left"
-				Height="29"
-				Margin="7,32,0,0"
+				Margin="10,30,0,0"
 				VerticalAlignment="Top"
-				Width="300"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="12"
 				Foreground="#FFFFFFFF" />
 			<Button
 				Name="CheckDB_Start"
 				Content="검증"
-				HorizontalAlignment="Left"
+				HorizontalAlignment="Center"
 				Height="26"
-				Margin="10,111,0,0"
+				Margin="0,135,0,0"
 				VerticalAlignment="Top"
-				Width="99"
+				Width="98"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				Click="CheckDB_Start_Click" />
 			<CheckBox
 				Name="Use_OnlineDic"
-				Content="온라인 검증 사용 (시간이 매우 오래 걸림)"
+				Content="온라인 검증"
 				HorizontalAlignment="Left"
-				Margin="120,117,0,0"
 				VerticalAlignment="Top"
 				Foreground="#FFFFFFFF"
-				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="5,85,0,0" />
+			<Label
+	   Content="온라인 검증에는 상당히 많은&#xD;&#xA;시간이 걸립니다."
+	   HorizontalAlignment="Left"
+	   Margin="5,100,0,0"
+	   VerticalAlignment="Top"
+	   FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+	   FontSize="12"
+	   Foreground="#FFFFFFFF" />
 		</Grid>
 		<Label
 			Content="데이터베이스 작업 중일때에는 다른 작업을 수행 할 수 없습니다."

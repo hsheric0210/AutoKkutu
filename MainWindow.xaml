@@ -131,19 +131,12 @@
 						Name="DBManager"
 						Content="데이터베이스 관리자"
 						Grid.Column="0"
-						Margin="0,731,0,41"
+						Margin="0,772,0,0"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
 						Click="DBManager_Click" />
-					<Button
-						Name="About"
-						Content="정보"
-						Grid.Column="0"
-						Margin="0,772,0,0"
-						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-						FontSize="14" />
 					<Grid
-						Margin="10,466,4,179"
+						Margin="10,466,4,44"
 						Background="#FF333337">
 						<CheckBox
 							Name="Automode"
@@ -160,9 +153,9 @@
 							Content="자동으로 가장 적절한 단어를 입력합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
-							Margin="5,27,12,112" />
+							Margin="5,27,0,112" />
 						<CheckBox
-							Name="EndWord"
+							Name="PreferEndWord"
 							Content="한 방 단어 우선"
 							HorizontalAlignment="Left"
 							Height="16"
@@ -189,13 +182,50 @@
 							Content="한 방 단어를 우선적으로 사용합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
-							Margin="5,73,5,66" />
+							Margin="5,70,5,0" />
 						<Label
 							Content="이전 게임에서 제시된 단어를 기반으로,&#xD;&#xA;자동으로 데이터베이스를 업데이트 합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							FontSize="12"
 							Foreground="#FFBDBDBD"
-							Margin="-1,122,2,6" />
+							Margin="-2,120,-2,-25" />
+						<CheckBox
+							x:Name="MannerMode"
+							Content="매너"
+							HorizontalAlignment="Left"
+							Height="16"
+							Margin="6,165,0,0"
+							VerticalAlignment="Top"
+							Width="202"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+							Foreground="#FFFFFFFF"
+							FontSize="14"
+							IsChecked="False"
+							RenderTransformOrigin="0.482,1.656" />
+						<Label
+							Content="한 방 단어를 사용하지 않습니다."
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+							FontSize="12"
+							Foreground="#FFBDBDBD"
+							Margin="6,180,5,24" />
+						<CheckBox
+							x:Name="Injeong"
+							Content="어인정"
+							HorizontalAlignment="Left"
+							Margin="6,211,0,0"
+							VerticalAlignment="Top"
+							Width="202"
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+							Foreground="#FFFFFFFF"
+							FontSize="14"
+							IsChecked="True"
+							RenderTransformOrigin="0.482,1.656" />
+						<Label
+							Content="세브컬쳐 계열 단어나 유명인의 이름,&#xD;&#xA;게임 용어 등을 사용합니다."
+							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+							FontSize="12"
+							Foreground="#FFBDBDBD"
+							Margin="6,225,5,5" />
 					</Grid>
 					<Label
 						Content="옵션"

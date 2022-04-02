@@ -199,7 +199,7 @@ namespace AutoKkutu
 			bool EndwordChecked = false;
 			Dispatcher.Invoke(() =>
 			{
-				EndwordChecked = EndWord.IsChecked.Value;
+				EndwordChecked = PreferEndWord.IsChecked.Value;
 			});
 			try
 			{

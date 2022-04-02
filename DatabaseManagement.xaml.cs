@@ -13,14 +13,17 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Win32;
+using System.IO;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace AutoKkutu
 {
-    /// <summary>
-    /// DatabaseManagement.xaml에 대한 상호 작용 논리
-    /// </summary>
-    public partial class DatabaseManagement : Window
-    {
+	/// <summary>
+	/// DatabaseManagement.xaml에 대한 상호 작용 논리
+	/// </summary>
+	public partial class DatabaseManagement : Window
+	{
 		public ImageSource Favicon
 		{
 			get; set;
@@ -28,6 +31,7 @@ namespace AutoKkutu
 
 		public DatabaseManagement()
 		{
+			Title = "Data-base Management";
 			InitializeComponent();
 		}
 
@@ -40,7 +44,7 @@ namespace AutoKkutu
 		private const string MANAGE_UNSUCCESSFUL = "작업을 수행하는 도중 문제가 발생했습니다\n자세한 사항은 콘솔을 참조하십시오.";
 		private const string INPUT_KEYWORD_PLACEHOLDER = "단어를 입력하세요";
 		private const string INPUT_NODE_PLACEHOLDER = "노드를 입력하세요";
-		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력&#xD;&#xA;(여러 줄 동시 추가 가능)";
+		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄 동시에 가능)";
 
 		private static readonly string LOG_INSTANCE_NAME = "DatabaseManagement";
 
@@ -174,6 +178,46 @@ namespace AutoKkutu
 		{
 			string i = Batch_Input.Text;
 			BatchAddWord(i, Batch_Verify.IsChecked ?? false);
+		}
+
+		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new OpenFileDialog();
+			dialog.Title = "단어 목록을 불러올 파일을 선택하세요";
+			dialog.Multiselect = true;
+			dialog.CheckPathExists = true;
+			dialog.CheckFileExists = true;
+			if (dialog.ShowDialog() ?? false)
+				foreach (string filename in dialog.FileNames)
+					try
+					{
+						foreach (string s in File.ReadAllLines(filename))
+							BatchAddWord((string)s, Batch_Verify.IsChecked ?? false);
+					}
+					catch (IOException ioe)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
+					}
+		}
+
+		private void Batch_Submit_Folder_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new CommonOpenFileDialog();
+			dialog.Title = "단어 목록을 불러올 파일들이 들어 있는 폴더을 선택하세요 (주의: 폴더 내의 파일들과 뿐만 아니라 그 하위 폴더에 모든 파일까지 포함됨)";
+			dialog.Multiselect = true;
+			dialog.EnsurePathExists = true;
+			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+				foreach (string foldername in dialog.FileNames)
+					foreach (string filename in Directory.EnumerateFiles(foldername, "*", SearchOption.AllDirectories))
+						try
+						{
+							foreach (string s in File.ReadAllLines(filename))
+								BatchAddWord((string)s, Batch_Verify.IsChecked ?? false);
+						}
+						catch (IOException ioe)
+						{
+							ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
+						}
 		}
 
 		public static string EvaluateJS(string script)
