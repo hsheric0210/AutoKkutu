@@ -116,7 +116,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public static async void BatchAddWord(string content, bool verify)
+		public static async void BatchAddWord(string content, bool verify, bool endword)
 		{
 			// TODO: Batch Add from File feature
 			// TODO: Batch Add End Words feature
@@ -144,17 +144,13 @@ namespace AutoKkutu
 				}
 				else if (!verify || KkutuOnlineDictCheck(i))
 				{
-					bool isEndword;
-					if (PathFinder.EndWordList.Contains(i[i.Length - 1].ToString()))
-					{
-						isEndword = true;
+					bool isEndword = endword || PathFinder.EndWordList.Contains(i[i.Length - 1].ToString());
+
+					if (isEndword)
 						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + i + "' is End word.", LOG_INSTANCE_NAME);
-					}
 					else
-					{
-						isEndword = false;
 						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + i + "' isn't End word.", LOG_INSTANCE_NAME);
-					}
+
 					try
 					{
 						ConsoleManager.Log(ConsoleManager.LogType.Info, "Adding'" + i + "' into database...", LOG_INSTANCE_NAME);
@@ -177,7 +173,7 @@ namespace AutoKkutu
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
 		{
 			string i = Batch_Input.Text;
-			BatchAddWord(i, Batch_Verify.IsChecked ?? false);
+			BatchAddWord(i, Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -188,16 +184,19 @@ namespace AutoKkutu
 			dialog.CheckPathExists = true;
 			dialog.CheckFileExists = true;
 			if (dialog.ShowDialog() ?? false)
+			{
+				var builder = new StringBuilder();
 				foreach (string filename in dialog.FileNames)
 					try
 					{
-						foreach (string s in File.ReadAllLines(filename))
-							BatchAddWord((string)s, Batch_Verify.IsChecked ?? false);
+						builder.AppendLine(File.ReadAllText(filename, Encoding.UTF8));
 					}
 					catch (IOException ioe)
 					{
 						ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
 					}
+				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
+			}
 		}
 
 		private void Batch_Submit_Folder_Click(object sender, RoutedEventArgs e)
@@ -207,17 +206,27 @@ namespace AutoKkutu
 			dialog.Multiselect = true;
 			dialog.EnsurePathExists = true;
 			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				var builder = new StringBuilder();
 				foreach (string foldername in dialog.FileNames)
-					foreach (string filename in Directory.EnumerateFiles(foldername, "*", SearchOption.AllDirectories))
-						try
-						{
-							foreach (string s in File.ReadAllLines(filename))
-								BatchAddWord((string)s, Batch_Verify.IsChecked ?? false);
-						}
-						catch (IOException ioe)
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
-						}
+					try
+					{
+						foreach (string filename in Directory.EnumerateFiles(foldername, "*", SearchOption.AllDirectories))
+							try
+							{
+								builder.AppendLine(File.ReadAllText(filename, Encoding.UTF8));
+							}
+							catch (IOException ioe)
+							{
+								ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
+							}
+					}
+					catch (IOException ioe)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Unable to enumerate files in folder {foldername}: {ioe}", LOG_INSTANCE_NAME);
+					}
+				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
+			}
 		}
 
 		public static string EvaluateJS(string script)

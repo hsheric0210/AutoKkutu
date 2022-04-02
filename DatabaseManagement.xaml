@@ -198,15 +198,7 @@
 				x:Name="Batch_EndWord"
 				Content="한 방 단어"
 				HorizontalAlignment="Left"
-				Margin="385,75,0,0"
-				VerticalAlignment="Top"
-				Foreground="#FFFFFFFF"
-				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
-			<CheckBox
-				x:Name="Batch_Injeong"
-				Content="어인정 단어"
-				HorizontalAlignment="Left"
-				Margin="385,102,0,0"
+				Margin="385,80,0,0"
 				VerticalAlignment="Top"
 				Foreground="#FFFFFFFF"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
@@ -254,11 +246,11 @@
 				HorizontalAlignment="Left"
 				VerticalAlignment="Top"
 				Foreground="#FFFFFFFF"
-				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="5,85,0,0" />
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="5,80,0,0" />
 			<Label
 	   Content="온라인 검증에는 상당히 많은&#xD;&#xA;시간이 걸립니다."
 	   HorizontalAlignment="Left"
-	   Margin="5,100,0,0"
+	   Margin="10,95,0,0"
 	   VerticalAlignment="Top"
 	   FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 	   FontSize="12"
