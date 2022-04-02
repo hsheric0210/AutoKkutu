@@ -1,4 +1,5 @@
-﻿using CefSharp;
+﻿using AutoKkutu.Handlers;
+using CefSharp;
 using CefSharp.Wpf;
 using System;
 using System.Collections.Generic;
@@ -22,9 +23,9 @@ namespace AutoKkutu
 		public const string VERSION = "5.6.8500";
 		private const string MAINTHREAD_NAME = "MainThread";
 		private const string INPUT_TEXT_PLACEHOLDER = "여기에 텍스트를 입력해주세요";
-		private const string PATHFINDER_WAITING = "패스 검색 대기중.";
-		private const string PATHFINDER_ERROR = "오류가 발생하여 패스 검색 실패.";
-		private const string PATHFINDER_UNAVAILABLE = "이 턴에 가능한 패스 없음.";
+		private const string PATHFINDER_WAITING = "단어 검색 대기중.";
+		private const string PATHFINDER_ERROR = "오류가 발생하여 단어 검색 실패.";
+		private const string PATHFINDER_UNAVAILABLE = "이 턴에 사용 가능한 단어 없음.";
 
 		public static ChromiumWebBrowser browser;
 
@@ -32,7 +33,7 @@ namespace AutoKkutu
 
 		private static bool _pathSelected;
 
-		public KkutuHandler GameHandler;
+		public CommonHandler GameHandler;
 
 		private enum CurrentStatus
 		{
@@ -85,21 +86,21 @@ namespace AutoKkutu
 		{
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "First browser frame-load end.", MAINTHREAD_NAME);
 			RemoveAd();
-			Dispatcher.Invoke(delegate ()
+			Dispatcher.Invoke(() =>
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Hide LoadOverlay.", MAINTHREAD_NAME);
 				DBStatus.Content = DatabaseManager.GetDBInfo();
 				LoadOverlay.Visibility = Visibility.Hidden;
 			});
 			browser.FrameLoadEnd -= Browser_FrameLoadEnd;
-			GameHandler = new KkutuHandler(browser);
-			KkutuHandler gameHandler = GameHandler;
+			GameHandler = new KkutuOrgHandler(browser);
+			CommonHandler gameHandler = GameHandler;
 			gameHandler.GameStartedEvent = (EventHandler)Delegate.Combine(gameHandler.GameStartedEvent, new EventHandler(KkutuHandler_GameStart));
-			KkutuHandler gameHandler2 = GameHandler;
+			CommonHandler gameHandler2 = GameHandler;
 			gameHandler2.GameEndedEvent = (EventHandler)Delegate.Combine(gameHandler2.GameEndedEvent, new EventHandler(KkutuHandler_GameEnd));
-			KkutuHandler gameHandler3 = GameHandler;
+			CommonHandler gameHandler3 = GameHandler;
 			gameHandler3.MyTurnEvent = (EventHandler)Delegate.Combine(gameHandler3.MyTurnEvent, new EventHandler(KkutuHandler_MyTurnEvent));
-			KkutuHandler gameHandler4 = GameHandler;
+			CommonHandler gameHandler4 = GameHandler;
 			gameHandler4.MyTurnEndedEvent = (EventHandler)Delegate.Combine(gameHandler4.MyTurnEndedEvent, new EventHandler(KkutuHandler_MyTurnEndEvent));
 			GameHandler.StartWatchdog();
 			PathFinder.UpdatedPath = (EventHandler)Delegate.Combine(PathFinder.UpdatedPath, new EventHandler(PathFinder_UpdatedPath));
@@ -119,7 +120,7 @@ namespace AutoKkutu
 			{
 				if (arg.Result == PathFinder.FindResult.Normal)
 				{
-					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 패스 고려함.{Environment.NewLine}{arg.Time}ms 소요.";
+					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.{Environment.NewLine}{arg.Time}ms 소요.";
 					if (arg.IsUseEndWord)
 						Result += " (한 방 단어 사용)";
 				}
@@ -127,7 +128,7 @@ namespace AutoKkutu
 				{
 					if (arg.Result == PathFinder.FindResult.None)
 					{
-						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 패스 없음.{Environment.NewLine}{arg.Time}ms 소요.";
+						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.{Environment.NewLine}{arg.Time}ms 소요.";
 						if (arg.IsUseEndWord)
 							Result += " (한 방 단어 사용)";
 					}
@@ -153,7 +154,7 @@ namespace AutoKkutu
 		{
 			bool AutomodeChecked = false;
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Path update received. ( PathFinder_UpdatedPath() )", MAINTHREAD_NAME);
-			
+
 			var i = (PathFinder.UpdatedPathEventArgs)e;
 			Task.Run(() => UpdateUI(i));
 			Dispatcher.Invoke(() =>
@@ -176,7 +177,7 @@ namespace AutoKkutu
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + PathFinder.FinalList.First().Content, MAINTHREAD_NAME);
 					LastUsedPath = PathFinder.FinalList.First().Content;
 					_pathSelected = true;
-					SendMessage(PathFinder.FinalList.First().Content);
+					GameHandler.SendMessage(PathFinder.FinalList.First().Content);
 				}
 			}
 		}
@@ -194,9 +195,9 @@ namespace AutoKkutu
 
 		private void KkutuHandler_MyTurnEvent(object sender, EventArgs e)
 		{
-			var i = (KkutuHandler.MyTurnEventArgs)e;
+			var i = (CommonHandler.MyTurnEventArgs)e;
 			bool EndwordChecked = false;
-			Dispatcher.Invoke(delegate ()
+			Dispatcher.Invoke(() =>
 			{
 				EndwordChecked = EndWord.IsChecked.Value;
 			});
@@ -231,14 +232,6 @@ namespace AutoKkutu
 			});
 			PathFinder.AutoDBUpdate(EnableDBAutoUpdate);
 			ChangeStatusBar(CurrentStatus.Wait);
-		}
-
-		private void SendMessage(string input)
-		{
-			string chatID = "Talk"; // "UserMessage"
-			browser.ExecuteScriptAsync($"document.querySelectorAll('[id*=\"{chatID}\"]')[0].value='" + input.Trim() + "'");
-			browser.ExecuteScriptAsync("document.getElementById('ChatBtn').click()");
-			ConsoleManager.Log(ConsoleManager.LogType.Verbose, $"Sent '{input}'.", MAINTHREAD_NAME);
 		}
 
 		private void RemoveAd()
@@ -291,7 +284,7 @@ namespace AutoKkutu
 		{
 			if (!(string.IsNullOrWhiteSpace(TextInput.Text) || TextInput.Text == INPUT_TEXT_PLACEHOLDER))
 			{
-				SendMessage(TextInput.Text);
+				GameHandler.SendMessage(TextInput.Text);
 				TextInput.Text = "";
 			}
 		}
@@ -302,7 +295,7 @@ namespace AutoKkutu
 			{
 				string clipboard = Clipboard.GetText();
 				if (!string.IsNullOrWhiteSpace(clipboard))
-					SendMessage(clipboard);
+					GameHandler.SendMessage(clipboard);
 			}
 			catch
 			{
@@ -327,15 +320,17 @@ namespace AutoKkutu
 			if (i != null)
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Selected Path : " + i.Content, MAINTHREAD_NAME);
-				if (_pathSelected)
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Can't execute path! : _pathSelected = true.", MAINTHREAD_NAME);
-				else
-				{
+				
+				// In sometimes, we are smarter than machines
+				// if (_pathSelected)
+				// 	ConsoleManager.Log(ConsoleManager.LogType.Info, "Can't execute path! : _pathSelected = true.", MAINTHREAD_NAME);
+				// else
+				// {
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + i.Content, MAINTHREAD_NAME);
 					_pathSelected = true;
 					LastUsedPath = i.Content;
-					SendMessage(i.Content);
-				}
+					GameHandler.SendMessage(i.Content);
+				// }
 			}
 		}
 

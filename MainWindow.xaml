@@ -62,7 +62,7 @@
 						Background="#FF333337"
 						Margin="0,0,0,790" />
 					<Label
-						Content="고려된 단어"
+						Content="추천 단어"
 						Foreground="#FFFFFFFF"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="20"

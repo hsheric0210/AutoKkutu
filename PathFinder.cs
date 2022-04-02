@@ -83,7 +83,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static void FindPath(KkutuHandler.ResponsePresentedWord i, bool UseEndWord)
+		public static void FindPath(CommonHandler.ResponsePresentedWord i, bool UseEndWord)
 		{
 			bool canSubstitution = i.CanSubstitution;
 			if (canSubstitution)
@@ -220,7 +220,7 @@ namespace AutoKkutu
 				Content = _content;
 				Title = _content;
 				if (IsEndWord = _isEndWord)
-					ToolTip = "이 패스는 선택 할 수 있는 다음 패스가 없습니다.";
+					ToolTip = "이 단어는 한 방 단어로, 이을 수 있는 다음 단어가 없습니다.";
 				else
 					ToolTip = _content;
 			}

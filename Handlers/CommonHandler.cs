@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
-	public class KkutuHandler
+	public abstract class CommonHandler
 	{
 		public ChromiumWebBrowser Browser;
 		public bool IsWatchdogAlive;
@@ -53,7 +53,7 @@ namespace AutoKkutu
 			MyTurn
 		}
 
-		public KkutuHandler(ChromiumWebBrowser browser) => Browser = browser;
+		public CommonHandler(ChromiumWebBrowser browser) => Browser = browser;
 
 		public void StartWatchdog()
 		{
@@ -62,7 +62,7 @@ namespace AutoKkutu
 				_isWatchdogStarted = true;
 				_watchdogTask = new Task(Watchdog);
 				_watchdogTask.Start();
-				Log(ConsoleManager.LogType.Info, "Task created and started.");
+				Log(ConsoleManager.LogType.Info, "Watchdog thread started.");
 			}
 		}
 
@@ -75,7 +75,7 @@ namespace AutoKkutu
 				{
 					CheckGameState(CheckType.MyTurn);
 					GetPreviousWord();
-					GetRound();
+					GetCurrentRound();
 					await Task.Delay(_ingameinterval);
 				}
 				else
@@ -83,7 +83,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private string EvaluateJS(string javaScript)
+		protected string EvaluateJS(string javaScript)
 		{
 			try
 			{
@@ -102,11 +102,7 @@ namespace AutoKkutu
 
 		private void CheckGameState(CheckType type)
 		{
-			string gameBoxId = "document.getElementsByClassName('GameBox Product')[0]"; // "document.getElementById('{gameBoxId}')"
-			string searchOn = (type == CheckType.GameStarted ? gameBoxId : "document.getElementsByClassName('game-input')[0]");
-			string displayOpt = EvaluateJS(searchOn + ".style.display");
-			// Log(ConsoleManager.LogType.Verbose, $"{searchOn}: {displayOpt}");
-			if (string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+			if (type == CheckType.GameStarted ? IsGameNotInProgress() : IsGameNotInMyTurn())
 			{
 				if (type == CheckType.GameStarted)
 				{
@@ -151,7 +147,7 @@ namespace AutoKkutu
 
 		private void GetPreviousWord()
 		{
-			string previousWord = EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
+			string previousWord = GetGamePreviousWord();
 			if (string.IsNullOrWhiteSpace(previousWord))
 				return;
 			string word = previousWord.Split('<')[0];
@@ -164,9 +160,9 @@ namespace AutoKkutu
 			PathFinder.AddPreviousPath(word);
 		}
 
-		private void GetRound()
+		private void GetCurrentRound()
 		{
-			string round = EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+			string round = GetGameRound();
 			if (string.IsNullOrWhiteSpace(round))
 				return;
 			if (string.Equals(round, _roundCache, StringComparison.InvariantCulture))
@@ -176,11 +172,11 @@ namespace AutoKkutu
 			_roundCache = round;
 		}
 
-		private void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, "KkutuHandler - #" + _watchdogTask.Id.ToString());
+		void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, "KkutuHandler - #" + _watchdogTask.Id.ToString());
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
-			string presentWord = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent").Trim();
+			string presentWord = GetGamePresentedWord().Trim();
 			if (presentWord.Length <= 1)
 				return new ResponsePresentedWord(presentWord[0].ToString(), false);
 			char firstChar = presentWord[0]; // TODO: 앞말잇기, 중간말잇기 feature 추가
@@ -211,6 +207,41 @@ namespace AutoKkutu
 			public ResponsePresentedWord Word;
 
 			public MyTurnEventArgs(ResponsePresentedWord word) => Word = word;
+		}
+
+		// These methods should be overridded
+		public abstract string GetSiteURL();
+		public bool IsGameNotInProgress()
+		{
+			string displayOpt = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display");
+			return string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
+		}
+
+		public bool IsGameNotInMyTurn()
+		{
+			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display");
+			return string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
+		}
+
+		public string GetGamePresentedWord()
+		{
+			return EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent");
+		}
+
+		public string GetGamePreviousWord()
+		{
+			return EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
+		}
+
+		public string GetGameRound()
+		{
+			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+		}
+
+		public void SendMessage(string input)
+		{
+			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='" + input.Trim() + "'"); // "UserMessage"
+			EvaluateJS("document.getElementById('ChatBtn').click()");
 		}
 	}
 }

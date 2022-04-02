@@ -175,7 +175,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static List<PathFinder.PathObject> FindWord(KkutuHandler.ResponsePresentedWord data, bool preferEndWord)
+		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, bool preferEndWord)
 		{
 			int UseEndWord;
 			if (preferEndWord)
@@ -185,7 +185,7 @@ namespace AutoKkutu
 			var result = new List<PathFinder.PathObject>();
 			string command;
 			if (data.CanSubstitution)
-				command = string.Format("SELECT * FROM word_list WHERE (word_index = '{0}' OR word_index = '{1})' AND is_endword = {2} ORDER BY LENGTH(word) DESC LIMIT {3}", new object[]
+				command = string.Format("SELECT * FROM word_list WHERE (word_index = '{0}' OR word_index = '{1}') AND is_endword = {2} ORDER BY LENGTH(word) DESC LIMIT {3}", new object[]
 								{
 						data.Content,
 						data.Substitution,
