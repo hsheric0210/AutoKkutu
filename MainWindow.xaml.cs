@@ -91,14 +91,11 @@ namespace AutoKkutu
 			});
 			browser.FrameLoadEnd -= Browser_FrameLoadEnd;
 			GameHandler = new KkutuOrgHandler(browser);
-			CommonHandler gameHandler = GameHandler;
-			gameHandler.GameStartedEvent = (EventHandler)Delegate.Combine(gameHandler.GameStartedEvent, new EventHandler(KkutuHandler_GameStart));
-			CommonHandler gameHandler2 = GameHandler;
-			gameHandler2.GameEndedEvent = (EventHandler)Delegate.Combine(gameHandler2.GameEndedEvent, new EventHandler(KkutuHandler_GameEnd));
-			CommonHandler gameHandler3 = GameHandler;
-			gameHandler3.MyTurnEvent = (EventHandler)Delegate.Combine(gameHandler3.MyTurnEvent, new EventHandler(KkutuHandler_MyTurnEvent));
-			CommonHandler gameHandler4 = GameHandler;
-			gameHandler4.MyTurnEndedEvent = (EventHandler)Delegate.Combine(gameHandler4.MyTurnEndedEvent, new EventHandler(KkutuHandler_MyTurnEndEvent));
+			GameHandler.GameStartedEvent += new EventHandler(KkutuHandler_GameStart);
+			GameHandler.GameEndedEvent += new EventHandler(KkutuHandler_GameEnd);
+			GameHandler.MyTurnEvent += new EventHandler(KkutuHandler_MyTurnEvent);
+			GameHandler.MyTurnEndedEvent += new EventHandler(KkutuHandler_MyTurnEndEvent);
+			GameHandler.MyPathIsWrongEvent += new EventHandler(KkutuHandler_MyPathIsWrong);
 			GameHandler.StartWatchdog();
 			PathFinder.UpdatedPath = (EventHandler)Delegate.Combine(PathFinder.UpdatedPath, new EventHandler(PathFinder_UpdatedPath));
 		}
@@ -192,12 +189,12 @@ namespace AutoKkutu
 
 		private void KkutuHandler_MyTurnEvent(object sender, EventArgs e)
 		{
-			var i = (CommonHandler.MyTurnEventArgs)e;
+			var word = ((CommonHandler.MyTurnEventArgs)e).Word;
 			bool EndwordChecked = false;
 			Dispatcher.Invoke(() => EndwordChecked = PreferEndWord.IsChecked.Value);
 			try
 			{
-				if (PathFinder.EndWordList.Contains(i.Word.Content))
+				if (PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
 				{
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path : Presented word is End word.", MAINTHREAD_NAME);
 					ResetPathList();
@@ -205,12 +202,42 @@ namespace AutoKkutu
 					ChangeStatusBar(CurrentStatus.NoPath);
 				}
 				else
-					PathFinder.FindPath(i.Word, EndwordChecked);
+					PathFinder.FindPath(word, EndwordChecked);
 			}
 			catch (Exception ex)
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't Find Path : " + ex.ToString(), MAINTHREAD_NAME);
 			}
+		}
+
+		private void KkutuHandler_MyPathIsWrong(object sender, EventArgs e)
+		{
+			bool AutomodeChecked = false;
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Entered word is wrong. ( KkutuHandler_MyPathIsWrong() )", MAINTHREAD_NAME);
+
+			var word = ((CommonHandler.WrongWordEventArgs)e).Word;
+
+			// Remove from final-list
+			PathFinder.FinalList.RemoveAll(p => p.Content.Equals(word, StringComparison.InvariantCultureIgnoreCase));
+
+			Dispatcher.Invoke(() =>
+			{
+				PathList.ItemsSource = PathFinder.FinalList;
+				AutomodeChecked = Automode.IsChecked.Value;
+			});
+
+			_pathSelected = false;
+			if (AutomodeChecked)
+			{
+				string path = PathFinder.FinalList.First().Content;
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use next path.", MAINTHREAD_NAME);
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + path, MAINTHREAD_NAME);
+				LastUsedPath = path;
+				_pathSelected = true;
+				GameHandler.SendMessage(path);
+			}
+
+			PathFinder.AddExclusion(word);
 		}
 
 		private void KkutuHandler_GameStart(object sender, EventArgs e) => ChangeStatusBar(CurrentStatus.Normal);

@@ -6,6 +6,7 @@ using System.Linq;
 namespace AutoKkutu
 {
 	// TODO: 미션 감지 및 단어 선호도 조정 기능 추가
+	// TODO: 단어 틀릴 시 감지 다음 단어 입력 및 사전에서 삭제 기능 추가
 	class PathFinder
 	{
 		private static readonly string LOGIN_INSTANCE_NAME = "PathFinder";
@@ -16,7 +17,9 @@ namespace AutoKkutu
 
 		public static List<string> PreviousPath = new List<string>();
 
-		public static List<string> AutoDBUpdateList = new List<string>();
+		public static List<string> WrongPathList = new List<string>();
+
+		public static List<string> NewPathList = new List<string>();
 
 		public static EventHandler UpdatedPath;
 
@@ -38,12 +41,12 @@ namespace AutoKkutu
 			if (IsEnabled)
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
-				if (AutoDBUpdateList.Count == 0)
+				if (NewPathList.Count + WrongPathList.Count == 0)
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
 				else
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from AutoDBUpdateList.", AutoDBUpdateList.Count), LOGIN_INSTANCE_NAME);
-					foreach (string word in AutoDBUpdateList)
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from NewPathList.", NewPathList.Count), LOGIN_INSTANCE_NAME);
+					foreach (string word in NewPathList)
 					{
 						bool isEndWord = EndWordList.Contains(word.Last().ToString());
 						try
@@ -57,7 +60,23 @@ namespace AutoKkutu
 							ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't add '{word}' to database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
 						}
 					}
-					AutoDBUpdateList = new List<string>();
+					NewPathList = new List<string>();
+
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", WrongPathList.Count), LOGIN_INSTANCE_NAME);
+					foreach (string word in WrongPathList)
+					{
+						try
+						{
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Delete '{word}' from database.", LOGIN_INSTANCE_NAME);
+							DatabaseManager.DeleteWord(word);
+						}
+						catch (Exception ex)
+						{
+							ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't delete '{word}' from database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
+						}
+					}
+					WrongPathList = new List<string>();
+
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatic DB Update complete.", LOGIN_INSTANCE_NAME);
 				}
 			}
@@ -69,13 +88,21 @@ namespace AutoKkutu
 				PreviousPath.Add(word);
 		}
 
+		public static void AddExclusion(string word)
+		{
+			if (!string.IsNullOrWhiteSpace(word))
+				WrongPathList.Add(word);
+		}
+
 		private static List<PathObject> QualifyList(List<PathObject> input)
 		{
 			var result = new List<PathObject>();
 			foreach (PathObject o in input)
 			{
-				if (PreviousPath.Contains(o.Content))
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because its previously used.", LOGIN_INSTANCE_NAME);
+				if (WrongPathList.Contains(o.Content))
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is wrong word.", LOGIN_INSTANCE_NAME);
+				else if (PreviousPath.Contains(o.Content))
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is previously used.", LOGIN_INSTANCE_NAME);
 				else
 					result.Add(o);
 			}

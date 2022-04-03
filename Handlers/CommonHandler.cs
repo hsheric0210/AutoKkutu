@@ -35,6 +35,10 @@ namespace AutoKkutu
 
 		private string _currentPresentedWord;
 
+		private string _wrongWordCache = "";
+
+		private string _exampleWordCache = "";
+
 		public EventHandler GameStartedEvent;
 
 		public EventHandler GameEndedEvent;
@@ -46,6 +50,8 @@ namespace AutoKkutu
 		public EventHandler RoundEndedEvent;
 
 		public EventHandler PastDictionaryEvent;
+
+		public EventHandler MyPathIsWrongEvent;
 
 		public enum CheckType
 		{
@@ -76,6 +82,8 @@ namespace AutoKkutu
 					CheckGameState(CheckType.MyTurn);
 					GetPreviousWord();
 					GetCurrentRound();
+					CheckWrongWord();
+					CheckExample();
 					await Task.Delay(_ingameinterval);
 				}
 				else
@@ -155,8 +163,8 @@ namespace AutoKkutu
 				return;
 			Log(ConsoleManager.LogType.Info, "Found Previous Word : " + word);
 			_wordCache = word;
-			if (word != MainWindow.LastUsedPath && !PathFinder.AutoDBUpdateList.Contains(word))
-				PathFinder.AutoDBUpdateList.Add(word);
+			if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
+				PathFinder.NewPathList.Add(word);
 			PathFinder.AddPreviousPath(word);
 		}
 
@@ -170,6 +178,33 @@ namespace AutoKkutu
 			Log(ConsoleManager.LogType.Info, "Round Changed: " + round);
 			PathFinder.PreviousPath = new List<string>();
 			_roundCache = round;
+		}
+
+		private void CheckWrongWord()
+		{
+			string wrongWord = GetWrongWord();
+			if (string.IsNullOrWhiteSpace(wrongWord))
+				return;
+			if (string.Equals(wrongWord, _wrongWordCache, StringComparison.InvariantCultureIgnoreCase))
+				return;
+			if (wrongWord.Contains(":") || wrongWord.Contains("T.T")) // 천 턴 한방 금지, 한방 단어(매너) 등등...
+				return;
+			_wrongWordCache = wrongWord;
+			Log(ConsoleManager.LogType.Info, "Wrong word input: " + wrongWord);
+			if (IsMyTurn && MyPathIsWrongEvent != null)
+				MyPathIsWrongEvent(this, new WrongWordEventArgs(wrongWord));
+		}
+
+		private void CheckExample()
+		{
+			string example = GetExampleWord();
+			if (string.IsNullOrWhiteSpace(example))
+				return;
+			if (string.Equals(example, _exampleWordCache, StringComparison.InvariantCultureIgnoreCase))
+				return;
+			_exampleWordCache = example;
+			Log(ConsoleManager.LogType.Info, "Example submitted: " + example);
+			PathFinder.NewPathList.Add(example);
 		}
 
 		void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, "KkutuHandler - #" + _watchdogTask.Id.ToString());
@@ -209,6 +244,13 @@ namespace AutoKkutu
 			public MyTurnEventArgs(ResponsePresentedWord word) => Word = word;
 		}
 
+		public class WrongWordEventArgs : EventArgs
+		{
+			public string Word;
+
+			public WrongWordEventArgs(string word) => Word = word;
+		}
+
 		// These methods should be overridded
 		public abstract string GetSiteURL();
 		public bool IsGameNotInProgress()
@@ -236,6 +278,17 @@ namespace AutoKkutu
 		public string GetGameRound()
 		{
 			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+		}
+
+		public string GetWrongWord()
+		{
+			return EvaluateJS("document.getElementsByClassName('game-fail-text')[0]") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent") : "";
+		}
+
+		public string GetExampleWord()
+		{
+			string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML");
+			return innerHTML.Contains("style=") && innerHTML.Contains("rgb(170, 170, 170)") ? EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML.textContent") : "";
 		}
 
 		public void SendMessage(string input)
