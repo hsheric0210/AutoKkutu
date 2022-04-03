@@ -288,7 +288,8 @@ namespace AutoKkutu
 		public string GetExampleWord()
 		{
 			string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML");
-			return innerHTML.Contains("style=") && innerHTML.Contains("rgb(170, 170, 170)") ? EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML.textContent") : "";
+			string content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent");
+			return innerHTML.Contains("label") && innerHTML.Contains("color") && content.Length > 1 ? content : "";
 		}
 
 		public void SendMessage(string input)

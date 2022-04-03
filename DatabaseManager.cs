@@ -223,7 +223,6 @@ namespace AutoKkutu
 				command = $"SELECT * FROM word_list WHERE (word_index = '{data.Content}' OR word_index = '{data.Substitution}') AND is_endword = {UseEndWord} ORDER BY LENGTH(word) DESC LIMIT {128}";
 			else
 				command = $"SELECT * FROM word_list WHERE word_index = '{data.Content}' AND is_endword = {UseEndWord} ORDER BY LENGTH(word) DESC LIMIT {128}";
-			ConsoleManager.Log(ConsoleManager.LogType.Verbose, "SQL Query: " + command, LOG_MODULE_NAME);
 			using (SqliteDataReader reader2 = new SqliteCommand(command, _sqlLiteConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(new PathFinder.PathObject(reader2["word"].ToString().Trim(), Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]))));
