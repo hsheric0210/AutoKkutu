@@ -42,6 +42,61 @@ namespace AutoKkutu
 			}
 		}
 
+		public static void LoadFromDB(string dbFileName)
+		{
+			if (!new FileInfo(dbFileName).Exists)
+				return;
+
+			try
+			{
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Loading external database: {dbFileName}", LOG_MODULE_NAME);
+				var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
+				externalDBConnection.Open();
+
+				if (!CheckTable_Check("word_list"))
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'word_list'", LOG_MODULE_NAME);
+					return;
+				}
+				if (!CheckTable_Check("endword_list"))
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'endword_list'", LOG_MODULE_NAME);
+					return;
+				}
+
+				int WordCount = 0;
+				int EndWordCount = 0;
+				using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
+					while (reader2.Read())
+					{
+						string word = reader2["word"].ToString().Trim();
+						bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
+						if (AddWord(word, isEndWord))
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Imported word '{word}' {(isEndWord ? "(EndWord)" : "")}", LOG_MODULE_NAME);
+						else
+							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Word '{word}' is already existing in database.", LOG_MODULE_NAME);
+						WordCount++;
+					}
+
+				using (SqliteDataReader reader2 = new SqliteCommand("SELECT * FROM endword_list", externalDBConnection).ExecuteReader())
+					while (reader2.Read())
+					{
+						string endword = reader2["word_index"].ToString();
+						if (AddEndWord(endword))
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added end-word '{endword}'", LOG_MODULE_NAME);
+						else
+							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"End-word '{endword}' is already existing in database.", LOG_MODULE_NAME);
+						EndWordCount++;
+					}
+
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"DB Import Complete. ({WordCount} Words / {EndWordCount} EndWordNodes)", LOG_MODULE_NAME);
+			}
+			catch (Exception e)
+			{
+				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect external DB : " + e.ToString(), LOG_MODULE_NAME);
+			}
+		}
+
 		public static List<string> GetEndWordList()
 		{
 			var result = new List<string>();
@@ -108,7 +163,7 @@ namespace AutoKkutu
 				var WordIndexCorrection = new List<string>();
 				var IsEndWordCorrection = new Dictionary<string, int>();
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", LOG_MODULE_NAME);
-				
+
 				var _ChecksqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
 				_ChecksqlLiteConnection.Open();
 
@@ -132,7 +187,7 @@ namespace AutoKkutu
 						elementCount++;
 						string content = reader["word"].ToString();
 						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", LOG_MODULE_NAME);
-						
+
 						// Check word validity
 						if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == ' ' || content[0] == '-' || content[0] == '.')
 						{
@@ -140,7 +195,7 @@ namespace AutoKkutu
 							DeletionList.Add(content);
 							continue;
 						}
-						
+
 						// Online verify
 						if (UseOnlineDB && !CheckElementOnline(content))
 						{
@@ -155,7 +210,7 @@ namespace AutoKkutu
 							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Word Index; Will be fixed to '{correctWordIndex}'.", LOG_MODULE_NAME);
 							WordIndexCorrection.Add(content);
 						}
-						
+
 						// Check IsEndWord tag
 						int CorrectIsEndWord = Convert.ToInt32(PathFinder.EndWordList.Contains(content.Last().ToString()));
 						if (CorrectIsEndWord != Convert.ToInt32(reader["is_endword"].ToString()))

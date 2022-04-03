@@ -36,8 +36,8 @@ namespace AutoKkutu
 		private const string MANAGE_SUCCESSFUL = "성공적으로 작업을 수행했습니다.";
 		private const string MANAGE_UNSUCCESSFUL = "작업을 수행하는 도중 문제가 발생했습니다\n자세한 사항은 콘솔을 참조하십시오.";
 		private const string INPUT_KEYWORD_PLACEHOLDER = "단어를 입력하세요";
-		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈하거나 띄워서 구분)";
-		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄 동시에 가능)";
+		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈으로 구분)";
+		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄은 줄바꿈으로 구분)";
 
 		private static readonly string LOG_INSTANCE_NAME = "DatabaseManagement";
 
@@ -79,7 +79,7 @@ namespace AutoKkutu
 				return;
 			}
 
-			string[] WordList = content.Trim().Split();
+			string[] WordList = content.Trim().Split(Environment.NewLine.ToCharArray());
 			int SuccessCount = 0;
 			int DuplicateCount = 0;
 			int FailedCount = 0;
@@ -153,7 +153,7 @@ namespace AutoKkutu
 			if (string.IsNullOrWhiteSpace(content) || content == INPUT_NODE_PLACEHOLDER)
 				return;
 
-			var NodeList = content.Trim().Split();
+			var NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 			int SuccessCount = 0;
 			int DuplicateCount = 0;
@@ -236,6 +236,17 @@ namespace AutoKkutu
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
 		{
 			BatchAddWord(Batch_Input.Text, Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
+		}
+
+		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new OpenFileDialog();
+			dialog.Title = "단어 목록을 불러올 데이터베이스 파일을 선택하세요";
+			dialog.Multiselect = false;
+			dialog.CheckPathExists = true;
+			dialog.CheckFileExists = true;
+			if (dialog.ShowDialog() ?? false)
+				DatabaseManager.LoadFromDB(dialog.FileName);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)

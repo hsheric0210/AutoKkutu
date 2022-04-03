@@ -106,7 +106,7 @@
 				Height="50"
 				Margin="10,42,0,0"
 				TextWrapping="Wrap"
-				Text="노드 입력 (여러 개는 줄바꿈하거나 띄워서 구분)"
+				Text="노드 입력 (여러 개는 줄바꿈으로 구분)"
 				VerticalAlignment="Top"
 				Width="300"
 				GotFocus="Node_Input_GotFocus"
@@ -149,7 +149,7 @@
 				Height="66"
 				Margin="10,40,0,0"
 				TextWrapping="NoWrap"
-				Text="단어 입력 (여러 줄 동시에 가능)"
+				Text="단어 입력 (여러 줄은 줄바꿈으로 구분)"
 				VerticalAlignment="Top"
 				AcceptsReturn="True"
 				GotFocus="Batch_Input_GotFocus"
@@ -208,6 +208,16 @@
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="8"
 				Foreground="#FFFFFFFF" />
+			<Button
+				x:Name="Batch_Submit_DB"
+				Content="데이터베이스 불러오기"
+				HorizontalAlignment="Left"
+				Height="20"
+				Margin="250,105,0,0"
+				VerticalAlignment="Top"
+				Width="180"
+				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+				Click="Batch_Submit_DB_Click" />
 		</Grid>
 		<Grid
 			Background="#2d2d30"
