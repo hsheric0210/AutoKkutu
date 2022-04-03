@@ -265,20 +265,28 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, bool preferEndWord)
+		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, int endWord)
 		{
-			int UseEndWord;
-			if (preferEndWord)
-				UseEndWord = 1;
-			else
-				UseEndWord = 0;
+			// endWord
+			// 0 - All except endword
+			// 1 - Only endword
+			// 2 - Don't care
+			int UseEndWord = endWord <= 1 ? endWord : 0;
 			var result = new List<PathFinder.PathObject>();
-			string command;
+			string condition;
+			string endWordCondition;
+			
 			if (data.CanSubstitution)
-				command = $"SELECT * FROM word_list WHERE (word_index = '{data.Content}' OR word_index = '{data.Substitution}') AND is_endword = {UseEndWord} ORDER BY LENGTH(word) DESC LIMIT {128}";
+				condition = $"(word_index = '{data.Content}' OR word_index = '{data.Substitution}')";
 			else
-				command = $"SELECT * FROM word_list WHERE word_index = '{data.Content}' AND is_endword = {UseEndWord} ORDER BY LENGTH(word) DESC LIMIT {128}";
-			using (SqliteDataReader reader2 = new SqliteCommand(command, _sqlLiteConnection).ExecuteReader())
+				condition = $"word_index = '{data.Content}'";
+
+			if (endWord == 2)
+				endWordCondition = ""; // Don't care about it is endword or not
+			else
+				endWordCondition = $"AND is_endword = {UseEndWord}";
+
+			using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY LENGTH(word) DESC LIMIT {128}", _sqlLiteConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(new PathFinder.PathObject(reader2["word"].ToString().Trim(), Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]))));
 

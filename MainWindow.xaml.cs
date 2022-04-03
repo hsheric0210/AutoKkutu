@@ -191,7 +191,12 @@ namespace AutoKkutu
 		{
 			var word = ((CommonHandler.MyTurnEventArgs)e).Word;
 			bool EndwordChecked = false;
-			Dispatcher.Invoke(() => EndwordChecked = PreferEndWord.IsChecked.Value);
+			bool DontUseEndWord = false;
+			Dispatcher.Invoke(() =>
+			{
+				EndwordChecked = PreferEndWord.IsChecked ?? false;
+				DontUseEndWord = MannerMode.IsChecked ?? false;
+			});
 			try
 			{
 				if (PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
@@ -202,7 +207,7 @@ namespace AutoKkutu
 					ChangeStatusBar(CurrentStatus.NoPath);
 				}
 				else
-					PathFinder.FindPath(word, EndwordChecked);
+					PathFinder.FindPath(word, DontUseEndWord, EndwordChecked);
 			}
 			catch (Exception ex)
 			{
@@ -366,6 +371,11 @@ namespace AutoKkutu
 		}
 
 		private void DBManager_Click(object sender, RoutedEventArgs e) => new DatabaseManagement().Show();
+
+		private void MannerMode_Click(object sender, RoutedEventArgs e)
+		{
+			PathFinder.Manner = MannerMode.IsChecked ?? false;
+		}
 
 		private void Return_Click(object sender, RoutedEventArgs e)
 		{

@@ -23,6 +23,7 @@ namespace AutoKkutu
 		public static EventHandler UpdatedPath;
 
 		public static bool AllowDuplicate = false;
+		public static bool Manner = false;
 		public static void Init()
 		{
 			try
@@ -108,7 +109,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static void FindPath(CommonHandler.ResponsePresentedWord i, bool UseEndWord)
+		public static void FindPath(CommonHandler.ResponsePresentedWord i, bool manner, bool preferEndWord)
 		{
 			bool canSubstitution = i.CanSubstitution;
 			if (canSubstitution)
@@ -124,13 +125,21 @@ namespace AutoKkutu
 			var QualifiedEndList = new List<PathObject>();
 			try
 			{
-				NormalWord = DatabaseManager.FindWord(i, false);
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", NormalWord.Count), LOGIN_INSTANCE_NAME);
-				if (UseEndWord)
+				if (manner || preferEndWord)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Endword priority enabled.", LOGIN_INSTANCE_NAME);
-					EndWord = DatabaseManager.FindWord(i, true);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", EndWord.Count), LOGIN_INSTANCE_NAME);
+					NormalWord = DatabaseManager.FindWord(i, 0);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", NormalWord.Count), LOGIN_INSTANCE_NAME);
+					if (preferEndWord)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "Endword priority enabled.", LOGIN_INSTANCE_NAME);
+						EndWord = DatabaseManager.FindWord(i, 1);
+						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", EndWord.Count), LOGIN_INSTANCE_NAME);
+					}
+				}
+				else
+				{
+					NormalWord = DatabaseManager.FindWord(i, 2);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", NormalWord.Count), LOGIN_INSTANCE_NAME);
 				}
 			}
 			catch (Exception e)
@@ -141,7 +150,7 @@ namespace AutoKkutu
 					UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Error, 0, 0, 0, false));
 			}
 			QualifiedNormalList = QualifyList(NormalWord);
-			if (UseEndWord)
+			if (preferEndWord)
 			{
 				QualifiedEndList = QualifyList(EndWord);
 				if (QualifiedEndList.Count != 0)
@@ -186,7 +195,7 @@ namespace AutoKkutu
 			watch.Stop();
 			ConsoleManager.Log(ConsoleManager.LogType.Warning, string.Format("Total {0} Path Ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), LOGIN_INSTANCE_NAME);
 			if (UpdatedPath != null)
-				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, NormalWord.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), UseEndWord));
+				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, NormalWord.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), !manner));
 		}
 
 		public enum FindResult

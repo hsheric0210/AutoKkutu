@@ -201,7 +201,8 @@
 							Foreground="#FFFFFFFF"
 							FontSize="14"
 							IsChecked="False"
-							RenderTransformOrigin="0.482,1.656" />
+							RenderTransformOrigin="0.482,1.656"
+							Click="MannerMode_Click"/>
 						<Label
 							Content="한방 단어를 사용하지 않습니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
@@ -219,7 +220,8 @@
 							Foreground="#FFFFFFFF"
 							FontSize="14"
 							IsChecked="False"
-							RenderTransformOrigin="0.482,1.656" />
+							RenderTransformOrigin="0.482,1.656"
+							Click="Return_Click"/>
 						<Label
 							Content="한 번 사용했던 단어를&#xD;&#xA;제외하지 않고 다시 사용합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
