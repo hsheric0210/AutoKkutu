@@ -189,7 +189,7 @@ namespace AutoKkutu
 						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", LOG_MODULE_NAME);
 
 						// Check word validity
-						if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == ' ' || content[0] == '-' || content[0] == '.')
+						if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == '-' || content[0] == '.' || content.Contains(" "))
 						{
 							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Not a valid word; Will be removed.", LOG_MODULE_NAME);
 							DeletionList.Add(content);

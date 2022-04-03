@@ -220,6 +220,12 @@ namespace AutoKkutu
 			// Remove from final-list
 			PathFinder.FinalList.RemoveAll(p => p.Content.Equals(word, StringComparison.InvariantCultureIgnoreCase));
 
+			if (PathFinder.FinalList.Count <= 0)
+			{
+				ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path.", MAINTHREAD_NAME);
+				ChangeStatusBar(CurrentStatus.NoPath);
+			}
+
 			Dispatcher.Invoke(() =>
 			{
 				PathList.ItemsSource = PathFinder.FinalList;
@@ -229,12 +235,19 @@ namespace AutoKkutu
 			_pathSelected = false;
 			if (AutomodeChecked)
 			{
-				string path = PathFinder.FinalList.First().Content;
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use next path.", MAINTHREAD_NAME);
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + path, MAINTHREAD_NAME);
-				LastUsedPath = path;
-				_pathSelected = true;
-				GameHandler.SendMessage(path);
+				try
+				{
+					string path = PathFinder.FinalList.First().Content;
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use next path.", MAINTHREAD_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + path, MAINTHREAD_NAME);
+					LastUsedPath = path;
+					_pathSelected = true;
+					GameHandler.SendMessage(path);
+				}
+				catch (Exception ex)
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't execute path : {ex}", MAINTHREAD_NAME);
+				}
 			}
 
 			PathFinder.AddExclusion(word);
