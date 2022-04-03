@@ -19,8 +19,6 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace AutoKkutu
 {
-	// TODO: 데이터베이스 전체를 홑아 한방단어의 어미와 한방단어를 서로 연결시켜주는 정리 작업을 하는 기능 추가
-	// TODO: 한방 단어 노드도 여러 개를 한 번에 추가할 수 있도록 만들기
 	// TODO: 좌상단의 '단어 추가' 기능은 좌하단의 단어 일괄 추가 기능으로 대체 가능하니, 부작용에 대해 잠깐만 생각해본 뒤 없애버리기
 	public partial class DatabaseManagement : Window
 	{

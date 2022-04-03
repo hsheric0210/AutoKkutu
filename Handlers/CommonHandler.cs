@@ -292,10 +292,17 @@ namespace AutoKkutu
 			return innerHTML.Contains("label") && innerHTML.Contains("color") && content.Length > 1 ? content : "";
 		}
 
+		public string GetMissionWord()
+		{
+			// TODO: 미션 단어 들어간 글자 선호해서 입력하는 기능 추가
+			return EvaluateJS("document.getElementsByClassName('items')[0].style.opacity") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent") : "";
+		}
+
 		public void SendMessage(string input)
 		{
 			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='" + input.Trim() + "'"); // "UserMessage"
 			EvaluateJS("document.getElementById('ChatBtn').click()");
 		}
+
 	}
 }

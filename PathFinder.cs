@@ -6,7 +6,6 @@ using System.Linq;
 namespace AutoKkutu
 {
 	// TODO: 미션 감지 및 단어 선호도 조정 기능 추가
-	// TODO: 단어 틀릴 시 감지 다음 단어 입력 및 사전에서 삭제 기능 추가
 	class PathFinder
 	{
 		private static readonly string LOGIN_INSTANCE_NAME = "PathFinder";
