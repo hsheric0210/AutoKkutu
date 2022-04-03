@@ -129,7 +129,7 @@
 					</Grid>
 					<Button
 						Name="DBManager"
-						Content="데이터베이스 관리자"
+						Content="데이터베이스 관리"
 						Grid.Column="0"
 						Margin="0,772,0,0"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
@@ -156,7 +156,7 @@
 							Margin="5,27,0,112" />
 						<CheckBox
 							Name="PreferEndWord"
-							Content="한 방 단어 우선"
+							Content="한방 단어 우선"
 							HorizontalAlignment="Left"
 							Height="16"
 							Margin="6,58,0,0"
@@ -179,12 +179,12 @@
 							IsChecked="True"
 							RenderTransformOrigin="0.482,1.656" />
 						<Label
-							Content="한 방 단어를 우선적으로 사용합니다."
+							Content="한방 단어를 우선적으로 사용합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFBDBDBD"
 							Margin="5,70,5,0" />
 						<Label
-							Content="이전 게임에서 제시된 단어를 기반으로,&#xD;&#xA;자동으로 데이터베이스를 업데이트 합니다."
+							Content="이전에 제시되었었던 단어를 기반으로,&#xD;&#xA;자동으로 데이터베이스를 개선해 나갑니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							FontSize="12"
 							Foreground="#FFBDBDBD"
@@ -203,14 +203,14 @@
 							IsChecked="False"
 							RenderTransformOrigin="0.482,1.656" />
 						<Label
-							Content="한 방 단어를 사용하지 않습니다."
+							Content="한방 단어를 사용하지 않습니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							FontSize="12"
 							Foreground="#FFBDBDBD"
 							Margin="6,180,5,24" />
 						<CheckBox
-							x:Name="Injeong"
-							Content="어인정"
+							x:Name="Return"
+							Content="리턴"
 							HorizontalAlignment="Left"
 							Margin="6,211,0,0"
 							VerticalAlignment="Top"
@@ -218,10 +218,10 @@
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							Foreground="#FFFFFFFF"
 							FontSize="14"
-							IsChecked="True"
+							IsChecked="False"
 							RenderTransformOrigin="0.482,1.656" />
 						<Label
-							Content="세브컬쳐 계열 단어나 유명인의 이름,&#xD;&#xA;게임 용어 등을 사용합니다."
+							Content="한 번 사용했던 단어를&#xD;&#xA;제외하지 않고 다시 사용합니다."
 							FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 							FontSize="12"
 							Foreground="#FFBDBDBD"

@@ -19,16 +19,11 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace AutoKkutu
 {
-	/// <summary>
-	/// DatabaseManagement.xaml에 대한 상호 작용 논리
-	/// </summary>
+	// TODO: 데이터베이스 전체를 홑아 한방단어의 어미와 한방단어를 서로 연결시켜주는 정리 작업을 하는 기능 추가
+	// TODO: 한방 단어 노드도 여러 개를 한 번에 추가할 수 있도록 만들기
+	// TODO: 좌상단의 '단어 추가' 기능은 좌하단의 단어 일괄 추가 기능으로 대체 가능하니, 부작용에 대해 잠깐만 생각해본 뒤 없애버리기
 	public partial class DatabaseManagement : Window
 	{
-		public ImageSource Favicon
-		{
-			get; set;
-		}
-
 		public DatabaseManagement()
 		{
 			Title = "Data-base Management";
@@ -43,10 +38,176 @@ namespace AutoKkutu
 		private const string MANAGE_SUCCESSFUL = "성공적으로 작업을 수행했습니다.";
 		private const string MANAGE_UNSUCCESSFUL = "작업을 수행하는 도중 문제가 발생했습니다\n자세한 사항은 콘솔을 참조하십시오.";
 		private const string INPUT_KEYWORD_PLACEHOLDER = "단어를 입력하세요";
-		private const string INPUT_NODE_PLACEHOLDER = "노드를 입력하세요";
+		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈하거나 띄워서 구분)";
 		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄 동시에 가능)";
 
 		private static readonly string LOG_INSTANCE_NAME = "DatabaseManagement";
+
+		public static bool KkutuOnlineDictCheck(string word)
+		{
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Find '" + word + "' in kkutu dict...", LOG_INSTANCE_NAME);
+			EvaluateJS("document.getElementById('dict-input').value ='" + word + "'");
+			EvaluateJS("document.getElementById('dict-search').click()");
+			Thread.Sleep(1500);
+			string result = EvaluateJS("document.getElementById('dict-output').innerHTML");
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Server Response : " + result, LOG_INSTANCE_NAME);
+			if (string.IsNullOrWhiteSpace(result) || result == "404: 유효하지 않은 단어입니다.")
+			{
+				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't find '" + word + "' in kkutu dict.", LOG_INSTANCE_NAME);
+				return false;
+			}
+			else
+			{
+				if (result == "검색 중")
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Error, "Invaild server response. Resend the request.", LOG_INSTANCE_NAME);
+					return KkutuOnlineDictCheck(word);
+				}
+				else
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Successfully Find '" + word + "' in kkutu dict.", LOG_INSTANCE_NAME);
+					return true;
+				}
+			}
+		}
+
+		public static async void BatchAddWord(string content, bool onlineVerify, bool forceEndword)
+		{
+			if (string.IsNullOrWhiteSpace(content))
+				return;
+			if (onlineVerify && string.IsNullOrWhiteSpace(EvaluateJS("document.getElementById('dict-output').style")))
+			{
+				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
+				return;
+			}
+
+			string[] WordList = content.Trim().Split();
+			int SuccessCount = 0;
+			int DuplicateCount = 0;
+			int FailedCount = 0;
+			int NewEndNode = 0;
+
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"{WordList.Length} elements queued.", LOG_INSTANCE_NAME);
+			foreach (string word in WordList)
+			{
+				if (string.IsNullOrWhiteSpace(word))
+					continue;
+
+				if (onlineVerify)
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Check kkutu dict : '" + word + "' .", LOG_INSTANCE_NAME);
+
+				// Check word length
+				if (word.Length <= 1)
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Error, "'" + word + "' is too short to add!", LOG_INSTANCE_NAME);
+					FailedCount++;
+				}
+				else if (!onlineVerify || KkutuOnlineDictCheck(word))
+				{
+					bool isEndword = PathFinder.EndWordList.Contains(word[word.Length - 1].ToString());
+
+					if (forceEndword || isEndword)
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' is End word.", LOG_INSTANCE_NAME);
+					else
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' isn't End word.", LOG_INSTANCE_NAME);
+
+					try
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "Adding'" + word + "' into database...", LOG_INSTANCE_NAME);
+						if (DatabaseManager.AddWord(word, forceEndword || isEndword))
+						{
+							SuccessCount++;
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Successfully Add '{word}' to database!", LOG_INSTANCE_NAME);
+						}
+						else
+						{
+							DuplicateCount++;
+							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{word}' already exists on database", LOG_INSTANCE_NAME);
+						}
+						if (forceEndword && !isEndword)
+						{
+							// Add to endword dictionary
+							string endnode = word.Last().ToString();
+							PathFinder.EndWordList.Add(endnode);
+							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Added new end word node '{endnode}", LOG_INSTANCE_NAME);
+							NewEndNode++;
+						}
+					}
+					catch (Exception ex)
+					{
+						// Check one or more exceptions are occurred during addition
+						FailedCount++;
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to Add '{word}' to database : {ex.ToString()}", LOG_INSTANCE_NAME);
+						continue;
+					}
+				}
+			}
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success / {NewEndNode} New end node / {DuplicateCount} Duplicated / {FailedCount} Failed.", LOG_INSTANCE_NAME);
+			string StatusMessage;
+			if (forceEndword)
+				StatusMessage = $"{SuccessCount} 개 성공 / {NewEndNode} 개의 새로운 한방 끝말 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
+			else
+				StatusMessage = $"{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
+			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{StatusMessage}", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+		}
+		private void Batch_Submit_EndWord(string content)
+		{
+			if (string.IsNullOrWhiteSpace(content) || content == INPUT_NODE_PLACEHOLDER)
+				return;
+
+			var NodeList = content.Trim().Split();
+
+			int SuccessCount = 0;
+			int DuplicateCount = 0;
+			int FailedCount = 0;
+
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"{NodeList.Length} elements queued.", LOG_INSTANCE_NAME);
+			foreach (string node in NodeList)
+			{
+				if (string.IsNullOrWhiteSpace(node))
+					continue;
+				try
+				{
+					if (DatabaseManager.AddEndWord(node))
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, string.Format("Successfully add Endword '{0}'!", node[0]), LOG_INSTANCE_NAME);
+						SuccessCount++;
+					}
+					else
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{node[0]}' is already exists", LOG_INSTANCE_NAME);
+						DuplicateCount++;
+					}
+				}
+				catch (Exception ex)
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Error, string.Format("Failed to add Endword '{0}'! : {1}", node[0], ex.ToString()), LOG_INSTANCE_NAME);
+					FailedCount++;
+				}
+			}
+
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success / {DuplicateCount} Duplicated / {FailedCount} Failed.", LOG_INSTANCE_NAME);
+			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+		}
+
+		public static string EvaluateJS(string script)
+		{
+			try
+			{
+				return MainWindow.browser.EvaluateScriptAsync(script)?.Result?.Result?.ToString() ?? " ";
+			}
+			catch (NullReferenceException)
+			{
+				return " ";
+			}
+			catch (Exception e2)
+			{
+				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + e2.ToString(), LOG_INSTANCE_NAME);
+				return " ";
+			}
+		}
+
+		// Button Handlers
 
 		private void Manual_Submit_Click(object sender, RoutedEventArgs e)
 		{
@@ -70,110 +231,13 @@ namespace AutoKkutu
 
 		private void Node_Submit_Click(object sender, RoutedEventArgs e)
 		{
-			if (!string.IsNullOrWhiteSpace(Node_Input.Text) && Node_Input.Text != INPUT_NODE_PLACEHOLDER)
-			{
-				try
-				{
-					DatabaseManager.AddEndWord(Node_Input.Text.Trim());
-				}
-				catch (Exception ex)
-				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, string.Format("Failed to add Endword '{0}'! : {1}", Node_Input.Text[0], ex.ToString()), LOG_INSTANCE_NAME);
-					MessageBox.Show(MANAGE_UNSUCCESSFUL, MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Error);
-					return;
-				}
-				ConsoleManager.Log(ConsoleManager.LogType.Error, string.Format("Successfully add Endword '{0}'!", Node_Input.Text[0]), LOG_INSTANCE_NAME);
-				Node_Input.Text = "";
-				MessageBox.Show(MANAGE_SUCCESSFUL, MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-			}
+			Batch_Submit_EndWord(Node_Input.Text);
 		}
 
-		public static bool KkutuOnlineDictCheck(string i)
-		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Find '" + i + "' in kkutu dict...", LOG_INSTANCE_NAME);
-			EvaluateJS("document.getElementById('dict-input').value ='" + i + "'");
-			EvaluateJS("document.getElementById('dict-search').click()");
-			Thread.Sleep(1500);
-			string result = EvaluateJS("document.getElementById('dict-output').innerHTML");
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Server Response : " + result, LOG_INSTANCE_NAME);
-			if (string.IsNullOrWhiteSpace(result) || result == "404: 유효하지 않은 단어입니다.")
-			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't find '" + i + "' in kkutu dict.", LOG_INSTANCE_NAME);
-				return false;
-			}
-			else
-			{
-				if (result == "검색 중")
-				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "Invaild server response. Resend the request.", LOG_INSTANCE_NAME);
-					return KkutuOnlineDictCheck(i);
-				}
-				else
-				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Successfully Find '" + i + "' in kkutu dict.", LOG_INSTANCE_NAME);
-					return true;
-				}
-			}
-		}
-
-		public static async void BatchAddWord(string content, bool verify, bool endword)
-		{
-			// TODO: Batch Add from File feature
-			// TODO: Batch Add End Words feature
-			if (string.IsNullOrWhiteSpace(content))
-				return;
-			if (verify && string.IsNullOrWhiteSpace(EvaluateJS("document.getElementById('dict-output').style")))
-			{
-				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
-				return;
-			}
-			string[] WordList = content.Trim().Split();
-			int SuccessCount = 0;
-			int FailedCount = 0;
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Add {WordList.Length} element to queue.", LOG_INSTANCE_NAME);
-			foreach (string i in WordList)
-			{
-				if (string.IsNullOrWhiteSpace(i))
-					continue;
-				i.Trim();
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Check kkutu dict : '" + i + "' .", LOG_INSTANCE_NAME);
-				if (i.Length <= 1)
-				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "'" + i + "' is too short to add!", LOG_INSTANCE_NAME);
-					FailedCount++;
-				}
-				else if (!verify || KkutuOnlineDictCheck(i))
-				{
-					bool isEndword = endword || PathFinder.EndWordList.Contains(i[i.Length - 1].ToString());
-
-					if (isEndword)
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + i + "' is End word.", LOG_INSTANCE_NAME);
-					else
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + i + "' isn't End word.", LOG_INSTANCE_NAME);
-
-					try
-					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Adding'" + i + "' into database...", LOG_INSTANCE_NAME);
-						DatabaseManager.AddWord(i, isEndword);
-					}
-					catch (Exception ex)
-					{
-						FailedCount++;
-						ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Add '" + i + "' to database : " + ex.ToString(), LOG_INSTANCE_NAME);
-						continue;
-					}
-					SuccessCount++;
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Successfully Add '" + i + "' to database!", LOG_INSTANCE_NAME);
-				}
-			}
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success /  {FailedCount} Failed.", LOG_INSTANCE_NAME);
-			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {FailedCount} 개 실패", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-		}
-
+		
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
 		{
-			string i = Batch_Input.Text;
-			BatchAddWord(i, Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
+			BatchAddWord(Batch_Input.Text, Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -202,13 +266,20 @@ namespace AutoKkutu
 		private void Batch_Submit_Folder_Click(object sender, RoutedEventArgs e)
 		{
 			var dialog = new CommonOpenFileDialog();
-			dialog.Title = "단어 목록을 불러올 파일들이 들어 있는 폴더을 선택하세요 (주의: 폴더 내의 파일들과 뿐만 아니라 그 하위 폴더에 모든 파일까지 포함됨)";
+			dialog.Title = "단어 목록을 불러올 파일들이 들어 있는 폴더을 선택하세요 (주의: 하위 폴더에 있는 모든 파일까지 포함됩니다)";
 			dialog.Multiselect = true;
 			dialog.EnsurePathExists = true;
+			dialog.IsFolderPicker = true;
 			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
 			{
 				var builder = new StringBuilder();
 				foreach (string foldername in dialog.FileNames)
+				{
+					if (!Directory.Exists(foldername))
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{foldername}' is not a folder; skipped", LOG_INSTANCE_NAME);
+						continue;
+					}
 					try
 					{
 						foreach (string filename in Directory.EnumerateFiles(foldername, "*", SearchOption.AllDirectories))
@@ -225,24 +296,8 @@ namespace AutoKkutu
 					{
 						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Unable to enumerate files in folder {foldername}: {ioe}", LOG_INSTANCE_NAME);
 					}
+				}
 				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
-			}
-		}
-
-		public static string EvaluateJS(string script)
-		{
-			try
-			{
-				return MainWindow.browser.EvaluateScriptAsync(script)?.Result?.Result?.ToString() ?? " ";
-			}
-			catch (NullReferenceException)
-			{
-				return " ";
-			}
-			catch (Exception e2)
-			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + e2.ToString(), LOG_INSTANCE_NAME);
-				return " ";
 			}
 		}
 

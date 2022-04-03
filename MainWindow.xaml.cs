@@ -12,15 +12,12 @@ using System.Windows.Media;
 
 namespace AutoKkutu
 {
-	// 미션 기능 추가하기
-
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
+	// 한 게임이 끝나면 하는 '자동 결과 저장(AutoDBUpdate)' 기능이 일어나는 시점을 조정 가능할 수 있게(게임 끝났을 때, 라운드 끝났을 때, 고정적인 일정 시간마다, 매 턴마다 등등...) 콤보박스 등으로
 	public partial class MainWindow : Window
 	{
-		private const string TITLE = "AutoKkutu - Succeedor of KKutuHelper";
-		public const string VERSION = "5.6.8500";
+		// Succeed KKutu-Helper Release v5.6.8500
+		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
+		public const string VERSION = "1.0.0000";
 		private const string MAINTHREAD_NAME = "MainThread";
 		private const string INPUT_TEXT_PLACEHOLDER = "여기에 텍스트를 입력해주세요";
 		private const string PATHFINDER_WAITING = "단어 검색 대기중.";
@@ -122,7 +119,7 @@ namespace AutoKkutu
 				{
 					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.{Environment.NewLine}{arg.Time}ms 소요.";
 					if (arg.IsUseEndWord)
-						Result += " (한 방 단어 사용)";
+						Result += " (한방 단어 사용)";
 				}
 				else
 				{
@@ -130,7 +127,7 @@ namespace AutoKkutu
 					{
 						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.{Environment.NewLine}{arg.Time}ms 소요.";
 						if (arg.IsUseEndWord)
-							Result += " (한 방 단어 사용)";
+							Result += " (한방 단어 사용)";
 					}
 					else
 						Result = PATHFINDER_ERROR;
@@ -197,10 +194,7 @@ namespace AutoKkutu
 		{
 			var i = (CommonHandler.MyTurnEventArgs)e;
 			bool EndwordChecked = false;
-			Dispatcher.Invoke(() =>
-			{
-				EndwordChecked = PreferEndWord.IsChecked.Value;
-			});
+			Dispatcher.Invoke(() => EndwordChecked = PreferEndWord.IsChecked.Value);
 			try
 			{
 				if (PathFinder.EndWordList.Contains(i.Word.Content))
@@ -226,10 +220,7 @@ namespace AutoKkutu
 			bool EnableDBAutoUpdate = false;
 			SetSearchState(null, false);
 			ResetPathList();
-			Dispatcher.Invoke(delegate ()
-			{
-				EnableDBAutoUpdate = AutoDBUpdate.IsEnabled;
-			});
+			Dispatcher.Invoke(() => EnableDBAutoUpdate = AutoDBUpdate.IsEnabled);
 			PathFinder.AutoDBUpdate(EnableDBAutoUpdate);
 			ChangeStatusBar(CurrentStatus.Wait);
 		}
@@ -320,20 +311,25 @@ namespace AutoKkutu
 			if (i != null)
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Selected Path : " + i.Content, MAINTHREAD_NAME);
-				
+
 				// In sometimes, we are smarter than machines
 				// if (_pathSelected)
 				// 	ConsoleManager.Log(ConsoleManager.LogType.Info, "Can't execute path! : _pathSelected = true.", MAINTHREAD_NAME);
 				// else
 				// {
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + i.Content, MAINTHREAD_NAME);
-					_pathSelected = true;
-					LastUsedPath = i.Content;
-					GameHandler.SendMessage(i.Content);
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + i.Content, MAINTHREAD_NAME);
+				_pathSelected = true;
+				LastUsedPath = i.Content;
+				GameHandler.SendMessage(i.Content);
 				// }
 			}
 		}
 
 		private void DBManager_Click(object sender, RoutedEventArgs e) => new DatabaseManagement().Show();
+
+		private void Return_Click(object sender, RoutedEventArgs e)
+		{
+			PathFinder.AllowDuplicate = Return.IsChecked ?? false;
+		}
 	}
 }

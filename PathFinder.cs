@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace AutoKkutu
 {
+	// TODO: 미션 감지 및 단어 선호도 조정 기능 추가
 	class PathFinder
 	{
 		private static readonly string LOGIN_INSTANCE_NAME = "PathFinder";
@@ -19,6 +20,7 @@ namespace AutoKkutu
 
 		public static EventHandler UpdatedPath;
 
+		public static bool AllowDuplicate = false;
 		public static void Init()
 		{
 			try
@@ -37,25 +39,22 @@ namespace AutoKkutu
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
 				if (AutoDBUpdateList.Count == 0)
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
 				else
 				{
 					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from AutoDBUpdateList.", AutoDBUpdateList.Count), LOGIN_INSTANCE_NAME);
-					foreach (string i in AutoDBUpdateList)
+					foreach (string word in AutoDBUpdateList)
 					{
-						bool isendword = EndWordList.Contains(i.Last().ToString());
+						bool isEndWord = EndWordList.Contains(word.Last().ToString());
 						try
 						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, "Check and add '" + i + "' into database.", LOGIN_INSTANCE_NAME);
-							DatabaseManager.AddWord(i, isendword);
-						}
-						catch (AggregateException)
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Warning, "'" + i + "' has already included in database.", LOGIN_INSTANCE_NAME);
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Check and add '{word}' into database.", LOGIN_INSTANCE_NAME);
+							if (DatabaseManager.AddWord(word, isEndWord))
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added '{word}' into database.", LOGIN_INSTANCE_NAME);
 						}
 						catch (Exception ex)
 						{
-							ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't Add element to database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
+							ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't add '{word}' to database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
 						}
 					}
 					AutoDBUpdateList = new List<string>();
@@ -66,7 +65,7 @@ namespace AutoKkutu
 
 		public static void AddPreviousPath(string word)
 		{
-			if (!string.IsNullOrWhiteSpace(word))
+			if (!AllowDuplicate && !string.IsNullOrWhiteSpace(word))
 				PreviousPath.Add(word);
 		}
 
@@ -76,7 +75,7 @@ namespace AutoKkutu
 			foreach (PathObject o in input)
 			{
 				if (PreviousPath.Contains(o.Content))
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Except ' " + o.Content + " ' because including in PreviousPath List.", LOGIN_INSTANCE_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because its previously used.", LOGIN_INSTANCE_NAME);
 				else
 					result.Add(o);
 			}
@@ -220,7 +219,7 @@ namespace AutoKkutu
 				Content = _content;
 				Title = _content;
 				if (IsEndWord = _isEndWord)
-					ToolTip = "이 단어는 한 방 단어로, 이을 수 있는 다음 단어가 없습니다.";
+					ToolTip = "이 단어는 한방 단어로, 이을 수 있는 다음 단어가 없습니다.";
 				else
 					ToolTip = _content;
 			}

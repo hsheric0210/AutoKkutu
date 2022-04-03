@@ -93,24 +93,22 @@
 				FontSize="14"
 				Foreground="#FFFFFFFF" />
 			<Label
-				Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다 "
+				Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요"
 				HorizontalAlignment="Left"
-				Height="30"
-				Margin="7,108,0,0"
+				Margin="10,95,0,0"
 				VerticalAlignment="Top"
-				Width="300"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 				FontSize="12"
 				Foreground="#FFFFFFFF" />
 			<TextBox
 				Name="Node_Input"
 				HorizontalAlignment="Left"
-				Height="23"
+				Height="50"
 				Margin="10,42,0,0"
 				TextWrapping="Wrap"
-				Text="노드를 입력하세요"
+				Text="노드 입력 (여러 개는 줄바꿈하거나 띄워서 구분)"
 				VerticalAlignment="Top"
-				Width="191"
+				Width="300"
 				GotFocus="Node_Input_GotFocus"
 				LostFocus="Node_Input_LostFocus" />
 			<Button
@@ -118,7 +116,7 @@
 				Content="전송"
 				HorizontalAlignment="Left"
 				Height="26"
-				Margin="219,40,0,0"
+				Margin="315,40,0,0"
 				VerticalAlignment="Top"
 				Width="99"
 				FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
@@ -155,7 +153,7 @@
 				VerticalAlignment="Top"
 				AcceptsReturn="True"
 				GotFocus="Batch_Input_GotFocus"
-				LostFocus="Batch_Input_LostFocus"/>
+				LostFocus="Batch_Input_LostFocus" Width="180"/>
 			<Button
 				Name="Batch_Submit"
 				Content="추가"
@@ -196,7 +194,7 @@
 				Click="Batch_Submit_Folder_Click" />
 			<CheckBox
 				x:Name="Batch_EndWord"
-				Content="한 방 단어"
+				Content="한방 단어"
 				HorizontalAlignment="Left"
 				Margin="385,80,0,0"
 				VerticalAlignment="Top"
