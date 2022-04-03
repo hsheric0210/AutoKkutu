@@ -289,7 +289,7 @@ namespace AutoKkutu
 		{
 			string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML");
 			string content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent");
-			return innerHTML.Contains("label") && innerHTML.Contains("color") && content.Length > 1 ? content : "";
+			return innerHTML.Contains("label") && innerHTML.Contains("color") && innerHTML.Contains("170,") && content.Length > 1 ? content : "";
 		}
 
 		public string GetMissionWord()
