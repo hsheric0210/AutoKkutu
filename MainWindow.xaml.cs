@@ -3,6 +3,7 @@ using CefSharp;
 using CefSharp.Wpf;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -56,9 +57,14 @@ namespace AutoKkutu
 				},
 				CachePath = Environment.CurrentDirectory + "\\Cache"
 			}, true, (IApp)null);
+
+			// TODO: Improve this
+			string url = "https://kkutu.org";
+			if (new FileInfo("targetserver.txt").Exists)
+				url = File.ReadAllText("targetserver.txt");
 			browser = new ChromiumWebBrowser
 			{
-				Address = "https://kkutu.org",
+				Address = url,
 				UseLayoutRounding = true
 			};
 			InitializeComponent();

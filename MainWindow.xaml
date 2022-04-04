@@ -241,11 +241,13 @@
 						Name="Submit"
 						Content="전송"
 						Grid.Column="0"
-						Margin="41,13,1233,14"
+						Margin="52,13,1233,14"
 						IsDefault="True"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
-						Click="Submit_Click" />
+						MinWidth="65"
+						MinHeight="40"
+						Click="Submit_Click" VerticalAlignment="Center" HorizontalAlignment="Left" />
 					<Button
 						Name="ClipboardSubmit"
 						Grid.Column="0"
@@ -253,7 +255,11 @@
 						IsCancel="True"
 						FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
 						FontSize="14"
-						Click="ClipboardSubmit_Click">
+						Click="ClipboardSubmit_Click"
+						MinWidth="40"
+						MinHeight="40"
+						HorizontalAlignment="Left"
+						VerticalAlignment="Center">
 					</Button>
 					<TextBox
 						Name="TextInput"

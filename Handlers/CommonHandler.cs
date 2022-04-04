@@ -300,9 +300,8 @@ namespace AutoKkutu
 
 		public void SendMessage(string input)
 		{
-			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='" + input.Trim() + "'"); // "UserMessage"
+			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'"); // "UserMessage"
 			EvaluateJS("document.getElementById('ChatBtn').click()");
 		}
-
 	}
 }
