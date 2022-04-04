@@ -81,7 +81,7 @@ namespace AutoKkutu
 
 		private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "First browser frame-load end.", MAINTHREAD_NAME);
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Browser frame-load end.", MAINTHREAD_NAME);
 			RemoveAd();
 			Dispatcher.Invoke(() =>
 			{
