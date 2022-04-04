@@ -133,8 +133,7 @@ namespace AutoKkutu
 			{
 				if (_isGamestarted)
 					return;
-				Log(ConsoleManager.LogType.Info, "Next round started.");
-				Log(ConsoleManager.LogType.Info, "Previous word list flushed.");
+				Log(ConsoleManager.LogType.Info, "New round started; Previous word list flushed.");
 				if (GameStartedEvent != null)
 					GameStartedEvent(this, EventArgs.Empty);
 				_isGamestarted = true;
@@ -255,8 +254,9 @@ namespace AutoKkutu
 		public abstract string GetSiteURL();
 		public bool IsGameNotInProgress()
 		{
-			string displayOpt = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display");
-			return string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
+			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display");
+			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height");
+			return (string.IsNullOrWhiteSpace(height) || !string.IsNullOrWhiteSpace(display)) && (string.IsNullOrWhiteSpace(display) || display.Equals("none", StringComparison.InvariantCultureIgnoreCase));
 		}
 
 		public bool IsGameNotInMyTurn()

@@ -84,7 +84,7 @@ namespace AutoKkutu
 
 		public static void AddPreviousPath(string word)
 		{
-			if (!AllowDuplicate && !string.IsNullOrWhiteSpace(word))
+			if (!string.IsNullOrWhiteSpace(word))
 				PreviousPath.Add(word);
 		}
 
@@ -101,7 +101,7 @@ namespace AutoKkutu
 			{
 				if (WrongPathList.Contains(o.Content))
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is wrong word.", LOGIN_INSTANCE_NAME);
-				else if (PreviousPath.Contains(o.Content))
+				else if (!AllowDuplicate && PreviousPath.Contains(o.Content))
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is previously used.", LOGIN_INSTANCE_NAME);
 				else
 					result.Add(o);
