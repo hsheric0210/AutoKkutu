@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Data.Sqlite;
 
@@ -65,59 +66,63 @@ namespace AutoKkutu
 			if (!new FileInfo(dbFileName).Exists)
 				return;
 
-			try
+			if (DBJobStart != null)
+				DBJobStart(null, new DBJobArgs("데이터베이스 불러오기"));
+
+			Task.Run(() =>
 			{
-				if (DBJobStart != null)
-					DBJobStart(null, new DBJobArgs("데이터베이스 불러오기"));
-
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Loading external database: {dbFileName}", LOG_MODULE_NAME);
-				var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
-				externalDBConnection.Open();
-
-				if (!CheckTable_Check("word_list"))
+				try
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'word_list'", LOG_MODULE_NAME);
-					return;
-				}
-				if (!CheckTable_Check("endword_list"))
-				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'endword_list'", LOG_MODULE_NAME);
-					return;
-				}
 
-				int WordCount = 0;
-				int EndWordCount = 0;
-				using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
-					while (reader2.Read())
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Loading external database: {dbFileName}", LOG_MODULE_NAME);
+					var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
+					externalDBConnection.Open();
+
+					if (!CheckTable_Check("word_list"))
 					{
-						string word = reader2["word"].ToString().Trim();
-						bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
-						if (AddWord(word, isEndWord))
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Imported word '{word}' {(isEndWord ? "(EndWord)" : "")}", LOG_MODULE_NAME);
-						else
-							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Word '{word}' is already existing in database.", LOG_MODULE_NAME);
-						WordCount++;
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'word_list'", LOG_MODULE_NAME);
+						return;
+					}
+					if (!CheckTable_Check("endword_list"))
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'endword_list'", LOG_MODULE_NAME);
+						return;
 					}
 
-				using (SqliteDataReader reader2 = new SqliteCommand("SELECT * FROM endword_list", externalDBConnection).ExecuteReader())
-					while (reader2.Read())
-					{
-						string endword = reader2["word_index"].ToString();
-						if (AddEndWord(endword))
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added end-word '{endword}'", LOG_MODULE_NAME);
-						else
-							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"End-word '{endword}' is already existing in database.", LOG_MODULE_NAME);
-						EndWordCount++;
-					}
+					int WordCount = 0;
+					int EndWordCount = 0;
+					using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
+						while (reader2.Read())
+						{
+							string word = reader2["word"].ToString().Trim();
+							bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
+							if (AddWord(word, isEndWord))
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Imported word '{word}' {(isEndWord ? "(EndWord)" : "")}", LOG_MODULE_NAME);
+							else
+								ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Word '{word}' is already existing in database.", LOG_MODULE_NAME);
+							WordCount++;
+						}
 
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"DB Import Complete. ({WordCount} Words / {EndWordCount} EndWordNodes)", LOG_MODULE_NAME);
-				if (DBJobDone != null)
-					DBJobDone(null, new DBJobArgs("데이터베이스 불러오기", $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드"));
-			}
-			catch (Exception e)
-			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect external DB : " + e.ToString(), LOG_MODULE_NAME);
-			}
+					using (SqliteDataReader reader2 = new SqliteCommand("SELECT * FROM endword_list", externalDBConnection).ExecuteReader())
+						while (reader2.Read())
+						{
+							string endword = reader2["word_index"].ToString();
+							if (AddEndWord(endword))
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added end-word '{endword}'", LOG_MODULE_NAME);
+							else
+								ConsoleManager.Log(ConsoleManager.LogType.Warning, $"End-word '{endword}' is already existing in database.", LOG_MODULE_NAME);
+							EndWordCount++;
+						}
+
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"DB Import Complete. ({WordCount} Words / {EndWordCount} EndWordNodes)", LOG_MODULE_NAME);
+					if (DBJobDone != null)
+						DBJobDone(null, new DBJobArgs("데이터베이스 불러오기", $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드"));
+				}
+				catch (Exception e)
+				{
+					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect external DB : " + e.ToString(), LOG_MODULE_NAME);
+				}
+			});
 		}
 
 		public static List<string> GetEndWordList()
@@ -161,7 +166,7 @@ namespace AutoKkutu
 			return true;
 		}
 
-		public static async void CheckDB(bool UseOnlineDB)
+		public static void CheckDB(bool UseOnlineDB)
 		{
 			if (UseOnlineDB && string.IsNullOrWhiteSpace(DatabaseManagement.EvaluateJS("document.getElementById('dict-output').style")))
 			{
@@ -169,121 +174,125 @@ namespace AutoKkutu
 				return;
 			}
 
-			try
+			if (DBJobStart != null)
+				DBJobStart(null, new DBJobArgs("데이터베이스 검증"));
+
+
+			Task.Run(() =>
 			{
-				if (DBJobStart != null)
-					DBJobStart(null, new DBJobArgs("데이터베이스 검증"));
-
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", LOG_MODULE_NAME);
-				int dbTotalCount;
-
-				int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM word_list", _sqlLiteConnection).ExecuteScalar().ToString(), out dbTotalCount);
-
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database has Total {dbTotalCount} elements.", LOG_MODULE_NAME);
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Getting all elements from database..", LOG_MODULE_NAME);
-				int elementCount = 0;
-				int DeduplicatedCount = 0;
-				int RemovedCount = 0;
-				int FixedCount = 0;
-				var DeletionList = new List<string>();
-				var WordIndexCorrection = new List<string>();
-				var IsEndWordCorrection = new Dictionary<string, int>();
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", LOG_MODULE_NAME);
-
-				var _ChecksqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
-				_ChecksqlLiteConnection.Open();
-
-				// Deduplicate db
-				// https://wiki.postgresql.org/wiki/Deleting_duplicates
 				try
 				{
-					DeduplicatedCount = new SqliteCommand("DELETE FROM word_list WHERE _rowid_ IN (SELECT _rowid_ FROM (SELECT _rowid_, ROW_NUMBER() OVER w as rnum FROM word_list WINDOW w AS (PARTITION BY word ORDER BY _rowid_)) t WHERE t.rnum > 1);", _ChecksqlLiteConnection).ExecuteNonQuery();
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Deduplicated {DeduplicatedCount} entries.", LOG_MODULE_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", LOG_MODULE_NAME);
+					int dbTotalCount;
+
+					int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM word_list", _sqlLiteConnection).ExecuteScalar().ToString(), out dbTotalCount);
+
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database has Total {dbTotalCount} elements.", LOG_MODULE_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Getting all elements from database..", LOG_MODULE_NAME);
+					int elementCount = 0;
+					int DeduplicatedCount = 0;
+					int RemovedCount = 0;
+					int FixedCount = 0;
+					var DeletionList = new List<string>();
+					var WordIndexCorrection = new List<string>();
+					var IsEndWordCorrection = new Dictionary<string, int>();
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", LOG_MODULE_NAME);
+
+					var _ChecksqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
+					_ChecksqlLiteConnection.Open();
+
+					// Deduplicate db
+					// https://wiki.postgresql.org/wiki/Deleting_duplicates
+					try
+					{
+						DeduplicatedCount = new SqliteCommand("DELETE FROM word_list WHERE _rowid_ IN (SELECT _rowid_ FROM (SELECT _rowid_, ROW_NUMBER() OVER w as rnum FROM word_list WINDOW w AS (PARTITION BY word ORDER BY _rowid_)) t WHERE t.rnum > 1);", _ChecksqlLiteConnection).ExecuteNonQuery();
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Deduplicated {DeduplicatedCount} entries.", LOG_MODULE_NAME);
+					}
+					catch (Exception ex)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Word deduplication failed: {ex}", LOG_MODULE_NAME);
+					}
+
+					// Check for errors
+					using (SqliteDataReader reader = new SqliteCommand("SELECT * FROM word_list ORDER BY(word) DESC", _ChecksqlLiteConnection).ExecuteReader())
+					{
+						while (reader.Read())
+						{
+							elementCount++;
+							string content = reader["word"].ToString();
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", LOG_MODULE_NAME);
+
+							// Check word validity
+							if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == '-' || content[0] == '.' || content.Contains(" "))
+							{
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Not a valid word; Will be removed.", LOG_MODULE_NAME);
+								DeletionList.Add(content);
+								continue;
+							}
+
+							// Online verify
+							if (UseOnlineDB && !CheckElementOnline(content))
+							{
+								DeletionList.Add(content);
+								continue;
+							}
+
+							// Check WordIndex tag
+							string correctWordIndex = content[0].ToString();
+							if (correctWordIndex != reader["word_index"].ToString())
+							{
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Word Index; Will be fixed to '{correctWordIndex}'.", LOG_MODULE_NAME);
+								WordIndexCorrection.Add(content);
+							}
+
+							// Check IsEndWord tag
+							int CorrectIsEndWord = Convert.ToInt32(PathFinder.EndWordList.Contains(content.Last().ToString()));
+							if (CorrectIsEndWord != Convert.ToInt32(reader["is_endword"].ToString()))
+							{
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Is_EndWord Tag; Will be fixed to '{CorrectIsEndWord}'.", LOG_MODULE_NAME);
+								IsEndWordCorrection.Add(content, CorrectIsEndWord);
+							}
+						}
+					}
+
+					// Start fixing
+					foreach (string content in DeletionList)
+					{
+						RemovedCount++;
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Removed '{content}' from database.", LOG_MODULE_NAME);
+						ExecuteCommand("DELETE FROM word_list WHERE word = '" + content + "'");
+					}
+
+					foreach (string content in WordIndexCorrection)
+					{
+						FixedCount++;
+
+						string correctWordIndex = content.First().ToString();
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed word_index of '{content}' to '{correctWordIndex}'.", LOG_MODULE_NAME);
+						ExecuteCommand($"UPDATE word_list SET word_index = '{correctWordIndex}' WHERE word = '{content}';");
+					}
+
+					foreach (var pair in IsEndWordCorrection)
+					{
+						FixedCount++;
+
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed is_endword of '{pair.Key}' to '{pair.Value}'.", LOG_MODULE_NAME);
+						ExecuteCommand($"UPDATE word_list SET is_endword = '{pair.Value}' WHERE word = '{pair.Key}';");
+					}
+
+					_ChecksqlLiteConnection.Close();
+
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} / Removed {RemovedCount} / Fixed {FixedCount}.", LOG_MODULE_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Check Completed.", LOG_MODULE_NAME);
+
+					if (DBJobDone != null)
+						DBJobDone(null, new DBJobArgs("데이터베이스 검증", $"{RemovedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
 				}
 				catch (Exception ex)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, $"Word deduplication failed: {ex}", LOG_MODULE_NAME);
+					ConsoleManager.Log(ConsoleManager.LogType.Error, $"Exception while checking database: {ex}", LOG_MODULE_NAME);
 				}
-
-				// Check for errors
-				using (SqliteDataReader reader = new SqliteCommand("SELECT * FROM word_list ORDER BY(word) DESC", _ChecksqlLiteConnection).ExecuteReader())
-				{
-					while (reader.Read())
-					{
-						elementCount++;
-						string content = reader["word"].ToString();
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", LOG_MODULE_NAME);
-
-						// Check word validity
-						if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == '-' || content[0] == '.' || content.Contains(" "))
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Not a valid word; Will be removed.", LOG_MODULE_NAME);
-							DeletionList.Add(content);
-							continue;
-						}
-
-						// Online verify
-						if (UseOnlineDB && !CheckElementOnline(content))
-						{
-							DeletionList.Add(content);
-							continue;
-						}
-
-						// Check WordIndex tag
-						string correctWordIndex = content[0].ToString();
-						if (correctWordIndex != reader["word_index"].ToString())
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Word Index; Will be fixed to '{correctWordIndex}'.", LOG_MODULE_NAME);
-							WordIndexCorrection.Add(content);
-						}
-
-						// Check IsEndWord tag
-						int CorrectIsEndWord = Convert.ToInt32(PathFinder.EndWordList.Contains(content.Last().ToString()));
-						if (CorrectIsEndWord != Convert.ToInt32(reader["is_endword"].ToString()))
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Is_EndWord Tag; Will be fixed to '{CorrectIsEndWord}'.", LOG_MODULE_NAME);
-							IsEndWordCorrection.Add(content, CorrectIsEndWord);
-						}
-					}
-				}
-
-				// Start fixing
-				foreach (string content in DeletionList)
-				{
-					RemovedCount++;
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Removed '{content}' from database.", LOG_MODULE_NAME);
-					ExecuteCommand("DELETE FROM word_list WHERE word = '" + content + "'");
-				}
-
-				foreach (string content in WordIndexCorrection)
-				{
-					FixedCount++;
-
-					string correctWordIndex = content.First().ToString();
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed word_index of '{content}' to '{correctWordIndex}'.", LOG_MODULE_NAME);
-					ExecuteCommand($"UPDATE word_list SET word_index = '{correctWordIndex}' WHERE word = '{content}';");
-				}
-
-				foreach (var pair in IsEndWordCorrection)
-				{
-					FixedCount++;
-
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed is_endword of '{pair.Key}' to '{pair.Value}'.", LOG_MODULE_NAME);
-					ExecuteCommand($"UPDATE word_list SET is_endword = '{pair.Value}' WHERE word = '{pair.Key}';");
-				}
-
-				_ChecksqlLiteConnection.Close();
-
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} / Removed {RemovedCount} / Fixed {FixedCount}.", LOG_MODULE_NAME);
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Check Completed.", LOG_MODULE_NAME);
-
-				if (DBJobDone != null)
-					DBJobDone(null, new DBJobArgs("데이터베이스 검증", $"{RemovedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
-			}
-			catch (Exception ex)
-			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, $"Exception while checking database: {ex}", LOG_MODULE_NAME);
-			}
+			});
 		}
 
 		private static bool CheckElementOnline(string i)
