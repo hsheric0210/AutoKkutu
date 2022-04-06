@@ -22,8 +22,7 @@ namespace AutoKkutu
 
 		public static EventHandler UpdatedPath;
 
-		public static bool AllowDuplicate = false;
-		public static bool Manner = false;
+		public static Config CurrentConfig;
 		public static void Init()
 		{
 			try
@@ -36,49 +35,54 @@ namespace AutoKkutu
 			}
 		}
 
-		public static void AutoDBUpdate(bool IsEnabled)
+		public static void UpdateConfig(Config newConfig)
 		{
-			if (IsEnabled)
+			CurrentConfig = newConfig;
+		}
+
+		public static void AutoDBUpdate()
+		{
+			if (!CurrentConfig.AutoDBUpdate)
+				return;
+
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
+			if (NewPathList.Count + WrongPathList.Count == 0)
+				ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
+			else
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
-				if (NewPathList.Count + WrongPathList.Count == 0)
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
-				else
+				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from NewPathList.", NewPathList.Count), LOGIN_INSTANCE_NAME);
+				foreach (string word in NewPathList)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from NewPathList.", NewPathList.Count), LOGIN_INSTANCE_NAME);
-					foreach (string word in NewPathList)
+					bool isEndWord = EndWordList.Contains(word.Last().ToString());
+					try
 					{
-						bool isEndWord = EndWordList.Contains(word.Last().ToString());
-						try
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Check and add '{word}' into database.", LOGIN_INSTANCE_NAME);
-							if (DatabaseManager.AddWord(word, isEndWord))
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added '{word}' into database.", LOGIN_INSTANCE_NAME);
-						}
-						catch (Exception ex)
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't add '{word}' to database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
-						}
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Check and add '{word}' into database.", LOGIN_INSTANCE_NAME);
+						if (DatabaseManager.AddWord(word, isEndWord))
+							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added '{word}' into database.", LOGIN_INSTANCE_NAME);
 					}
-					NewPathList = new List<string>();
-
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", WrongPathList.Count), LOGIN_INSTANCE_NAME);
-					foreach (string word in WrongPathList)
+					catch (Exception ex)
 					{
-						try
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Delete '{word}' from database.", LOGIN_INSTANCE_NAME);
-							DatabaseManager.DeleteWord(word);
-						}
-						catch (Exception ex)
-						{
-							ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't delete '{word}' from database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
-						}
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't add '{word}' to database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
 					}
-					WrongPathList = new List<string>();
-
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatic DB Update complete.", LOGIN_INSTANCE_NAME);
 				}
+				NewPathList = new List<string>();
+
+				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", WrongPathList.Count), LOGIN_INSTANCE_NAME);
+				foreach (string word in WrongPathList)
+				{
+					try
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Delete '{word}' from database.", LOGIN_INSTANCE_NAME);
+						DatabaseManager.DeleteWord(word);
+					}
+					catch (Exception ex)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't delete '{word}' from database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
+					}
+				}
+				WrongPathList = new List<string>();
+
+				ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatic DB Update complete.", LOGIN_INSTANCE_NAME);
 			}
 		}
 
@@ -88,7 +92,7 @@ namespace AutoKkutu
 				PreviousPath.Add(word);
 		}
 
-		public static void AddExclusion(string word)
+		public static void AddToWrongWord(string word)
 		{
 			if (!string.IsNullOrWhiteSpace(word))
 				WrongPathList.Add(word);
@@ -101,7 +105,7 @@ namespace AutoKkutu
 			{
 				if (WrongPathList.Contains(o.Content))
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is wrong word.", LOGIN_INSTANCE_NAME);
-				else if (!AllowDuplicate && PreviousPath.Contains(o.Content))
+				else if (!CurrentConfig.ReturnMode && PreviousPath.Contains(o.Content))
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is previously used.", LOGIN_INSTANCE_NAME);
 				else
 					result.Add(o);
@@ -109,10 +113,9 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static void FindPath(CommonHandler.ResponsePresentedWord i, bool manner, bool preferEndWord)
+		public static void FindPath(CommonHandler.ResponsePresentedWord i, string missionChar, int wordPreference, bool useEndWord)
 		{
-			bool canSubstitution = i.CanSubstitution;
-			if (canSubstitution)
+			if (i.CanSubstitution)
 				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {i.Content} ({i.Substitution}).", LOGIN_INSTANCE_NAME);
 			else
 				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {i.Content}.", LOGIN_INSTANCE_NAME);
@@ -125,21 +128,23 @@ namespace AutoKkutu
 			var QualifiedEndList = new List<PathObject>();
 			try
 			{
-				if (manner || preferEndWord)
+				if (wordPreference == Config.WORDPREFERENCE_BY_LENGTH_INDEX)
 				{
-					NormalWord = DatabaseManager.FindWord(i, 0);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", NormalWord.Count), LOGIN_INSTANCE_NAME);
-					if (preferEndWord)
-					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Endword priority enabled.", LOGIN_INSTANCE_NAME);
-						EndWord = DatabaseManager.FindWord(i, 1);
-						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", EndWord.Count), LOGIN_INSTANCE_NAME);
-					}
+					NormalWord = DatabaseManager.FindWord(i, missionChar, useEndWord ? 2 : 0);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
 				}
 				else
 				{
-					NormalWord = DatabaseManager.FindWord(i, 2);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} Word.", NormalWord.Count), LOGIN_INSTANCE_NAME);
+					NormalWord = DatabaseManager.FindWord(i, missionChar, 0);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} normal words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
+					// TODO: Attack word search here
+					// AttackWord = DatabaseManager.FindWord(i, 3); // 3 for only attack words
+					// ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} attack words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
+					if (useEndWord)
+					{
+						EndWord = DatabaseManager.FindWord(i, missionChar, 1);
+						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} end-words.", EndWord.Count), LOGIN_INSTANCE_NAME);
+					}
 				}
 			}
 			catch (Exception e)
@@ -150,7 +155,7 @@ namespace AutoKkutu
 					UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Error, 0, 0, 0, false));
 			}
 			QualifiedNormalList = QualifyList(NormalWord);
-			if (preferEndWord)
+			if (useEndWord && wordPreference == Config.WORDPREFERENCE_BY_DAMAGE_INDEX)
 			{
 				QualifiedEndList = QualifyList(EndWord);
 				if (QualifiedEndList.Count != 0)
@@ -193,9 +198,9 @@ namespace AutoKkutu
 				FinalList = QualifiedNormalList;
 			}
 			watch.Stop();
-			ConsoleManager.Log(ConsoleManager.LogType.Warning, string.Format("Total {0} Path Ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), LOGIN_INSTANCE_NAME);
+			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), LOGIN_INSTANCE_NAME);
 			if (UpdatedPath != null)
-				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, NormalWord.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), !manner));
+				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, NormalWord.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
 		}
 
 		public enum FindResult

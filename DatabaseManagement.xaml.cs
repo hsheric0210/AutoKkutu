@@ -39,6 +39,9 @@ namespace AutoKkutu
 		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈으로 구분)";
 		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄은 줄바꿈으로 구분)";
 
+		public static EventHandler AddWordStart;
+		public static EventHandler AddWordDone;
+
 		private static readonly string LOG_INSTANCE_NAME = "DatabaseManagement";
 
 		public static bool KkutuOnlineDictCheck(string word)
@@ -69,7 +72,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public static async void BatchAddWord(string content, bool onlineVerify, bool forceEndword)
+		public static void BatchAddWord(string content, bool onlineVerify, bool forceEndword)
 		{
 			if (string.IsNullOrWhiteSpace(content))
 				return;
@@ -79,74 +82,82 @@ namespace AutoKkutu
 				return;
 			}
 
-			string[] WordList = content.Trim().Split(Environment.NewLine.ToCharArray());
-			int SuccessCount = 0;
-			int DuplicateCount = 0;
-			int FailedCount = 0;
-			int NewEndNode = 0;
+			if (AddWordStart != null)
+				AddWordStart(null, EventArgs.Empty);
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"{WordList.Length} elements queued.", LOG_INSTANCE_NAME);
-			foreach (string word in WordList)
+			Task.Run(() =>
 			{
-				if (string.IsNullOrWhiteSpace(word))
-					continue;
+				string[] WordList = content.Trim().Split(Environment.NewLine.ToCharArray());
+				int SuccessCount = 0;
+				int DuplicateCount = 0;
+				int FailedCount = 0;
+				int NewEndNode = 0;
 
-				if (onlineVerify)
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Check kkutu dict : '" + word + "' .", LOG_INSTANCE_NAME);
-
-				// Check word length
-				if (word.Length <= 1)
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"{WordList.Length} elements queued.", LOG_INSTANCE_NAME);
+				foreach (string word in WordList)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "'" + word + "' is too short to add!", LOG_INSTANCE_NAME);
-					FailedCount++;
-				}
-				else if (!onlineVerify || KkutuOnlineDictCheck(word))
-				{
-					bool isEndword = PathFinder.EndWordList.Contains(word[word.Length - 1].ToString());
-
-					if (forceEndword || isEndword)
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' is End word.", LOG_INSTANCE_NAME);
-					else
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' isn't End word.", LOG_INSTANCE_NAME);
-
-					try
-					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Adding'" + word + "' into database...", LOG_INSTANCE_NAME);
-						if (DatabaseManager.AddWord(word, forceEndword || isEndword))
-						{
-							SuccessCount++;
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Successfully Add '{word}' to database!", LOG_INSTANCE_NAME);
-						}
-						else
-						{
-							DuplicateCount++;
-							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{word}' already exists on database", LOG_INSTANCE_NAME);
-						}
-						if (forceEndword && !isEndword)
-						{
-							// Add to endword dictionary
-							string endnode = word.Last().ToString();
-							PathFinder.EndWordList.Add(endnode);
-							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Added new end word node '{endnode}", LOG_INSTANCE_NAME);
-							NewEndNode++;
-						}
-					}
-					catch (Exception ex)
-					{
-						// Check one or more exceptions are occurred during addition
-						FailedCount++;
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to Add '{word}' to database : {ex.ToString()}", LOG_INSTANCE_NAME);
+					if (string.IsNullOrWhiteSpace(word))
 						continue;
+
+					if (onlineVerify)
+						ConsoleManager.Log(ConsoleManager.LogType.Info, "Check kkutu dict : '" + word + "' .", LOG_INSTANCE_NAME);
+
+					// Check word length
+					if (word.Length <= 1)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, "'" + word + "' is too short to add!", LOG_INSTANCE_NAME);
+						FailedCount++;
+					}
+					else if (!onlineVerify || KkutuOnlineDictCheck(word))
+					{
+						bool isEndword = PathFinder.EndWordList.Contains(word[word.Length - 1].ToString());
+
+						if (forceEndword || isEndword)
+							ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' is End word.", LOG_INSTANCE_NAME);
+						else
+							ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' isn't End word.", LOG_INSTANCE_NAME);
+
+						try
+						{
+							ConsoleManager.Log(ConsoleManager.LogType.Info, "Adding'" + word + "' into database...", LOG_INSTANCE_NAME);
+							if (DatabaseManager.AddWord(word, forceEndword || isEndword))
+							{
+								SuccessCount++;
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Successfully Add '{word}' to database!", LOG_INSTANCE_NAME);
+							}
+							else
+							{
+								DuplicateCount++;
+								ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{word}' already exists on database", LOG_INSTANCE_NAME);
+							}
+							if (forceEndword && !isEndword)
+							{
+								// Add to endword dictionary
+								string endnode = word.Last().ToString();
+								PathFinder.EndWordList.Add(endnode);
+								ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Added new end word node '{endnode}", LOG_INSTANCE_NAME);
+								NewEndNode++;
+							}
+						}
+						catch (Exception ex)
+						{
+							// Check one or more exceptions are occurred during addition
+							FailedCount++;
+							ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to Add '{word}' to database : {ex.ToString()}", LOG_INSTANCE_NAME);
+							continue;
+						}
 					}
 				}
-			}
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success / {NewEndNode} New end node / {DuplicateCount} Duplicated / {FailedCount} Failed.", LOG_INSTANCE_NAME);
-			string StatusMessage;
-			if (forceEndword)
-				StatusMessage = $"{SuccessCount} 개 성공 / {NewEndNode} 개의 새로운 한방 끝말 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
-			else
-				StatusMessage = $"{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
-			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{StatusMessage}", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success / {NewEndNode} New end node / {DuplicateCount} Duplicated / {FailedCount} Failed.", LOG_INSTANCE_NAME);
+				string StatusMessage;
+				if (forceEndword)
+					StatusMessage = $"{SuccessCount} 개 성공 / {NewEndNode} 개의 새로운 한방 끝말 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
+				else
+					StatusMessage = $"{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
+				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{StatusMessage}", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+				if (AddWordDone != null)
+					AddWordDone(null, EventArgs.Empty);
+			});
 		}
 		private void Batch_Submit_EndWord(string content)
 		{
@@ -232,7 +243,7 @@ namespace AutoKkutu
 			Batch_Submit_EndWord(Node_Input.Text);
 		}
 
-		
+
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
 		{
 			BatchAddWord(Batch_Input.Text, Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false);
@@ -325,37 +336,55 @@ namespace AutoKkutu
 		private void Manual_Input_GotFocus(object sender, RoutedEventArgs e)
 		{
 			if (Manual_Input.Text == INPUT_KEYWORD_PLACEHOLDER)
+			{
 				Manual_Input.Text = "";
+				Manual_Input.FontStyle = FontStyles.Normal;
+			}
 		}
 
 		private void Manual_Input_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(Manual_Input.Text))
+			{
 				Manual_Input.Text = INPUT_KEYWORD_PLACEHOLDER;
+				Manual_Input.FontStyle = FontStyles.Italic;
+			}
 		}
 
 		private void Node_Input_GotFocus(object sender, RoutedEventArgs e)
 		{
 			if (Node_Input.Text == INPUT_NODE_PLACEHOLDER)
+			{
 				Node_Input.Text = "";
+				Node_Input.FontStyle = FontStyles.Normal;
+			}
 		}
 
 		private void Node_Input_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(Node_Input.Text))
+			{
 				Node_Input.Text = INPUT_NODE_PLACEHOLDER;
+				Node_Input.FontStyle = FontStyles.Italic;
+			}
 		}
 
 		private void Batch_Input_GotFocus(object sender, RoutedEventArgs e)
 		{
 			if (Batch_Input.Text == INPUT_AUTOMATIC_PLACEHOLDER)
+			{
 				Batch_Input.Text = "";
+				Batch_Input.FontStyle = FontStyles.Normal;
+			}
 		}
 
 		private void Batch_Input_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(Batch_Input.Text))
+			{
 				Batch_Input.Text = INPUT_AUTOMATIC_PLACEHOLDER;
+				Batch_Input.FontStyle = FontStyles.Italic;
+			}
 		}
 	}
 }

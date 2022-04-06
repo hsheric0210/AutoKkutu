@@ -13,6 +13,15 @@ namespace AutoKkutu
 
 		private const string LOG_MODULE_NAME = "DatabaseManager";
 
+		private static readonly bool _isInited = false;
+
+		private static SqliteConnection _sqlLiteConnection;
+
+		private static readonly string _sqlLiteDBLocation = Environment.CurrentDirectory + "\\path.sqlite";
+
+		public static EventHandler DBError;
+		public static EventHandler DBJobStart;
+		public static EventHandler DBJobDone;
 		public static void Init()
 		{
 			bool isInited = _isInited;
@@ -29,6 +38,15 @@ namespace AutoKkutu
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _sqlLiteConnection.", LOG_MODULE_NAME);
 					_sqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
 					_sqlLiteConnection.Open();
+					_sqlLiteConnection.CreateFunction("checkMissionChar", (string str, string ch) =>
+					{
+						int occurrence = 0;
+						char target = ch.First();
+						foreach (char c in str.ToCharArray())
+							if (c == target)
+								occurrence++;
+						return occurrence > 0 ? 256 + occurrence : 0; // 데이터베이스 상, 256단어보다 긴 글자는 없다
+					});
 
 					CheckTable();
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "DB Open Complete.", LOG_MODULE_NAME);
@@ -49,6 +67,9 @@ namespace AutoKkutu
 
 			try
 			{
+				if (DBJobStart != null)
+					DBJobStart(null, new DBJobArgs("데이터베이스 불러오기"));
+
 				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Loading external database: {dbFileName}", LOG_MODULE_NAME);
 				var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
 				externalDBConnection.Open();
@@ -90,6 +111,8 @@ namespace AutoKkutu
 					}
 
 				ConsoleManager.Log(ConsoleManager.LogType.Info, $"DB Import Complete. ({WordCount} Words / {EndWordCount} EndWordNodes)", LOG_MODULE_NAME);
+				if (DBJobDone != null)
+					DBJobDone(null, new DBJobArgs("데이터베이스 불러오기", $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드"));
 			}
 			catch (Exception e)
 			{
@@ -148,6 +171,9 @@ namespace AutoKkutu
 
 			try
 			{
+				if (DBJobStart != null)
+					DBJobStart(null, new DBJobArgs("데이터베이스 검증"));
+
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", LOG_MODULE_NAME);
 				int dbTotalCount;
 
@@ -250,6 +276,9 @@ namespace AutoKkutu
 
 				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} / Removed {RemovedCount} / Fixed {FixedCount}.", LOG_MODULE_NAME);
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Check Completed.", LOG_MODULE_NAME);
+
+				if (DBJobDone != null)
+					DBJobDone(null, new DBJobArgs("데이터베이스 검증", $"{RemovedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
 			}
 			catch (Exception ex)
 			{
@@ -265,7 +294,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, int endWord)
+		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, int endWord)
 		{
 			// endWord
 			// 0 - All except endword
@@ -275,7 +304,19 @@ namespace AutoKkutu
 			var result = new List<PathFinder.PathObject>();
 			string condition;
 			string endWordCondition;
-			
+			string orderCondition;
+
+			//_sqlLiteConnection.CreateFunction("countOfChar", (string str, string ch) =>
+			//{
+			//	int occurrence = 0;
+			//	char target = ch.First();
+			//	foreach (char c in str.ToCharArray())
+			//		if (c == target)
+			//			occurrence++;
+			//	return occurrence;
+			//});
+
+
 			if (data.CanSubstitution)
 				condition = $"(word_index = '{data.Content}' OR word_index = '{data.Substitution}')";
 			else
@@ -286,7 +327,14 @@ namespace AutoKkutu
 			else
 				endWordCondition = $"AND is_endword = {UseEndWord}";
 
-			using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY LENGTH(word) DESC LIMIT {128}", _sqlLiteConnection).ExecuteReader())
+			if (string.IsNullOrWhiteSpace(missionChar))
+				orderCondition = "LENGTH(word)";
+			else
+				// TODO: Improve this
+				orderCondition = $"(checkMissionChar(word, '{missionChar}') + LENGTH(word))";
+
+			string query = $"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT {128}";
+			using (SqliteDataReader reader2 = new SqliteCommand(query, _sqlLiteConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(new PathFinder.PathObject(reader2["word"].ToString().Trim(), Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]))));
 
@@ -338,12 +386,18 @@ namespace AutoKkutu
 			}
 		}
 
-		private static readonly bool _isInited = false;
+		public class DBJobArgs : EventArgs
+		{
+			public string JobName;
+			public string Result;
 
-		private static SqliteConnection _sqlLiteConnection;
+			public DBJobArgs(string jobName) => JobName = jobName;
 
-		private static readonly string _sqlLiteDBLocation = Environment.CurrentDirectory + "\\path.sqlite";
-
-		public static EventHandler DBError;
+			public DBJobArgs(string jobName, string result)
+			{
+				JobName = jobName;
+				Result = result;
+			}
+		}
 	}
 }

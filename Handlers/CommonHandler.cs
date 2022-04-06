@@ -51,7 +51,11 @@ namespace AutoKkutu
 
 		public EventHandler PastDictionaryEvent;
 
+		public EventHandler WrongWordEvent;
+
 		public EventHandler MyPathIsWrongEvent;
+
+		public EventHandler RoundChangeEvent;
 
 		public enum CheckType
 		{
@@ -147,7 +151,7 @@ namespace AutoKkutu
 					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content}");
 				_currentPresentedWord = presentedWord.Content;
 				if (MyTurnEvent != null)
-					MyTurnEvent(this, new MyTurnEventArgs(presentedWord));
+					MyTurnEvent(this, new MyTurnEventArgs(presentedWord, GetMissionWord()));
 				_isMyTurn = true;
 			}
 		}
@@ -175,6 +179,8 @@ namespace AutoKkutu
 			if (string.Equals(round, _roundCache, StringComparison.InvariantCulture))
 				return;
 			Log(ConsoleManager.LogType.Info, "Round Changed: " + round);
+			if (RoundChangeEvent != null)
+				RoundChangeEvent(this, EventArgs.Empty);
 			PathFinder.PreviousPath = new List<string>();
 			_roundCache = round;
 		}
@@ -186,10 +192,12 @@ namespace AutoKkutu
 				return;
 			if (string.Equals(wrongWord, _wrongWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
-			if (wrongWord.Contains(":") || wrongWord.Contains("T.T")) // 천 턴 한방 금지, 한방 단어(매너) 등등...
+			if (wrongWord.Contains(":") || wrongWord.Contains("T.T")) // 첫 턴 한방 금지, 한방 단어(매너) 등등...
 				return;
 			_wrongWordCache = wrongWord;
-			Log(ConsoleManager.LogType.Info, "Wrong word input: " + wrongWord);
+
+			if (WrongWordEvent != null)
+				WrongWordEvent(this, new WrongWordEventArgs(wrongWord));
 			if (IsMyTurn && MyPathIsWrongEvent != null)
 				MyPathIsWrongEvent(this, new WrongWordEventArgs(wrongWord));
 		}
@@ -239,8 +247,13 @@ namespace AutoKkutu
 		public class MyTurnEventArgs : EventArgs
 		{
 			public ResponsePresentedWord Word;
+			public string MissionChar;
 
-			public MyTurnEventArgs(ResponsePresentedWord word) => Word = word;
+			public MyTurnEventArgs(ResponsePresentedWord word, string missionChar)
+			{
+				Word = word;
+				MissionChar = missionChar;
+			}
 		}
 
 		public class WrongWordEventArgs : EventArgs

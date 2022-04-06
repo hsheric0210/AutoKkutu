@@ -31,15 +31,25 @@ namespace AutoKkutu
 
 		private static bool _pathSelected;
 
+		private int WordIndex = 0;
+
 		public CommonHandler GameHandler;
+
+		public static Config CurrentConfig;
 
 		private enum CurrentStatus
 		{
 			Normal,
-			Warning,
+			Searching,
+			AutoEntered,
+			NotFound,
 			Error,
-			NoPath,
-			Wait
+			EndWord,
+			Wait,
+			DB_Job,
+			DB_Job_Done,
+			Adding_Words,
+			Adding_Words_Done
 		}
 
 		public MainWindow()
@@ -58,6 +68,9 @@ namespace AutoKkutu
 				CachePath = Environment.CurrentDirectory + "\\Cache"
 			}, true, (IApp)null);
 
+			// Load default config
+			PathFinder.UpdateConfig(CurrentConfig = new Config());
+
 			// TODO: Improve this
 			string url = "https://kkutu.org";
 			if (new FileInfo("targetserver.txt").Exists)
@@ -74,6 +87,7 @@ namespace AutoKkutu
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Starting Load Page...", MAINTHREAD_NAME);
 			LoadOverlay.Visibility = Visibility.Visible;
 			TextInput.Text = INPUT_TEXT_PLACEHOLDER;
+			TextInput.FontStyle = FontStyles.Italic;
 			ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
 			browser.FrameLoadEnd += Browser_FrameLoadEnd;
@@ -81,6 +95,13 @@ namespace AutoKkutu
 			DatabaseManager.DBError = (EventHandler)Delegate.Combine(DatabaseManager.DBError, new EventHandler(DatabaseManager_DBError));
 			DatabaseManager.Init();
 			PathFinder.Init();
+		}
+
+		public static void UpdateConfig(Config newConfig)
+		{
+			ConsoleManager.Log(ConsoleManager.LogType.Info, "Updated config.", MAINTHREAD_NAME);
+			CurrentConfig = newConfig;
+			PathFinder.UpdateConfig(newConfig);
 		}
 
 		private void DatabaseManager_DBError(object sender, EventArgs e) => ChangeStatusBar(CurrentStatus.Error);
@@ -97,13 +118,40 @@ namespace AutoKkutu
 			});
 			browser.FrameLoadEnd -= Browser_FrameLoadEnd;
 			GameHandler = new KkutuOrgHandler(browser);
-			GameHandler.GameStartedEvent += new EventHandler(KkutuHandler_GameStart);
-			GameHandler.GameEndedEvent += new EventHandler(KkutuHandler_GameEnd);
-			GameHandler.MyTurnEvent += new EventHandler(KkutuHandler_MyTurnEvent);
-			GameHandler.MyTurnEndedEvent += new EventHandler(KkutuHandler_MyTurnEndEvent);
-			GameHandler.MyPathIsWrongEvent += new EventHandler(KkutuHandler_MyPathIsWrong);
+			GameHandler.GameStartedEvent += new EventHandler(CommonHandler_GameStart);
+			GameHandler.GameEndedEvent += new EventHandler(CommonHandler_GameEnd);
+			GameHandler.MyTurnEvent += new EventHandler(CommonHandler_MyTurnEvent);
+			GameHandler.MyTurnEndedEvent += new EventHandler(CommonHandler_MyTurnEndEvent);
+			GameHandler.WrongWordEvent += new EventHandler(CommonHandler_WrongPathEvent);
+			GameHandler.MyPathIsWrongEvent += new EventHandler(CommonHandler_MyPathIsWrong);
+			GameHandler.RoundChangeEvent += new EventHandler(CommonHandler_RoundChangeEvent);
 			GameHandler.StartWatchdog();
-			PathFinder.UpdatedPath = (EventHandler)Delegate.Combine(PathFinder.UpdatedPath, new EventHandler(PathFinder_UpdatedPath));
+			PathFinder.UpdatedPath += new EventHandler(PathFinder_UpdatedPath);
+			DatabaseManager.DBJobStart += new EventHandler(DatabaseManager_DBJobStart);
+			DatabaseManager.DBJobDone += new EventHandler(DatabaseManager_DBJobDone);
+			DatabaseManagement.AddWordStart += new EventHandler(DatabaseManagement_AddWordStart);
+			DatabaseManagement.AddWordDone += new EventHandler(DatabaseManagement_AddWordDone);
+		}
+
+		private void DatabaseManager_DBJobStart(object sender, EventArgs e)
+		{
+			ChangeStatusBar(CurrentStatus.DB_Job, ((DatabaseManager.DBJobArgs)e).JobName);
+		}
+
+		private void DatabaseManager_DBJobDone(object sender, EventArgs e)
+		{
+			var args = ((DatabaseManager.DBJobArgs)e);
+			ChangeStatusBar(CurrentStatus.DB_Job, args.JobName, args.Result);
+		}
+
+		private void DatabaseManagement_AddWordStart(object sender, EventArgs e)
+		{
+			ChangeStatusBar(CurrentStatus.Adding_Words);
+		}
+
+		private void DatabaseManagement_AddWordDone(object sender, EventArgs e)
+		{
+			ChangeStatusBar(CurrentStatus.Adding_Words_Done);
 		}
 
 		private void SetSearchState(PathFinder.UpdatedPathEventArgs arg, bool IsEnd = false)
@@ -139,47 +187,45 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
-		private async void UpdateUI(PathFinder.UpdatedPathEventArgs arg)
-		{
-			if (arg.Result == PathFinder.FindResult.Normal)
-				ChangeStatusBar(CurrentStatus.Normal);
-			else if (arg.Result == PathFinder.FindResult.None)
-				ChangeStatusBar(CurrentStatus.Warning);
-			else if (arg.Result == PathFinder.FindResult.Error)
-				ChangeStatusBar(CurrentStatus.Error);
-			SetSearchState(arg);
-		}
-
 		private void PathFinder_UpdatedPath(object sender, EventArgs e)
 		{
-			bool AutomodeChecked = false;
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Path update received. ( PathFinder_UpdatedPath() )", MAINTHREAD_NAME);
 
 			var i = (PathFinder.UpdatedPathEventArgs)e;
-			Task.Run(() => UpdateUI(i));
+
+			if (i.Result == PathFinder.FindResult.None)
+				ChangeStatusBar(CurrentStatus.NotFound);
+			else if (i.Result == PathFinder.FindResult.Error)
+				ChangeStatusBar(CurrentStatus.Error);
+			
+			Task.Run(() => SetSearchState(i));
+
 			Dispatcher.Invoke(() =>
 			{
 				PathList.ItemsSource = PathFinder.FinalList;
-				AutomodeChecked = Automode.IsChecked.Value;
 			});
 
 			_pathSelected = false;
-			if (AutomodeChecked)
+			if (CurrentConfig.AutoEnter)
 			{
 				if (i.Result == PathFinder.FindResult.None)
 				{
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. but can't find any path.", MAINTHREAD_NAME);
-					ChangeStatusBar(CurrentStatus.Warning);
+					ChangeStatusBar(CurrentStatus.NotFound);
 				}
 				else
 				{
+					string content = PathFinder.FinalList.First().Content;
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use first path.", MAINTHREAD_NAME);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + PathFinder.FinalList.First().Content, MAINTHREAD_NAME);
-					LastUsedPath = PathFinder.FinalList.First().Content;
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + content, MAINTHREAD_NAME);
+					LastUsedPath = content;
 					_pathSelected = true;
-					GameHandler.SendMessage(PathFinder.FinalList.First().Content);
+					GameHandler.SendMessage(content);
+					ChangeStatusBar(CurrentStatus.AutoEntered, content);
 				}
 			}
+			else
+				ChangeStatusBar(CurrentStatus.Normal);
 		}
 
 		private void ResetPathList()
@@ -189,20 +235,16 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 		}
 
-		private void KkutuHandler_MyTurnEndEvent(object sender, EventArgs e)
+		private void CommonHandler_MyTurnEndEvent(object sender, EventArgs e)
 		{
+			ConsoleManager.Log(ConsoleManager.LogType.Warning, "Reset WordIndex to zero", MAINTHREAD_NAME);
+			WordIndex = 0;
 		}
 
-		private void KkutuHandler_MyTurnEvent(object sender, EventArgs e)
+		private void CommonHandler_MyTurnEvent(object sender, EventArgs e)
 		{
-			var word = ((CommonHandler.MyTurnEventArgs)e).Word;
-			bool EndwordChecked = false;
-			bool DontUseEndWord = false;
-			Dispatcher.Invoke(() =>
-			{
-				EndwordChecked = PreferEndWord.IsChecked ?? false;
-				DontUseEndWord = MannerMode.IsChecked ?? false;
-			});
+			var args = ((CommonHandler.MyTurnEventArgs)e);
+			var word = args.Word;
 			try
 			{
 				if (PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
@@ -210,10 +252,13 @@ namespace AutoKkutu
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path : Presented word is End word.", MAINTHREAD_NAME);
 					ResetPathList();
 					SetSearchState(null, true);
-					ChangeStatusBar(CurrentStatus.NoPath);
+					ChangeStatusBar(CurrentStatus.EndWord);
 				}
 				else
-					PathFinder.FindPath(word, DontUseEndWord, EndwordChecked);
+				{
+					ChangeStatusBar(CurrentStatus.Searching);
+					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? args.MissionChar : "", CurrentConfig.WordPreference, CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0); // 첫 턴 한방 방지
+				}
 			}
 			catch (Exception ex)
 			{
@@ -221,35 +266,39 @@ namespace AutoKkutu
 			}
 		}
 
-		private void KkutuHandler_MyPathIsWrong(object sender, EventArgs e)
+		private void CommonHandler_WrongPathEvent(object sender, EventArgs e)
 		{
-			bool AutomodeChecked = false;
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Entered word is wrong. ( KkutuHandler_MyPathIsWrong() )", MAINTHREAD_NAME);
+			string theWord = ((CommonHandler.WrongWordEventArgs)e).Word;
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Entered word '{theWord}' is wrong; Added to removal list", MAINTHREAD_NAME);
+			PathFinder.AddToWrongWord(theWord);
+		}
 
+		private void CommonHandler_MyPathIsWrong(object sender, EventArgs e)
+		{
 			var word = ((CommonHandler.WrongWordEventArgs)e).Word;
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"My path '{word}' is wrong.", MAINTHREAD_NAME);
 
-			// Remove from final-list
-			PathFinder.FinalList.RemoveAll(p => p.Content.Equals(word, StringComparison.InvariantCultureIgnoreCase));
+			if (!CurrentConfig.AutoFix)
+				return;
 
-			if (PathFinder.FinalList.Count <= 0)
+			List<PathFinder.PathObject> localFinalList = PathFinder.FinalList;
+			if (localFinalList.Count < WordIndex - 1)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path.", MAINTHREAD_NAME);
-				ChangeStatusBar(CurrentStatus.NoPath);
+				if (localFinalList.Count <= 0)
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path.", MAINTHREAD_NAME);
+				else
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Found path, but there's no path to use.", MAINTHREAD_NAME);
+				ChangeStatusBar(CurrentStatus.EndWord);
 			}
 
-			Dispatcher.Invoke(() =>
-			{
-				PathList.ItemsSource = PathFinder.FinalList;
-				AutomodeChecked = Automode.IsChecked.Value;
-			});
-
 			_pathSelected = false;
-			if (AutomodeChecked)
+			if (CurrentConfig.AutoEnter)
 			{
 				try
 				{
-					string path = PathFinder.FinalList.First().Content;
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use next path.", MAINTHREAD_NAME);
+					WordIndex++;
+					string path = localFinalList[WordIndex].Content;
+					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Auto mode enabled. automatically use next path (index {WordIndex}).", MAINTHREAD_NAME);
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + path, MAINTHREAD_NAME);
 					LastUsedPath = path;
 					_pathSelected = true;
@@ -260,20 +309,27 @@ namespace AutoKkutu
 					ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't execute path : {ex}", MAINTHREAD_NAME);
 				}
 			}
-
-			PathFinder.AddExclusion(word);
 		}
 
-		private void KkutuHandler_GameStart(object sender, EventArgs e) => ChangeStatusBar(CurrentStatus.Normal);
-
-		private void KkutuHandler_GameEnd(object sender, EventArgs e)
+		private void CommonHandler_GameStart(object sender, EventArgs e)
 		{
-			bool EnableDBAutoUpdate = false;
+			ChangeStatusBar(CurrentStatus.Normal);
+			WordIndex = 0;
+		}
+
+		private void CommonHandler_GameEnd(object sender, EventArgs e)
+		{
 			SetSearchState(null, false);
 			ResetPathList();
-			Dispatcher.Invoke(() => EnableDBAutoUpdate = AutoDBUpdate.IsEnabled);
-			PathFinder.AutoDBUpdate(EnableDBAutoUpdate);
+			if (CurrentConfig.AutoDBUpdateMode == Config.DBAUTOUPDATE_GAME_END_INDEX)
+				PathFinder.AutoDBUpdate();
 			ChangeStatusBar(CurrentStatus.Wait);
+		}
+
+		private void CommonHandler_RoundChangeEvent(object sender, EventArgs e)
+		{
+			if (CurrentConfig.AutoDBUpdateMode == Config.DBAUTOUPDATE_GAME_ROUND_INDEX)
+				PathFinder.AutoDBUpdate();
 		}
 
 		private void RemoveAd()
@@ -285,7 +341,7 @@ namespace AutoKkutu
 			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('kktukorea__1LZzX_0')[0].style = 'display:none'", false);
 		}
 
-		private void ChangeStatusBar(CurrentStatus status)
+		private void ChangeStatusBar(CurrentStatus status, params object[] formatterArgs)
 		{
 			Color StatusColor;
 			string StatusContent;
@@ -295,17 +351,41 @@ namespace AutoKkutu
 					StatusColor = Resource.ColorSource.NormalColor;
 					StatusContent = "준비";
 					break;
-				case CurrentStatus.Warning:
+				case CurrentStatus.NotFound:
 					StatusColor = Resource.ColorSource.WarningColor;
 					StatusContent = "이 턴에 낼 수 있는 단어를 데이터 집합에서 찾을 수 없었습니다. 수동으로 입력하십시오.";
 					break;
-				case CurrentStatus.NoPath:
+				case CurrentStatus.EndWord:
 					StatusColor = Resource.ColorSource.ErrorColor;
 					StatusContent = "더 이상 이 턴에 낼 수 있는 단어가 없습니다.";
 					break;
 				case CurrentStatus.Error:
 					StatusColor = Resource.ColorSource.ErrorColor;
 					StatusContent = "서버에 문제가 있습니다. 자세한 사항은 콘솔을 참조하십시오.";
+					break;
+				case CurrentStatus.Searching:
+					StatusColor = Resource.ColorSource.WarningColor;
+					StatusContent = "단어 찾는 중...";
+					break;
+				case CurrentStatus.AutoEntered:
+					StatusColor = Resource.ColorSource.NormalColor;
+					StatusContent = "단어 자동 입력됨: {0}";
+					break;
+				case CurrentStatus.DB_Job:
+					StatusColor = Resource.ColorSource.WarningColor;
+					StatusContent = "데이터베이스 작업 '{0}' 진행 중...";
+					break;
+				case CurrentStatus.DB_Job_Done:
+					StatusColor = Resource.ColorSource.NormalColor;
+					StatusContent = "데이터베이스 작업 '{0}' 완료: {1}";
+					break;
+				case CurrentStatus.Adding_Words:
+					StatusColor = Resource.ColorSource.WarningColor;
+					StatusContent = "단어 일괄 추가 작업 중...";
+					break;
+				case CurrentStatus.Adding_Words_Done:
+					StatusColor = Resource.ColorSource.NormalColor;
+					StatusContent = "단어 일괄 추가 작업 완료";
 					break;
 				default:
 					StatusColor = Resource.ColorSource.WaitColor;
@@ -315,10 +395,10 @@ namespace AutoKkutu
 			}
 
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Statusbar status change to " + status.ToString() + ".", MAINTHREAD_NAME);
-			Dispatcher.Invoke(delegate ()
+			Dispatcher.Invoke(() =>
 			{
 				StatusGrid.Background = new SolidColorBrush(StatusColor);
-				StatusLabel.Content = StatusContent;
+				StatusLabel.Content = string.Format(StatusContent, formatterArgs);
 			});
 		}
 
@@ -347,13 +427,19 @@ namespace AutoKkutu
 		private void TextInput_GotFocus(object sender, RoutedEventArgs e)
 		{
 			if (TextInput.Text == INPUT_TEXT_PLACEHOLDER)
+			{
 				TextInput.Text = "";
+				TextInput.FontStyle = FontStyles.Normal;
+			}
 		}
 
 		private void TextInput_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(TextInput.Text))
+			{
 				TextInput.Text = INPUT_TEXT_PLACEHOLDER;
+				TextInput.FontStyle = FontStyles.Normal;
+			}
 		}
 
 		private void PathList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -378,14 +464,9 @@ namespace AutoKkutu
 
 		private void DBManager_Click(object sender, RoutedEventArgs e) => new DatabaseManagement().Show();
 
-		private void MannerMode_Click(object sender, RoutedEventArgs e)
+		private void Settings_Click(object sender, RoutedEventArgs e)
 		{
-			PathFinder.Manner = MannerMode.IsChecked ?? false;
-		}
-
-		private void Return_Click(object sender, RoutedEventArgs e)
-		{
-			PathFinder.AllowDuplicate = Return.IsChecked ?? false;
+			new ConfigWindow(CurrentConfig).Show();
 		}
 	}
 }
