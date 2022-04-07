@@ -113,7 +113,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static void FindPath(CommonHandler.ResponsePresentedWord i, string missionChar, int wordPreference, bool useEndWord)
+		public static void FindPath(CommonHandler.ResponsePresentedWord i, string missionChar, int wordPreference, bool useEndWord, bool reverseMode)
 		{
 			if (i.CanSubstitution)
 				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {i.Content} ({i.Substitution}).", LOGIN_INSTANCE_NAME);
@@ -122,29 +122,30 @@ namespace AutoKkutu
 			var watch = new Stopwatch();
 			watch.Start();
 			FinalList = new List<PathObject>();
-			var NormalWord = new List<PathObject>();
-			var EndWord = new List<PathObject>();
+			var WordList = new List<PathObject>();
 			var QualifiedNormalList = new List<PathObject>();
-			var QualifiedEndList = new List<PathObject>();
 			try
 			{
 				if (wordPreference == Config.WORDPREFERENCE_BY_LENGTH_INDEX)
 				{
-					NormalWord = DatabaseManager.FindWord(i, missionChar, useEndWord ? 2 : 0);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
+					WordList = DatabaseManager.FindWord(i, missionChar, useEndWord ? 2 : 0, reverseMode);
+					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words.", WordList.Count), LOGIN_INSTANCE_NAME);
 				}
 				else
 				{
-					NormalWord = DatabaseManager.FindWord(i, missionChar, 0);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} normal words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
+					if (useEndWord)
+					{
+						WordList = DatabaseManager.FindWord(i, missionChar, 1, reverseMode);
+						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} words (EndWord inclued).", WordList.Count), LOGIN_INSTANCE_NAME);
+					}
+					else
+					{
+						WordList = DatabaseManager.FindWord(i, missionChar, 0, reverseMode);
+						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words (EndWord excluded).", WordList.Count), LOGIN_INSTANCE_NAME);
+					}
 					// TODO: Attack word search here
 					// AttackWord = DatabaseManager.FindWord(i, 3); // 3 for only attack words
 					// ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} attack words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
-					if (useEndWord)
-					{
-						EndWord = DatabaseManager.FindWord(i, missionChar, 1);
-						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} end-words.", EndWord.Count), LOGIN_INSTANCE_NAME);
-					}
 				}
 			}
 			catch (Exception e)
@@ -154,53 +155,24 @@ namespace AutoKkutu
 				if (UpdatedPath != null)
 					UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Error, 0, 0, 0, false));
 			}
-			QualifiedNormalList = QualifyList(NormalWord);
-			if (useEndWord && wordPreference == Config.WORDPREFERENCE_BY_DAMAGE_INDEX)
-			{
-				QualifiedEndList = QualifyList(EndWord);
-				if (QualifiedEndList.Count != 0)
-				{
-					if (QualifiedEndList.Count > 5)
-						QualifiedEndList = QualifiedEndList.Take(5).ToList();
-					if (QualifiedNormalList.Count > 25)
-						QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
-					FinalList = QualifiedEndList.Concat(QualifiedNormalList).ToList();
-				}
-				else
-				{
-					if (QualifiedNormalList.Count == 0)
-					{
-						watch.Stop();
-						ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't find any path.", LOGIN_INSTANCE_NAME);
-						if (UpdatedPath != null)
-							UpdatedPath(null, new UpdatedPathEventArgs(FindResult.None, NormalWord.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), true));
-						return;
-					}
+			QualifiedNormalList = QualifyList(WordList);
 
-					if (QualifiedNormalList.Count > 20)
-						QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
-
-					FinalList = QualifiedNormalList;
-				}
-			}
-			else
+			if (QualifiedNormalList.Count == 0)
 			{
-				if (QualifiedNormalList.Count == 0)
-				{
-					watch.Stop();
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't find any path.", LOGIN_INSTANCE_NAME);
-					if (UpdatedPath != null)
-						UpdatedPath(null, new UpdatedPathEventArgs(FindResult.None, NormalWord.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), false));
-					return;
-				}
-				if (QualifiedNormalList.Count > 20)
-					QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
-				FinalList = QualifiedNormalList;
+				watch.Stop();
+				ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't find any path.", LOGIN_INSTANCE_NAME);
+				if (UpdatedPath != null)
+					UpdatedPath(null, new UpdatedPathEventArgs(FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), false));
+				return;
 			}
+			if (QualifiedNormalList.Count > 20)
+				QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
+
+			FinalList = QualifiedNormalList;
 			watch.Stop();
 			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), LOGIN_INSTANCE_NAME);
 			if (UpdatedPath != null)
-				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, NormalWord.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
+				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
 		}
 
 		public enum FindResult

@@ -9,31 +9,25 @@
 			<ColumnDefinition/>
 		</Grid.ColumnDefinitions>
 		<Label Content="데이터베이스 관리" HorizontalAlignment="Left" Height="31" Margin="10,13,0,0" VerticalAlignment="Top" Width="179" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="18" Foreground="#FFFFFFFF" />
-		<Grid Background="#2d2d30" Margin="15,70,5,5" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch">
-			<Label Content="단어 수동 추가 / 제거 " HorizontalAlignment="Left" Height="26" Margin="7,6,0,0" VerticalAlignment="Top" Width="152" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
-			<Label Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다 " HorizontalAlignment="Left" Height="29" Margin="5,0,0,0" VerticalAlignment="Bottom" Width="280" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Foreground="#FFFFFFFF" />
-			<TextBox Name="Manual_Input" HorizontalAlignment="Stretch" Margin="10,40,10,70" TextWrapping="Wrap" Text="단어를 입력하세요" VerticalAlignment="Stretch" GotFocus="Manual_Input_GotFocus" LostFocus="Manual_Input_LostFocus" MinWidth="200" MinHeight="25" FontStyle="Italic" />
-			<CheckBox Name="Manual_EndWord" Content="한방 단어" HorizontalAlignment="Left" Margin="15,0,0,45" VerticalAlignment="Bottom" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
-			<Button Name="Manual_Submit" Content="추가" HorizontalAlignment="Left" Margin="110,0,0,40" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Manual_Submit_Click" MinWidth="100" MinHeight="25" />
-			<Button Name="Manual_Delete" Content="제거" HorizontalAlignment="Left" Margin="220,0,0,40" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Manual_Delete_Click" MinWidth="60" MinHeight="25" />
-		</Grid>
 		<Grid Background="#2d2d30" Margin="5,70,15,5" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-			<Label Content="한방노드 수동추가" HorizontalAlignment="Left" Height="26" Margin="7,6,0,0" VerticalAlignment="Top" Width="125" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
+			<Label Content="한방노드 일괄 추가/제거" HorizontalAlignment="Left" Margin="7,6,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
 			<Label Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Foreground="#FFFFFFFF" />
 			<TextBox Name="Node_Input" HorizontalAlignment="Stretch" Margin="10,35,105,40" TextWrapping="Wrap" Text="노드 입력 (여러 개는 줄바꿈으로 구분)" VerticalAlignment="Stretch" GotFocus="Node_Input_GotFocus" LostFocus="Node_Input_LostFocus" MinHeight="50" MinWidth="300" FontStyle="Italic" />
-			<Button Name="Node_Submit" Content="전송" HorizontalAlignment="Right" Height="26" Margin="0,35,0,0" VerticalAlignment="Top" Width="99" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Submit_Click" />
+			<Button Name="Node_Submit" Content="추가" HorizontalAlignment="Right" Height="26" Margin="0,30,0,0" VerticalAlignment="Top" Width="99" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Submit_Click" />
+			<Button x:Name="Node_Submit_Copy" Content="제거" HorizontalAlignment="Right" Height="26" Margin="0,65,0,0" VerticalAlignment="Top" Width="99" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Submit_Click" />
 		</Grid>
-		<Grid Background="#2d2d30" Grid.Row="1" Grid.Column="0" Margin="15,5,5,15">
-			<Label Content="단어 일괄 추가" HorizontalAlignment="Left" Height="26" Margin="7,6,0,0" VerticalAlignment="Top" Width="121" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
+		<Grid Background="#2d2d30" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="15,70,5,15">
+			<Label Content="단어 일괄 추가/제거" HorizontalAlignment="Left" Margin="7,6,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
 			<Label Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="10" Foreground="#FFFFFFFF" />
 			<TextBox Name="Batch_Input" HorizontalAlignment="Stretch" Margin="10,40,270,60" TextWrapping="NoWrap" Text="단어 입력 (여러 줄은 줄바꿈으로 구분)" VerticalAlignment="Stretch" AcceptsReturn="True" GotFocus="Batch_Input_GotFocus" LostFocus="Batch_Input_LostFocus" MinWidth="180" MinHeight="65" FontStyle="Italic"/>
-			<Button Name="Batch_Submit" Content="추가" HorizontalAlignment="Right" Margin="0,40,165,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_Click" MinWidth="100" MinHeight="25" />
+			<Button Name="Batch_Submit" Content="추가 / 제거" HorizontalAlignment="Right" Margin="0,40,165,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_Click" MinWidth="100" MinHeight="25" />
 			<CheckBox Name="Batch_Verify" Content="사전 검증" HorizontalAlignment="Left" Margin="10,0,0,35" VerticalAlignment="Bottom" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
 			<Button x:Name="Batch_Submit_File" Content="파일에서 읽어들이기" HorizontalAlignment="Right" Margin="0,40,20,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_File_Click" MinWidth="140" MinHeight="25" />
 			<Button x:Name="Batch_Submit_Folder" Content="폴더의 파일에서 읽어들이기" HorizontalAlignment="Right" Margin="0,75,95,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_Folder_Click" MinWidth="170" MinHeight="25" />
 			<CheckBox x:Name="Batch_EndWord" Content="한방 단어" HorizontalAlignment="Right" Margin="0,80,15,0" VerticalAlignment="Top" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
 			<Label Content="데이터베이스는 기본적으로 path.sqlite에 저장됩니다.&#xD;&#xA;한글과 영어 데이터베이스를 따로 분리해 두는 것을 추천합니다." HorizontalAlignment="Right" Margin="250,135,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="8" Foreground="#FFFFFFFF" />
 			<Button x:Name="Batch_Submit_DB" Content="데이터베이스 불러오기" HorizontalAlignment="Right" Margin="230,105,85,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_DB_Click" MinWidth="180" MinHeight="20" />
+			<CheckBox x:Name="Batch_Remove" Content="제거" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="0,25,190,0" />
 		</Grid>
 		<Grid Background="#2d2d30" Grid.Row="1" Grid.Column="1" Margin="5,5,15,15">
 			<Label Content="데이터베이스 검증" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
@@ -42,6 +36,6 @@
 			<CheckBox Name="Use_OnlineDic" Content="온라인 검증" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="25,0,0,-10" />
 			<Label Content="온라인 검증에는 상당히 많은&#xD;&#xA;시간이 걸립니다." HorizontalAlignment="Left" Margin="30,0,0,-60" VerticalAlignment="Center" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Foreground="#FFFFFFFF" />
 		</Grid>
-		<Label Content="데이터베이스 작업 중일때에는 다른 작업을 수행 할 수 없습니다." HorizontalAlignment="Left" Height="26" Margin="10,38,0,0" VerticalAlignment="Top" Width="402" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" />
+		<Label Content="데이터베이스 작업 중일때에는 다른 작업을 수행할 수 없습니다." HorizontalAlignment="Left" Height="26" Margin="10,38,0,0" VerticalAlignment="Top" Width="402" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" />
 	</Grid>
 </Window>

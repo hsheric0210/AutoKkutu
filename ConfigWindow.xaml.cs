@@ -33,6 +33,7 @@ namespace AutoKkutu
 			ReturnMode.IsChecked = config.ReturnMode;
 			AutoFix.IsChecked = config.AutoFix;
 			MissionDetection.IsChecked = config.MissionDetection;
+			ReverseMode.IsChecked = config.ReverseMode;
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
@@ -46,7 +47,8 @@ namespace AutoKkutu
 				UseEndWord = EndWord.IsChecked ?? false,
 				ReturnMode = ReturnMode.IsChecked ?? false,
 				AutoFix = AutoFix.IsChecked ?? false,
-				MissionDetection = MissionDetection.IsChecked ?? false
+				MissionDetection = MissionDetection.IsChecked ?? false,
+				ReverseMode = ReverseMode.IsChecked ?? false
 			}));
 			Close();
 		}

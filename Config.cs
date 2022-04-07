@@ -28,6 +28,7 @@ namespace AutoKkutu
 		public bool ReturnMode = false;
 		public bool AutoFix = true;
 		public bool MissionDetection = true;
+		public bool ReverseMode = false;
 
 		public Config()
 		{

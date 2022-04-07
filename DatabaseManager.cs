@@ -16,7 +16,7 @@ namespace AutoKkutu
 
 		private static readonly bool _isInited = false;
 
-		private static SqliteConnection _sqlLiteConnection;
+		private static SqliteConnection DatabaseConnection;
 
 		private static readonly string _sqlLiteDBLocation = Environment.CurrentDirectory + "\\path.sqlite";
 
@@ -36,10 +36,10 @@ namespace AutoKkutu
 						ConsoleManager.Log(ConsoleManager.LogType.Info, _sqlLiteDBLocation + " does not exist. Create new file.", LOG_MODULE_NAME);
 						File.Create(_sqlLiteDBLocation).Close();
 					}
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _sqlLiteConnection.", LOG_MODULE_NAME);
-					_sqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
-					_sqlLiteConnection.Open();
-					_sqlLiteConnection.CreateFunction("checkMissionChar", (string str, string ch) =>
+					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening database connection.", LOG_MODULE_NAME);
+					DatabaseConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
+					DatabaseConnection.Open();
+					DatabaseConnection.CreateFunction("checkMissionChar", (string str, string ch) =>
 					{
 						int occurrence = 0;
 						char target = ch.First();
@@ -129,7 +129,7 @@ namespace AutoKkutu
 		{
 			var result = new List<string>();
 
-			using (SqliteDataReader reader2 = new SqliteCommand("SELECT * FROM endword_list", _sqlLiteConnection).ExecuteReader())
+			using (SqliteDataReader reader2 = new SqliteCommand("SELECT * FROM endword_list", DatabaseConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(reader2["word_index"].ToString());
 			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found Total {0} end word.", result.Count), LOG_MODULE_NAME);
@@ -140,7 +140,7 @@ namespace AutoKkutu
 		{
 			try
 			{
-				new SqliteCommand(command, _sqlLiteConnection).ExecuteNonQuery();
+				new SqliteCommand(command, DatabaseConnection).ExecuteNonQuery();
 			}
 			catch (Exception e)
 			{
@@ -159,7 +159,7 @@ namespace AutoKkutu
 			if (string.IsNullOrWhiteSpace(node))
 				throw new ArgumentNullException("node");
 
-			if (int.TryParse(new SqliteCommand(string.Format("SELECT COUNT(*) FROM endword_list WHERE word_index = '{0}';", node[0]), _sqlLiteConnection).ExecuteScalar().ToString(), out int i) && i > 0)
+			if (int.TryParse(new SqliteCommand(string.Format("SELECT COUNT(*) FROM endword_list WHERE word_index = '{0}';", node[0]), DatabaseConnection).ExecuteScalar().ToString(), out int i) && i > 0)
 				return false;
 
 			ExecuteCommand(string.Format("INSERT INTO endword_list(word_index) VALUES('{0}')", node[0]));
@@ -185,7 +185,7 @@ namespace AutoKkutu
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", LOG_MODULE_NAME);
 					int dbTotalCount;
 
-					int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM word_list", _sqlLiteConnection).ExecuteScalar().ToString(), out dbTotalCount);
+					int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM word_list", DatabaseConnection).ExecuteScalar().ToString(), out dbTotalCount);
 
 					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database has Total {dbTotalCount} elements.", LOG_MODULE_NAME);
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Getting all elements from database..", LOG_MODULE_NAME);
@@ -195,6 +195,7 @@ namespace AutoKkutu
 					int FixedCount = 0;
 					var DeletionList = new List<string>();
 					var WordIndexCorrection = new List<string>();
+					var ReverseWordIndexCorrection = new List<string>();
 					var IsEndWordCorrection = new Dictionary<string, int>();
 					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", LOG_MODULE_NAME);
 
@@ -238,11 +239,19 @@ namespace AutoKkutu
 							}
 
 							// Check WordIndex tag
-							string correctWordIndex = content[0].ToString();
+							string correctWordIndex = content.First().ToString();
 							if (correctWordIndex != reader["word_index"].ToString())
 							{
 								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Word Index; Will be fixed to '{correctWordIndex}'.", LOG_MODULE_NAME);
 								WordIndexCorrection.Add(content);
+							}
+
+							// Check WordIndex tag
+							string correctReverseWordIndex = content.Last().ToString();
+							if (correctReverseWordIndex != reader["reverse_word_index"].ToString())
+							{
+								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Reverse Word Index; Will be fixed to '{correctReverseWordIndex}'.", LOG_MODULE_NAME);
+								ReverseWordIndexCorrection.Add(content);
 							}
 
 							// Check IsEndWord tag
@@ -270,6 +279,15 @@ namespace AutoKkutu
 						string correctWordIndex = content.First().ToString();
 						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed word_index of '{content}' to '{correctWordIndex}'.", LOG_MODULE_NAME);
 						ExecuteCommand($"UPDATE word_list SET word_index = '{correctWordIndex}' WHERE word = '{content}';");
+					}
+
+					foreach (string content in ReverseWordIndexCorrection)
+					{
+						FixedCount++;
+
+						string correctReverseWordIndex = content.Last().ToString();
+						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed reverse_word_index of '{content}' to '{correctReverseWordIndex}'.", LOG_MODULE_NAME);
+						ExecuteCommand($"UPDATE word_list SET reverse_word_index = '{correctReverseWordIndex}' WHERE word = '{content}';");
 					}
 
 					foreach (var pair in IsEndWordCorrection)
@@ -303,47 +321,47 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, int endWord)
+		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, int endWord, bool reverse)
 		{
 			// endWord
-			// 0 - All except endword
-			// 1 - Only endword
+			// 0 - Except end-words
+			// 1 - Include end-words
 			// 2 - Don't care
 			int UseEndWord = endWord <= 1 ? endWord : 0;
 			var result = new List<PathFinder.PathObject>();
 			string condition;
-			string endWordCondition;
+			string endWordCondition = "";
+			string orderCondition2 = "";
 			string orderCondition;
 
-			//_sqlLiteConnection.CreateFunction("countOfChar", (string str, string ch) =>
-			//{
-			//	int occurrence = 0;
-			//	char target = ch.First();
-			//	foreach (char c in str.ToCharArray())
-			//		if (c == target)
-			//			occurrence++;
-			//	return occurrence;
-			//});
-
+			string index = reverse ? "reverse_word_index" : "word_index";
 
 			if (data.CanSubstitution)
-				condition = $"(word_index = '{data.Content}' OR word_index = '{data.Substitution}')";
+				condition = $"({index} = '{data.Content}' OR {index} = '{data.Substitution}')";
 			else
-				condition = $"word_index = '{data.Content}'";
+				condition = $"{index} = '{data.Content}'";
 
-			if (endWord == 2)
-				endWordCondition = ""; // Don't care about it is endword or not
-			else
-				endWordCondition = $"AND is_endword = {UseEndWord}";
+			switch (endWord)
+			{
+				case 0:
+					endWordCondition = "AND is_endword = '0'";
+					break;
+				case 1:
+					orderCondition2 = $"(CASE WHEN is_endword = '1' THEN 512 ELSE 0 END) +";
+					break;
+				default:
+					endWordCondition = "";
+					break;
+			}
 
 			if (string.IsNullOrWhiteSpace(missionChar))
-				orderCondition = "LENGTH(word)";
+				orderCondition = $"({orderCondition2} LENGTH(word))";
 			else
-				// TODO: Improve this
-				orderCondition = $"(checkMissionChar(word, '{missionChar}') + LENGTH(word))";
+				orderCondition = $"(checkMissionChar(word, '{missionChar}') + {orderCondition2} LENGTH(word))";
 
-			string query = $"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT {128}";
-			using (SqliteDataReader reader2 = new SqliteCommand(query, _sqlLiteConnection).ExecuteReader())
+			string query = $"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT {50}";
+			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Query: {query}", LOG_MODULE_NAME);
+			using (SqliteDataReader reader2 = new SqliteCommand(query, DatabaseConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(new PathFinder.PathObject(reader2["word"].ToString().Trim(), Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]))));
 
@@ -357,10 +375,10 @@ namespace AutoKkutu
 
 			int _isEndWord = Convert.ToInt32(IsEndword);
 
-			if (int.TryParse(new SqliteCommand($"SELECT COUNT(*) FROM word_list WHERE word = '{word}';", _sqlLiteConnection).ExecuteScalar().ToString(), out int i) && i > 0)
+			if (int.TryParse(new SqliteCommand($"SELECT COUNT(*) FROM word_list WHERE word = '{word}';", DatabaseConnection).ExecuteScalar().ToString(), out int i) && i > 0)
 				return false;
 
-			ExecuteCommand(string.Format("INSERT INTO word_list(word_index, word, is_endword) VALUES('{0}', '{1}', {2})", word[0], word, _isEndWord));
+			ExecuteCommand($"INSERT INTO word_list(word_index, reverse_word_index, word, is_endword) VALUES('{word.First()}', '{word.Last()}', '{word}', {_isEndWord})");
 			return true;
 		}
 
@@ -368,15 +386,53 @@ namespace AutoKkutu
 		{
 			if (!CheckTable_Check("word_list"))
 				MakeTable("word_list");
+			else
+			{
+				// For backward compatibility
+				if (!CheckColumnExistence("reverse_word_index"))
+				{
+					try
+					{
+						new SqliteCommand("ALTER TABLE word_list ADD COLUMN reverse_word_index CHAR(1) NOT NULL DEFAULT ' '", DatabaseConnection).ExecuteNonQuery();
+						ConsoleManager.Log(ConsoleManager.LogType.Warning, "Added reverse_word_index column", LOG_MODULE_NAME);
+					}
+					catch (Exception ex)
+					{
+						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to add reverse_word_index: {ex}", LOG_MODULE_NAME);
+					}
+				}
+			}
+
 			if (!CheckTable_Check("endword_list"))
 				MakeTable("endword_list");
 		}
+
+		private static bool CheckColumnExistence(string columnName)
+		{
+			try
+			{
+				using (SqliteDataReader reader = new SqliteCommand("PRAGMA table_info(word_list)", DatabaseConnection).ExecuteReader())
+				{
+					int nameIndex = reader.GetOrdinal("Name");
+					while (reader.Read())
+						if (reader.GetString(nameIndex).Equals(columnName))
+							return true;
+				}
+			}
+			catch (Exception ex)
+			{
+				ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to check {columnName} existence: {ex}", LOG_MODULE_NAME);
+			}
+
+			return false;
+		}
+
 
 		private static void MakeTable(string tablename)
 		{
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Create Table : " + tablename, LOG_MODULE_NAME);
 			if (tablename == "word_list")
-				ExecuteCommand("CREATE TABLE word_list (word VARCHAR(60) NOT NULL, word_index CHAR(1) NOT NULL, is_endword TINYINT(1) NOT NULL);");
+				ExecuteCommand("CREATE TABLE word_list (word VARCHAR(60) NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, is_endword TINYINT(1) NOT NULL);");
 			else if (tablename == "endword_list")
 				ExecuteCommand("CREATE TABLE endword_list (word_index CHAR(1) NOT NULL);");
 		}
@@ -386,7 +442,7 @@ namespace AutoKkutu
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Check Table : " + tablename, LOG_MODULE_NAME);
 			try
 			{
-				return int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM sqlite_master WHERE name='" + tablename + "';", _sqlLiteConnection).ExecuteScalar().ToString(), out int i) && i > 0;
+				return int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM sqlite_master WHERE name='" + tablename + "';", DatabaseConnection).ExecuteScalar().ToString(), out int i) && i > 0;
 			}
 			catch (Exception e2)
 			{

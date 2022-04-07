@@ -141,7 +141,7 @@ namespace AutoKkutu
 		private void DatabaseManager_DBJobDone(object sender, EventArgs e)
 		{
 			var args = ((DatabaseManager.DBJobArgs)e);
-			ChangeStatusBar(CurrentStatus.DB_Job, args.JobName, args.Result);
+			ChangeStatusBar(CurrentStatus.DB_Job_Done, args.JobName, args.Result);
 		}
 
 		private void DatabaseManagement_AddWordStart(object sender, EventArgs e)
@@ -257,7 +257,7 @@ namespace AutoKkutu
 				else
 				{
 					ChangeStatusBar(CurrentStatus.Searching);
-					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? args.MissionChar : "", CurrentConfig.WordPreference, CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0); // 첫 턴 한방 방지
+					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? args.MissionChar : "", CurrentConfig.WordPreference, CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0, CurrentConfig.ReverseMode); // 첫 턴 한방 방지
 				}
 			}
 			catch (Exception ex)
