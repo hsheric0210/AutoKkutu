@@ -1,7 +1,9 @@
-﻿using CefSharp;
+﻿using AutoKkutu.Handlers;
+using CefSharp;
 using CefSharp.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AutoKkutu
@@ -11,50 +13,35 @@ namespace AutoKkutu
 		public ChromiumWebBrowser Browser;
 		public bool IsWatchdogAlive;
 
-		public string CurrentPresentedWord => _currentPresentedWord;
+		public ResponsePresentedWord CurrentPresentedWord = null;
+		public string CurrentMissionChar => _current_mission_word;
 
-		public bool IsGameStarted => _isGamestarted;
+		public bool IsGameStarted => _isgamestarted;
 
 		public bool IsMyTurn => _isMyTurn;
 
 		private Task _watchdogTask;
 
-		private readonly int _checkgameinterval = 3000;
-
-		private readonly int _ingameinterval = 1;
-
-		private bool _isGamestarted = false;
-
+		private readonly int _checkgame_interval = 3000;
+		private readonly int _ingame_interval = 1;
+		private bool _isgamestarted = false;
 		private bool _isMyTurn = false;
-
 		private bool _isWatchdogStarted = false;
-
+		private volatile bool _isWatchdogAlive = true;
+		private string _current_mission_word = "";
 		private string _wordCache = "";
-
 		private string _roundCache = "";
-
-		private string _currentPresentedWord;
-
-		private string _wrongWordCache = "";
-
+		private string _unsupportedWordCache = "";
 		private string _exampleWordCache = "";
 
 		public EventHandler GameStartedEvent;
-
 		public EventHandler GameEndedEvent;
-
 		public EventHandler MyTurnEvent;
-
 		public EventHandler MyTurnEndedEvent;
-
 		public EventHandler RoundEndedEvent;
-
 		public EventHandler PastDictionaryEvent;
-
 		public EventHandler WrongWordEvent;
-
 		public EventHandler MyPathIsWrongEvent;
-
 		public EventHandler RoundChangeEvent;
 
 		public enum CheckType
@@ -63,35 +50,63 @@ namespace AutoKkutu
 			MyTurn
 		}
 
+		private static CommonHandler[] HANDLERS;
+
+		public static void InitHandlers(ChromiumWebBrowser browser)
+		{
+			HANDLERS = new CommonHandler[2];
+			HANDLERS[0] = new KkutuOrgHandler(browser);
+			HANDLERS[1] = new KkutuPinkHandler(browser);
+		}
+
+		public static CommonHandler getHandler(string url)
+		{
+			foreach (CommonHandler handler in HANDLERS)
+				if (Regex.Match(url, handler.GetSiteURLPattern()).Success)
+					return handler;
+			return null;
+		}
+
 		public CommonHandler(ChromiumWebBrowser browser) => Browser = browser;
 
 		public void StartWatchdog()
 		{
 			if (!_isWatchdogStarted)
 			{
+				_isWatchdogAlive = true;
 				_isWatchdogStarted = true;
 				_watchdogTask = new Task(Watchdog);
 				_watchdogTask.Start();
 				Log(ConsoleManager.LogType.Info, "Watchdog thread started.");
 			}
 		}
+		public void StopWatchdog()
+		{
+			if (_isWatchdogStarted)
+			{
+				_isWatchdogStarted = false;
+				_isWatchdogAlive = false;
+				Log(ConsoleManager.LogType.Info, "Watchdog thread stop requested.");
+			}
+		}
 
 		private async void Watchdog()
 		{
-			while (true)
+			while (_isWatchdogAlive)
 			{
 				CheckGameState(CheckType.GameStarted);
-				if (_isGamestarted)
+				if (_isgamestarted)
 				{
 					CheckGameState(CheckType.MyTurn);
 					GetPreviousWord();
 					GetCurrentRound();
-					CheckWrongWord();
+					GetCurrentMissionWord();
+					CheckUnsupportedWord();
 					CheckExample();
-					await Task.Delay(_ingameinterval);
+					await Task.Delay(_ingame_interval);
 				}
 				else
-					await Task.Delay(_checkgameinterval);
+					await Task.Delay(_checkgame_interval);
 			}
 		}
 
@@ -123,7 +138,7 @@ namespace AutoKkutu
 					Log(ConsoleManager.LogType.Info, "Game ended.");
 					if (GameEndedEvent != null)
 						GameEndedEvent(this, EventArgs.Empty);
-					_isGamestarted = false;
+					_isgamestarted = false;
 				}
 				else if (IsMyTurn)
 				{
@@ -135,12 +150,12 @@ namespace AutoKkutu
 			}
 			else if (type == CheckType.GameStarted)
 			{
-				if (_isGamestarted)
+				if (_isgamestarted)
 					return;
 				Log(ConsoleManager.LogType.Info, "New round started; Previous word list flushed.");
 				if (GameStartedEvent != null)
 					GameStartedEvent(this, EventArgs.Empty);
-				_isGamestarted = true;
+				_isgamestarted = true;
 			}
 			else if (!_isMyTurn)
 			{
@@ -149,9 +164,9 @@ namespace AutoKkutu
 					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content} (Subsitution: {presentedWord.Substitution})");
 				else
 					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content}");
-				_currentPresentedWord = presentedWord.Content;
+				CurrentPresentedWord = presentedWord;
 				if (MyTurnEvent != null)
-					MyTurnEvent(this, new MyTurnEventArgs(presentedWord, GetMissionWord()));
+					MyTurnEvent(this, new MyTurnEventArgs(presentedWord, CurrentMissionChar));
 				_isMyTurn = true;
 			}
 		}
@@ -171,6 +186,17 @@ namespace AutoKkutu
 			PathFinder.AddPreviousPath(word);
 		}
 
+		private void GetCurrentMissionWord()
+		{
+			string missionWord = GetMissionWord();
+			if (string.IsNullOrWhiteSpace(missionWord))
+				return;
+			if (string.Equals(missionWord, _current_mission_word, StringComparison.InvariantCulture))
+				return;
+			Log(ConsoleManager.LogType.Info, "Mission Word Changed: " + missionWord);
+			_current_mission_word = missionWord;
+		}
+
 		private void GetCurrentRound()
 		{
 			string round = GetGameRound();
@@ -185,21 +211,21 @@ namespace AutoKkutu
 			_roundCache = round;
 		}
 
-		private void CheckWrongWord()
+		private void CheckUnsupportedWord()
 		{
-			string wrongWord = GetWrongWord();
-			if (string.IsNullOrWhiteSpace(wrongWord))
+			string unsupportedWord = GetUnsupportedWord();
+			if (string.IsNullOrWhiteSpace(unsupportedWord))
 				return;
-			if (string.Equals(wrongWord, _wrongWordCache, StringComparison.InvariantCultureIgnoreCase))
+			if (string.Equals(unsupportedWord, _unsupportedWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
-			if (wrongWord.Contains(":") || wrongWord.Contains("T.T")) // 첫 턴 한방 금지, 한방 단어(매너) 등등...
-				return;
-			_wrongWordCache = wrongWord;
+
+			bool isExistingWord = unsupportedWord.Contains(":") || unsupportedWord.Contains("T.T"); // 첫 턴 한방 금지, 한방 단어(매너) 등등...
+			_unsupportedWordCache = unsupportedWord;
 
 			if (WrongWordEvent != null)
-				WrongWordEvent(this, new WrongWordEventArgs(wrongWord));
+				WrongWordEvent(this, new WrongWordEventArgs(unsupportedWord, isExistingWord));
 			if (IsMyTurn && MyPathIsWrongEvent != null)
-				MyPathIsWrongEvent(this, new WrongWordEventArgs(wrongWord));
+				MyPathIsWrongEvent(this, new WrongWordEventArgs(unsupportedWord, isExistingWord));
 		}
 
 		private void CheckExample()
@@ -214,18 +240,11 @@ namespace AutoKkutu
 			PathFinder.NewPathList.Add(example);
 		}
 
-		void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, "KkutuHandler - #" + _watchdogTask.Id.ToString());
+		void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, $"{GetHandlerName()} - #{_watchdogTask.Id.ToString()}");
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
-			string presentWord = GetGamePresentedWord().Trim();
-			if (presentWord.Length <= 1)
-				return new ResponsePresentedWord(presentWord[0].ToString(), false);
-			char firstChar = presentWord[0]; // TODO: 앞말잇기, 중간말잇기 feature 추가
-			string content = firstChar.ToString();
-			firstChar = presentWord[2];
-			string subsituration = firstChar.ToString();
-			return new ResponsePresentedWord(content, true, subsituration);
+			return new ResponsePresentedWord(GetGamePresentedWord().Trim());
 		}
 
 		public class ResponsePresentedWord
@@ -234,13 +253,49 @@ namespace AutoKkutu
 			public bool CanSubstitution;
 			public string Substitution;
 
-			public ResponsePresentedWord(string content, bool canSubsitution, string subsituration = "")
+			public ResponsePresentedWord(string content, bool canSubsitution, string substituation = "")
 			{
 				Content = content;
 				CanSubstitution = canSubsitution;
 				if (!CanSubstitution)
 					return;
-				Substitution = subsituration;
+				Substitution = substituation;
+			}
+
+			public ResponsePresentedWord(string fullContent)
+			{
+				CanSubstitution = fullContent.Length >= 4 && fullContent[1] == '(';
+				if (CanSubstitution)
+				{
+					Content = fullContent[0].ToString();
+					Substitution = fullContent[2].ToString();
+				}
+				else
+				{
+					Content = fullContent;
+					CanSubstitution = false;
+				}
+			}
+
+			public override bool Equals(object obj)
+			{
+				if (!(obj is ResponsePresentedWord))
+					return false;
+				ResponsePresentedWord other = (ResponsePresentedWord)obj;
+				return string.Equals(Content, other.Content, StringComparison.InvariantCultureIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || CanSubstitution && string.Equals(Substitution, other.Substitution, StringComparison.InvariantCultureIgnoreCase));
+			}
+
+			public override int GetHashCode()
+			{
+				unchecked
+				{
+					int hash = 3049;
+					hash = hash * 5039 + Content.GetHashCode();
+					hash = hash * 883 + CanSubstitution.GetHashCode();
+					if (CanSubstitution)
+						hash = hash * 9719 + Substitution.GetHashCode();
+					return hash;
+				}
 			}
 		}
 
@@ -259,12 +314,19 @@ namespace AutoKkutu
 		public class WrongWordEventArgs : EventArgs
 		{
 			public string Word;
+			public Boolean IsExistingWord;
 
-			public WrongWordEventArgs(string word) => Word = word;
+			public WrongWordEventArgs(string word, bool isExistingWord)
+			{
+				Word = word;
+				IsExistingWord = isExistingWord;
+			}
 		}
 
 		// These methods should be overridded
-		public abstract string GetSiteURL();
+		public abstract string GetSiteURLPattern();
+		public abstract string GetHandlerName();
+
 		public bool IsGameNotInProgress()
 		{
 			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display");
@@ -293,7 +355,7 @@ namespace AutoKkutu
 			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
 		}
 
-		public string GetWrongWord()
+		public string GetUnsupportedWord()
 		{
 			return EvaluateJS("document.getElementsByClassName('game-fail-text')[0]") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent") : "";
 		}

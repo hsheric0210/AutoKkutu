@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
@@ -9,6 +10,7 @@ namespace AutoKkutu
 	class PathFinder
 	{
 		private static readonly string LOGIN_INSTANCE_NAME = "PathFinder";
+		private static readonly string PATHFINDER_WORKER_THREAD_NAME = "PathFinder Worker";
 
 		public static List<string> EndWordList;
 
@@ -16,7 +18,8 @@ namespace AutoKkutu
 
 		public static List<string> PreviousPath = new List<string>();
 
-		public static List<string> WrongPathList = new List<string>();
+		public static List<string> UnsupportedPathList = new List<string>();
+		public static List<string> InexistentPathList = new List<string>();
 
 		public static List<string> NewPathList = new List<string>();
 
@@ -46,7 +49,7 @@ namespace AutoKkutu
 				return;
 
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
-			if (NewPathList.Count + WrongPathList.Count == 0)
+			if (NewPathList.Count + UnsupportedPathList.Count == 0)
 				ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
 			else
 			{
@@ -67,8 +70,8 @@ namespace AutoKkutu
 				}
 				NewPathList = new List<string>();
 
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", WrongPathList.Count), LOGIN_INSTANCE_NAME);
-				foreach (string word in WrongPathList)
+				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", InexistentPathList.Count), LOGIN_INSTANCE_NAME);
+				foreach (string word in InexistentPathList)
 				{
 					try
 					{
@@ -80,7 +83,7 @@ namespace AutoKkutu
 						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't delete '{word}' from database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
 					}
 				}
-				WrongPathList = new List<string>();
+				InexistentPathList = new List<string>();
 
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatic DB Update complete.", LOGIN_INSTANCE_NAME);
 			}
@@ -92,10 +95,14 @@ namespace AutoKkutu
 				PreviousPath.Add(word);
 		}
 
-		public static void AddToWrongWord(string word)
+		public static void AddToUnsupportedWord(string word, bool isNonexistent)
 		{
 			if (!string.IsNullOrWhiteSpace(word))
-				WrongPathList.Add(word);
+			{
+				UnsupportedPathList.Add(word);
+				if (isNonexistent)
+					InexistentPathList.Add(word);
+			}
 		}
 
 		private static List<PathObject> QualifyList(List<PathObject> input)
@@ -103,7 +110,7 @@ namespace AutoKkutu
 			var result = new List<PathObject>();
 			foreach (PathObject o in input)
 			{
-				if (WrongPathList.Contains(o.Content))
+				if (UnsupportedPathList.Contains(o.Content))
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is wrong word.", LOGIN_INSTANCE_NAME);
 				else if (!CurrentConfig.ReturnMode && PreviousPath.Contains(o.Content))
 					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is previously used.", LOGIN_INSTANCE_NAME);
@@ -113,66 +120,71 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static void FindPath(CommonHandler.ResponsePresentedWord i, string missionChar, int wordPreference, bool useEndWord, bool reverseMode)
+		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, int wordPreference, bool useEndWord, bool reverseMode)
 		{
-			if (i.CanSubstitution)
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {i.Content} ({i.Substitution}).", LOGIN_INSTANCE_NAME);
+			if (word.CanSubstitution)
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {word.Content} ({word.Substitution}).", LOGIN_INSTANCE_NAME);
 			else
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {i.Content}.", LOGIN_INSTANCE_NAME);
-			var watch = new Stopwatch();
-			watch.Start();
-			FinalList = new List<PathObject>();
-			var WordList = new List<PathObject>();
-			var QualifiedNormalList = new List<PathObject>();
-			try
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {word.Content}.", LOGIN_INSTANCE_NAME);
+
+			// Prevent watchdog thread from being blocked
+			Task.Run(() =>
 			{
-				if (wordPreference == Config.WORDPREFERENCE_BY_LENGTH_INDEX)
+				var watch = new Stopwatch();
+				watch.Start();
+				FinalList = new List<PathObject>();
+				var WordList = new List<PathObject>();
+				var QualifiedNormalList = new List<PathObject>();
+				try
 				{
-					WordList = DatabaseManager.FindWord(i, missionChar, useEndWord ? 2 : 0, reverseMode);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words.", WordList.Count), LOGIN_INSTANCE_NAME);
-				}
-				else
-				{
-					if (useEndWord)
+					if (wordPreference == Config.WORDPREFERENCE_BY_LENGTH_INDEX)
 					{
-						WordList = DatabaseManager.FindWord(i, missionChar, 1, reverseMode);
-						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} words (EndWord inclued).", WordList.Count), LOGIN_INSTANCE_NAME);
+						WordList = DatabaseManager.FindWord(word, missionChar, useEndWord ? 2 : 0, reverseMode);
+						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words.", WordList.Count), PATHFINDER_WORKER_THREAD_NAME);
 					}
 					else
 					{
-						WordList = DatabaseManager.FindWord(i, missionChar, 0, reverseMode);
-						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words (EndWord excluded).", WordList.Count), LOGIN_INSTANCE_NAME);
+						if (useEndWord)
+						{
+							WordList = DatabaseManager.FindWord(word, missionChar, 1, reverseMode);
+							ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} words (EndWord inclued).", WordList.Count), PATHFINDER_WORKER_THREAD_NAME);
+						}
+						else
+						{
+							WordList = DatabaseManager.FindWord(word, missionChar, 0, reverseMode);
+							ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words (EndWord excluded).", WordList.Count), PATHFINDER_WORKER_THREAD_NAME);
+						}
+						// TODO: Attack word search here
+						// AttackWord = DatabaseManager.FindWord(i, 3); // 3 for only attack words
+						// ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} attack words.", NormalWord.Count), PATHFINDER_WORKER_THREAD_NAME);
 					}
-					// TODO: Attack word search here
-					// AttackWord = DatabaseManager.FindWord(i, 3); // 3 for only attack words
-					// ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} attack words.", NormalWord.Count), LOGIN_INSTANCE_NAME);
 				}
-			}
-			catch (Exception e)
-			{
-				watch.Stop();
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Find Path : " + e.ToString(), LOGIN_INSTANCE_NAME);
-				if (UpdatedPath != null)
-					UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Error, 0, 0, 0, false));
-			}
-			QualifiedNormalList = QualifyList(WordList);
+				catch (Exception e)
+				{
+					watch.Stop();
+					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Find Path : " + e.ToString(), PATHFINDER_WORKER_THREAD_NAME);
+					if (UpdatedPath != null)
+						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Error, 0, 0, 0, false));
+				}
+				QualifiedNormalList = QualifyList(WordList);
 
-			if (QualifiedNormalList.Count == 0)
-			{
-				watch.Stop();
-				ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't find any path.", LOGIN_INSTANCE_NAME);
-				if (UpdatedPath != null)
-					UpdatedPath(null, new UpdatedPathEventArgs(FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), false));
-				return;
-			}
-			if (QualifiedNormalList.Count > 20)
-				QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
+				if (QualifiedNormalList.Count == 0)
+				{
+					watch.Stop();
+					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't find any path.", PATHFINDER_WORKER_THREAD_NAME);
+					if (UpdatedPath != null)
+						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), false));
+					return;
+				}
+				if (QualifiedNormalList.Count > 20)
+					QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
 
-			FinalList = QualifiedNormalList;
-			watch.Stop();
-			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), LOGIN_INSTANCE_NAME);
-			if (UpdatedPath != null)
-				UpdatedPath(null, new UpdatedPathEventArgs(FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
+				FinalList = QualifiedNormalList;
+				watch.Stop();
+				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), PATHFINDER_WORKER_THREAD_NAME);
+				if (UpdatedPath != null)
+					UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
+			});
 		}
 
 		public enum FindResult
@@ -184,24 +196,24 @@ namespace AutoKkutu
 
 		public class UpdatedPathEventArgs : EventArgs
 		{
-			public UpdatedPathEventArgs(FindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, bool isUseEndWord = false)
+			public CommonHandler.ResponsePresentedWord Word;
+			public string MissionChar;
+			public FindResult Result;
+			public int TotalWordCount;
+			public int CalcWordCount;
+			public int Time;
+			public bool IsUseEndWord;
+
+			public UpdatedPathEventArgs(CommonHandler.ResponsePresentedWord word, string missionChar, FindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, bool isUseEndWord = false)
 			{
+				Word = word;
+				MissionChar = missionChar;
 				Result = arg;
 				TotalWordCount = totalWordCount;
 				CalcWordCount = calcWordCount;
 				Time = time;
 				IsUseEndWord = isUseEndWord;
 			}
-
-			public FindResult Result;
-
-			public int TotalWordCount;
-
-			public int CalcWordCount;
-
-			public int Time;
-
-			public bool IsUseEndWord;
 		}
 
 		public class PathObject

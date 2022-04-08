@@ -360,7 +360,7 @@ namespace AutoKkutu
 				orderCondition = $"(checkMissionChar(word, '{missionChar}') + {orderCondition2} LENGTH(word))";
 
 			string query = $"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT {50}";
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Query: {query}", LOG_MODULE_NAME);
+			//ConsoleManager.Log(ConsoleManager.LogType.Info, $"Query: {query}", LOG_MODULE_NAME);
 			using (SqliteDataReader reader2 = new SqliteCommand(query, DatabaseConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(new PathFinder.PathObject(reader2["word"].ToString().Trim(), Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]))));

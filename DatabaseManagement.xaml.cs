@@ -19,7 +19,6 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace AutoKkutu
 {
-	// TODO: 좌상단의 '단어 추가' 기능은 좌하단의 단어 일괄 추가 기능으로 대체 가능하니, 부작용에 대해 잠깐만 생각해본 뒤 없애버리기
 	public partial class DatabaseManagement : Window
 	{
 		public DatabaseManagement()

@@ -9,6 +9,14 @@ namespace AutoKkutu.Handlers
 		{
 		}
 
-		public override string GetSiteURL() => "https://kkutu.org";
+		public new void SendMessage(string input)
+		{
+			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
+			EvaluateJS("document.getElementById('ChatBtn').click()");
+		}
+
+		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.org.*$";
+
+		public override string GetHandlerName() => "Kkutu.org Handler";
 	}
 }
