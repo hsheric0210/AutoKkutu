@@ -189,9 +189,7 @@ namespace AutoKkutu
 		private void GetCurrentMissionWord()
 		{
 			string missionWord = GetMissionWord();
-			if (string.IsNullOrWhiteSpace(missionWord))
-				return;
-			if (string.Equals(missionWord, _current_mission_word, StringComparison.InvariantCulture))
+			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, _current_mission_word, StringComparison.InvariantCulture))
 				return;
 			Log(ConsoleManager.LogType.Info, "Mission Word Changed: " + missionWord);
 			_current_mission_word = missionWord;
@@ -200,9 +198,7 @@ namespace AutoKkutu
 		private void GetCurrentRound()
 		{
 			string round = GetGameRound();
-			if (string.IsNullOrWhiteSpace(round))
-				return;
-			if (string.Equals(round, _roundCache, StringComparison.InvariantCulture))
+			if (string.IsNullOrWhiteSpace(round) || string.Equals(round, _roundCache, StringComparison.InvariantCulture))
 				return;
 			Log(ConsoleManager.LogType.Info, "Round Changed: " + round);
 			if (RoundChangeEvent != null)
@@ -214,12 +210,10 @@ namespace AutoKkutu
 		private void CheckUnsupportedWord()
 		{
 			string unsupportedWord = GetUnsupportedWord();
-			if (string.IsNullOrWhiteSpace(unsupportedWord))
-				return;
-			if (string.Equals(unsupportedWord, _unsupportedWordCache, StringComparison.InvariantCultureIgnoreCase))
+			if (string.IsNullOrWhiteSpace(unsupportedWord) || string.Equals(unsupportedWord, _unsupportedWordCache, StringComparison.InvariantCultureIgnoreCase) || unsupportedWord.Contains("T.T"))
 				return;
 
-			bool isExistingWord = unsupportedWord.Contains(":") || unsupportedWord.Contains("T.T"); // 첫 턴 한방 금지, 한방 단어(매너) 등등...
+			bool isExistingWord = unsupportedWord.Contains(":"); // 첫 턴 한방 금지, 한방 단어(매너) 등등...
 			_unsupportedWordCache = unsupportedWord;
 
 			if (WrongWordEvent != null)
