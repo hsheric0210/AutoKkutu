@@ -72,15 +72,10 @@ namespace AutoKkutu
 			// Load default config
 			PathFinder.UpdateConfig(CurrentConfig = new Config());
 
-			// TODO: Improve this
-			string url = "https://kkutu.org";
-			if (new FileInfo("targetserver.txt").Exists)
-				url = File.ReadAllText("targetserver.txt");
-
 			// Initialize Browser
 			browser = new ChromiumWebBrowser
 			{
-				Address = url,
+				Address = "https://kkutu.pink",
 				UseLayoutRounding = true
 			};
 
