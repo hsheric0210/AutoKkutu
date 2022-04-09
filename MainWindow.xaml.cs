@@ -125,15 +125,18 @@ namespace AutoKkutu
 		{
 			if (Handler != null)
 			{
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Unregistered previous handler: {Handler.GetID()}", MAINTHREAD_NAME);
+
 				// Unregister previous handler
-				Handler.GameStartedEvent -= CommonHandler_GameStart;
-				Handler.GameEndedEvent -= CommonHandler_GameEnd;
-				Handler.MyTurnEvent -= CommonHandler_MyTurnEvent;
-				Handler.MyTurnEndedEvent -= CommonHandler_MyTurnEndEvent;
-				Handler.WrongWordEvent -= CommonHandler_WrongPathEvent;
-				Handler.MyPathIsWrongEvent -= CommonHandler_MyPathIsWrong;
-				Handler.RoundChangeEvent -= CommonHandler_RoundChangeEvent;
+				Handler.onGameStarted -= CommonHandler_GameStart;
+				Handler.onGameEnded -= CommonHandler_GameEnd;
+				Handler.onMyTurn -= CommonHandler_MyTurnEvent;
+				Handler.onMyTurnEnded -= CommonHandler_MyTurnEndEvent;
+				Handler.onUnsupportedWordEntered -= CommonHandler_onUnsupportedWordEntered;
+				Handler.onMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
+				Handler.onRoundChange -= CommonHandler_RoundChangeEvent;
 				Handler.StopWatchdog();
+				Handler = null;
 			}
 
 			// Initialize handler and Register event handlers
@@ -141,17 +144,18 @@ namespace AutoKkutu
 			Handler = CommonHandler.getHandler(url);
 			if (Handler != null)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Using handler: {Handler.GetHandlerName()}", MAINTHREAD_NAME);
-				Handler.GameStartedEvent += CommonHandler_GameStart;
-				Handler.GameEndedEvent += CommonHandler_GameEnd;
-				Handler.MyTurnEvent += CommonHandler_MyTurnEvent;
-				Handler.MyTurnEndedEvent += CommonHandler_MyTurnEndEvent;
-				Handler.WrongWordEvent += CommonHandler_WrongPathEvent;
-				Handler.MyPathIsWrongEvent += CommonHandler_MyPathIsWrong;
-				Handler.RoundChangeEvent += CommonHandler_RoundChangeEvent;
+				browser.FrameLoadEnd -= Browser_FrameLoadEnd;
+
+				Handler.onGameStarted += CommonHandler_GameStart;
+				Handler.onGameEnded += CommonHandler_GameEnd;
+				Handler.onMyTurn += CommonHandler_MyTurnEvent;
+				Handler.onMyTurnEnded += CommonHandler_MyTurnEndEvent;
+				Handler.onUnsupportedWordEntered += CommonHandler_onUnsupportedWordEntered;
+				Handler.onMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
+				Handler.onRoundChange += CommonHandler_RoundChangeEvent;
 				Handler.StartWatchdog();
 
-				browser.FrameLoadEnd -= Browser_FrameLoadEnd;
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Using handler: {Handler.GetID()}", MAINTHREAD_NAME);
 
 				ConsoleManager.Log(ConsoleManager.LogType.Info, "Browser frame-load end.", MAINTHREAD_NAME);
 				RemoveAd();
@@ -312,9 +316,9 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CommonHandler_WrongPathEvent(object sender, EventArgs e)
+		private void CommonHandler_onUnsupportedWordEntered(object sender, EventArgs e)
 		{
-			var i = ((CommonHandler.WrongWordEventArgs)e);
+			var i = ((CommonHandler.UnsupportedWordEventArgs)e);
 			bool isInexistent = !i.IsExistingWord;
 			string theWord = i.Word;
 			if (isInexistent)
@@ -324,9 +328,9 @@ namespace AutoKkutu
 			PathFinder.AddToUnsupportedWord(theWord, isInexistent);
 		}
 
-		private void CommonHandler_MyPathIsWrong(object sender, EventArgs e)
+		private void CommonHandler_MyPathIsUnsupported(object sender, EventArgs e)
 		{
-			var word = ((CommonHandler.WrongWordEventArgs)e).Word;
+			var word = ((CommonHandler.UnsupportedWordEventArgs)e).Word;
 			ConsoleManager.Log(ConsoleManager.LogType.Info, $"My path '{word}' is wrong.", MAINTHREAD_NAME);
 
 			if (!CurrentConfig.AutoFix)
@@ -371,7 +375,10 @@ namespace AutoKkutu
 			SetSearchState(null, false);
 			ResetPathList();
 			if (CurrentConfig.AutoDBUpdateMode == Config.DBAUTOUPDATE_GAME_END_INDEX)
+			{
+				ChangeStatusBar(CurrentStatus.DB_Job, "자동 업데이트");
 				PathFinder.AutoDBUpdate();
+			}
 			ChangeStatusBar(CurrentStatus.Wait);
 		}
 

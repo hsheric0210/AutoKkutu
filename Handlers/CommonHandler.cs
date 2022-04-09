@@ -2,9 +2,11 @@
 using CefSharp;
 using CefSharp.Wpf;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace AutoKkutu
 {
@@ -22,27 +24,27 @@ namespace AutoKkutu
 
 		private Task _watchdogTask;
 
+		private CancellationTokenSource cancelTokenSrc;
 		private readonly int _checkgame_interval = 3000;
 		private readonly int _ingame_interval = 1;
 		private bool _isgamestarted = false;
 		private bool _isMyTurn = false;
 		private bool _isWatchdogStarted = false;
-		private volatile bool _isWatchdogAlive = true;
 		private string _current_mission_word = "";
 		private string _wordCache = "";
 		private string _roundCache = "";
 		private string _unsupportedWordCache = "";
 		private string _exampleWordCache = "";
 
-		public EventHandler GameStartedEvent;
-		public EventHandler GameEndedEvent;
-		public EventHandler MyTurnEvent;
-		public EventHandler MyTurnEndedEvent;
-		public EventHandler RoundEndedEvent;
-		public EventHandler PastDictionaryEvent;
-		public EventHandler WrongWordEvent;
-		public EventHandler MyPathIsWrongEvent;
-		public EventHandler RoundChangeEvent;
+		public event EventHandler onGameStarted;
+		public event EventHandler onGameEnded;
+		public event EventHandler<MyTurnEventArgs> onMyTurn;
+		public event EventHandler onMyTurnEnded;
+		//public event EventHandler onRoundEnded;
+		//public event EventHandler onPastDictionary;
+		public event EventHandler<UnsupportedWordEventArgs> onUnsupportedWordEntered;
+		public event EventHandler<UnsupportedWordEventArgs> onMyPathIsUnsupported;
+		public event EventHandler onRoundChange;
 
 		public enum CheckType
 		{
@@ -61,9 +63,10 @@ namespace AutoKkutu
 
 		public static CommonHandler getHandler(string url)
 		{
-			foreach (CommonHandler handler in HANDLERS)
-				if (Regex.Match(url, handler.GetSiteURLPattern()).Success)
-					return handler;
+			if (!string.IsNullOrEmpty(url))
+				foreach (CommonHandler handler in HANDLERS)
+					if (Regex.Match(url, handler.GetSiteURLPattern()).Success)
+						return handler;
 			return null;
 		}
 
@@ -73,40 +76,53 @@ namespace AutoKkutu
 		{
 			if (!_isWatchdogStarted)
 			{
-				_isWatchdogAlive = true;
 				_isWatchdogStarted = true;
-				_watchdogTask = new Task(Watchdog);
+				cancelTokenSrc = new CancellationTokenSource();
+				_watchdogTask = new Task(() => Watchdog(cancelTokenSrc.Token), cancelTokenSrc.Token);
 				_watchdogTask.Start();
-				Log(ConsoleManager.LogType.Info, "Watchdog thread started.");
+				Log(ConsoleManager.LogType.Info, "Watchdog thread started.", CurrentWatchdogID);
 			}
 		}
 		public void StopWatchdog()
 		{
 			if (_isWatchdogStarted)
 			{
+				Log(ConsoleManager.LogType.Info, "Watchdog thread stop requested.", CurrentWatchdogID);
+				cancelTokenSrc?.Cancel();
 				_isWatchdogStarted = false;
-				_isWatchdogAlive = false;
-				Log(ConsoleManager.LogType.Info, "Watchdog thread stop requested.");
 			}
 		}
 
-		private async void Watchdog()
+		private async void Watchdog(CancellationToken cancelToken)
 		{
-			while (_isWatchdogAlive)
+			int watchdogID = CurrentWatchdogID;
+			try
 			{
-				CheckGameState(CheckType.GameStarted);
-				if (_isgamestarted)
+				cancelToken.ThrowIfCancellationRequested();
+
+				while (true)
 				{
-					CheckGameState(CheckType.MyTurn);
-					GetPreviousWord();
-					GetCurrentRound();
-					GetCurrentMissionWord();
-					CheckUnsupportedWord();
-					CheckExample();
-					await Task.Delay(_ingame_interval);
+					if (cancelToken.IsCancellationRequested)
+						cancelToken.ThrowIfCancellationRequested();
+
+					CheckGameState(CheckType.GameStarted, watchdogID);
+					if (_isgamestarted)
+					{
+						CheckGameState(CheckType.MyTurn, watchdogID);
+						GetPreviousWord(watchdogID);
+						GetCurrentRound(watchdogID);
+						GetCurrentMissionWord(watchdogID);
+						CheckUnsupportedWord(watchdogID);
+						CheckExample(watchdogID);
+						await Task.Delay(_ingame_interval, cancelToken);
+					}
+					else
+						await Task.Delay(_checkgame_interval, cancelToken);
 				}
-				else
-					await Task.Delay(_checkgame_interval);
+			}
+			catch (Exception ex)
+			{
+				Log(ConsoleManager.LogType.Info, $"Watchdog thread terminated: {ex}.", watchdogID);
 			}
 		}
 
@@ -122,12 +138,12 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + ex.ToString());
+				Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + ex.ToString(), CurrentWatchdogID);
 				return " ";
 			}
 		}
 
-		private void CheckGameState(CheckType type)
+		private void CheckGameState(CheckType type, int watchdogID)
 		{
 			if (type == CheckType.GameStarted ? IsGameNotInProgress() : IsGameNotInMyTurn())
 			{
@@ -135,16 +151,16 @@ namespace AutoKkutu
 				{
 					if (!IsGameStarted)
 						return;
-					Log(ConsoleManager.LogType.Info, "Game ended.");
-					if (GameEndedEvent != null)
-						GameEndedEvent(this, EventArgs.Empty);
+					Log(ConsoleManager.LogType.Info, "Game ended.", watchdogID);
+					if (onGameEnded != null)
+						onGameEnded(this, EventArgs.Empty);
 					_isgamestarted = false;
 				}
 				else if (IsMyTurn)
 				{
-					Log(ConsoleManager.LogType.Info, "My turn ended.");
-					if (MyTurnEndedEvent != null)
-						MyTurnEndedEvent(this, EventArgs.Empty);
+					Log(ConsoleManager.LogType.Info, "My turn ended.", watchdogID);
+					if (onMyTurnEnded != null)
+						onMyTurnEnded(this, EventArgs.Empty);
 					_isMyTurn = false;
 				}
 			}
@@ -152,26 +168,26 @@ namespace AutoKkutu
 			{
 				if (_isgamestarted)
 					return;
-				Log(ConsoleManager.LogType.Info, "New round started; Previous word list flushed.");
-				if (GameStartedEvent != null)
-					GameStartedEvent(this, EventArgs.Empty);
+				Log(ConsoleManager.LogType.Info, "New round started; Previous word list flushed.", watchdogID);
+				if (onGameStarted != null)
+					onGameStarted(this, EventArgs.Empty);
 				_isgamestarted = true;
 			}
 			else if (!_isMyTurn)
 			{
 				ResponsePresentedWord presentedWord = GetPresentedWord();
 				if (presentedWord.CanSubstitution)
-					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content} (Subsitution: {presentedWord.Substitution})");
+					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content} (Subsitution: {presentedWord.Substitution})", watchdogID);
 				else
-					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content}");
+					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content}", watchdogID);
 				CurrentPresentedWord = presentedWord;
-				if (MyTurnEvent != null)
-					MyTurnEvent(this, new MyTurnEventArgs(presentedWord, CurrentMissionChar));
+				if (onMyTurn != null)
+					onMyTurn(this, new MyTurnEventArgs(presentedWord, CurrentMissionChar));
 				_isMyTurn = true;
 			}
 		}
 
-		private void GetPreviousWord()
+		private void GetPreviousWord(int watchdogID)
 		{
 			string previousWord = GetGamePreviousWord();
 			if (string.IsNullOrWhiteSpace(previousWord))
@@ -179,35 +195,35 @@ namespace AutoKkutu
 			string word = previousWord.Split('<')[0];
 			if (word == _wordCache)
 				return;
-			Log(ConsoleManager.LogType.Info, "Found Previous Word : " + word);
+			Log(ConsoleManager.LogType.Info, "Found Previous Word : " + word, watchdogID);
 			_wordCache = word;
 			if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
 				PathFinder.NewPathList.Add(word);
 			PathFinder.AddPreviousPath(word);
 		}
 
-		private void GetCurrentMissionWord()
+		private void GetCurrentMissionWord(int watchdogID)
 		{
 			string missionWord = GetMissionWord();
 			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, _current_mission_word, StringComparison.InvariantCulture))
 				return;
-			Log(ConsoleManager.LogType.Info, "Mission Word Changed: " + missionWord);
+			Log(ConsoleManager.LogType.Info, "Mission Word Changed: " + missionWord, watchdogID);
 			_current_mission_word = missionWord;
 		}
 
-		private void GetCurrentRound()
+		private void GetCurrentRound(int watchdogID)
 		{
 			string round = GetGameRound();
 			if (string.IsNullOrWhiteSpace(round) || string.Equals(round, _roundCache, StringComparison.InvariantCulture))
 				return;
-			Log(ConsoleManager.LogType.Info, "Round Changed: " + round);
-			if (RoundChangeEvent != null)
-				RoundChangeEvent(this, EventArgs.Empty);
+			Log(ConsoleManager.LogType.Info, "Round Changed: " + round, watchdogID);
+			if (onRoundChange != null)
+				onRoundChange(this, EventArgs.Empty);
 			PathFinder.PreviousPath = new List<string>();
 			_roundCache = round;
 		}
 
-		private void CheckUnsupportedWord()
+		private void CheckUnsupportedWord(int watchdogID)
 		{
 			string unsupportedWord = GetUnsupportedWord();
 			if (string.IsNullOrWhiteSpace(unsupportedWord) || string.Equals(unsupportedWord, _unsupportedWordCache, StringComparison.InvariantCultureIgnoreCase) || unsupportedWord.Contains("T.T"))
@@ -216,13 +232,13 @@ namespace AutoKkutu
 			bool isExistingWord = unsupportedWord.Contains(":"); // 첫 턴 한방 금지, 한방 단어(매너) 등등...
 			_unsupportedWordCache = unsupportedWord;
 
-			if (WrongWordEvent != null)
-				WrongWordEvent(this, new WrongWordEventArgs(unsupportedWord, isExistingWord));
-			if (IsMyTurn && MyPathIsWrongEvent != null)
-				MyPathIsWrongEvent(this, new WrongWordEventArgs(unsupportedWord, isExistingWord));
+			if (onUnsupportedWordEntered != null)
+				onUnsupportedWordEntered(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+			if (IsMyTurn && onMyPathIsUnsupported != null)
+				onMyPathIsUnsupported(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
 		}
 
-		private void CheckExample()
+		private void CheckExample(int watchdogID)
 		{
 			string example = GetExampleWord();
 			if (string.IsNullOrWhiteSpace(example))
@@ -230,11 +246,13 @@ namespace AutoKkutu
 			if (string.Equals(example, _exampleWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
 			_exampleWordCache = example;
-			Log(ConsoleManager.LogType.Info, "Example submitted: " + example);
+			Log(ConsoleManager.LogType.Info, "Example submitted: " + example, watchdogID);
 			PathFinder.NewPathList.Add(example);
 		}
 
-		void Log(ConsoleManager.LogType logtype, string Content) => ConsoleManager.Log(logtype, Content, $"{GetHandlerName()} - #{_watchdogTask.Id.ToString()}");
+		private int CurrentWatchdogID => _watchdogTask == null ? -1 : _watchdogTask.Id;
+
+		void Log(ConsoleManager.LogType logtype, string Content, int watchdogID) => ConsoleManager.Log(logtype, Content, $"{GetHandlerName()} - #{watchdogID}");
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
@@ -305,17 +323,19 @@ namespace AutoKkutu
 			}
 		}
 
-		public class WrongWordEventArgs : EventArgs
+		public class UnsupportedWordEventArgs : EventArgs
 		{
 			public string Word;
 			public Boolean IsExistingWord;
 
-			public WrongWordEventArgs(string word, bool isExistingWord)
+			public UnsupportedWordEventArgs(string word, bool isExistingWord)
 			{
 				Word = word;
 				IsExistingWord = isExistingWord;
 			}
 		}
+
+		public string GetID() => $"{GetHandlerName()} - #{(_watchdogTask == null ? "Global" : _watchdogTask.Id.ToString())}";
 
 		// These methods should be overridded
 		public abstract string GetSiteURLPattern();
