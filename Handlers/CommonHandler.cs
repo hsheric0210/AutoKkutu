@@ -392,5 +392,14 @@ namespace AutoKkutu
 			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'"); // "UserMessage"
 			EvaluateJS("document.getElementById('ChatBtn').click()");
 		}
+
+		public string GetRoomInfo()
+		{
+			string roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent");
+			string roomLimit = EvaluateJS("document.getElementsByClassName('room-head-limit')[0].textContent");
+			string roomRounds = EvaluateJS("document.getElementsByClassName('room-head-round')[0].textContent");
+			string roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent");
+			return $"{roomMode} | {roomLimit} | {roomRounds} | {roomTime}";
+		}
 	}
 }

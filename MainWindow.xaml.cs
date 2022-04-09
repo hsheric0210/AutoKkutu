@@ -379,9 +379,26 @@ namespace AutoKkutu
 			if (CurrentConfig.AutoDBUpdateMode == Config.DBAUTOUPDATE_GAME_END_INDEX)
 			{
 				ChangeStatusBar(CurrentStatus.DB_Job, "자동 업데이트");
-				PathFinder.AutoDBUpdate();
+				string result = PathFinder.AutoDBUpdate();
+				if (string.IsNullOrEmpty(result))
+					ChangeStatusBar(CurrentStatus.Wait);
+				else
+				{
+					if (new FileInfo("GameResult.txt").Exists)
+						try
+						{
+							File.AppendAllText("GameResult.txt", $"[{Handler.GetRoomInfo()}] {result}{Environment.NewLine}");
+						}
+						catch (Exception ex)
+						{
+							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Failed to write game result: {ex}", MAINTHREAD_NAME);
+						}
+
+					ChangeStatusBar(CurrentStatus.DB_Job_Done, "자동 업데이트", result);
+				}
 			}
-			ChangeStatusBar(CurrentStatus.Wait);
+			else
+				ChangeStatusBar(CurrentStatus.Wait);
 		}
 
 		private void CommonHandler_RoundChangeEvent(object sender, EventArgs e)

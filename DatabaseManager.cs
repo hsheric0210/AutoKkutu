@@ -136,22 +136,23 @@ namespace AutoKkutu
 			return result;
 		}
 
-		private static void ExecuteCommand(string command)
+		private static int ExecuteCommand(string command)
 		{
 			try
 			{
-				new SqliteCommand(command, DatabaseConnection).ExecuteNonQuery();
+				return new SqliteCommand(command, DatabaseConnection).ExecuteNonQuery();
 			}
 			catch (Exception e)
 			{
 				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Execute DB Command ' " + command + " ' : " + e.ToString(), LOG_MODULE_NAME);
 			}
+			return -1;
 		}
 
-		public static void DeleteWord(string word)
+		public static int DeleteWord(string word)
 		{
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Delete '" + word + "' from db...", LOG_MODULE_NAME);
-			ExecuteCommand("DELETE FROM word_list WHERE word = '" + word + "'");
+			return ExecuteCommand("DELETE FROM word_list WHERE word = '" + word + "'");
 		}
 
 		public static bool AddEndWord(string node)

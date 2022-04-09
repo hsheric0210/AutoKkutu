@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,17 +44,23 @@ namespace AutoKkutu
 			CurrentConfig = newConfig;
 		}
 
-		public static void AutoDBUpdate()
+		public static string AutoDBUpdate()
 		{
 			if (!CurrentConfig.AutoDBUpdate)
-				return;
+				return null;
+
+			int NewPathCount = 0;
+			int AddedPathCount = 0;
+			int InexistentPathCount = 0;
+			int RemovedPathCount = 0;
 
 			ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
 			if (NewPathList.Count + UnsupportedPathList.Count == 0)
 				ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
 			else
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from NewPathList.", NewPathList.Count), LOGIN_INSTANCE_NAME);
+				NewPathCount = NewPathList.Count;
+				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from NewPathList.", NewPathCount), LOGIN_INSTANCE_NAME);
 				foreach (string word in NewPathList)
 				{
 					bool isEndWord = EndWordList.Contains(word.Last().ToString());
@@ -61,7 +68,10 @@ namespace AutoKkutu
 					{
 						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Check and add '{word}' into database.", LOGIN_INSTANCE_NAME);
 						if (DatabaseManager.AddWord(word, isEndWord))
+						{
 							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added '{word}' into database.", LOGIN_INSTANCE_NAME);
+							AddedPathCount++;
+						}
 					}
 					catch (Exception ex)
 					{
@@ -70,13 +80,14 @@ namespace AutoKkutu
 				}
 				NewPathList = new List<string>();
 
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", InexistentPathList.Count), LOGIN_INSTANCE_NAME);
+				InexistentPathCount = InexistentPathList.Count;
+				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", InexistentPathCount), LOGIN_INSTANCE_NAME);
 				foreach (string word in InexistentPathList)
 				{
 					try
 					{
 						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Delete '{word}' from database.", LOGIN_INSTANCE_NAME);
-						DatabaseManager.DeleteWord(word);
+						RemovedPathCount += DatabaseManager.DeleteWord(word);
 					}
 					catch (Exception ex)
 					{
@@ -85,8 +96,13 @@ namespace AutoKkutu
 				}
 				InexistentPathList = new List<string>();
 
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatic DB Update complete.", LOGIN_INSTANCE_NAME);
+				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
+				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Automatic DB Update complete: {result}", LOGIN_INSTANCE_NAME);
+
+				return result;
 			}
+
+			return null;
 		}
 
 		public static void AddPreviousPath(string word)
