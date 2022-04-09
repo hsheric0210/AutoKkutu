@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Handlers;
 using CefSharp;
+using CefSharp.Handler;
 using CefSharp.Wpf;
 using System;
 using System.Collections.Generic;
@@ -66,6 +67,7 @@ namespace AutoKkutu
 					"disable-gpu",
 					"enable-begin-frame-scheduling"
 				},
+				UserAgent = "Chrome",
 				CachePath = Environment.CurrentDirectory + "\\Cache"
 			}, true, (IApp)null);
 
