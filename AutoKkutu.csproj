@@ -10,12 +10,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Properties\Logger.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="cef.redist.x64" Version="99.2.14" />
     <PackageReference Include="cef.redist.x86" Version="99.2.14" />
     <PackageReference Include="CefSharp.Common" Version="99.2.140" />
     <PackageReference Include="CefSharp.Wpf" Version="99.2.140" />
     <PackageReference Include="chromiumembeddedframework.runtime" Version="99.2.14" />
     <PackageReference Include="chromiumembeddedframework.runtime.win-x64" Version="99.2.14" />
+    <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.3" />
   </ItemGroup>

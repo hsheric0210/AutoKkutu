@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,8 +11,7 @@ namespace AutoKkutu
 	// TODO: 미션 감지 및 단어 선호도 조정 기능 추가
 	class PathFinder
 	{
-		private static readonly string LOGIN_INSTANCE_NAME = "PathFinder";
-		private static readonly string PATHFINDER_WORKER_THREAD_NAME = "PathFinder Worker";
+		private static readonly ILog Logger = LogManager.GetLogger("PathFinder");
 
 		public static List<string> EndWordList;
 
@@ -33,9 +33,9 @@ namespace AutoKkutu
 			{
 				EndWordList = DatabaseManager.GetEndWordList();
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to Get End word :  {e.ToString()}", LOGIN_INSTANCE_NAME);
+				Logger.Error($"Failed to Get End word", ex);
 			}
 		}
 
@@ -54,50 +54,49 @@ namespace AutoKkutu
 			int InexistentPathCount = 0;
 			int RemovedPathCount = 0;
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Automatically update the DB based on last game.", LOGIN_INSTANCE_NAME);
+			Logger.Debug("Automatically update the DB based on last game.");
 			if (NewPathList.Count + UnsupportedPathList.Count == 0)
-				ConsoleManager.Log(ConsoleManager.LogType.Warning, "No such element in autoupdate list.", LOGIN_INSTANCE_NAME);
+				Logger.Warn("No such element in autoupdate list.");
 			else
 			{
 				NewPathCount = NewPathList.Count;
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from NewPathList.", NewPathCount), LOGIN_INSTANCE_NAME);
+				Logger.DebugFormat("Get {0} elements from NewPathList.", NewPathCount);
 				foreach (string word in NewPathList)
 				{
 					bool isEndWord = EndWordList.Contains(word.Last().ToString());
 					try
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Check and add '{word}' into database.", LOGIN_INSTANCE_NAME);
+						Logger.Debug($"Check and add '{word}' into database.");
 						if (DatabaseManager.AddWord(word, isEndWord))
 						{
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added '{word}' into database.", LOGIN_INSTANCE_NAME);
+							Logger.Info($"Added '{word}' into database.");
 							AddedPathCount++;
 						}
 					}
 					catch (Exception ex)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't add '{word}' to database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
+						Logger.Error($"Can't add '{word}' to database", ex);
 					}
 				}
 				NewPathList = new List<string>();
 
 				InexistentPathCount = InexistentPathList.Count;
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Get {0} elements from WrongPathList.", InexistentPathCount), LOGIN_INSTANCE_NAME);
+				Logger.InfoFormat("Get {0} elements from WrongPathList.", InexistentPathCount);
 				foreach (string word in InexistentPathList)
 				{
 					try
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Delete '{word}' from database.", LOGIN_INSTANCE_NAME);
 						RemovedPathCount += DatabaseManager.DeleteWord(word);
 					}
 					catch (Exception ex)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't delete '{word}' from database : " + ex.ToString(), LOGIN_INSTANCE_NAME);
+						Logger.Error($"Can't delete '{word}' from database", ex);
 					}
 				}
 				InexistentPathList = new List<string>();
 
 				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Automatic DB Update complete: {result}", LOGIN_INSTANCE_NAME);
+				Logger.Info($"Automatic DB Update complete ({result})");
 
 				return result;
 			}
@@ -127,9 +126,9 @@ namespace AutoKkutu
 			foreach (PathObject o in input)
 			{
 				if (UnsupportedPathList.Contains(o.Content))
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is wrong word.", LOGIN_INSTANCE_NAME);
+					Logger.DebugFormat("Excluded '{0}' because it is wrong word.", o.Content);
 				else if (!CurrentConfig.ReturnMode && PreviousPath.Contains(o.Content))
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Excluded '" + o.Content + "' because it is previously used.", LOGIN_INSTANCE_NAME);
+					Logger.DebugFormat("Excluded '{0}' because it is previously used.", o.Content);
 				else
 					result.Add(o);
 			}
@@ -139,9 +138,9 @@ namespace AutoKkutu
 		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, int wordPreference, bool useEndWord, bool reverseMode)
 		{
 			if (word.CanSubstitution)
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {word.Content} ({word.Substitution}).", LOGIN_INSTANCE_NAME);
+				Logger.InfoFormat("Finding path for {0} ({1}).", word.Content, word.Substitution);
 			else
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Finding path for {word.Content}.", LOGIN_INSTANCE_NAME);
+				Logger.InfoFormat("Finding path for {0}.", word.Content);
 
 			// Prevent watchdog thread from being blocked
 			Task.Run(() =>
@@ -156,29 +155,29 @@ namespace AutoKkutu
 					if (wordPreference == Config.WORDPREFERENCE_BY_LENGTH_INDEX)
 					{
 						WordList = DatabaseManager.FindWord(word, missionChar, useEndWord ? 2 : 0, reverseMode);
-						ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words.", WordList.Count), PATHFINDER_WORKER_THREAD_NAME);
+						Logger.InfoFormat("Found {0} words.", WordList.Count);
 					}
 					else
 					{
 						if (useEndWord)
 						{
 							WordList = DatabaseManager.FindWord(word, missionChar, 1, reverseMode);
-							ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Find {0} words (EndWord inclued).", WordList.Count), PATHFINDER_WORKER_THREAD_NAME);
+							Logger.InfoFormat("Find {0} words (EndWord inclued).", WordList.Count);
 						}
 						else
 						{
 							WordList = DatabaseManager.FindWord(word, missionChar, 0, reverseMode);
-							ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} words (EndWord excluded).", WordList.Count), PATHFINDER_WORKER_THREAD_NAME);
+							Logger.InfoFormat("Found {0} words (EndWord excluded).", WordList.Count);
 						}
 						// TODO: Attack word search here
 						// AttackWord = DatabaseManager.FindWord(i, 3); // 3 for only attack words
-						// ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found {0} attack words.", NormalWord.Count), PATHFINDER_WORKER_THREAD_NAME);
+						// Logger.Info(string.Format("Found {0} attack words.", NormalWord.Count), PATHFINDER_WORKER_THREAD_NAME);
 					}
 				}
 				catch (Exception e)
 				{
 					watch.Stop();
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Find Path : " + e.ToString(), PATHFINDER_WORKER_THREAD_NAME);
+					Logger.Error("Failed to Find Path", e);
 					if (UpdatedPath != null)
 						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Error, 0, 0, 0, false));
 				}
@@ -187,7 +186,7 @@ namespace AutoKkutu
 				if (QualifiedNormalList.Count == 0)
 				{
 					watch.Stop();
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't find any path.", PATHFINDER_WORKER_THREAD_NAME);
+					Logger.Warn("Can't find any path.");
 					if (UpdatedPath != null)
 						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), false));
 					return;
@@ -197,7 +196,7 @@ namespace AutoKkutu
 
 				FinalList = QualifiedNormalList;
 				watch.Stop();
-				ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds), PATHFINDER_WORKER_THREAD_NAME);
+				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds);
 				if (UpdatedPath != null)
 					UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
 			});

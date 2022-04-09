@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using log4net;
 using Microsoft.Data.Sqlite;
 
 namespace AutoKkutu
@@ -12,7 +13,7 @@ namespace AutoKkutu
 	{
 		public static string GetDBInfo() => "Offline Database (Sqlite)";
 
-		private const string LOG_MODULE_NAME = "DatabaseManager";
+		private static readonly ILog Logger = LogManager.GetLogger("DatabaseManager");
 
 		private static readonly bool _isInited = false;
 
@@ -30,13 +31,13 @@ namespace AutoKkutu
 			{
 				try
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "_currentOperationMode = DBMethod.Local.", LOG_MODULE_NAME);
+					Logger.Info("_currentOperationMode = DBMethod.Local.");
 					if (!new FileInfo(_sqlLiteDBLocation).Exists)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, _sqlLiteDBLocation + " does not exist. Create new file.", LOG_MODULE_NAME);
+						Logger.Info(_sqlLiteDBLocation + " does not exist. Create new file.");
 						File.Create(_sqlLiteDBLocation).Close();
 					}
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening database connection.", LOG_MODULE_NAME);
+					Logger.Info("Opening database connection.");
 					DatabaseConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
 					DatabaseConnection.Open();
 					DatabaseConnection.CreateFunction("checkMissionChar", (string str, string ch) =>
@@ -50,13 +51,13 @@ namespace AutoKkutu
 					});
 
 					CheckTable();
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "DB Open Complete.", LOG_MODULE_NAME);
+					Logger.Info("DB Open Complete.");
 				}
-				catch (Exception e)
+				catch (Exception ex)
 				{
 					if (DBError != null)
 						DBError(null, EventArgs.Empty);
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect DB : " + e.ToString(), LOG_MODULE_NAME);
+					Logger.Error("Failed to connect DB", ex);
 				}
 			}
 		}
@@ -71,35 +72,35 @@ namespace AutoKkutu
 
 			Task.Run(() =>
 			{
-				try
+			try
+			{
+
+				Logger.InfoFormat("Loading external database: {0}", dbFileName);
+				var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
+				externalDBConnection.Open();
+
+				if (!CheckTable_Check("word_list"))
 				{
+					Logger.Info("Database doesn't contain table 'word_list'");
+					return;
+				}
+				if (!CheckTable_Check("endword_list"))
+				{
+					Logger.Info("Database doesn't contain table 'endword_list'");
+					return;
+				}
 
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Loading external database: {dbFileName}", LOG_MODULE_NAME);
-					var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
-					externalDBConnection.Open();
-
-					if (!CheckTable_Check("word_list"))
+				int WordCount = 0;
+				int EndWordCount = 0;
+				using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
+					while (reader2.Read())
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'word_list'", LOG_MODULE_NAME);
-						return;
-					}
-					if (!CheckTable_Check("endword_list"))
-					{
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database doesn't contain table 'endword_list'", LOG_MODULE_NAME);
-						return;
-					}
-
-					int WordCount = 0;
-					int EndWordCount = 0;
-					using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
-						while (reader2.Read())
-						{
-							string word = reader2["word"].ToString().Trim();
-							bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
-							if (AddWord(word, isEndWord))
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Imported word '{word}' {(isEndWord ? "(EndWord)" : "")}", LOG_MODULE_NAME);
+						string word = reader2["word"].ToString().Trim();
+						bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
+						if (AddWord(word, isEndWord))
+							Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
 							else
-								ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Word '{word}' is already existing in database.", LOG_MODULE_NAME);
+								Logger.WarnFormat("Word '{0}' is already existing in database.", word);
 							WordCount++;
 						}
 
@@ -108,19 +109,19 @@ namespace AutoKkutu
 						{
 							string endword = reader2["word_index"].ToString();
 							if (AddEndWord(endword))
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Added end-word '{endword}'", LOG_MODULE_NAME);
+								Logger.InfoFormat("Added end-word '{0}'", endword);
 							else
-								ConsoleManager.Log(ConsoleManager.LogType.Warning, $"End-word '{endword}' is already existing in database.", LOG_MODULE_NAME);
+								Logger.WarnFormat("End-word '{0}' is already existing in database.", endword);
 							EndWordCount++;
 						}
 
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"DB Import Complete. ({WordCount} Words / {EndWordCount} EndWordNodes)", LOG_MODULE_NAME);
+					Logger.InfoFormat("DB Import Complete. ({0} Words / {1} EndWordNodes)", WordCount, EndWordCount);
 					if (DBJobDone != null)
 						DBJobDone(null, new DBJobArgs("데이터베이스 불러오기", $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드"));
 				}
-				catch (Exception e)
+				catch (Exception ex)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to connect external DB : " + e.ToString(), LOG_MODULE_NAME);
+					Logger.Error("Failed to connect external DB", ex);
 				}
 			});
 		}
@@ -132,7 +133,7 @@ namespace AutoKkutu
 			using (SqliteDataReader reader2 = new SqliteCommand("SELECT * FROM endword_list", DatabaseConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(reader2["word_index"].ToString());
-			ConsoleManager.Log(ConsoleManager.LogType.Info, string.Format("Found Total {0} end word.", result.Count), LOG_MODULE_NAME);
+			Logger.Info(string.Format("Found Total {0} end word.", result.Count));
 			return result;
 		}
 
@@ -142,16 +143,16 @@ namespace AutoKkutu
 			{
 				return new SqliteCommand(command, DatabaseConnection).ExecuteNonQuery();
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to Execute DB Command ' " + command + " ' : " + e.ToString(), LOG_MODULE_NAME);
+				Logger.Error($"Failed to execute Sqlite query '{command}'", ex);
 			}
 			return -1;
 		}
 
 		public static int DeleteWord(string word)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Delete '" + word + "' from db...", LOG_MODULE_NAME);
+			Logger.Info("Delete '" + word + "' from db...");
 			return ExecuteCommand("DELETE FROM word_list WHERE word = '" + word + "'");
 		}
 
@@ -183,13 +184,13 @@ namespace AutoKkutu
 			{
 				try
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Intergrity Check....\nIt will be very long task.", LOG_MODULE_NAME);
+					Logger.Info("Database Intergrity Check....\nIt will be very long task.");
 					int dbTotalCount;
 
 					int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM word_list", DatabaseConnection).ExecuteScalar().ToString(), out dbTotalCount);
 
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database has Total {dbTotalCount} elements.", LOG_MODULE_NAME);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Getting all elements from database..", LOG_MODULE_NAME);
+					Logger.InfoFormat("Database has Total {0} elements.", dbTotalCount);
+					Logger.Info("Getting all elements from database..");
 					int elementCount = 0;
 					int DeduplicatedCount = 0;
 					int RemovedCount = 0;
@@ -198,7 +199,7 @@ namespace AutoKkutu
 					var WordIndexCorrection = new List<string>();
 					var ReverseWordIndexCorrection = new List<string>();
 					var IsEndWordCorrection = new Dictionary<string, int>();
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Opening _ChecksqlLiteConnection.", LOG_MODULE_NAME);
+					Logger.Info("Opening _ChecksqlLiteConnection.");
 
 					var _ChecksqlLiteConnection = new SqliteConnection("Data Source=" + _sqlLiteDBLocation);
 					_ChecksqlLiteConnection.Open();
@@ -208,11 +209,11 @@ namespace AutoKkutu
 					try
 					{
 						DeduplicatedCount = new SqliteCommand("DELETE FROM word_list WHERE _rowid_ IN (SELECT _rowid_ FROM (SELECT _rowid_, ROW_NUMBER() OVER w as rnum FROM word_list WINDOW w AS (PARTITION BY word ORDER BY _rowid_)) t WHERE t.rnum > 1);", _ChecksqlLiteConnection).ExecuteNonQuery();
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Deduplicated {DeduplicatedCount} entries.", LOG_MODULE_NAME);
+						Logger.InfoFormat("Deduplicated {0} entries.", DeduplicatedCount);
 					}
 					catch (Exception ex)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Word deduplication failed: {ex}", LOG_MODULE_NAME);
+						Logger.Error("Word deduplication failed", ex);
 					}
 
 					// Check for errors
@@ -222,12 +223,12 @@ namespace AutoKkutu
 						{
 							elementCount++;
 							string content = reader["word"].ToString();
-							ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} of {elementCount} ({content})", LOG_MODULE_NAME);
+							Logger.InfoFormat("Total {0} of {1} ({2})", dbTotalCount, elementCount, content);
 
 							// Check word validity
 							if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == '-' || content[0] == '.' || content.Contains(" "))
 							{
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Not a valid word; Will be removed.", LOG_MODULE_NAME);
+								Logger.Info("Not a valid word; Will be removed.");
 								DeletionList.Add(content);
 								continue;
 							}
@@ -243,7 +244,7 @@ namespace AutoKkutu
 							string correctWordIndex = content.First().ToString();
 							if (correctWordIndex != reader["word_index"].ToString())
 							{
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Word Index; Will be fixed to '{correctWordIndex}'.", LOG_MODULE_NAME);
+								Logger.InfoFormat("Invaild Word Index; Will be fixed to '{0}'.", correctWordIndex);
 								WordIndexCorrection.Add(content);
 							}
 
@@ -251,7 +252,7 @@ namespace AutoKkutu
 							string correctReverseWordIndex = content.Last().ToString();
 							if (correctReverseWordIndex != reader["reverse_word_index"].ToString())
 							{
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Reverse Word Index; Will be fixed to '{correctReverseWordIndex}'.", LOG_MODULE_NAME);
+								Logger.InfoFormat("Invaild Reverse Word Index; Will be fixed to '{0}'.", correctReverseWordIndex);
 								ReverseWordIndexCorrection.Add(content);
 							}
 
@@ -259,7 +260,7 @@ namespace AutoKkutu
 							int CorrectIsEndWord = Convert.ToInt32(PathFinder.EndWordList.Contains(content.Last().ToString()));
 							if (CorrectIsEndWord != Convert.ToInt32(reader["is_endword"].ToString()))
 							{
-								ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invaild Is_EndWord Tag; Will be fixed to '{CorrectIsEndWord}'.", LOG_MODULE_NAME);
+								Logger.InfoFormat("Invaild Is_EndWord Tag; Will be fixed to '{0}'.", CorrectIsEndWord);
 								IsEndWordCorrection.Add(content, CorrectIsEndWord);
 							}
 						}
@@ -269,7 +270,7 @@ namespace AutoKkutu
 					foreach (string content in DeletionList)
 					{
 						RemovedCount++;
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Removed '{content}' from database.", LOG_MODULE_NAME);
+						Logger.InfoFormat("Removed '{0}' from database.", content);
 						ExecuteCommand("DELETE FROM word_list WHERE word = '" + content + "'");
 					}
 
@@ -278,7 +279,7 @@ namespace AutoKkutu
 						FixedCount++;
 
 						string correctWordIndex = content.First().ToString();
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed word_index of '{content}' to '{correctWordIndex}'.", LOG_MODULE_NAME);
+						Logger.InfoFormat("Fixed word_index of '{0}' to '{1}'.", content, correctWordIndex);
 						ExecuteCommand($"UPDATE word_list SET word_index = '{correctWordIndex}' WHERE word = '{content}';");
 					}
 
@@ -287,7 +288,7 @@ namespace AutoKkutu
 						FixedCount++;
 
 						string correctReverseWordIndex = content.Last().ToString();
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed reverse_word_index of '{content}' to '{correctReverseWordIndex}'.", LOG_MODULE_NAME);
+						Logger.InfoFormat("Fixed reverse_word_index of '{0}' to '{1}'.", content, correctReverseWordIndex);
 						ExecuteCommand($"UPDATE word_list SET reverse_word_index = '{correctReverseWordIndex}' WHERE word = '{content}';");
 					}
 
@@ -295,21 +296,21 @@ namespace AutoKkutu
 					{
 						FixedCount++;
 
-						ConsoleManager.Log(ConsoleManager.LogType.Info, $"Fixed is_endword of '{pair.Key}' to '{pair.Value}'.", LOG_MODULE_NAME);
+						Logger.InfoFormat("Fixed is_endword of '{0}' to '{1}'.", pair.Key, pair.Value);
 						ExecuteCommand($"UPDATE word_list SET is_endword = '{pair.Value}' WHERE word = '{pair.Key}';");
 					}
 
 					_ChecksqlLiteConnection.Close();
 
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Total {dbTotalCount} / Removed {RemovedCount} / Fixed {FixedCount}.", LOG_MODULE_NAME);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Database Check Completed.", LOG_MODULE_NAME);
+					Logger.InfoFormat("Total {0} / Removed {1} / Fixed {2}.", dbTotalCount, RemovedCount, FixedCount);
+					Logger.Info("Database Check Completed.");
 
 					if (DBJobDone != null)
 						DBJobDone(null, new DBJobArgs("데이터베이스 검증", $"{RemovedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
 				}
 				catch (Exception ex)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, $"Exception while checking database: {ex}", LOG_MODULE_NAME);
+					Logger.Error($"Exception while checking database", ex);
 				}
 			});
 		}
@@ -361,7 +362,7 @@ namespace AutoKkutu
 				orderCondition = $"(checkMissionChar(word, '{missionChar}') + {orderCondition2} LENGTH(word))";
 
 			string query = $"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT {50}";
-			//ConsoleManager.Log(ConsoleManager.LogType.Info, $"Query: {query}", LOG_MODULE_NAME);
+			//Logger.InfoFormat("Query: {0}", query);
 			using (SqliteDataReader reader2 = new SqliteCommand(query, DatabaseConnection).ExecuteReader())
 				while (reader2.Read())
 					result.Add(new PathFinder.PathObject(reader2["word"].ToString().Trim(), Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]))));
@@ -395,11 +396,11 @@ namespace AutoKkutu
 					try
 					{
 						new SqliteCommand("ALTER TABLE word_list ADD COLUMN reverse_word_index CHAR(1) NOT NULL DEFAULT ' '", DatabaseConnection).ExecuteNonQuery();
-						ConsoleManager.Log(ConsoleManager.LogType.Warning, "Added reverse_word_index column", LOG_MODULE_NAME);
+						Logger.Warn("Added reverse_word_index column");
 					}
 					catch (Exception ex)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to add reverse_word_index: {ex}", LOG_MODULE_NAME);
+						Logger.Error($"Failed to add reverse_word_index", ex);
 					}
 				}
 			}
@@ -422,7 +423,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to check {columnName} existence: {ex}", LOG_MODULE_NAME);
+				Logger.Error($"Failed to check {columnName} existence", ex);
 			}
 
 			return false;
@@ -431,7 +432,7 @@ namespace AutoKkutu
 
 		private static void MakeTable(string tablename)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Create Table : " + tablename, LOG_MODULE_NAME);
+			Logger.Info("Create Table : " + tablename);
 			if (tablename == "word_list")
 				ExecuteCommand("CREATE TABLE word_list (word VARCHAR(60) NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, is_endword TINYINT(1) NOT NULL);");
 			else if (tablename == "endword_list")
@@ -440,14 +441,14 @@ namespace AutoKkutu
 
 		private static bool CheckTable_Check(string tablename)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Check Table : " + tablename, LOG_MODULE_NAME);
+			Logger.Info("Check Table : " + tablename);
 			try
 			{
 				return int.TryParse(new SqliteCommand("SELECT COUNT(*) FROM sqlite_master WHERE name='" + tablename + "';", DatabaseConnection).ExecuteScalar().ToString(), out int i) && i > 0;
 			}
 			catch (Exception e2)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Failed to Execute Check DB Table ' " + tablename + " ' : " + e2.ToString(), LOG_MODULE_NAME);
+				Logger.Info("Failed to Execute Check DB Table ' " + tablename + " ' : " + e2.ToString());
 				return false;
 			}
 		}

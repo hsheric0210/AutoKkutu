@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -17,13 +18,6 @@ namespace AutoKkutu
 		private const int MF_BYCOMMAND = 0;
 
 		public const int SC_CLOSE = 61536;
-
-		public enum LogType
-		{
-			Info,
-			Warning,
-			Error
-		}
 
 		[DllImport("kernel32.dll")]
 		private static extern bool AllocConsole();
@@ -96,7 +90,5 @@ namespace AutoKkutu
 			Console.SetOut(TextWriter.Null);
 			Console.SetError(TextWriter.Null);
 		}
-
-		public static void Log(LogType Type, string content, string module) => Console.WriteLine($"[{Type}] {module} | {content}");
 	}
 }

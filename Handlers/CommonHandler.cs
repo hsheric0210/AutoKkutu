@@ -7,11 +7,14 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using log4net;
 
 namespace AutoKkutu
 {
 	public abstract class CommonHandler
 	{
+		private ILog GetLogger(int watchdogID) => LogManager.GetLogger($"{GetHandlerName()} - #{watchdogID}");
+
 		public ChromiumWebBrowser Browser;
 		public bool IsWatchdogAlive;
 
@@ -80,14 +83,14 @@ namespace AutoKkutu
 				cancelTokenSrc = new CancellationTokenSource();
 				_watchdogTask = new Task(() => Watchdog(cancelTokenSrc.Token), cancelTokenSrc.Token);
 				_watchdogTask.Start();
-				Log(ConsoleManager.LogType.Info, "Watchdog thread started.", CurrentWatchdogID);
+				GetLogger(CurrentWatchdogID).Info("Watchdog thread started.");
 			}
 		}
 		public void StopWatchdog()
 		{
 			if (_isWatchdogStarted)
 			{
-				Log(ConsoleManager.LogType.Info, "Watchdog thread stop requested.", CurrentWatchdogID);
+				GetLogger(CurrentWatchdogID).Info("Watchdog thread stop requested.");
 				cancelTokenSrc?.Cancel();
 				_isWatchdogStarted = false;
 			}
@@ -122,7 +125,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Log(ConsoleManager.LogType.Info, $"Watchdog thread terminated: {ex}.", watchdogID);
+				GetLogger(watchdogID).Warn("Watchdog thread terminated", ex);
 			}
 		}
 
@@ -138,7 +141,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + ex.ToString(), CurrentWatchdogID);
+				GetLogger(CurrentWatchdogID).Error("Failed to run script on site.", ex);
 				return " ";
 			}
 		}
@@ -151,14 +154,14 @@ namespace AutoKkutu
 				{
 					if (!IsGameStarted)
 						return;
-					Log(ConsoleManager.LogType.Info, "Game ended.", watchdogID);
+					GetLogger(watchdogID).Debug("Game ended.");
 					if (onGameEnded != null)
 						onGameEnded(this, EventArgs.Empty);
 					_isgamestarted = false;
 				}
 				else if (IsMyTurn)
 				{
-					Log(ConsoleManager.LogType.Info, "My turn ended.", watchdogID);
+					GetLogger(watchdogID).Debug("My turn ended.");
 					if (onMyTurnEnded != null)
 						onMyTurnEnded(this, EventArgs.Empty);
 					_isMyTurn = false;
@@ -168,7 +171,7 @@ namespace AutoKkutu
 			{
 				if (_isgamestarted)
 					return;
-				Log(ConsoleManager.LogType.Info, "New round started; Previous word list flushed.", watchdogID);
+				GetLogger(watchdogID).Debug("New round started; Previous word list flushed.");
 				if (onGameStarted != null)
 					onGameStarted(this, EventArgs.Empty);
 				_isgamestarted = true;
@@ -177,9 +180,9 @@ namespace AutoKkutu
 			{
 				ResponsePresentedWord presentedWord = GetPresentedWord();
 				if (presentedWord.CanSubstitution)
-					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content} (Subsitution: {presentedWord.Substitution})", watchdogID);
+					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0} (Subsitution: {1})", presentedWord.Content, presentedWord.Substitution);
 				else
-					Log(ConsoleManager.LogType.Info, $"My Turn. presented word is {presentedWord.Content}", watchdogID);
+					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
 				if (onMyTurn != null)
 					onMyTurn(this, new MyTurnEventArgs(presentedWord, CurrentMissionChar));
@@ -195,7 +198,7 @@ namespace AutoKkutu
 			string word = previousWord.Split('<')[0];
 			if (word == _wordCache)
 				return;
-			Log(ConsoleManager.LogType.Info, "Found Previous Word : " + word, watchdogID);
+			GetLogger(watchdogID).InfoFormat("Found Previous Word : {0}", word);
 			_wordCache = word;
 			if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
 				PathFinder.NewPathList.Add(word);
@@ -207,7 +210,7 @@ namespace AutoKkutu
 			string missionWord = GetMissionWord();
 			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, _current_mission_word, StringComparison.InvariantCulture))
 				return;
-			Log(ConsoleManager.LogType.Info, "Mission Word Changed: " + missionWord, watchdogID);
+			GetLogger(watchdogID).InfoFormat("Mission Word Changed : {0}", missionWord);
 			_current_mission_word = missionWord;
 		}
 
@@ -216,7 +219,7 @@ namespace AutoKkutu
 			string round = GetGameRound();
 			if (string.IsNullOrWhiteSpace(round) || string.Equals(round, _roundCache, StringComparison.InvariantCulture))
 				return;
-			Log(ConsoleManager.LogType.Info, "Round Changed: " + round, watchdogID);
+			GetLogger(watchdogID).InfoFormat("Round Changed : {0}", round);
 			if (onRoundChange != null)
 				onRoundChange(this, EventArgs.Empty);
 			PathFinder.PreviousPath = new List<string>();
@@ -246,13 +249,11 @@ namespace AutoKkutu
 			if (string.Equals(example, _exampleWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
 			_exampleWordCache = example;
-			Log(ConsoleManager.LogType.Info, "Example submitted: " + example, watchdogID);
+			GetLogger(watchdogID).InfoFormat("Path example detected : {0}", example);
 			PathFinder.NewPathList.Add(example);
 		}
 
 		private int CurrentWatchdogID => _watchdogTask == null ? -1 : _watchdogTask.Id;
-
-		void Log(ConsoleManager.LogType logtype, string Content, int watchdogID) => ConsoleManager.Log(logtype, Content, $"{GetHandlerName()} - #{watchdogID}");
 
 		private ResponsePresentedWord GetPresentedWord()
 		{

@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using log4net;
 
 namespace AutoKkutu
 {
@@ -38,34 +39,34 @@ namespace AutoKkutu
 		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈으로 구분)";
 		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄은 줄바꿈으로 구분)";
 
+		private static readonly ILog Logger = LogManager.GetLogger("DatabaseManagement");
+
 		public static EventHandler AddWordStart;
 		public static EventHandler AddWordDone;
 
-		private static readonly string LOG_INSTANCE_NAME = "DatabaseManagement";
-
 		public static bool KkutuOnlineDictCheck(string word)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Find '" + word + "' in kkutu dict...", LOG_INSTANCE_NAME);
+			Logger.Info("Find '" + word + "' in kkutu dict...");
 			EvaluateJS("document.getElementById('dict-input').value ='" + word + "'");
 			EvaluateJS("document.getElementById('dict-search').click()");
 			Thread.Sleep(1500);
 			string result = EvaluateJS("document.getElementById('dict-output').innerHTML");
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Server Response : " + result, LOG_INSTANCE_NAME);
+			Logger.Info("Server Response : " + result);
 			if (string.IsNullOrWhiteSpace(result) || result == "404: 유효하지 않은 단어입니다.")
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't find '" + word + "' in kkutu dict.", LOG_INSTANCE_NAME);
+				Logger.Error("Can't find '" + word + "' in kkutu dict.");
 				return false;
 			}
 			else
 			{
 				if (result == "검색 중")
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, "Invaild server response. Resend the request.", LOG_INSTANCE_NAME);
+					Logger.Error("Invaild server response. Resend the request.");
 					return KkutuOnlineDictCheck(word);
 				}
 				else
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Successfully Find '" + word + "' in kkutu dict.", LOG_INSTANCE_NAME);
+					Logger.Info("Successfully Find '" + word + "' in kkutu dict.");
 					return true;
 				}
 			}
@@ -92,19 +93,19 @@ namespace AutoKkutu
 				int FailedCount = 0;
 				int NewEndNode = 0;
 
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"{WordList.Length} elements queued.", LOG_INSTANCE_NAME);
+				Logger.Info($"{WordList.Length} elements queued.");
 				foreach (string word in WordList)
 				{
 					if (string.IsNullOrWhiteSpace(word))
 						continue;
 
 					if (!remove && onlineVerify)
-						ConsoleManager.Log(ConsoleManager.LogType.Info, "Check kkutu dict : '" + word + "' .", LOG_INSTANCE_NAME);
+						Logger.Info("Check kkutu dict : '" + word + "' .");
 
 					// Check word length
 					if (!remove && word.Length <= 1)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, "'" + word + "' is too short to add!", LOG_INSTANCE_NAME);
+						Logger.Error("'" + word + "' is too short to add!");
 						FailedCount++;
 					}
 					else if (remove || !onlineVerify || KkutuOnlineDictCheck(word))
@@ -119,7 +120,7 @@ namespace AutoKkutu
 							catch (Exception ex)
 							{
 								FailedCount++;
-								ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to Add/Remove '{word}' to/from database : {ex.ToString()}", LOG_INSTANCE_NAME);
+								Logger.Error($"Failed to Add/Remove '{word}' to/from database", ex);
 								continue;
 							}
 						}
@@ -130,27 +131,27 @@ namespace AutoKkutu
 								bool isEndword = PathFinder.EndWordList.Contains(word[word.Length - 1].ToString());
 
 								if (forceEndword || isEndword)
-									ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' is End word.", LOG_INSTANCE_NAME);
+									Logger.Info("'" + word + "' is End word.");
 								else
-									ConsoleManager.Log(ConsoleManager.LogType.Info, "'" + word + "' isn't End word.", LOG_INSTANCE_NAME);
+									Logger.Info("'" + word + "' isn't End word.");
 
-								ConsoleManager.Log(ConsoleManager.LogType.Info, "Adding'" + word + "' into database...", LOG_INSTANCE_NAME);
+								Logger.Info("Adding'" + word + "' into database...");
 								if (DatabaseManager.AddWord(word, forceEndword || isEndword))
 								{
 									SuccessCount++;
-									ConsoleManager.Log(ConsoleManager.LogType.Info, $"Successfully Add '{word}' to database!", LOG_INSTANCE_NAME);
+									Logger.Info($"Successfully Add '{word}' to database!");
 								}
 								else
 								{
 									DuplicateCount++;
-									ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{word}' already exists on database", LOG_INSTANCE_NAME);
+									Logger.Warn($"'{word}' already exists on database");
 								}
 								if (forceEndword && !isEndword)
 								{
 									// Add to endword dictionary
 									string endnode = word.Last().ToString();
 									PathFinder.EndWordList.Add(endnode);
-									ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Added new end word node '{endnode}", LOG_INSTANCE_NAME);
+									Logger.Warn($"Added new end word node '{endnode}");
 									NewEndNode++;
 								}
 							}
@@ -158,13 +159,13 @@ namespace AutoKkutu
 							{
 								// Check one or more exceptions are occurred during addition
 								FailedCount++;
-								ConsoleManager.Log(ConsoleManager.LogType.Error, $"Failed to Add/Remove '{word}' to/from database : {ex.ToString()}", LOG_INSTANCE_NAME);
+								Logger.Error($"Failed to Add/Remove '{word}' to/from database", ex);
 								continue;
 							}
 						}
 					}
 				}
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success / {NewEndNode} New end node / {DuplicateCount} Duplicated / {FailedCount} Failed.", LOG_INSTANCE_NAME);
+				Logger.Info($"Database Operation Complete. {SuccessCount} Success / {NewEndNode} New end node / {DuplicateCount} Duplicated / {FailedCount} Failed.");
 				string StatusMessage;
 				if (remove)
 					StatusMessage = $"{SuccessCount} 개 성공적으로 제거 / {FailedCount} 개 제거 실패";
@@ -188,7 +189,7 @@ namespace AutoKkutu
 			int DuplicateCount = 0;
 			int FailedCount = 0;
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"{NodeList.Length} elements queued.", LOG_INSTANCE_NAME);
+			Logger.Info($"{NodeList.Length} elements queued.");
 			foreach (string node in NodeList)
 			{
 				if (string.IsNullOrWhiteSpace(node))
@@ -197,23 +198,23 @@ namespace AutoKkutu
 				{
 					if (DatabaseManager.AddEndWord(node))
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, string.Format("Successfully add Endword '{0}'!", node[0]), LOG_INSTANCE_NAME);
+						Logger.Info(string.Format("Successfully add Endword '{0}'!", node[0]));
 						SuccessCount++;
 					}
 					else
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{node[0]}' is already exists", LOG_INSTANCE_NAME);
+						Logger.Warn($"'{node[0]}' is already exists");
 						DuplicateCount++;
 					}
 				}
 				catch (Exception ex)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, string.Format("Failed to add Endword '{0}'! : {1}", node[0], ex.ToString()), LOG_INSTANCE_NAME);
+					Logger.Error($"Failed to add Endword '{node[0]}'!", ex);
 					FailedCount++;
 				}
 			}
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"Database Operation Complete. {SuccessCount} Success / {DuplicateCount} Duplicated / {FailedCount} Failed.", LOG_INSTANCE_NAME);
+			Logger.Info($"Database Operation Complete. {SuccessCount} Success / {DuplicateCount} Duplicated / {FailedCount} Failed.");
 			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 
@@ -229,7 +230,7 @@ namespace AutoKkutu
 			}
 			catch (Exception e2)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Failed to run script on site. Expection : \n" + e2.ToString(), LOG_INSTANCE_NAME);
+				Logger.Error("Failed to run script on site.", e2);
 				return " ";
 			}
 		}
@@ -275,7 +276,7 @@ namespace AutoKkutu
 					}
 					catch (IOException ioe)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
+						Logger.Error($"IOException occurred during reading word list files", ioe);
 					}
 				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false, Batch_Remove.IsChecked ?? false);
 			}
@@ -295,7 +296,7 @@ namespace AutoKkutu
 				{
 					if (!Directory.Exists(foldername))
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Warning, $"'{foldername}' is not a folder; skipped", LOG_INSTANCE_NAME);
+						Logger.Warn($"'{foldername}' is not a folder; skipped");
 						continue;
 					}
 					try
@@ -307,12 +308,12 @@ namespace AutoKkutu
 							}
 							catch (IOException ioe)
 							{
-								ConsoleManager.Log(ConsoleManager.LogType.Error, $"IOException during reading word list files: {ioe}", LOG_INSTANCE_NAME);
+								Logger.Error($"IOException during reading word list files", ioe);
 							}
 					}
 					catch (IOException ioe)
 					{
-						ConsoleManager.Log(ConsoleManager.LogType.Error, $"Unable to enumerate files in folder {foldername}: {ioe}", LOG_INSTANCE_NAME);
+						Logger.Error($"Unable to enumerate files in folder {foldername}", ioe);
 					}
 				}
 				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false, Batch_Remove.IsChecked ?? false);

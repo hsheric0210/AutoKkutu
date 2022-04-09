@@ -2,6 +2,7 @@
 using CefSharp;
 using CefSharp.Handler;
 using CefSharp.Wpf;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,6 +26,8 @@ namespace AutoKkutu
 		private const string PATHFINDER_WAITING = "단어 검색 대기중.";
 		private const string PATHFINDER_ERROR = "오류가 발생하여 단어 검색 실패.";
 		private const string PATHFINDER_UNAVAILABLE = "이 턴에 사용 가능한 단어 없음.";
+
+		private static ILog Logger = LogManager.GetLogger("MainThread");
 
 		public static ChromiumWebBrowser browser;
 
@@ -88,8 +91,7 @@ namespace AutoKkutu
 			VersionLabel.Content = "v1.0";
 
 			CommonHandler.InitHandlers(browser);
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Starting Load Page...", MAINTHREAD_NAME);
-
+			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
 			SubmitWord.Text = INPUT_TEXT_PLACEHOLDER;
 			SubmitWord.FontStyle = FontStyles.Italic;
@@ -105,7 +107,7 @@ namespace AutoKkutu
 
 		public static void UpdateConfig(Config newConfig)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Updated config.", MAINTHREAD_NAME);
+			Logger.Info("Updated config.");
 			CurrentConfig = newConfig;
 			PathFinder.UpdateConfig(newConfig);
 		}
@@ -127,7 +129,7 @@ namespace AutoKkutu
 		{
 			if (Handler != null)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Unregistered previous handler: {Handler.GetID()}", MAINTHREAD_NAME);
+				Logger.InfoFormat("Unregistered previous handler: {0}", Handler.GetID());
 
 				// Unregister previous handler
 				Handler.onGameStarted -= CommonHandler_GameStart;
@@ -147,6 +149,7 @@ namespace AutoKkutu
 			if (Handler != null)
 			{
 				browser.FrameLoadEnd -= Browser_FrameLoadEnd;
+				Logger.Info("Browser frame-load end.");
 
 				Handler.onGameStarted += CommonHandler_GameStart;
 				Handler.onGameEnded += CommonHandler_GameEnd;
@@ -157,19 +160,17 @@ namespace AutoKkutu
 				Handler.onRoundChange += CommonHandler_RoundChangeEvent;
 				Handler.StartWatchdog();
 
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Using handler: {Handler.GetID()}", MAINTHREAD_NAME);
-
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Browser frame-load end.", MAINTHREAD_NAME);
+				Logger.InfoFormat("Using handler: {0}", Handler.GetID());
 				RemoveAd();
 				Dispatcher.Invoke(() =>
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Hide LoadOverlay.", MAINTHREAD_NAME);
+					Logger.Info("Hide LoadOverlay.");
 					DBStatus.Content = DatabaseManager.GetDBInfo();
 					LoadOverlay.Visibility = Visibility.Hidden;
 				});
 			}
 			else
-				ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Unsupported site: {url}", MAINTHREAD_NAME);
+				Logger.WarnFormat($"Unsupported site: {0}", url);
 		}
 
 		private void DatabaseManager_DBJobStart(object sender, EventArgs e)
@@ -228,15 +229,15 @@ namespace AutoKkutu
 
 		private void PathFinder_UpdatedPath(object sender, EventArgs e)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Path update received. ( PathFinder_UpdatedPath() )", MAINTHREAD_NAME);
-
 			var i = (PathFinder.UpdatedPathEventArgs)e;
+
+			Logger.Info("Path update received.");
 
 			bool differentWord = Handler.CurrentPresentedWord != null && !i.Word.Equals(Handler.CurrentPresentedWord);
 			bool differentMissionChar = !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(i.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Invalidated Incorrect Path Update Result. (Word: {differentWord}, MissionChar: {differentMissionChar})", MAINTHREAD_NAME);
+				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
 				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar);
 				return;
 			}
@@ -258,14 +259,14 @@ namespace AutoKkutu
 			{
 				if (i.Result == PathFinder.FindResult.None)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. but can't find any path.", MAINTHREAD_NAME);
+					Logger.Warn("Auto mode enabled. but can't find any path.");
 					ChangeStatusBar(CurrentStatus.NotFound);
 				}
 				else
 				{
 					string content = PathFinder.FinalList.First().Content;
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Auto mode enabled. automatically use first path.", MAINTHREAD_NAME);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + content, MAINTHREAD_NAME);
+					Logger.Info("Auto mode enabled. automatically use first path.");
+					Logger.InfoFormat("Execute Path : {0}", content);
 					LastUsedPath = content;
 					//_pathSelected = true;
 					Handler.SendMessage(content);
@@ -278,14 +279,14 @@ namespace AutoKkutu
 
 		private void ResetPathList()
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Reset Path list... ", MAINTHREAD_NAME);
+			Logger.Info("Reset Path list... ");
 			PathFinder.FinalList = new List<PathFinder.PathObject>();
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 		}
 
 		private void CommonHandler_MyTurnEndEvent(object sender, EventArgs e)
 		{
-			ConsoleManager.Log(ConsoleManager.LogType.Warning, "Reset WordIndex to zero", MAINTHREAD_NAME);
+			Logger.Debug("Reset WordIndex to zero.");
 			WordIndex = 0;
 		}
 
@@ -301,7 +302,7 @@ namespace AutoKkutu
 			{
 				if (PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path : Presented word is End word.", MAINTHREAD_NAME);
+					Logger.Warn("Can't Find any path : Presented word is End word.");
 					ResetPathList();
 					SetSearchState(null, true);
 					ChangeStatusBar(CurrentStatus.EndWord);
@@ -314,7 +315,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Error, "Can't Find Path : " + ex.ToString(), MAINTHREAD_NAME);
+				Logger.Error("Can't find Path due exception", ex);
 			}
 		}
 
@@ -324,16 +325,16 @@ namespace AutoKkutu
 			bool isInexistent = !i.IsExistingWord;
 			string theWord = i.Word;
 			if (isInexistent)
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Entered word '{theWord}' is inexistent; Added to removal list", MAINTHREAD_NAME);
+				Logger.WarnFormat("Entered word '{0}' is inexistent; Added to removal list.", theWord);
 			else
-				ConsoleManager.Log(ConsoleManager.LogType.Info, $"Entered word '{theWord}' is exists but not supported; Added to unsupported list", MAINTHREAD_NAME);
+				Logger.WarnFormat("Entered word '{0}' is exists but not supported; Added to unsupported list.", theWord);
 			PathFinder.AddToUnsupportedWord(theWord, isInexistent);
 		}
 
 		private void CommonHandler_MyPathIsUnsupported(object sender, EventArgs e)
 		{
 			var word = ((CommonHandler.UnsupportedWordEventArgs)e).Word;
-			ConsoleManager.Log(ConsoleManager.LogType.Info, $"My path '{word}' is wrong.", MAINTHREAD_NAME);
+			Logger.WarnFormat("My path '{0}' is wrong.", word);
 
 			if (!CurrentConfig.AutoFix)
 				return;
@@ -341,7 +342,7 @@ namespace AutoKkutu
 			List<PathFinder.PathObject> localFinalList = PathFinder.FinalList;
 			if (localFinalList.Count - 1 <= WordIndex)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Warning, "Can't Find any path.", MAINTHREAD_NAME);
+				Logger.Warn("Can't Find any other path.");
 				ChangeStatusBar(CurrentStatus.NotFound);
 				return;
 			}
@@ -353,15 +354,15 @@ namespace AutoKkutu
 				{
 					WordIndex++;
 					string path = localFinalList[WordIndex].Content;
-					ConsoleManager.Log(ConsoleManager.LogType.Info, $"Auto mode enabled. automatically use next path (index {WordIndex}).", MAINTHREAD_NAME);
-					ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + path, MAINTHREAD_NAME);
+					Logger.InfoFormat("Auto mode enabled. automatically use next path (index {0}).", WordIndex);
+					Logger.InfoFormat("Execute Path: {0}", path);
 					LastUsedPath = path;
 					//_pathSelected = true;
 					Handler.SendMessage(path);
 				}
 				catch (Exception ex)
 				{
-					ConsoleManager.Log(ConsoleManager.LogType.Error, $"Can't execute path : {ex}", MAINTHREAD_NAME);
+					Logger.Error("Can't execute path due exception", ex);
 				}
 			}
 		}
@@ -391,7 +392,7 @@ namespace AutoKkutu
 						}
 						catch (Exception ex)
 						{
-							ConsoleManager.Log(ConsoleManager.LogType.Warning, $"Failed to write game result: {ex}", MAINTHREAD_NAME);
+							Logger.Warn("Failed to write game result", ex);
 						}
 
 					ChangeStatusBar(CurrentStatus.DB_Job_Done, "자동 업데이트", result);
@@ -476,7 +477,7 @@ namespace AutoKkutu
 
 			}
 
-			ConsoleManager.Log(ConsoleManager.LogType.Info, "Statusbar status change to " + status.ToString() + ".", MAINTHREAD_NAME);
+			Logger.DebugFormat("Statusbar status change to {0}.", status);
 			Dispatcher.Invoke(() =>
 			{
 				StatusGrid.Background = new SolidColorBrush(StatusColor);
@@ -529,14 +530,14 @@ namespace AutoKkutu
 			var i = (PathFinder.PathObject)PathList.SelectedItem;
 			if (i != null)
 			{
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Selected Path : " + i.Content, MAINTHREAD_NAME);
+				Logger.InfoFormat("Selected Path : '{0}'.", i.Content);
 
 				// In sometimes, we are smarter than machines
 				// if (_pathSelected)
 				// 	ConsoleManager.Log(ConsoleManager.LogType.Info, "Can't execute path! : _pathSelected = true.", MAINTHREAD_NAME);
 				// else
 				// {
-				ConsoleManager.Log(ConsoleManager.LogType.Info, "Execute Path : " + i.Content, MAINTHREAD_NAME);
+				Logger.InfoFormat("Executed Path : '{0}'.", i.Content);
 				//_pathSelected = true;
 				LastUsedPath = i.Content;
 				Handler.SendMessage(i.Content);
