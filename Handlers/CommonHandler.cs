@@ -295,7 +295,7 @@ namespace AutoKkutu
 		private void CheckExample(int watchdogID)
 		{
 			string example = GetExampleWord();
-			if (string.IsNullOrWhiteSpace(example))
+			if (string.IsNullOrWhiteSpace(example) || example.StartsWith("게임 끝"))
 				return;
 			if (string.Equals(example, _exampleWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
