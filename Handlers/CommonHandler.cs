@@ -205,15 +205,14 @@ namespace AutoKkutu
 			for (int index = 0; index < 6; index++)
 			{
 				string previousWord = GetGamePreviousWord(index);
-				if (string.IsNullOrWhiteSpace(previousWord) || !previousWord.Contains('<'))
-					continue;
-				tmpWordCache[index] = previousWord.Substring(0, previousWord.IndexOf('<'));
+				if (!string.IsNullOrWhiteSpace(previousWord) && previousWord.Contains('<'))
+					tmpWordCache[index] = previousWord.Substring(0, previousWord.IndexOf('<'));
 			}
 
 			for (int index = 0; index < 6; index++)
 			{
 				string word = tmpWordCache[index];
-				if (!_wordCache.Contains(word))
+				if (!string.IsNullOrWhiteSpace(word) && !_wordCache.Contains(word))
 				{
 					GetLogger(watchdogID).InfoFormat("Found Previous Word : {0}", word);
 
@@ -223,7 +222,7 @@ namespace AutoKkutu
 				}
 			}
 
-			_wordCache = tmpWordCache;
+			Array.Copy(tmpWordCache, _wordCache, 6);
 		}
 
 		private void GetCurrentMissionWord(int watchdogID)
