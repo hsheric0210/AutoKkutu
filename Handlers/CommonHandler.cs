@@ -34,7 +34,7 @@ namespace AutoKkutu
 		private bool _isMyTurn = false;
 		private bool _isWatchdogStarted = false;
 		private string _current_mission_word = "";
-		private string _wordCache = "";
+		private string[] _wordCache = new string[6];
 		private string _roundCache = "";
 		private string _unsupportedWordCache = "";
 		private string _exampleWordCache = "";
@@ -81,7 +81,7 @@ namespace AutoKkutu
 			{
 				_isWatchdogStarted = true;
 				cancelTokenSrc = new CancellationTokenSource();
-				_watchdogTask = new Task(() => Watchdog(cancelTokenSrc.Token), cancelTokenSrc.Token);
+				_watchdogTask = new Task(async () => await Watchdog(cancelTokenSrc.Token), cancelTokenSrc.Token);
 				_watchdogTask.Start();
 				GetLogger(CurrentWatchdogID).Info("Watchdog thread started.");
 			}
@@ -96,7 +96,8 @@ namespace AutoKkutu
 			}
 		}
 
-		private async void Watchdog(CancellationToken cancelToken)
+		// TODO: 와치독 스레드를 기능별로 여러 개를 돌리면 어떨까?
+		private async Task Watchdog(CancellationToken cancelToken)
 		{
 			int watchdogID = CurrentWatchdogID;
 			try
@@ -108,15 +109,19 @@ namespace AutoKkutu
 					if (cancelToken.IsCancellationRequested)
 						cancelToken.ThrowIfCancellationRequested();
 
-					CheckGameState(CheckType.GameStarted, watchdogID);
+					// 만약 누군가 이 Task.Run의 향연보다 더 좋은 방법을 알고 계신다면
+					// 좀 고쳐주세요...
+					await Task.Run(() => CheckGameState(CheckType.GameStarted, watchdogID));
 					if (_isgamestarted)
 					{
-						CheckGameState(CheckType.MyTurn, watchdogID);
-						GetPreviousWord(watchdogID);
-						GetCurrentRound(watchdogID);
-						GetCurrentMissionWord(watchdogID);
-						CheckUnsupportedWord(watchdogID);
-						CheckExample(watchdogID);
+						await Task.WhenAll(
+							Task.Run(() => GetPreviousWord(watchdogID)),
+							Task.Run(() => GetCurrentRound(watchdogID)),
+							Task.Run(() => GetCurrentMissionWord(watchdogID)),
+							Task.Run(() => CheckUnsupportedWord(watchdogID)),
+							Task.Run(() => CheckExample(watchdogID))
+						);
+						await Task.Run(() => CheckGameState(CheckType.MyTurn, watchdogID));
 						await Task.Delay(_ingame_interval, cancelToken);
 					}
 					else
@@ -125,7 +130,8 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				GetLogger(watchdogID).Warn("Watchdog thread terminated", ex);
+				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
+					GetLogger(watchdogID).Error("Watchdog thread terminated", ex);
 			}
 		}
 
@@ -194,17 +200,30 @@ namespace AutoKkutu
 
 		private void GetPreviousWord(int watchdogID)
 		{
-			string previousWord = GetGamePreviousWord();
-			if (string.IsNullOrWhiteSpace(previousWord))
-				return;
-			string word = previousWord.Split('<')[0];
-			if (word == _wordCache)
-				return;
-			GetLogger(watchdogID).InfoFormat("Found Previous Word : {0}", word);
-			_wordCache = word;
-			if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
-				PathFinder.NewPathList.Add(word);
-			PathFinder.AddPreviousPath(word);
+			string[] tmpWordCache = new string[6];
+
+			for (int index = 0; index < 6; index++)
+			{
+				string previousWord = GetGamePreviousWord(index);
+				if (string.IsNullOrWhiteSpace(previousWord) || !previousWord.Contains('<'))
+					continue;
+				tmpWordCache[index] = previousWord.Substring(0, previousWord.IndexOf('<'));
+			}
+
+			for (int index = 0; index < 6; index++)
+			{
+				string word = tmpWordCache[index];
+				if (!_wordCache.Contains(word))
+				{
+					GetLogger(watchdogID).InfoFormat("Found Previous Word : {0}", word);
+
+					if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
+						PathFinder.NewPathList.Add(word);
+					PathFinder.AddPreviousPath(word);
+				}
+			}
+
+			_wordCache = tmpWordCache;
 		}
 
 		private void GetCurrentMissionWord(int watchdogID)
@@ -367,9 +386,13 @@ namespace AutoKkutu
 			return EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent");
 		}
 
-		public string GetGamePreviousWord()
+		public string GetGamePreviousWord(int index)
 		{
-			return EvaluateJS("document.getElementsByClassName('ellipse history-item expl-mother')[0].innerHTML");
+			if (index < 0 || index >= 6)
+				throw new ArgumentOutOfRangeException($"index: {index}");
+			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]").Equals("undefined"))
+				return "";
+			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML");
 		}
 
 		public string GetGameRound()
