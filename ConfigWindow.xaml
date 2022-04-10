@@ -15,7 +15,7 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
-			<Grid Grid.Row="0">
+			<Grid Grid.Row="0" Margin="0,0,0,5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>
@@ -25,7 +25,7 @@
 				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
 				<Label Content="자동으로 가장 적절한 단어를 선택하여 입력합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 			</Grid>
-			<Grid Grid.Row="1">
+			<Grid Grid.Row="1" Margin="0,5,0,5">
 				<Grid.RowDefinitions>
 					<RowDefinition/>
 					<RowDefinition/>
@@ -40,7 +40,7 @@
 				<Label Content="이전에 제시되었던 단어들을 기반으로 데이터베이스를 개선합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 				<ComboBox Name="DBAutoUpdateModeCB" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="150" Margin="40,5,5,0"/>
 			</Grid>
-			<Grid Grid.Row="2">
+			<Grid Grid.Row="2" Margin="0,5,0,5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
@@ -77,7 +77,7 @@
 					<Label Content="긴 단어 위주로 단어를 추천합니다" Grid.Row="2" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,8,30,0" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="11"/>
 				</Grid>
 			</Grid>
-			<Grid Grid.Row="3">
+			<Grid Grid.Row="3" Margin="0,5,0,5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>
@@ -87,7 +87,7 @@
 				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
 				<Label Content="한방 단어(-듐, -긶 등)을 사용합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 			</Grid>
-			<Grid Grid.Row="4">
+			<Grid Grid.Row="4" Margin="0,5,0,5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>
@@ -97,7 +97,7 @@
 				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
 				<Label Content="이미 사용했던 단어를 다시 사용할 수 있게 합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 			</Grid>
-			<Grid Grid.Row="5">
+			<Grid Grid.Row="5" Margin="0,5,0,5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>
@@ -107,7 +107,7 @@
 				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
 				<Label Content="입력한 단어가 잘못되었다고 떴을 때, 자동으로 다음 단어를 입력하고 해당 단어를 더이상 추천하지 않습니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 			</Grid>
-			<Grid Grid.Row="6">
+			<Grid Grid.Row="6" Margin="0,5,0,5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>
@@ -117,7 +117,7 @@
 				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
 				<Label Content="미션 글자를 감지했을 경우, 해당 글자가 많이 존재하는 단어들 위주로 단어를 추천합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 			</Grid>
-			<Grid Grid.Row="7">
+			<Grid Grid.Row="7" Margin="0,5,0,5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>

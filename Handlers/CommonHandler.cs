@@ -179,6 +179,8 @@ namespace AutoKkutu
 			else if (!_isMyTurn)
 			{
 				ResponsePresentedWord presentedWord = GetPresentedWord();
+				if (presentedWord == null)
+					return;
 				if (presentedWord.CanSubstitution)
 					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0} (Subsitution: {1})", presentedWord.Content, presentedWord.Substitution);
 				else
@@ -257,7 +259,27 @@ namespace AutoKkutu
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
-			return new ResponsePresentedWord(GetGamePresentedWord().Trim());
+			string content = GetGamePresentedWord().Trim();
+
+			if (string.IsNullOrEmpty(content))
+				return null;
+
+			string primary;
+			string secondary = null;
+			bool hasSecondary = content.Length >= 4 && content[1] == '(' && content[3] == ')';
+			if (hasSecondary)
+			{
+				primary = content[0].ToString();
+				secondary = content[2].ToString();
+			}
+			else if (content.Length <= 1) // 가끔가다가 서버 랙때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 넘어오는 경우가 있음
+			{
+				primary = content;
+			}
+			else
+				return null;
+
+			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}
 
 		public class ResponsePresentedWord
@@ -273,21 +295,6 @@ namespace AutoKkutu
 				if (!CanSubstitution)
 					return;
 				Substitution = substituation;
-			}
-
-			public ResponsePresentedWord(string fullContent)
-			{
-				CanSubstitution = fullContent.Length >= 4 && fullContent[1] == '(';
-				if (CanSubstitution)
-				{
-					Content = fullContent[0].ToString();
-					Substitution = fullContent[2].ToString();
-				}
-				else
-				{
-					Content = fullContent;
-					CanSubstitution = false;
-				}
 			}
 
 			public override bool Equals(object obj)
