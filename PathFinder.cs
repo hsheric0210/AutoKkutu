@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace AutoKkutu
 {
@@ -14,15 +15,11 @@ namespace AutoKkutu
 		private static readonly ILog Logger = LogManager.GetLogger("PathFinder");
 
 		public static List<string> EndWordList;
-
 		public static List<PathObject> FinalList;
-
 		public static List<string> PreviousPath = new List<string>();
-
 		public static List<string> UnsupportedPathList = new List<string>();
-		public static List<string> InexistentPathList = new List<string>();
-
-		public static List<string> NewPathList = new List<string>();
+		public static ConcurrentBag<string> InexistentPathList = new ConcurrentBag<string>();
+		public static ConcurrentBag<string> NewPathList = new ConcurrentBag<string>();
 
 		public static EventHandler UpdatedPath;
 
@@ -78,7 +75,7 @@ namespace AutoKkutu
 						Logger.Error($"Can't add '{word}' to database", ex);
 					}
 				}
-				NewPathList = new List<string>();
+				NewPathList = new ConcurrentBag<string>();
 
 				InexistentPathCount = InexistentPathList.Count;
 				Logger.InfoFormat("Get {0} elements from WrongPathList.", InexistentPathCount);
@@ -93,7 +90,7 @@ namespace AutoKkutu
 						Logger.Error($"Can't delete '{word}' from database", ex);
 					}
 				}
-				InexistentPathList = new List<string>();
+				InexistentPathList = new ConcurrentBag<string>();
 
 				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
 				Logger.Info($"Automatic DB Update complete ({result})");
@@ -201,6 +198,8 @@ namespace AutoKkutu
 					UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
 			});
 		}
+
+		public static string ConvertToWord(string path) => (CurrentConfig.ReverseMode ? path.First() : path.Last()).ToString();
 
 		public enum FindResult
 		{

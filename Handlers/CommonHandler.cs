@@ -216,8 +216,6 @@ namespace AutoKkutu
 			else if (!_isMyTurn)
 			{
 				ResponsePresentedWord presentedWord = GetPresentedWord();
-				if (presentedWord == null)
-					return;
 				if (presentedWord.CanSubstitution)
 					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0} (Subsitution: {1})", presentedWord.Content, presentedWord.Substitution);
 				else
@@ -321,12 +319,10 @@ namespace AutoKkutu
 				primary = content[0].ToString();
 				secondary = content[2].ToString();
 			}
-			else if (content.Length <= 1) // 가끔가다가 서버 랙때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 넘어오는 경우가 있음
-			{
+			else if (content.Length <= 1)
 				primary = content;
-			}
-			else
-				return null;
+			else  // 가끔가다가 서버 랙때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 넘어오는 경우가 있음
+				primary = PathFinder.ConvertToWord(content);
 
 			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}
@@ -407,8 +403,9 @@ namespace AutoKkutu
 
 		public bool IsGameNotInMyTurn()
 		{
+			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]");
 			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display");
-			return string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
+			return string.Equals(element, "undefined", StringComparison.InvariantCultureIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
 		}
 
 		public string GetGamePresentedWord()
