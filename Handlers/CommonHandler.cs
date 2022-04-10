@@ -21,16 +21,16 @@ namespace AutoKkutu
 		public ResponsePresentedWord CurrentPresentedWord = null;
 		public string CurrentMissionChar => _current_mission_word;
 
-		public bool IsGameStarted => _isgamestarted;
+		public bool IsGameStarted => _isGameStarted;
 
 		public bool IsMyTurn => _isMyTurn;
 
-		private Task _watchdogTask;
+		private Task _mainWatchdogTask;
 
 		private CancellationTokenSource cancelTokenSrc;
 		private readonly int _checkgame_interval = 3000;
 		private readonly int _ingame_interval = 1;
-		private bool _isgamestarted = false;
+		private bool _isGameStarted = false;
 		private bool _isMyTurn = false;
 		private bool _isWatchdogStarted = false;
 		private string _current_mission_word = "";
@@ -80,26 +80,37 @@ namespace AutoKkutu
 			if (!_isWatchdogStarted)
 			{
 				_isWatchdogStarted = true;
+
 				cancelTokenSrc = new CancellationTokenSource();
-				_watchdogTask = new Task(async () => await Watchdog(cancelTokenSrc.Token), cancelTokenSrc.Token);
-				_watchdogTask.Start();
-				GetLogger(CurrentWatchdogID).Info("Watchdog thread started.");
+				CancellationToken token = cancelTokenSrc.Token;
+
+				_mainWatchdogTask = new Task(async () => await MainWatchdog(token), token);
+				_mainWatchdogTask.Start();
+
+				int mainWatchdogID = CurrentMainWatchdogID;
+				Task.Run(async () => await AdditionalWatchdog("History", GetPreviousWord, mainWatchdogID, token));
+				Task.Run(async () => await AdditionalWatchdog("Round", GetCurrentRound, mainWatchdogID, token));
+				Task.Run(async () => await AdditionalWatchdog("Mission word", GetCurrentMissionWord, mainWatchdogID, token));
+				Task.Run(async () => await AdditionalWatchdog("Unsupported word", CheckUnsupportedWord, mainWatchdogID, token));
+				Task.Run(async () => await AdditionalWatchdog("Example word", CheckExample, mainWatchdogID, token));
+				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameState(CheckType.MyTurn, mainWatchdogID), token, mainWatchdogID));
+
+				GetLogger(mainWatchdogID).Info("Watchdog threads are started.");
 			}
 		}
 		public void StopWatchdog()
 		{
 			if (_isWatchdogStarted)
 			{
-				GetLogger(CurrentWatchdogID).Info("Watchdog thread stop requested.");
+				GetLogger(CurrentMainWatchdogID).Info("Watchdog stop requested.");
 				cancelTokenSrc?.Cancel();
 				_isWatchdogStarted = false;
 			}
 		}
 
-		// TODO: 와치독 스레드를 기능별로 여러 개를 돌리면 어떨까?
-		private async Task Watchdog(CancellationToken cancelToken)
+		private async Task MainWatchdog(CancellationToken cancelToken)
 		{
-			int watchdogID = CurrentWatchdogID;
+			int mainWatchdogID = CurrentMainWatchdogID;
 			try
 			{
 				cancelToken.ThrowIfCancellationRequested();
@@ -109,19 +120,34 @@ namespace AutoKkutu
 					if (cancelToken.IsCancellationRequested)
 						cancelToken.ThrowIfCancellationRequested();
 
-					// 만약 누군가 이 Task.Run의 향연보다 더 좋은 방법을 알고 계신다면
-					// 좀 고쳐주세요...
-					await Task.Run(() => CheckGameState(CheckType.GameStarted, watchdogID));
-					if (_isgamestarted)
+					CheckGameState(CheckType.GameStarted, mainWatchdogID);
+					if (_isGameStarted)
+						await Task.Delay(_ingame_interval, cancelToken);
+					else
+						await Task.Delay(_checkgame_interval, cancelToken);
+				}
+			}
+			catch (Exception ex)
+			{
+				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
+					GetLogger(mainWatchdogID).Error("Main watchdog task terminated", ex);
+			}
+		}
+
+		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken, int mainWatchdogID = -1)
+		{
+			try
+			{
+				cancelToken.ThrowIfCancellationRequested();
+
+				while (true)
+				{
+					if (cancelToken.IsCancellationRequested)
+						cancelToken.ThrowIfCancellationRequested();
+
+					if (_isGameStarted)
 					{
-						await Task.WhenAll(
-							Task.Run(() => GetPreviousWord(watchdogID)),
-							Task.Run(() => GetCurrentRound(watchdogID)),
-							Task.Run(() => GetCurrentMissionWord(watchdogID)),
-							Task.Run(() => CheckUnsupportedWord(watchdogID)),
-							Task.Run(() => CheckExample(watchdogID))
-						);
-						await Task.Run(() => CheckGameState(CheckType.MyTurn, watchdogID));
+						action.Invoke();
 						await Task.Delay(_ingame_interval, cancelToken);
 					}
 					else
@@ -131,8 +157,13 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
-					GetLogger(watchdogID).Error("Watchdog thread terminated", ex);
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID).Error($"{watchdogName} watchdog task terminated", ex);
 			}
+		}
+
+		private async Task AdditionalWatchdog(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken)
+		{
+			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 		}
 
 		protected string EvaluateJS(string javaScript)
@@ -147,7 +178,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				GetLogger(CurrentWatchdogID).Error("Failed to run script on site.", ex);
+				GetLogger(CurrentMainWatchdogID).Error("Failed to run script on site.", ex);
 				return " ";
 			}
 		}
@@ -163,7 +194,7 @@ namespace AutoKkutu
 					GetLogger(watchdogID).Debug("Game ended.");
 					if (onGameEnded != null)
 						onGameEnded(this, EventArgs.Empty);
-					_isgamestarted = false;
+					_isGameStarted = false;
 				}
 				else if (IsMyTurn)
 				{
@@ -175,12 +206,12 @@ namespace AutoKkutu
 			}
 			else if (type == CheckType.GameStarted)
 			{
-				if (_isgamestarted)
+				if (_isGameStarted)
 					return;
 				GetLogger(watchdogID).Debug("New round started; Previous word list flushed.");
 				if (onGameStarted != null)
 					onGameStarted(this, EventArgs.Empty);
-				_isgamestarted = true;
+				_isGameStarted = true;
 			}
 			else if (!_isMyTurn)
 			{
@@ -206,7 +237,7 @@ namespace AutoKkutu
 			{
 				string previousWord = GetGamePreviousWord(index);
 				if (!string.IsNullOrWhiteSpace(previousWord) && previousWord.Contains('<'))
-					tmpWordCache[index] = previousWord.Substring(0, previousWord.IndexOf('<'));
+					tmpWordCache[index] = previousWord.Substring(0, previousWord.IndexOf('<')).Trim();
 			}
 
 			for (int index = 0; index < 6; index++)
@@ -273,7 +304,7 @@ namespace AutoKkutu
 			PathFinder.NewPathList.Add(example);
 		}
 
-		private int CurrentWatchdogID => _watchdogTask == null ? -1 : _watchdogTask.Id;
+		private int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
@@ -361,7 +392,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public string GetID() => $"{GetHandlerName()} - #{(_watchdogTask == null ? "Global" : _watchdogTask.Id.ToString())}";
+		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString())}";
 
 		// These methods should be overridded
 		public abstract string GetSiteURLPattern();
