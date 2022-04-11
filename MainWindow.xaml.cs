@@ -5,6 +5,7 @@ using CefSharp.Wpf;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,6 +42,8 @@ namespace AutoKkutu
 
 		public static Config CurrentConfig;
 
+		private Stopwatch inputStopwatch = new Stopwatch();
+
 		private enum CurrentStatus
 		{
 			Normal,
@@ -53,7 +56,8 @@ namespace AutoKkutu
 			DB_Job,
 			DB_Job_Done,
 			Adding_Words,
-			Adding_Words_Done
+			Adding_Words_Done,
+			Delaying
 		}
 
 		public MainWindow()
@@ -209,7 +213,7 @@ namespace AutoKkutu
 				if (arg.Result == PathFinder.FindResult.Normal)
 				{
 					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.{Environment.NewLine}{arg.Time}ms 소요.";
-					if (arg.IsUseEndWord)
+					if (arg.Flags.HasFlag(PathFinderFlags.USING_END_WORD))
 						Result += " (한방 단어 사용)";
 				}
 				else
@@ -217,7 +221,7 @@ namespace AutoKkutu
 					if (arg.Result == PathFinder.FindResult.None)
 					{
 						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.{Environment.NewLine}{arg.Time}ms 소요.";
-						if (arg.IsUseEndWord)
+						if (arg.Flags.HasFlag(PathFinderFlags.USING_END_WORD))
 							Result += " (한방 단어 사용)";
 					}
 					else
@@ -229,25 +233,19 @@ namespace AutoKkutu
 
 		private void PathFinder_UpdatedPath(object sender, EventArgs e)
 		{
-			var i = (PathFinder.UpdatedPathEventArgs)e;
+			var args = (PathFinder.UpdatedPathEventArgs)e;
 
 			Logger.Info("Path update received.");
 
-			bool differentWord = Handler.CurrentPresentedWord != null && !i.Word.Equals(Handler.CurrentPresentedWord);
-			bool differentMissionChar = !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(i.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
-			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
-			{
-				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
-				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar);
+			if (!CheckPathIsValid(args, PathFinderFlags.NONE))
 				return;
-			}
 
-			if (i.Result == PathFinder.FindResult.None)
+			if (args.Result == PathFinder.FindResult.None)
 				ChangeStatusBar(CurrentStatus.NotFound);
-			else if (i.Result == PathFinder.FindResult.Error)
+			else if (args.Result == PathFinder.FindResult.Error)
 				ChangeStatusBar(CurrentStatus.Error);
 
-			Task.Run(() => SetSearchState(i));
+			Task.Run(() => SetSearchState(args));
 
 			Dispatcher.Invoke(() =>
 			{
@@ -257,7 +255,7 @@ namespace AutoKkutu
 			//_pathSelected = false;
 			if (CurrentConfig.AutoEnter)
 			{
-				if (i.Result == PathFinder.FindResult.None)
+				if (args.Result == PathFinder.FindResult.None)
 				{
 					Logger.Warn("Auto mode enabled. but can't find any path.");
 					ChangeStatusBar(CurrentStatus.NotFound);
@@ -265,16 +263,59 @@ namespace AutoKkutu
 				else
 				{
 					string content = PathFinder.FinalList.First().Content;
-					Logger.Info("Auto mode enabled. automatically use first path.");
-					Logger.InfoFormat("Execute Path : {0}", content);
-					LastUsedPath = content;
-					//_pathSelected = true;
-					Handler.SendMessage(content);
-					ChangeStatusBar(CurrentStatus.AutoEntered, content);
+					if (CurrentConfig.Delay && !args.Flags.HasFlag(PathFinderFlags.RETRIAL))
+					{
+						int delay = CurrentConfig.nDelay;
+						if (CurrentConfig.DelayPerWord)
+							delay *= content.Length;
+						ChangeStatusBar(CurrentStatus.Delaying, delay);
+						Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
+						if (CurrentConfig.DelayStartAfterWordEnter)
+							Task.Run(async () =>
+							{
+								while (inputStopwatch.ElapsedMilliseconds <= delay)
+									await Task.Delay(1);
+
+								performAutoEnter(args, content);
+							});
+						else
+							Task.Run(async () =>
+							{
+								await Task.Delay(delay);
+								performAutoEnter(args, content);
+							});
+					}
+					else
+						performAutoEnter(args, content);
 				}
 			}
 			else
 				ChangeStatusBar(CurrentStatus.Normal);
+		}
+
+		private bool CheckPathIsValid(PathFinder.UpdatedPathEventArgs args, PathFinderFlags flags)
+		{
+			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
+			bool differentMissionChar = !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
+			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
+			{
+				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
+				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar, flags);
+				return false;
+			}
+			return true;
+		}
+
+		private void performAutoEnter(PathFinder.UpdatedPathEventArgs args, string content)
+		{
+			if (!Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderFlags.RETRIAL))
+				return;
+			Logger.Info("Auto mode enabled. automatically use first path.");
+			Logger.InfoFormat("Execute Path : {0}", content);
+			LastUsedPath = content;
+			//_pathSelected = true;
+			SendMessage(content);
+			ChangeStatusBar(CurrentStatus.AutoEntered, content);
 		}
 
 		private void ResetPathList()
@@ -293,10 +334,10 @@ namespace AutoKkutu
 		private void CommonHandler_MyTurnEvent(object sender, EventArgs e)
 		{
 			var i = ((CommonHandler.MyTurnEventArgs)e);
-			StartPathFinding(i.Word, i.MissionChar);
+			StartPathFinding(i.Word, i.MissionChar, PathFinderFlags.NONE);
 		}
 
-		private void StartPathFinding(CommonHandler.ResponsePresentedWord word, string missionChar)
+		private void StartPathFinding(CommonHandler.ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
 		{
 			try
 			{
@@ -310,7 +351,11 @@ namespace AutoKkutu
 				else
 				{
 					ChangeStatusBar(CurrentStatus.Searching);
-					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", CurrentConfig.WordPreference, CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0, CurrentConfig.ReverseMode); // 첫 턴 한방 방지
+					if (CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0)  // 첫 턴 한방 방지
+						flags |= PathFinderFlags.USING_END_WORD;
+					else
+						flags &= ~PathFinderFlags.USING_END_WORD;
+					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", CurrentConfig.WordPreference, CurrentConfig.Mode, flags);
 				}
 			}
 			catch (Exception ex)
@@ -358,7 +403,7 @@ namespace AutoKkutu
 					Logger.InfoFormat("Execute Path: {0}", path);
 					LastUsedPath = path;
 					//_pathSelected = true;
-					Handler.SendMessage(path);
+					SendMessage(path);
 				}
 				catch (Exception ex)
 				{
@@ -371,13 +416,14 @@ namespace AutoKkutu
 		{
 			ChangeStatusBar(CurrentStatus.Normal);
 			WordIndex = 0;
+			inputStopwatch.Restart();
 		}
 
 		private void CommonHandler_GameEnd(object sender, EventArgs e)
 		{
 			SetSearchState(null, false);
 			ResetPathList();
-			if (CurrentConfig.AutoDBUpdateMode == Config.DBAUTOUPDATE_GAME_END_INDEX)
+			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.GAME_END)
 			{
 				ChangeStatusBar(CurrentStatus.DB_Job, "자동 업데이트");
 				string result = PathFinder.AutoDBUpdate();
@@ -404,7 +450,7 @@ namespace AutoKkutu
 
 		private void CommonHandler_RoundChangeEvent(object sender, EventArgs e)
 		{
-			if (CurrentConfig.AutoDBUpdateMode == Config.DBAUTOUPDATE_GAME_ROUND_INDEX)
+			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.ROUND_END)
 				PathFinder.AutoDBUpdate();
 		}
 
@@ -470,6 +516,10 @@ namespace AutoKkutu
 					StatusColor = Resource.ColorSource.NormalColor;
 					StatusContent = "단어 일괄 추가 작업 완료";
 					break;
+				case CurrentStatus.Delaying:
+					StatusColor = Resource.ColorSource.NormalColor;
+					StatusContent = "단어 찾음! 딜레이 대기 중: {0}ms";
+					break;
 				default:
 					StatusColor = Resource.ColorSource.WaitColor;
 					StatusContent = "게임 참가를 기다리는 중.";
@@ -489,7 +539,7 @@ namespace AutoKkutu
 		{
 			if (!(string.IsNullOrWhiteSpace(SubmitWord.Text) || SubmitWord.Text == INPUT_TEXT_PLACEHOLDER))
 			{
-				Handler.SendMessage(SubmitWord.Text);
+				SendMessage(SubmitWord.Text);
 				SubmitWord.Text = "";
 			}
 		}
@@ -500,11 +550,17 @@ namespace AutoKkutu
 			{
 				string clipboard = Clipboard.GetText();
 				if (!string.IsNullOrWhiteSpace(clipboard))
-					Handler.SendMessage(clipboard);
+					SendMessage(clipboard);
 			}
 			catch
 			{
 			}
+		}
+
+		private void SendMessage(string message)
+		{
+			Handler.SendMessage(message);
+			inputStopwatch.Restart();
 		}
 
 		private void TextInput_GotFocus(object sender, RoutedEventArgs e)
@@ -540,7 +596,7 @@ namespace AutoKkutu
 				Logger.InfoFormat("Executed Path : '{0}'.", i.Content);
 				//_pathSelected = true;
 				LastUsedPath = i.Content;
-				Handler.SendMessage(i.Content);
+				SendMessage(i.Content);
 				// }
 			}
 		}

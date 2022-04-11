@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,34 +23,55 @@ namespace AutoKkutu
 		public ConfigWindow(Config config)
 		{
 			InitializeComponent();
-			DBAutoUpdateModeCB.ItemsSource = new string[] { Config.DBAUTOUPDATE_GAME_END, Config.DBAUTOUPDATE_ROUND_END };
-			WordPreference.ItemsSource = new string[] { Config.WORDPREFERENCE_BY_DAMAGE, Config.WORDPREFERENCE_BY_LENGTH };
+			DBAutoUpdateModeCB.ItemsSource = ConfigEnums.DBAutoUpdateModeValues.Select(ConfigEnums.GetDBAutoUpdateModeName);
+			WordPreference.ItemsSource = ConfigEnums.WordPreferenceValues.Select(ConfigEnums.GetWordPreferenceName);
+			GameMode.ItemsSource = ConfigEnums.GameModeValues.Select(ConfigEnums.GetGameModeName);
 
 			AutoEnter.IsChecked = config.AutoEnter;
 			DBAutoUpdate.IsChecked = config.AutoDBUpdate;
-			DBAutoUpdateModeCB.SelectedIndex = config.AutoDBUpdateMode;
-			WordPreference.SelectedIndex = config.WordPreference;
+			DBAutoUpdateModeCB.SelectedIndex = (int)config.AutoDBUpdateMode;
+			WordPreference.SelectedIndex = (int)config.WordPreference;
 			EndWord.IsChecked = config.UseEndWord;
 			ReturnMode.IsChecked = config.ReturnMode;
 			AutoFix.IsChecked = config.AutoFix;
 			MissionDetection.IsChecked = config.MissionDetection;
-			ReverseMode.IsChecked = config.ReverseMode;
+			GameMode.SelectedIndex = (int)config.Mode;
+			Delay.IsChecked = config.Delay;
+			DelayPerWord.IsChecked = config.DelayPerWord;
+			DelayNumber.Text = config.nDelay.ToString();
+			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnter;
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
 		{
-			Dispatcher.Invoke(() => MainWindow.UpdateConfig(new Config
+			if (!int.TryParse(DelayNumber.Text, out int nDelay))
+				nDelay = 10;
+			Dispatcher.Invoke(() =>
 			{
-				AutoEnter = AutoEnter.IsChecked ?? false,
-				AutoDBUpdate = DBAutoUpdate.IsChecked ?? false,
-				AutoDBUpdateMode = DBAutoUpdateModeCB.SelectedIndex,
-				WordPreference = WordPreference.SelectedIndex,
-				UseEndWord = EndWord.IsChecked ?? false,
-				ReturnMode = ReturnMode.IsChecked ?? false,
-				AutoFix = AutoFix.IsChecked ?? false,
-				MissionDetection = MissionDetection.IsChecked ?? false,
-				ReverseMode = ReverseMode.IsChecked ?? false
-			}));
+				try
+				{
+					MainWindow.UpdateConfig(new Config
+					{
+						AutoEnter = AutoEnter.IsChecked ?? false,
+						AutoDBUpdate = DBAutoUpdate.IsChecked ?? false,
+						AutoDBUpdateMode = ConfigEnums.DBAutoUpdateModeValues[DBAutoUpdateModeCB.SelectedIndex],
+						WordPreference = ConfigEnums.WordPreferenceValues[WordPreference.SelectedIndex],
+						UseEndWord = EndWord.IsChecked ?? false,
+						ReturnMode = ReturnMode.IsChecked ?? false,
+						AutoFix = AutoFix.IsChecked ?? false,
+						MissionDetection = MissionDetection.IsChecked ?? false,
+						Mode = ConfigEnums.GameModeValues[GameMode.SelectedIndex],
+						Delay = Delay.IsChecked ?? false,
+						DelayPerWord = DelayPerWord.IsChecked ?? false,
+						nDelay = nDelay,
+						DelayStartAfterWordEnter = DelayStartAfterWordEnter.IsChecked ?? false
+					});
+				}
+				catch (Exception ex)
+				{
+					LogManager.GetLogger("Config").Error("Failed to apply configuration", ex);
+				}
+			});
 			Close();
 		}
 

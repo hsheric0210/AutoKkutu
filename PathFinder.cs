@@ -10,6 +10,14 @@ using System.Collections.Concurrent;
 namespace AutoKkutu
 {
 	// TODO: 미션 감지 및 단어 선호도 조정 기능 추가
+	[Flags]
+	public enum PathFinderFlags
+	{
+		NONE = 0,
+		USING_END_WORD = 1,
+		RETRIAL = 2
+	}
+
 	class PathFinder
 	{
 		private static readonly ILog Logger = LogManager.GetLogger("PathFinder");
@@ -132,7 +140,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, int wordPreference, bool useEndWord, bool reverseMode)
+		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, WordPreference wordPreference, GameMode mode, PathFinderFlags flags)
 		{
 			if (word.CanSubstitution)
 				Logger.InfoFormat("Finding path for {0} ({1}).", word.Content, word.Substitution);
@@ -149,21 +157,21 @@ namespace AutoKkutu
 				var QualifiedNormalList = new List<PathObject>();
 				try
 				{
-					if (wordPreference == Config.WORDPREFERENCE_BY_LENGTH_INDEX)
+					if (wordPreference == WordPreference.WORD_LENGTH)
 					{
-						WordList = DatabaseManager.FindWord(word, missionChar, useEndWord ? 2 : 0, reverseMode);
+						WordList = DatabaseManager.FindWord(word, missionChar, flags.HasFlag(PathFinderFlags.USING_END_WORD) ? 2 : 0, mode);
 						Logger.InfoFormat("Found {0} words.", WordList.Count);
 					}
 					else
 					{
-						if (useEndWord)
+						if (flags.HasFlag(PathFinderFlags.USING_END_WORD))
 						{
-							WordList = DatabaseManager.FindWord(word, missionChar, 1, reverseMode);
+							WordList = DatabaseManager.FindWord(word, missionChar, 1, mode);
 							Logger.InfoFormat("Find {0} words (EndWord inclued).", WordList.Count);
 						}
 						else
 						{
-							WordList = DatabaseManager.FindWord(word, missionChar, 0, reverseMode);
+							WordList = DatabaseManager.FindWord(word, missionChar, 0, mode);
 							Logger.InfoFormat("Found {0} words (EndWord excluded).", WordList.Count);
 						}
 						// TODO: Attack word search here
@@ -176,7 +184,7 @@ namespace AutoKkutu
 					watch.Stop();
 					Logger.Error("Failed to Find Path", e);
 					if (UpdatedPath != null)
-						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Error, 0, 0, 0, false));
+						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Error, 0, 0, 0, flags));
 				}
 				QualifiedNormalList = QualifyList(WordList);
 
@@ -185,7 +193,7 @@ namespace AutoKkutu
 					watch.Stop();
 					Logger.Warn("Can't find any path.");
 					if (UpdatedPath != null)
-						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), false));
+						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 					return;
 				}
 				if (QualifiedNormalList.Count > 20)
@@ -195,11 +203,35 @@ namespace AutoKkutu
 				watch.Stop();
 				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds);
 				if (UpdatedPath != null)
-					UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), useEndWord));
+					UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
 		}
 
-		public static string ConvertToWord(string path) => (CurrentConfig.ReverseMode ? path.First() : path.Last()).ToString();
+		public static string ConvertToWord(string path)
+		{
+			switch (CurrentConfig.Mode)
+			{
+				case GameMode.Last_and_First:
+				case GameMode.Kung_Kung_Tta:
+				case GameMode.Free_Last_and_First:
+					return path.First().ToString();
+				case GameMode.First_and_Last:
+					return path.Last().ToString();
+				case GameMode.Middle_and_First:
+					break;
+				case GameMode.Kkutu:
+					if (path.Length >= 2)
+						return path.Substring(0, 2);
+					return path.First().ToString();
+				case GameMode.Typing_Battle:
+					break;
+				case GameMode.All:
+					break;
+				case GameMode.Free:
+					break;
+			}
+			return null;
+		}
 
 		public enum FindResult
 		{
@@ -216,9 +248,9 @@ namespace AutoKkutu
 			public int TotalWordCount;
 			public int CalcWordCount;
 			public int Time;
-			public bool IsUseEndWord;
+			public PathFinderFlags Flags;
 
-			public UpdatedPathEventArgs(CommonHandler.ResponsePresentedWord word, string missionChar, FindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, bool isUseEndWord = false)
+			public UpdatedPathEventArgs(CommonHandler.ResponsePresentedWord word, string missionChar, FindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, PathFinderFlags flags = PathFinderFlags.NONE)
 			{
 				Word = word;
 				MissionChar = missionChar;
@@ -226,7 +258,7 @@ namespace AutoKkutu
 				TotalWordCount = totalWordCount;
 				CalcWordCount = calcWordCount;
 				Time = time;
-				IsUseEndWord = isUseEndWord;
+				Flags = flags;
 			}
 		}
 

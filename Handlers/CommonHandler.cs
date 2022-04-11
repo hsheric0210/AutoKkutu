@@ -38,6 +38,7 @@ namespace AutoKkutu
 		private string _roundCache = "";
 		private string _unsupportedWordCache = "";
 		private string _exampleWordCache = "";
+		private GameMode _gameModeCache = GameMode.Last_and_First;
 
 		public event EventHandler onGameStarted;
 		public event EventHandler onGameEnded;
@@ -88,11 +89,12 @@ namespace AutoKkutu
 				_mainWatchdogTask.Start();
 
 				int mainWatchdogID = CurrentMainWatchdogID;
-				Task.Run(async () => await AdditionalWatchdog("History", GetPreviousWord, mainWatchdogID, token));
-				Task.Run(async () => await AdditionalWatchdog("Round", GetCurrentRound, mainWatchdogID, token));
-				Task.Run(async () => await AdditionalWatchdog("Mission word", GetCurrentMissionWord, mainWatchdogID, token));
-				Task.Run(async () => await AdditionalWatchdog("Unsupported word", CheckUnsupportedWord, mainWatchdogID, token));
-				Task.Run(async () => await AdditionalWatchdog("Example word", CheckExample, mainWatchdogID, token));
+				Task.Run(async () => await AssistantWatchdog("History", GetPreviousWord, mainWatchdogID, token));
+				Task.Run(async () => await AssistantWatchdog("Round", GetCurrentRound, mainWatchdogID, token));
+				Task.Run(async () => await AssistantWatchdog("Mission word", GetCurrentMissionWord, mainWatchdogID, token));
+				Task.Run(async () => await AssistantWatchdog("Unsupported word", CheckUnsupportedWord, mainWatchdogID, token));
+				Task.Run(async () => await AssistantWatchdog("Example word", CheckExample, mainWatchdogID, token));
+				Task.Run(async () => await GameModeWatchdog(token, mainWatchdogID));
 				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameState(CheckType.MyTurn, mainWatchdogID), token, mainWatchdogID));
 
 				GetLogger(mainWatchdogID).Info("Watchdog threads are started.");
@@ -161,7 +163,29 @@ namespace AutoKkutu
 			}
 		}
 
-		private async Task AdditionalWatchdog(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken)
+		private async Task GameModeWatchdog(CancellationToken cancelToken, int mainWatchdogID = -1)
+		{
+			try
+			{
+				cancelToken.ThrowIfCancellationRequested();
+
+				while (true)
+				{
+					if (cancelToken.IsCancellationRequested)
+						cancelToken.ThrowIfCancellationRequested();
+
+					CheckGameMode(mainWatchdogID);
+					await Task.Delay(_checkgame_interval, cancelToken);
+				}
+			}
+			catch (Exception ex)
+			{
+				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID).Error($"GameMode watchdog task terminated", ex);
+			}
+		}
+
+		private async Task AssistantWatchdog(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken)
 		{
 			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 		}
@@ -302,6 +326,17 @@ namespace AutoKkutu
 			PathFinder.NewPathList.Add(example);
 		}
 
+		private void CheckGameMode(int watchdogID)
+		{
+			GameMode gameMode = GetCurrentGameMode();
+			if (gameMode == _gameModeCache)
+				return;
+
+			_gameModeCache = gameMode;
+			GetLogger(watchdogID).InfoFormat("GameMode Changed : {0}", ConfigEnums.GetGameModeName(gameMode));
+		}
+
+
 		private int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
 
 		private ResponsePresentedWord GetPresentedWord()
@@ -313,7 +348,7 @@ namespace AutoKkutu
 
 			string primary;
 			string secondary = null;
-			bool hasSecondary = content.Length >= 4 && content[1] == '(' && content[3] == ')';
+			bool hasSecondary = content.Contains('(') && content.Last() == ')';
 			if (hasSecondary)
 			{
 				primary = content[0].ToString();
@@ -449,6 +484,33 @@ namespace AutoKkutu
 		{
 			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'"); // "UserMessage"
 			EvaluateJS("document.getElementById('ChatBtn').click()");
+		}
+
+		public GameMode GetCurrentGameMode()
+		{
+			string roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent");
+			if (!string.IsNullOrWhiteSpace(roomMode))
+			{
+				string trimmed = roomMode.Split('/')[0].Trim();
+				switch (trimmed.Substring(trimmed.IndexOf(' ') + 1))
+				{
+					case "앞말잇기":
+						return GameMode.First_and_Last;
+					case "가운뎃말잇기":
+						return GameMode.Middle_and_First;
+					case "쿵쿵따":
+						return GameMode.Kung_Kung_Tta;
+					case "끄투":
+						return GameMode.Kkutu;
+					case "전체":
+						return GameMode.All;
+					case "자유":
+						return GameMode.Free;
+					case "자유 끝말잇기":
+						return GameMode.Free_Last_and_First;
+				}
+			}
+			return GameMode.Last_and_First;
 		}
 
 		public string GetRoomInfo()

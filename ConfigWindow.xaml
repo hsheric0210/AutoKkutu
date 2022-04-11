@@ -14,6 +14,7 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 			<Grid Grid.Row="0" Margin="0,0,0,5">
 				<Grid.ColumnDefinitions>
@@ -123,9 +124,32 @@
 					<ColumnDefinition Width="*"/>
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
-				<CheckBox Name="ReverseMode" Content="앞말잇기" IsChecked="False" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="16" />
+				<ComboBox Name="GameMode" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="150" Margin="10,10,5,0"/>
 				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
-				<Label Content="단어의 앞 글자 대신 뒷 글자를 기준으로 검색합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+				<Label Content="게임 모드를 선택합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+			</Grid>
+			<Grid Grid.Row="9" Margin="0,5,0,5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<CheckBox Name="Delay" Content="딜레이" IsChecked="True" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="16" />
+				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
+				<CheckBox Name="DelayPerWord" Content="단어 갯수에 비례" IsChecked="True" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="16" />
+				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
+				<TextBox Name="DelayNumber" Text="10" Grid.Row="0" Grid.Column="4" MinWidth="80" MinHeight="25" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalAlignment="Center" Grid.RowSpan="1" Margin="0,0,25,0"/>
+				<TextBlock Text="ms" Grid.Row="0" Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16"/>
+				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="5" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
+				<CheckBox Name="DelayStartAfterWordEnter" Content="단어 입력 후부터 시작" IsChecked="False" Grid.Row="0" Grid.Column="6" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="16" />
+				<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="7" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0"/>
+				<Label Content="단어를 입력하기 전에 의도적으로 딜레이를 둡니다." Grid.Row="0" Grid.Column="8" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
 			</Grid>
 		</Grid>
 		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="0" Margin="20,0,135,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="Cancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />

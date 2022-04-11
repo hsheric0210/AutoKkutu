@@ -198,6 +198,7 @@ namespace AutoKkutu
 					var DeletionList = new List<string>();
 					var WordIndexCorrection = new List<string>();
 					var ReverseWordIndexCorrection = new List<string>();
+					var KkutuIndexCorrection = new List<string>();
 					var IsEndWordCorrection = new Dictionary<string, int>();
 					Logger.Info("Opening _ChecksqlLiteConnection.");
 
@@ -248,12 +249,20 @@ namespace AutoKkutu
 								WordIndexCorrection.Add(content);
 							}
 
-							// Check WordIndex tag
+							// Check ReverseWordIndex tag
 							string correctReverseWordIndex = content.Last().ToString();
 							if (correctReverseWordIndex != reader["reverse_word_index"].ToString())
 							{
 								Logger.InfoFormat("Invaild Reverse Word Index; Will be fixed to '{0}'.", correctReverseWordIndex);
 								ReverseWordIndexCorrection.Add(content);
+							}
+
+							// Check KkutuIndex tag
+							string correctKkutuIndex = content.Last().ToString();
+							if (correctKkutuIndex != reader["kkutu_index"].ToString())
+							{
+								Logger.InfoFormat("Invaild Kkutu Index; Will be fixed to '{0}'.", correctKkutuIndex);
+								KkutuIndexCorrection.Add(content);
 							}
 
 							// Check IsEndWord tag
@@ -292,6 +301,15 @@ namespace AutoKkutu
 						ExecuteCommand($"UPDATE word_list SET reverse_word_index = '{correctReverseWordIndex}' WHERE word = '{content}';");
 					}
 
+					foreach (string content in KkutuIndexCorrection)
+					{
+						FixedCount++;
+
+						string correctKkutuIndex = content.Length >= 2 ? content.Substring(0, 2) : content.First().ToString();
+						Logger.InfoFormat("Fixed kkutu_index of '{0}' to '{1}'.", content, correctKkutuIndex);
+						ExecuteCommand($"UPDATE word_list SET kkutu_index = '{correctKkutuIndex}' WHERE word = '{content}';");
+					}
+
 					foreach (var pair in IsEndWordCorrection)
 					{
 						FixedCount++;
@@ -323,7 +341,7 @@ namespace AutoKkutu
 			return result;
 		}
 
-		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, int endWord, bool reverse)
+		public static List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, int endWord, GameMode mode)
 		{
 			// endWord
 			// 0 - Except end-words
@@ -336,7 +354,25 @@ namespace AutoKkutu
 			string orderCondition2 = "";
 			string orderCondition;
 
-			string index = reverse ? "reverse_word_index" : "word_index";
+			string index;
+				//case GameMode.Typing_Battle:
+				//	break;
+				//case GameMode.All:
+				//	break;
+				//case GameMode.Free:
+				//	break;
+			switch (mode)
+			{
+				case GameMode.First_and_Last:
+					index = "reverse_word_index";
+					break;
+				case GameMode.Kkutu:
+					index = "kkutu_index";
+					break;
+				default:
+					index = "word_index";
+					break;
+			}
 
 			if (data.CanSubstitution)
 				condition = $"({index} = '{data.Content}' OR {index} = '{data.Substitution}')";
@@ -380,7 +416,7 @@ namespace AutoKkutu
 			if (int.TryParse(new SqliteCommand($"SELECT COUNT(*) FROM word_list WHERE word = '{word}';", DatabaseConnection).ExecuteScalar().ToString(), out int i) && i > 0)
 				return false;
 
-			ExecuteCommand($"INSERT INTO word_list(word_index, reverse_word_index, word, is_endword) VALUES('{word.First()}', '{word.Last()}', '{word}', {_isEndWord})");
+			ExecuteCommand($"INSERT INTO word_list(word_index, reverse_word_index, kkutu_index, word, is_endword) VALUES('{word.First()}', '{word.Last()}', '{(word.Length >= 2 ? word.Substring(0, 2) : word.First().ToString())}', '{word}', {_isEndWord})");
 			return true;
 		}
 
@@ -401,6 +437,19 @@ namespace AutoKkutu
 					catch (Exception ex)
 					{
 						Logger.Error($"Failed to add reverse_word_index", ex);
+					}
+				}
+
+				if (!CheckColumnExistence("kkutu_index"))
+				{
+					try
+					{
+						new SqliteCommand("ALTER TABLE word_list ADD COLUMN kkutu_index CHAR(2) NOT NULL DEFAULT ' '", DatabaseConnection).ExecuteNonQuery();
+						Logger.Warn("Added kkutu_index column");
+					}
+					catch (Exception ex)
+					{
+						Logger.Error($"Failed to add kkutu_index", ex);
 					}
 				}
 			}
@@ -434,7 +483,7 @@ namespace AutoKkutu
 		{
 			Logger.Info("Create Table : " + tablename);
 			if (tablename == "word_list")
-				ExecuteCommand("CREATE TABLE word_list (word VARCHAR(60) NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, is_endword TINYINT(1) NOT NULL);");
+				ExecuteCommand("CREATE TABLE word_list (word VARCHAR(60) NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index CHAR(2) NOT NULL, is_endword TINYINT(1) NOT NULL);");
 			else if (tablename == "endword_list")
 				ExecuteCommand("CREATE TABLE endword_list (word_index CHAR(1) NOT NULL);");
 		}

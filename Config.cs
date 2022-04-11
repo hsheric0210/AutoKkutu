@@ -10,28 +10,105 @@ namespace AutoKkutu
 {
 	public class Config
 	{
-		public const string DBAUTOUPDATE_GAME_END = "게임이 끝났을 때";
-		public const int DBAUTOUPDATE_GAME_END_INDEX = 0;
-		public const string DBAUTOUPDATE_ROUND_END = "라운드가 끝났을 때";
-		public const int DBAUTOUPDATE_GAME_ROUND_INDEX = 1;
-
-		public const string WORDPREFERENCE_BY_DAMAGE = "단어의 공격력 우선";
-		public const int WORDPREFERENCE_BY_DAMAGE_INDEX = 0;
-		public const string WORDPREFERENCE_BY_LENGTH = "단어의 길이 우선";
-		public const int WORDPREFERENCE_BY_LENGTH_INDEX = 1;
-
 		public bool AutoEnter = true;
 		public bool AutoDBUpdate = true;
-		public int AutoDBUpdateMode = DBAUTOUPDATE_GAME_END_INDEX;
-		public int WordPreference = WORDPREFERENCE_BY_DAMAGE_INDEX;
+		public DBAutoUpdateMode AutoDBUpdateMode = DBAutoUpdateMode.GAME_END;
+		public WordPreference WordPreference = WordPreference.ATTACK_DAMAGE;
 		public bool UseEndWord = false;
 		public bool ReturnMode = false;
 		public bool AutoFix = true;
 		public bool MissionDetection = true;
-		public bool ReverseMode = false;
+		public GameMode Mode = GameMode.Last_and_First;
+		public bool Delay = false;
+		public bool DelayPerWord = true;
+		public int nDelay = 10;
+		public bool DelayStartAfterWordEnter = true;
 
 		public Config()
 		{
 		}
+	}
+
+	public static class ConfigEnums
+	{
+		public static DBAutoUpdateMode[] DBAutoUpdateModeValues => (DBAutoUpdateMode[])Enum.GetValues(typeof(DBAutoUpdateMode));
+		public static WordPreference[] WordPreferenceValues => (WordPreference[])Enum.GetValues(typeof(WordPreference));
+		public static GameMode[] GameModeValues => (GameMode[])Enum.GetValues(typeof(GameMode));
+
+		public static string GetDBAutoUpdateModeName(DBAutoUpdateMode key)
+		{
+			switch (key)
+			{
+				case DBAutoUpdateMode.GAME_END:
+					return "게임이 끝났을 때";
+				case DBAutoUpdateMode.ROUND_END:
+					return "라운드가 끝났을 때";
+				default:
+					return null;
+			}
+		}
+		public static string GetWordPreferenceName(WordPreference key)
+		{
+			switch (key)
+			{
+				case WordPreference.ATTACK_DAMAGE:
+					return "단어의 공격력 우선";
+				case WordPreference.WORD_LENGTH:
+					return "단어의 길이 우선";
+				default:
+					return null;
+			}
+		}
+		public static string GetGameModeName(GameMode key)
+		{
+			switch (key)
+			{
+				case GameMode.Last_and_First:
+					return "끝말잇기";
+				case GameMode.First_and_Last:
+					return "앞말잇기";
+				case GameMode.Middle_and_First:
+					return "중간말잇기";
+				case GameMode.Kkutu:
+					return "끄투";
+				case GameMode.Kung_Kung_Tta:
+					return "쿵쿵따";
+				case GameMode.Typing_Battle:
+					return "타자 대결";
+				case GameMode.All:
+					return "전체";
+				case GameMode.Free:
+					return "자유";
+				case GameMode.Free_Last_and_First:
+					return "자유 끝말잇기";
+				default:
+					return null;
+			}
+		}
+	}
+
+	public enum DBAutoUpdateMode
+	{
+		GAME_END,
+		ROUND_END
+	}
+
+	public enum WordPreference
+	{
+		ATTACK_DAMAGE,
+		WORD_LENGTH
+	}
+
+	public enum GameMode
+	{
+		Last_and_First,
+		First_and_Last,
+		Middle_and_First,
+		Kkutu,
+		Kung_Kung_Tta,
+		Typing_Battle,
+		All,
+		Free,
+		Free_Last_and_First
 	}
 }
