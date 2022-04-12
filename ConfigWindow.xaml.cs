@@ -40,6 +40,7 @@ namespace AutoKkutu
 			DelayPerWord.IsChecked = config.DelayPerWord;
 			DelayNumber.Text = config.nDelay.ToString();
 			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnter;
+			GameModeAutoDetect.IsChecked = config.GameModeAutoDetect;
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
@@ -64,7 +65,8 @@ namespace AutoKkutu
 						Delay = Delay.IsChecked ?? false,
 						DelayPerWord = DelayPerWord.IsChecked ?? false,
 						nDelay = nDelay,
-						DelayStartAfterWordEnter = DelayStartAfterWordEnter.IsChecked ?? false
+						DelayStartAfterWordEnter = DelayStartAfterWordEnter.IsChecked ?? false,
+						GameModeAutoDetect = GameModeAutoDetect.IsChecked ?? false
 					});
 				}
 				catch (Exception ex)

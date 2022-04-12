@@ -23,6 +23,7 @@ namespace AutoKkutu
 		public bool DelayPerWord = true;
 		public int nDelay = 10;
 		public bool DelayStartAfterWordEnter = true;
+		public bool GameModeAutoDetect = true;
 
 		public Config()
 		{
@@ -84,6 +85,11 @@ namespace AutoKkutu
 				default:
 					return null;
 			}
+		}
+
+		public static bool IsAutoDBUpdateShouldDisabled(GameMode mode)
+		{
+			return mode == GameMode.Free || mode == GameMode.Free_Last_and_First;
 		}
 	}
 

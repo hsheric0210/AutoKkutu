@@ -196,6 +196,7 @@ namespace AutoKkutu
 					int RemovedCount = 0;
 					int FixedCount = 0;
 					var DeletionList = new List<string>();
+					var WordFixList = new Dictionary<string, string>();
 					var WordIndexCorrection = new List<string>();
 					var ReverseWordIndexCorrection = new List<string>();
 					var KkutuIndexCorrection = new List<string>();
@@ -224,13 +225,21 @@ namespace AutoKkutu
 						{
 							elementCount++;
 							string content = reader["word"].ToString();
-							Logger.InfoFormat("Total {0} of {1} ({2})", dbTotalCount, elementCount, content);
+							Logger.InfoFormat("Total {0} of {1} ('{2}')", dbTotalCount, elementCount, content);
 
 							// Check word validity
 							if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == '-' || content[0] == '.' || content.Contains(" "))
 							{
 								Logger.Info("Not a valid word; Will be removed.");
 								DeletionList.Add(content);
+								continue;
+							}
+
+							if (content.StartsWith("(") && content.EndsWith(")"))
+							{
+								string fixedto = content.Substring(1, content.Length - 2);
+								Logger.Info($"Word with parenthese; Will be fixed to {fixedto}");
+								WordFixList.Add(content, fixedto);
 								continue;
 							}
 
@@ -258,7 +267,7 @@ namespace AutoKkutu
 							}
 
 							// Check KkutuIndex tag
-							string correctKkutuIndex = content.Last().ToString();
+							string correctKkutuIndex = content.Length >= 2 ? content.Substring(0, 2) : content.First().ToString();
 							if (correctKkutuIndex != reader["kkutu_index"].ToString())
 							{
 								Logger.InfoFormat("Invaild Kkutu Index; Will be fixed to '{0}'.", correctKkutuIndex);
@@ -281,6 +290,14 @@ namespace AutoKkutu
 						RemovedCount++;
 						Logger.InfoFormat("Removed '{0}' from database.", content);
 						ExecuteCommand("DELETE FROM word_list WHERE word = '" + content + "'");
+					}
+
+					foreach (var pair in WordFixList)
+					{
+						FixedCount++;
+
+						Logger.InfoFormat("Fixed word from '{0}' to '{1}'.", pair.Key, pair.Value);
+						ExecuteCommand($"UPDATE word_list SET word = '{pair.Value}' WHERE word = '{pair.Key}';");
 					}
 
 					foreach (string content in WordIndexCorrection)
@@ -355,19 +372,17 @@ namespace AutoKkutu
 			string orderCondition;
 
 			string index;
-				//case GameMode.Typing_Battle:
-				//	break;
-				//case GameMode.All:
-				//	break;
-				//case GameMode.Free:
-				//	break;
+
 			switch (mode)
 			{
 				case GameMode.First_and_Last:
 					index = "reverse_word_index";
 					break;
 				case GameMode.Kkutu:
-					index = "kkutu_index";
+					if (data.Content.Length > 1) // TODO: 세 글자용 인덱스도 만들기
+						index = "kkutu_index";
+					else
+						index = "word_index";
 					break;
 				default:
 					index = "word_index";
@@ -375,9 +390,9 @@ namespace AutoKkutu
 			}
 
 			if (data.CanSubstitution)
-				condition = $"({index} = '{data.Content}' OR {index} = '{data.Substitution}')";
+				condition = $"WHERE ({index} = '{data.Content}' OR {index} = '{data.Substitution}')";
 			else
-				condition = $"{index} = '{data.Content}'";
+				condition = $"WHERE {index} = '{data.Content}'";
 
 			switch (endWord)
 			{
@@ -397,7 +412,10 @@ namespace AutoKkutu
 			else
 				orderCondition = $"(checkMissionChar(word, '{missionChar}') + {orderCondition2} LENGTH(word))";
 
-			string query = $"SELECT * FROM word_list WHERE {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT {50}";
+			if (mode == GameMode.All)
+				condition = endWordCondition = "";
+
+			string query = $"SELECT * FROM word_list {condition} {endWordCondition} ORDER BY {orderCondition} DESC LIMIT 128";
 			//Logger.InfoFormat("Query: {0}", query);
 			using (SqliteDataReader reader2 = new SqliteCommand(query, DatabaseConnection).ExecuteReader())
 				while (reader2.Read())

@@ -38,17 +38,22 @@ namespace AutoKkutu
 		private string _roundCache = "";
 		private string _unsupportedWordCache = "";
 		private string _exampleWordCache = "";
+		private string _currentPresentedWordCache = "";
 		private GameMode _gameModeCache = GameMode.Last_and_First;
 
 		public event EventHandler onGameStarted;
 		public event EventHandler onGameEnded;
-		public event EventHandler<MyTurnEventArgs> onMyTurn;
+		public event EventHandler<WordPresentEventArgs> onMyTurn;
 		public event EventHandler onMyTurnEnded;
 		//public event EventHandler onRoundEnded;
 		//public event EventHandler onPastDictionary;
 		public event EventHandler<UnsupportedWordEventArgs> onUnsupportedWordEntered;
 		public event EventHandler<UnsupportedWordEventArgs> onMyPathIsUnsupported;
 		public event EventHandler onRoundChange;
+		public event EventHandler<GameModeChangeEventArgs> onGameModeChange;
+		public event EventHandler<WordPresentEventArgs> onWordPresented;
+
+		private static Config CurrentConfig;
 
 		public enum CheckType
 		{
@@ -74,6 +79,8 @@ namespace AutoKkutu
 			return null;
 		}
 
+		public static void UpdateConfig(Config newConfig) => CurrentConfig = newConfig;
+
 		public CommonHandler(ChromiumWebBrowser browser) => Browser = browser;
 
 		public void StartWatchdog()
@@ -96,10 +103,12 @@ namespace AutoKkutu
 				Task.Run(async () => await AssistantWatchdog("Example word", CheckExample, mainWatchdogID, token));
 				Task.Run(async () => await GameModeWatchdog(token, mainWatchdogID));
 				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameState(CheckType.MyTurn, mainWatchdogID), token, mainWatchdogID));
+				Task.Run(async () => await PresentWordWatchdog(token, mainWatchdogID));
 
 				GetLogger(mainWatchdogID).Info("Watchdog threads are started.");
 			}
 		}
+
 		public void StopWatchdog()
 		{
 			if (_isWatchdogStarted)
@@ -185,6 +194,34 @@ namespace AutoKkutu
 			}
 		}
 
+		// Notice that this watchdog only works on Typing Battle mode
+		private async Task PresentWordWatchdog(CancellationToken cancelToken, int mainWatchdogID = -1)
+		{
+			try
+			{
+				cancelToken.ThrowIfCancellationRequested();
+
+				while (true)
+				{
+					if (cancelToken.IsCancellationRequested)
+						cancelToken.ThrowIfCancellationRequested();
+
+					if (CurrentConfig.Mode == GameMode.Typing_Battle && _isGameStarted && _isMyTurn)
+					{
+						GetCurrentPresentedWord(mainWatchdogID);
+						await Task.Delay(_ingame_interval, cancelToken);
+					}
+					else
+						await Task.Delay(_checkgame_interval, cancelToken);
+				}
+			}
+			catch (Exception ex)
+			{
+				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID).Error($"Present word watchdog task terminated", ex);
+			}
+		}
+
 		private async Task AssistantWatchdog(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken)
 		{
 			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
@@ -246,13 +283,16 @@ namespace AutoKkutu
 					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
 				if (onMyTurn != null)
-					onMyTurn(this, new MyTurnEventArgs(presentedWord, CurrentMissionChar));
+					onMyTurn(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
 				_isMyTurn = true;
 			}
 		}
 
 		private void GetPreviousWord(int watchdogID)
 		{
+			if (ConfigEnums.IsAutoDBUpdateShouldDisabled(CurrentConfig.Mode))
+				return;
+
 			string[] tmpWordCache = new string[6];
 
 			for (int index = 0; index < 6; index++)
@@ -326,14 +366,30 @@ namespace AutoKkutu
 			PathFinder.NewPathList.Add(example);
 		}
 
+		private void GetCurrentPresentedWord(int watchdogID)
+		{
+			string word = GetGamePresentedWord();
+			if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝"))
+				return;
+			if (word.Contains(' '))
+				word = word.Substring(0, word.IndexOf(' '));
+			if (string.Equals(word, _currentPresentedWordCache, StringComparison.InvariantCultureIgnoreCase))
+				return;
+			_currentPresentedWordCache = word;
+			GetLogger(watchdogID).InfoFormat("Word detected : {0}", word);
+			if (onWordPresented != null)
+				onWordPresented(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
+		}
+
 		private void CheckGameMode(int watchdogID)
 		{
 			GameMode gameMode = GetCurrentGameMode();
 			if (gameMode == _gameModeCache)
 				return;
-
 			_gameModeCache = gameMode;
 			GetLogger(watchdogID).InfoFormat("GameMode Changed : {0}", ConfigEnums.GetGameModeName(gameMode));
+			if (onGameModeChange != null)
+				onGameModeChange(this, new GameModeChangeEventArgs(gameMode));
 		}
 
 
@@ -351,8 +407,10 @@ namespace AutoKkutu
 			bool hasSecondary = content.Contains('(') && content.Last() == ')';
 			if (hasSecondary)
 			{
-				primary = content[0].ToString();
-				secondary = content[2].ToString();
+				int parentheseStartIndex = content.IndexOf('(');
+				int parentheseEndIndex = content.IndexOf(')');
+				primary = content.Substring(0, parentheseStartIndex);
+				secondary = content.Substring(parentheseStartIndex + 1, parentheseEndIndex - parentheseStartIndex - 1);
 			}
 			else if (content.Length <= 1)
 				primary = content;
@@ -399,12 +457,12 @@ namespace AutoKkutu
 			}
 		}
 
-		public class MyTurnEventArgs : EventArgs
+		public class WordPresentEventArgs : EventArgs
 		{
 			public ResponsePresentedWord Word;
 			public string MissionChar;
 
-			public MyTurnEventArgs(ResponsePresentedWord word, string missionChar)
+			public WordPresentEventArgs(ResponsePresentedWord word, string missionChar)
 			{
 				Word = word;
 				MissionChar = missionChar;
@@ -421,6 +479,13 @@ namespace AutoKkutu
 				Word = word;
 				IsExistingWord = isExistingWord;
 			}
+		}
+
+		public class GameModeChangeEventArgs : EventArgs
+		{
+			public GameMode GameMode;
+
+			public GameModeChangeEventArgs(GameMode gameMode) => GameMode = gameMode;
 		}
 
 		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString())}";

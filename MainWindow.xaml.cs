@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-
+using static AutoKkutu.CommonHandler;
 
 namespace AutoKkutu
 {
@@ -80,6 +80,7 @@ namespace AutoKkutu
 
 			// Load default config
 			PathFinder.UpdateConfig(CurrentConfig = new Config());
+			CommonHandler.UpdateConfig(CurrentConfig);
 
 			// Initialize Browser
 			browser = new ChromiumWebBrowser
@@ -114,6 +115,7 @@ namespace AutoKkutu
 			Logger.Info("Updated config.");
 			CurrentConfig = newConfig;
 			PathFinder.UpdateConfig(newConfig);
+			CommonHandler.UpdateConfig(newConfig);
 		}
 
 		private void DatabaseManager_DBError(object sender, EventArgs e) => ChangeStatusBar(CurrentStatus.Error);
@@ -143,6 +145,8 @@ namespace AutoKkutu
 				Handler.onUnsupportedWordEntered -= CommonHandler_onUnsupportedWordEntered;
 				Handler.onMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
 				Handler.onRoundChange -= CommonHandler_RoundChangeEvent;
+				Handler.onGameModeChange -= CommonHandler_GameModeChangeEvent;
+				Handler.onWordPresented -= CommonHandler_WordPresentedEvent;
 				Handler.StopWatchdog();
 				Handler = null;
 			}
@@ -162,6 +166,8 @@ namespace AutoKkutu
 				Handler.onUnsupportedWordEntered += CommonHandler_onUnsupportedWordEntered;
 				Handler.onMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
 				Handler.onRoundChange += CommonHandler_RoundChangeEvent;
+				Handler.onGameModeChange += CommonHandler_GameModeChangeEvent;
+				Handler.onWordPresented += CommonHandler_WordPresentedEvent;
 				Handler.StartWatchdog();
 
 				Logger.InfoFormat("Using handler: {0}", Handler.GetID());
@@ -331,14 +337,16 @@ namespace AutoKkutu
 			WordIndex = 0;
 		}
 
-		private void CommonHandler_MyTurnEvent(object sender, EventArgs e)
+		private void CommonHandler_MyTurnEvent(object sender, CommonHandler.WordPresentEventArgs args)
 		{
-			var i = ((CommonHandler.MyTurnEventArgs)e);
-			StartPathFinding(i.Word, i.MissionChar, PathFinderFlags.NONE);
+			StartPathFinding(args.Word, args.MissionChar, PathFinderFlags.NONE);
 		}
 
 		private void StartPathFinding(CommonHandler.ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
 		{
+			if (CurrentConfig.Mode == GameMode.Typing_Battle)
+				return;
+
 			try
 			{
 				if (PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
@@ -364,11 +372,10 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CommonHandler_onUnsupportedWordEntered(object sender, EventArgs e)
+		private void CommonHandler_onUnsupportedWordEntered(object sender, CommonHandler.UnsupportedWordEventArgs args)
 		{
-			var i = ((CommonHandler.UnsupportedWordEventArgs)e);
-			bool isInexistent = !i.IsExistingWord;
-			string theWord = i.Word;
+			bool isInexistent = !args.IsExistingWord;
+			string theWord = args.Word;
 			if (isInexistent)
 				Logger.WarnFormat("Entered word '{0}' is inexistent; Added to removal list.", theWord);
 			else
@@ -376,9 +383,9 @@ namespace AutoKkutu
 			PathFinder.AddToUnsupportedWord(theWord, isInexistent);
 		}
 
-		private void CommonHandler_MyPathIsUnsupported(object sender, EventArgs e)
+		private void CommonHandler_MyPathIsUnsupported(object sender, CommonHandler.UnsupportedWordEventArgs args)
 		{
-			var word = ((CommonHandler.UnsupportedWordEventArgs)e).Word;
+			var word = args.Word;
 			Logger.WarnFormat("My path '{0}' is wrong.", word);
 
 			if (!CurrentConfig.AutoFix)
@@ -452,6 +459,37 @@ namespace AutoKkutu
 		{
 			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.ROUND_END)
 				PathFinder.AutoDBUpdate();
+		}
+
+		private void CommonHandler_GameModeChangeEvent(object sender, GameModeChangeEventArgs args)
+		{
+			if (CurrentConfig.GameModeAutoDetect)
+			{
+				var newGameMode = args.GameMode;
+				CurrentConfig.Mode = newGameMode;
+				Logger.InfoFormat("Automatically updated game mode to '{0}'", ConfigEnums.GetGameModeName(newGameMode));
+				UpdateConfig(CurrentConfig);
+			}
+		}
+		private void CommonHandler_WordPresentedEvent(object sender, WordPresentEventArgs args)
+		{
+			string word = args.Word.Content;
+			Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+			if (CurrentConfig.Delay)
+			{
+				int delay = CurrentConfig.nDelay;
+				if (CurrentConfig.DelayPerWord)
+					delay *= word.Length;
+				ChangeStatusBar(CurrentStatus.Delaying, delay);
+				Logger.DebugFormat("Waiting {0}ms before entering word.", delay);
+				Task.Run(async () =>
+				{
+					await Task.Delay(delay);
+					SendMessage(word);
+				});
+			}
+			else
+				SendMessage(word);
 		}
 
 		private void RemoveAd()
