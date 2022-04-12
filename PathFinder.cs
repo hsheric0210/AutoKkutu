@@ -20,6 +20,8 @@ namespace AutoKkutu
 
 	class PathFinder
 	{
+		const string RANDOM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
 		private static readonly ILog Logger = LogManager.GetLogger("PathFinder");
 
 		public static List<string> EndWordList;
@@ -29,7 +31,7 @@ namespace AutoKkutu
 		public static ConcurrentBag<string> InexistentPathList = new ConcurrentBag<string>();
 		public static ConcurrentBag<string> NewPathList = new ConcurrentBag<string>();
 
-		public static EventHandler UpdatedPath;
+		public static event EventHandler<PathFinder.UpdatedPathEventArgs> UpdatedPath;
 
 		public static Config CurrentConfig;
 		public static void Init()
@@ -140,8 +142,28 @@ namespace AutoKkutu
 			return result;
 		}
 
+		private static void RandomPath(CommonHandler.ResponsePresentedWord word, string missionChar, bool first, PathFinderFlags flags)
+		{
+			string firstChar = first ? word.Content : "";
+
+			FinalList = new List<PathObject>();
+			if (!string.IsNullOrWhiteSpace(missionChar))
+				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), false));
+			Random random = new Random();
+			for (int i = 0; i < 10; i++)
+				FinalList.Add(new PathObject(firstChar + new string(Enumerable.Repeat(RANDOM_CHARS, 256).Select(s => s[random.Next(s.Length)]).ToArray()), false));
+			if (UpdatedPath != null)
+				UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, 0, flags));
+		}
+
 		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, WordPreference wordPreference, GameMode mode, PathFinderFlags flags)
 		{
+			if (ConfigEnums.IsFreeMode(mode))
+			{
+				RandomPath(word, missionChar, mode == GameMode.Free_Last_and_First, flags);
+				return;
+			}
+
 			if (word.CanSubstitution)
 				Logger.InfoFormat("Finding path for {0} ({1}).", word.Content, word.Substitution);
 			else

@@ -290,7 +290,7 @@ namespace AutoKkutu
 
 		private void GetPreviousWord(int watchdogID)
 		{
-			if (ConfigEnums.IsAutoDBUpdateShouldDisabled(CurrentConfig.Mode))
+			if (ConfigEnums.IsFreeMode(CurrentConfig.Mode))
 				return;
 
 			string[] tmpWordCache = new string[6];
@@ -573,6 +573,8 @@ namespace AutoKkutu
 						return GameMode.Free;
 					case "자유 끝말잇기":
 						return GameMode.Free_Last_and_First;
+					case "타자 대결":
+						return GameMode.Typing_Battle;
 				}
 			}
 			return GameMode.Last_and_First;

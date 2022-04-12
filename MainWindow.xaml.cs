@@ -237,10 +237,8 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
-		private void PathFinder_UpdatedPath(object sender, EventArgs e)
+		private void PathFinder_UpdatedPath(object sender, PathFinder.UpdatedPathEventArgs args)
 		{
-			var args = (PathFinder.UpdatedPathEventArgs)e;
-
 			Logger.Info("Path update received.");
 
 			if (!CheckPathIsValid(args, PathFinderFlags.NONE))
@@ -349,7 +347,7 @@ namespace AutoKkutu
 
 			try
 			{
-				if (PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
+				if (!ConfigEnums.IsFreeMode(CurrentConfig.Mode) && PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
 				{
 					Logger.Warn("Can't Find any path : Presented word is End word.");
 					ResetPathList();
@@ -481,12 +479,20 @@ namespace AutoKkutu
 				if (CurrentConfig.DelayPerWord)
 					delay *= word.Length;
 				ChangeStatusBar(CurrentStatus.Delaying, delay);
-				Logger.DebugFormat("Waiting {0}ms before entering word.", delay);
-				Task.Run(async () =>
-				{
-					await Task.Delay(delay);
-					SendMessage(word);
-				});
+				Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
+				if (CurrentConfig.DelayStartAfterWordEnter)
+					Task.Run(async () =>
+					{
+						while (inputStopwatch.ElapsedMilliseconds <= delay)
+							await Task.Delay(1);
+						SendMessage(word);
+					});
+				else
+					Task.Run(async () =>
+					{
+						await Task.Delay(delay);
+						SendMessage(word);
+					});
 			}
 			else
 				SendMessage(word);

@@ -87,7 +87,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public static bool IsAutoDBUpdateShouldDisabled(GameMode mode)
+		public static bool IsFreeMode(GameMode mode)
 		{
 			return mode == GameMode.Free || mode == GameMode.Free_Last_and_First;
 		}
