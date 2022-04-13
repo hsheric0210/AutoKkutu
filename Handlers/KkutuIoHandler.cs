@@ -54,11 +54,12 @@ function {_parseExtraVisibleStyleTags}() {{
 
 				Browser.EvaluateScriptAsync($@"
 function {_writeInputFuncName}(input) {{
-	var userMessages = document.querySelectorAll('#Middle > div.ChatBox.Product > div > input')
-    var maxIndex = userMessages.length, index = 0;
-    while (index <= maxIndex) {{
 	var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
+	var visible = {_parseExtraVisibleStyleTags}(), nVisible = visible.length;
+	for (let index=0;index<maxTalks;index++) {{
 		for (let index2=0;index2<nVisible;index2++) {{
+			if (talks[index].id == visible[index2]) {{
+				talks[index].value = input;
 				break;
 			}}
 		}}
