@@ -13,7 +13,7 @@ namespace AutoKkutu
 {
 	public abstract class CommonHandler
 	{
-		private ILog GetLogger(int watchdogID) => LogManager.GetLogger($"{GetHandlerName()} - #{watchdogID}");
+		private ILog GetLogger(int watchdogID, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID}");
 
 		public ChromiumWebBrowser Browser;
 		public bool IsWatchdogAlive;
@@ -69,9 +69,11 @@ namespace AutoKkutu
 
 		public static void InitHandlers(ChromiumWebBrowser browser)
 		{
-			HANDLERS = new CommonHandler[2];
+			HANDLERS = new CommonHandler[4];
 			HANDLERS[0] = new KkutuOrgHandler(browser);
 			HANDLERS[1] = new KkutuPinkHandler(browser);
+			HANDLERS[2] = new KkutuCoKrHandler(browser);
+			HANDLERS[3] = new KkutuIoHandler(browser);
 		}
 
 		public static CommonHandler getHandler(string url)
@@ -172,7 +174,7 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
-					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID).Error($"{watchdogName} watchdog task terminated", ex);
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, watchdogName).Error($"{watchdogName} watchdog task terminated", ex);
 			}
 		}
 
@@ -194,7 +196,7 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
-					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID).Error($"GameMode watchdog task terminated", ex);
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error($"GameMode watchdog task terminated", ex);
 			}
 		}
 
@@ -223,7 +225,7 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
-					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID).Error($"Present word watchdog task terminated", ex);
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error($"Present word watchdog task terminated", ex);
 			}
 		}
 
@@ -232,7 +234,7 @@ namespace AutoKkutu
 			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 		}
 
-		protected string EvaluateJS(string javaScript)
+		protected string EvaluateJS(string javaScript, string moduleName = null)
 		{
 			try
 			{
@@ -244,18 +246,16 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				GetLogger(CurrentMainWatchdogID).Error("Failed to run script on site.", ex);
+				GetLogger(CurrentMainWatchdogID, moduleName).Error("Failed to run script on site.", ex);
 				return " ";
 			}
 		}
 
-		protected int EvaluateJSInt(string javaScript)
+		protected int EvaluateJSInt(string javaScript, string watchdogName = null)
 		{
 			try
 			{
 				var result = Browser.EvaluateScriptAsync(javaScript)?.Result;
-				if (!string.IsNullOrWhiteSpace(result?.Message ?? ""))
-					GetLogger(CurrentMainWatchdogID).Warn(result.Message);
 				return Convert.ToInt32(result?.Result);
 			}
 			catch (NullReferenceException)
@@ -264,8 +264,26 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				GetLogger(CurrentMainWatchdogID).Error("Failed to run script on site.", ex);
+				GetLogger(CurrentMainWatchdogID, watchdogName).Error("Failed to run script on site.", ex);
 				return -2;
+			}
+		}
+
+		protected bool EvaluateJSBool(string javaScript, string watchdogName = null)
+		{
+			try
+			{
+				var result = Browser.EvaluateScriptAsync(javaScript)?.Result;
+				return Convert.ToBoolean(result?.Result);
+			}
+			catch (NullReferenceException)
+			{
+				return false;
+			}
+			catch (Exception ex)
+			{
+				GetLogger(CurrentMainWatchdogID, watchdogName).Error("Failed to run script on site.", ex);
+				return false;
 			}
 		}
 
@@ -284,7 +302,7 @@ namespace AutoKkutu
 				}
 				else if (IsMyTurn)
 				{
-					GetLogger(watchdogID).Debug("My turn ended.");
+					GetLogger(watchdogID, "Turn").Debug("My turn ended.");
 					if (onMyTurnEnded != null)
 						onMyTurnEnded(this, EventArgs.Empty);
 					_isMyTurn = false;
@@ -303,7 +321,7 @@ namespace AutoKkutu
 function {_currentRoundIndexFuncName} {{
 	var maxIndex = document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds > label').length,
         index = 1;
-    while (index <= maxIndex) {{
+    while (index < maxIndex) {{
         if (document.querySelector('#Middle > div.GameBox.Product > div > div.game-head > div.rounds :nth-child(' + index.toString() + ')').className == 'rounds-current') {{
             return index;
         }}
@@ -326,9 +344,9 @@ function {_currentRoundIndexFuncName} {{
 			{
 				ResponsePresentedWord presentedWord = GetPresentedWord();
 				if (presentedWord.CanSubstitution)
-					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0} (Subsitution: {1})", presentedWord.Content, presentedWord.Substitution);
+					GetLogger(watchdogID, "Turn").InfoFormat("My Turn. presented word is {0} (Subsitution: {1})", presentedWord.Content, presentedWord.Substitution);
 				else
-					GetLogger(watchdogID).InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
+					GetLogger(watchdogID, "Turn").InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
 				if (onMyTurn != null)
 					onMyTurn(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
@@ -355,7 +373,7 @@ function {_currentRoundIndexFuncName} {{
 				string word = tmpWordCache[index];
 				if (!string.IsNullOrWhiteSpace(word) && !_wordCache.Contains(word))
 				{
-					GetLogger(watchdogID).InfoFormat("Found Previous Word : {0}", word);
+					GetLogger(watchdogID, "Previous word").InfoFormat("Found Previous Word : {0}", word);
 
 					if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
 						PathFinder.NewPathList.Add(word);
@@ -371,7 +389,7 @@ function {_currentRoundIndexFuncName} {{
 			string missionWord = GetMissionWord();
 			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, _current_mission_word, StringComparison.InvariantCulture))
 				return;
-			GetLogger(watchdogID).InfoFormat("Mission Word Changed : {0}", missionWord);
+			GetLogger(watchdogID, "Mission word").InfoFormat("Mission Word Changed : {0}", missionWord);
 			_current_mission_word = missionWord;
 		}
 
@@ -389,7 +407,7 @@ function {_currentRoundIndexFuncName} {{
 
 			if (roundIndex <= 0)
 				return;
-			GetLogger(watchdogID).InfoFormat("Round Changed : Index {0} Word {1}", roundIndex, roundText);
+			GetLogger(watchdogID, "Round").InfoFormat("Round Changed : Index {0} Word {1}", roundIndex, roundText);
 			if (onRoundChange != null)
 				onRoundChange(this, new RoundChangeEventArgs(roundIndex, roundText));
 			PathFinder.PreviousPath = new List<string>();
@@ -418,7 +436,7 @@ function {_currentRoundIndexFuncName} {{
 			if (string.Equals(example, _exampleWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
 			_exampleWordCache = example;
-			GetLogger(watchdogID).InfoFormat("Path example detected : {0}", example);
+			GetLogger(watchdogID, "Example").InfoFormat("Path example detected : {0}", example);
 			PathFinder.NewPathList.Add(example);
 		}
 
@@ -433,7 +451,7 @@ function {_currentRoundIndexFuncName} {{
 			if (string.Equals(word, _currentPresentedWordCache, StringComparison.InvariantCultureIgnoreCase))
 				return;
 			_currentPresentedWordCache = word;
-			GetLogger(watchdogID).InfoFormat("Word detected : {0}", word);
+			GetLogger(watchdogID, "Presented word").InfoFormat("Word detected : {0}", word);
 			if (onWordPresented != null)
 				onWordPresented(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
 		}
@@ -444,7 +462,7 @@ function {_currentRoundIndexFuncName} {{
 			if (gameMode == _gameModeCache)
 				return;
 			_gameModeCache = gameMode;
-			GetLogger(watchdogID).InfoFormat("GameMode Changed : {0}", ConfigEnums.GetGameModeName(gameMode));
+			GetLogger(watchdogID, "GameMode").InfoFormat("GameMode Changed : {0}", ConfigEnums.GetGameModeName(gameMode));
 			if (onGameModeChange != null)
 				onGameModeChange(this, new GameModeChangeEventArgs(gameMode));
 		}
@@ -565,63 +583,63 @@ function {_currentRoundIndexFuncName} {{
 
 		public bool IsGameNotInProgress()
 		{
-			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display");
-			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height");
+			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", "IsGameNotInProgress");
+			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", "IsGameNotInProgress");
 			return (string.IsNullOrWhiteSpace(height) || !string.IsNullOrWhiteSpace(display)) && (string.IsNullOrWhiteSpace(display) || display.Equals("none", StringComparison.InvariantCultureIgnoreCase));
 		}
 
 		public bool IsGameNotInMyTurn()
 		{
-			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]");
-			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display");
+			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]", "IsGameNotInMyTurn");
+			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", "IsGameNotInMyTurn");
 			return string.Equals(element, "undefined", StringComparison.InvariantCultureIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
 		}
 
 		public string GetGamePresentedWord()
 		{
-			return EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent");
+			return EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetGamePresentedWord");
 		}
 
 		public string GetGamePreviousWord(int index)
 		{
 			if (index < 0 || index >= 6)
 				throw new ArgumentOutOfRangeException($"index: {index}");
-			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]").Equals("undefined"))
+			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]", "GetGamePreviousWord").Equals("undefined"))
 				return "";
-			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML");
+			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", "GetGamePreviousWord");
 		}
 
 		public string GetGameRoundText()
 		{
-			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", "GetGameRoundText");
 		}
 
 		public int GetGameRoundIndex()
 		{
-			return EvaluateJSInt(_currentRoundIndexFuncName);
+			return EvaluateJSInt(_currentRoundIndexFuncName, "GetGameRoundIndex");
 		}
 
 		public string GetUnsupportedWord()
 		{
-			return EvaluateJS("document.getElementsByClassName('game-fail-text')[0]") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent") : "";
+			return EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", "GetUnsupportedWord") : "";
 		}
 
 		public string GetExampleWord()
 		{
-			string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML");
-			string content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent");
+			string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML", "GetExampleWord");
+			string content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetExampleWord");
 			return innerHTML.Contains("label") && innerHTML.Contains("color") && innerHTML.Contains("170,") && content.Length > 1 ? content : "";
 		}
 
 		public string GetMissionWord()
 		{
-			return EvaluateJS("document.getElementsByClassName('items')[0].style.opacity") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent") : "";
+			return EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", "GetMissionWord") : "";
 		}
 
 		public void SendMessage(string input)
 		{
-			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'"); // "UserMessage"
-			EvaluateJS("document.getElementById('ChatBtn').click()");
+			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'", "SendMessage"); // "UserMessage"
+			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
 		}
 
 		public GameMode GetCurrentGameMode()
