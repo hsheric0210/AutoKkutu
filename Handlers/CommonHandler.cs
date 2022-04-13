@@ -299,12 +299,22 @@ namespace AutoKkutu
 					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(new Random(), 64, true)}()";
 					Task.Run(() =>
 					{
-						var result = Browser.EvaluateScriptAsync($"function {_currentRoundIndexFuncName} {{ var maxIndex = document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds > label').length, index = 1; while (index <= maxIndex) {{ if (document.querySelector('#Middle > div.GameBox.Product > div > div.game-head > div.rounds :nth-child(' + index.toString() + ')').className == 'rounds-current') {{ return index; }} else {{ index++; }} }} return -1; }}").Result;
+						var result = Browser.EvaluateScriptAsync($@"
+function {_currentRoundIndexFuncName} {{
+	var maxIndex = document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds > label').length,
+        index = 1;
+    while (index <= maxIndex) {{
+        if (document.querySelector('#Middle > div.GameBox.Product > div > div.game-head > div.rounds :nth-child(' + index.toString() + ')').className == 'rounds-current') {{
+            return index;
+        }}
+        index++;
+    }}
+    return -1;
+}}").Result;
 						if (!string.IsNullOrWhiteSpace(result?.Message ?? ""))
 							GetLogger(watchdogID).Error("Failed to register currentRoundIndexFunc: " + result.Message);
 						else
 							GetLogger(watchdogID).Info($"Register currentRoundIndexFunc: {_currentRoundIndexFuncName}");
-
 					});
 				}
 				GetLogger(watchdogID).Debug("New game started; Previous word list flushed.");

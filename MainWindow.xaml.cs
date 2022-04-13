@@ -180,7 +180,7 @@ namespace AutoKkutu
 				});
 			}
 			else
-				Logger.WarnFormat($"Unsupported site: {0}", url);
+				Logger.WarnFormat("Unsupported site: {0}", url);
 		}
 
 		private void DatabaseManager_DBJobStart(object sender, EventArgs e)

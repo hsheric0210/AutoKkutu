@@ -2,7 +2,6 @@
 
 namespace AutoKkutu.Handlers
 {
-	// TODO
 	internal partial class KkutuPinkHandler : CommonHandler
 	{
 		public KkutuPinkHandler(ChromiumWebBrowser browser) : base(browser)
