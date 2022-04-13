@@ -35,7 +35,7 @@ namespace AutoKkutu
 		private bool _isWatchdogStarted = false;
 		private string _current_mission_word = "";
 		private string[] _wordCache = new string[6];
-		private string _roundCache = "";
+		private int _roundIndexCache = 0;
 		private string _unsupportedWordCache = "";
 		private string _exampleWordCache = "";
 		private string _currentPresentedWordCache = "";
@@ -51,9 +51,13 @@ namespace AutoKkutu
 		public event EventHandler<UnsupportedWordEventArgs> onMyPathIsUnsupported;
 		public event EventHandler onRoundChange;
 		public event EventHandler<GameModeChangeEventArgs> onGameModeChange;
+
+		// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
 		public event EventHandler<WordPresentEventArgs> onWordPresented;
 
 		private static Config CurrentConfig;
+
+		private string _currentRoundIndexFuncName;
 
 		public enum CheckType
 		{
@@ -194,7 +198,7 @@ namespace AutoKkutu
 			}
 		}
 
-		// Notice that this watchdog only works on Typing Battle mode
+		// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
 		private async Task PresentWordWatchdog(CancellationToken cancelToken, int mainWatchdogID = -1)
 		{
 			try
@@ -206,9 +210,10 @@ namespace AutoKkutu
 					if (cancelToken.IsCancellationRequested)
 						cancelToken.ThrowIfCancellationRequested();
 
-					if (CurrentConfig.Mode == GameMode.Typing_Battle && _isGameStarted && _isMyTurn)
+					if (CurrentConfig.Mode == GameMode.Typing_Battle && _isGameStarted)
 					{
-						GetCurrentPresentedWord(mainWatchdogID);
+						if (_isMyTurn)
+							GetCurrentPresentedWord(mainWatchdogID);
 						await Task.Delay(_ingame_interval, cancelToken);
 					}
 					else
@@ -244,6 +249,26 @@ namespace AutoKkutu
 			}
 		}
 
+		protected int EvaluateJSInt(string javaScript)
+		{
+			try
+			{
+				var result = Browser.EvaluateScriptAsync(javaScript)?.Result;
+				if (!string.IsNullOrWhiteSpace(result?.Message ?? ""))
+					GetLogger(CurrentMainWatchdogID).Warn(result.Message);
+				return Convert.ToInt32(result?.Result);
+			}
+			catch (NullReferenceException)
+			{
+				return -1;
+			}
+			catch (Exception ex)
+			{
+				GetLogger(CurrentMainWatchdogID).Error("Failed to run script on site.", ex);
+				return -2;
+			}
+		}
+
 		private void CheckGameState(CheckType type, int watchdogID)
 		{
 			if (type == CheckType.GameStarted ? IsGameNotInProgress() : IsGameNotInMyTurn())
@@ -269,7 +294,20 @@ namespace AutoKkutu
 			{
 				if (_isGameStarted)
 					return;
-				GetLogger(watchdogID).Debug("New round started; Previous word list flushed.");
+				if (_currentRoundIndexFuncName != null)
+				{
+					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(new Random(), 64, true)}()";
+					Task.Run(() =>
+					{
+						var result = Browser.EvaluateScriptAsync($"function {_currentRoundIndexFuncName} {{ var maxIndex = document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds > label').length, index = 1; while (index <= maxIndex) {{ if (document.querySelector('#Middle > div.GameBox.Product > div > div.game-head > div.rounds :nth-child(' + index.toString() + ')').className == 'rounds-current') {{ return index; }} else {{ index++; }} }} return -1; }}").Result;
+						if (!string.IsNullOrWhiteSpace(result?.Message ?? ""))
+							GetLogger(watchdogID).Error("Failed to register currentRoundIndexFunc: " + result.Message);
+						else
+							GetLogger(watchdogID).Info($"Register currentRoundIndexFunc: {_currentRoundIndexFuncName}");
+
+					});
+				}
+				GetLogger(watchdogID).Debug("New game started; Previous word list flushed.");
 				if (onGameStarted != null)
 					onGameStarted(this, EventArgs.Empty);
 				_isGameStarted = true;
@@ -329,14 +367,22 @@ namespace AutoKkutu
 
 		private void GetCurrentRound(int watchdogID)
 		{
-			string round = GetGameRound();
-			if (string.IsNullOrWhiteSpace(round) || string.Equals(round, _roundCache, StringComparison.InvariantCulture))
+			int roundIndex = GetGameRoundIndex();
+			if (roundIndex == _roundIndexCache)
 				return;
-			GetLogger(watchdogID).InfoFormat("Round Changed : {0}", round);
+
+			string roundText = GetGameRoundText();
+			if (string.IsNullOrWhiteSpace(roundText))
+				return;
+
+			_roundIndexCache = roundIndex;
+
+			if (roundIndex <= 0)
+				return;
+			GetLogger(watchdogID).InfoFormat("Round Changed : Index {0} Word {1}", roundIndex, roundText);
 			if (onRoundChange != null)
-				onRoundChange(this, EventArgs.Empty);
+				onRoundChange(this, new RoundChangeEventArgs(roundIndex, roundText));
 			PathFinder.PreviousPath = new List<string>();
-			_roundCache = round;
 		}
 
 		private void CheckUnsupportedWord(int watchdogID)
@@ -366,6 +412,7 @@ namespace AutoKkutu
 			PathFinder.NewPathList.Add(example);
 		}
 
+		// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
 		private void GetCurrentPresentedWord(int watchdogID)
 		{
 			string word = GetGamePresentedWord();
@@ -472,12 +519,24 @@ namespace AutoKkutu
 		public class UnsupportedWordEventArgs : EventArgs
 		{
 			public string Word;
-			public Boolean IsExistingWord;
+			public bool IsExistingWord;
 
 			public UnsupportedWordEventArgs(string word, bool isExistingWord)
 			{
 				Word = word;
 				IsExistingWord = isExistingWord;
+			}
+		}
+
+		public class RoundChangeEventArgs : EventArgs
+		{
+			public int RoundIndex;
+			public string RoundWord;
+
+			public RoundChangeEventArgs(int roundIndex, string roundWord)
+			{
+				RoundIndex = roundIndex;
+				RoundWord = roundWord;
 			}
 		}
 
@@ -522,9 +581,14 @@ namespace AutoKkutu
 			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML");
 		}
 
-		public string GetGameRound()
+		public string GetGameRoundText()
 		{
 			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent");
+		}
+
+		public int GetGameRoundIndex()
+		{
+			return EvaluateJSInt(_currentRoundIndexFuncName);
 		}
 
 		public string GetUnsupportedWord()
@@ -541,7 +605,6 @@ namespace AutoKkutu
 
 		public string GetMissionWord()
 		{
-			// TODO: 미션 단어 들어간 글자 선호해서 입력하는 기능 추가
 			return EvaluateJS("document.getElementsByClassName('items')[0].style.opacity") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent") : "";
 		}
 

@@ -312,7 +312,7 @@ namespace AutoKkutu
 
 		private void performAutoEnter(PathFinder.UpdatedPathEventArgs args, string content)
 		{
-			if (!Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderFlags.RETRIAL))
+			if (!Handler.IsGameStarted || !Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderFlags.RETRIAL))
 				return;
 			Logger.Info("Auto mode enabled. automatically use first path.");
 			Logger.InfoFormat("Execute Path : {0}", content);
@@ -521,51 +521,51 @@ namespace AutoKkutu
 			switch (status)
 			{
 				case CurrentStatus.Normal:
-					StatusColor = Resource.ColorSource.NormalColor;
+					StatusColor = Utils.ColorConstants.NormalColor;
 					StatusContent = "준비";
 					break;
 				case CurrentStatus.NotFound:
-					StatusColor = Resource.ColorSource.WarningColor;
+					StatusColor = Utils.ColorConstants.WarningColor;
 					StatusContent = "이 턴에 낼 수 있는 단어를 데이터 집합에서 찾을 수 없었습니다. 수동으로 입력하십시오.";
 					break;
 				case CurrentStatus.EndWord:
-					StatusColor = Resource.ColorSource.ErrorColor;
+					StatusColor = Utils.ColorConstants.ErrorColor;
 					StatusContent = "더 이상 이 턴에 낼 수 있는 단어가 없습니다.";
 					break;
 				case CurrentStatus.Error:
-					StatusColor = Resource.ColorSource.ErrorColor;
-					StatusContent = "서버에 문제가 있습니다. 자세한 사항은 콘솔을 참조하십시오.";
+					StatusColor = Utils.ColorConstants.ErrorColor;
+					StatusContent = "프로그램에 오류가 발생하였습니다. 자세한 사항은 콘솔을 참조하십시오.";
 					break;
 				case CurrentStatus.Searching:
-					StatusColor = Resource.ColorSource.WarningColor;
+					StatusColor = Utils.ColorConstants.WarningColor;
 					StatusContent = "단어 찾는 중...";
 					break;
 				case CurrentStatus.AutoEntered:
-					StatusColor = Resource.ColorSource.NormalColor;
+					StatusColor = Utils.ColorConstants.NormalColor;
 					StatusContent = "단어 자동 입력됨: {0}";
 					break;
 				case CurrentStatus.DB_Job:
-					StatusColor = Resource.ColorSource.WarningColor;
+					StatusColor = Utils.ColorConstants.WarningColor;
 					StatusContent = "데이터베이스 작업 '{0}' 진행 중...";
 					break;
 				case CurrentStatus.DB_Job_Done:
-					StatusColor = Resource.ColorSource.NormalColor;
+					StatusColor = Utils.ColorConstants.NormalColor;
 					StatusContent = "데이터베이스 작업 '{0}' 완료: {1}";
 					break;
 				case CurrentStatus.Adding_Words:
-					StatusColor = Resource.ColorSource.WarningColor;
+					StatusColor = Utils.ColorConstants.WarningColor;
 					StatusContent = "단어 일괄 추가 작업 중...";
 					break;
 				case CurrentStatus.Adding_Words_Done:
-					StatusColor = Resource.ColorSource.NormalColor;
+					StatusColor = Utils.ColorConstants.NormalColor;
 					StatusContent = "단어 일괄 추가 작업 완료";
 					break;
 				case CurrentStatus.Delaying:
-					StatusColor = Resource.ColorSource.NormalColor;
+					StatusColor = Utils.ColorConstants.NormalColor;
 					StatusContent = "단어 찾음! 딜레이 대기 중: {0}ms";
 					break;
 				default:
-					StatusColor = Resource.ColorSource.WaitColor;
+					StatusColor = Utils.ColorConstants.WaitColor;
 					StatusContent = "게임 참가를 기다리는 중.";
 					break;
 

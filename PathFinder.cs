@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Text;
 
 namespace AutoKkutu
 {
@@ -20,8 +21,6 @@ namespace AutoKkutu
 
 	class PathFinder
 	{
-		const string RANDOM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
 		private static readonly ILog Logger = LogManager.GetLogger("PathFinder");
 
 		public static List<string> EndWordList;
@@ -146,14 +145,17 @@ namespace AutoKkutu
 		{
 			string firstChar = first ? word.Content : "";
 
+			var watch = new Stopwatch();
+			watch.Start();
 			FinalList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
 				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), false));
 			Random random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + new string(Enumerable.Repeat(RANDOM_CHARS, 256).Select(s => s[random.Next(s.Length)]).ToArray()), false));
+				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(random, 256, false), false));
+			watch.Stop();
 			if (UpdatedPath != null)
-				UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, 0, flags));
+				UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 		}
 
 		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, WordPreference wordPreference, GameMode mode, PathFinderFlags flags)
