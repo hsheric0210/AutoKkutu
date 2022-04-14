@@ -639,9 +639,8 @@ function {_currentRoundIndexFuncName} {{
 
 		public virtual void SendMessage(string input)
 		{
-			GetLogger(CurrentMainWatchdogID).Warn("Default SendMessage() called");
-			//EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'", "SendMessage"); // "UserMessage"
-			//EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
+			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'", "SendMessage"); // "UserMessage"
+			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
 		}
 
 		public GameMode GetCurrentGameMode()
