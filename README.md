@@ -19,6 +19,8 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * 자유
 * 자유 끝말잇기
 
-# 현재 지원되는 사이트
-* 이름 없는 끄투(kkutu.org)
-* 핑크끄투(kkutu.pink)
+# 현재 (공식적으로) 지원되는 사이트
+* 이름 없는 끄투(https://kkutu.org/)
+* 핑크끄투(https://kkutu.pink/)
+* BF 끄투(https://bfkkutu.kr/)
+* 끄투코리아(https://kkutu.co.kr/)
