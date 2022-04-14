@@ -24,6 +24,7 @@ namespace AutoKkutu
 		public int nDelay = 10;
 		public bool DelayStartAfterWordEnter = true;
 		public bool GameModeAutoDetect = true;
+		public int MaxWords = 20;
 
 		public Config()
 		{

@@ -72,33 +72,33 @@ namespace AutoKkutu
 
 			Task.Run(() =>
 			{
-			try
-			{
-
-				Logger.InfoFormat("Loading external database: {0}", dbFileName);
-				var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
-				externalDBConnection.Open();
-
-				if (!CheckTable_Check("word_list"))
+				try
 				{
-					Logger.Info("Database doesn't contain table 'word_list'");
-					return;
-				}
-				if (!CheckTable_Check("endword_list"))
-				{
-					Logger.Info("Database doesn't contain table 'endword_list'");
-					return;
-				}
 
-				int WordCount = 0;
-				int EndWordCount = 0;
-				using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
-					while (reader2.Read())
+					Logger.InfoFormat("Loading external database: {0}", dbFileName);
+					var externalDBConnection = new SqliteConnection("Data Source=" + dbFileName);
+					externalDBConnection.Open();
+
+					if (!CheckTable_Check("word_list"))
 					{
-						string word = reader2["word"].ToString().Trim();
-						bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
-						if (AddWord(word, isEndWord))
-							Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
+						Logger.Info("Database doesn't contain table 'word_list'");
+						return;
+					}
+					if (!CheckTable_Check("endword_list"))
+					{
+						Logger.Info("Database doesn't contain table 'endword_list'");
+						return;
+					}
+
+					int WordCount = 0;
+					int EndWordCount = 0;
+					using (SqliteDataReader reader2 = new SqliteCommand($"SELECT * FROM word_list", externalDBConnection).ExecuteReader())
+						while (reader2.Read())
+						{
+							string word = reader2["word"].ToString().Trim();
+							bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader2["is_endword"]));
+							if (AddWord(word, isEndWord))
+								Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
 							else
 								Logger.WarnFormat("Word '{0}' is already existing in database.", word);
 							WordCount++;
@@ -152,8 +152,10 @@ namespace AutoKkutu
 
 		public static int DeleteWord(string word)
 		{
-			Logger.Info("Delete '" + word + "' from db...");
-			return ExecuteCommand("DELETE FROM word_list WHERE word = '" + word + "'");
+			int count = ExecuteCommand("DELETE FROM word_list WHERE word = '" + word + "'");
+			if (count > 0)
+				Logger.Info("Deleted '" + word + "' from database");
+			return count;
 		}
 
 		public static bool AddEndWord(string node)

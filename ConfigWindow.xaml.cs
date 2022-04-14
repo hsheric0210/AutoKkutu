@@ -41,12 +41,15 @@ namespace AutoKkutu
 			DelayNumber.Text = config.nDelay.ToString();
 			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnter;
 			GameModeAutoDetect.IsChecked = config.GameModeAutoDetect;
+			MaxWordCount.Text = config.MaxWords.ToString();
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
 		{
 			if (!int.TryParse(DelayNumber.Text, out int nDelay))
 				nDelay = 10;
+			if (!int.TryParse(MaxWordCount.Text, out int MaxWords))
+				MaxWords = 20;
 			Dispatcher.Invoke(() =>
 			{
 				try
@@ -66,7 +69,8 @@ namespace AutoKkutu
 						DelayPerWord = DelayPerWord.IsChecked ?? false,
 						nDelay = nDelay,
 						DelayStartAfterWordEnter = DelayStartAfterWordEnter.IsChecked ?? false,
-						GameModeAutoDetect = GameModeAutoDetect.IsChecked ?? false
+						GameModeAutoDetect = GameModeAutoDetect.IsChecked ?? false,
+						MaxWords = MaxWords
 					});
 				}
 				catch (Exception ex)

@@ -30,7 +30,7 @@ namespace AutoKkutu
 		public static ConcurrentBag<string> InexistentPathList = new ConcurrentBag<string>();
 		public static ConcurrentBag<string> NewPathList = new ConcurrentBag<string>();
 
-		public static event EventHandler<PathFinder.UpdatedPathEventArgs> UpdatedPath;
+		public static event EventHandler<PathFinder.UpdatedPathEventArgs> onPathUpdated;
 
 		public static Config CurrentConfig;
 		public static void Init()
@@ -126,21 +126,6 @@ namespace AutoKkutu
 			}
 		}
 
-		private static List<PathObject> QualifyList(List<PathObject> input)
-		{
-			var result = new List<PathObject>();
-			foreach (PathObject o in input)
-			{
-				if (UnsupportedPathList.Contains(o.Content))
-					Logger.DebugFormat("Excluded '{0}' because it is wrong word.", o.Content);
-				else if (!CurrentConfig.ReturnMode && PreviousPath.Contains(o.Content))
-					Logger.DebugFormat("Excluded '{0}' because it is previously used.", o.Content);
-				else
-					result.Add(o);
-			}
-			return result;
-		}
-
 		private static void RandomPath(CommonHandler.ResponsePresentedWord word, string missionChar, bool first, PathFinderFlags flags)
 		{
 			string firstChar = first ? word.Content : "";
@@ -154,22 +139,22 @@ namespace AutoKkutu
 			for (int i = 0; i < 10; i++)
 				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), false));
 			watch.Stop();
-			if (UpdatedPath != null)
-				UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+			if (onPathUpdated != null)
+				onPathUpdated(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 		}
 
-		public static void FindPath(CommonHandler.ResponsePresentedWord word, string missionChar, WordPreference wordPreference, GameMode mode, PathFinderFlags flags)
+		public static void FindPath(CommonHandler.ResponsePresentedWord wordCondition, string missionChar, WordPreference wordPreference, GameMode mode, PathFinderFlags flags)
 		{
 			if (ConfigEnums.IsFreeMode(mode))
 			{
-				RandomPath(word, missionChar, mode == GameMode.Free_Last_and_First, flags);
+				RandomPath(wordCondition, missionChar, mode == GameMode.Free_Last_and_First, flags);
 				return;
 			}
 
-			if (word.CanSubstitution)
-				Logger.InfoFormat("Finding path for {0} ({1}).", word.Content, word.Substitution);
+			if (wordCondition.CanSubstitution)
+				Logger.InfoFormat("Finding path for {0} ({1}).", wordCondition.Content, wordCondition.Substitution);
 			else
-				Logger.InfoFormat("Finding path for {0}.", word.Content);
+				Logger.InfoFormat("Finding path for {0}.", wordCondition.Content);
 
 			// Prevent watchdog thread from being blocked
 			Task.Run(() =>
@@ -183,19 +168,19 @@ namespace AutoKkutu
 				{
 					if (wordPreference == WordPreference.WORD_LENGTH)
 					{
-						WordList = DatabaseManager.FindWord(word, missionChar, flags.HasFlag(PathFinderFlags.USING_END_WORD) ? 2 : 0, mode);
+						WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags.HasFlag(PathFinderFlags.USING_END_WORD) ? 2 : 0, mode);
 						Logger.InfoFormat("Found {0} words.", WordList.Count);
 					}
 					else
 					{
 						if (flags.HasFlag(PathFinderFlags.USING_END_WORD))
 						{
-							WordList = DatabaseManager.FindWord(word, missionChar, 1, mode);
+							WordList = DatabaseManager.FindWord(wordCondition, missionChar, 1, mode);
 							Logger.InfoFormat("Find {0} words (EndWord inclued).", WordList.Count);
 						}
 						else
 						{
-							WordList = DatabaseManager.FindWord(word, missionChar, 0, mode);
+							WordList = DatabaseManager.FindWord(wordCondition, missionChar, 0, mode);
 							Logger.InfoFormat("Found {0} words (EndWord excluded).", WordList.Count);
 						}
 						// TODO: Attack word search here
@@ -207,27 +192,32 @@ namespace AutoKkutu
 				{
 					watch.Stop();
 					Logger.Error("Failed to Find Path", e);
-					if (UpdatedPath != null)
-						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Error, 0, 0, 0, flags));
+					if (onPathUpdated != null)
+						onPathUpdated(null, new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.Error, 0, 0, 0, flags));
 				}
-				QualifiedNormalList = QualifyList(WordList);
+				QualifiedNormalList = (from word in WordList
+									   let wordContent = word.Content
+									   where (!UnsupportedPathList.Contains(wordContent) && (CurrentConfig.ReturnMode || !PreviousPath.Contains(wordContent)))
+									   select word).ToList();
 
 				if (QualifiedNormalList.Count == 0)
 				{
 					watch.Stop();
 					Logger.Warn("Can't find any path.");
-					if (UpdatedPath != null)
-						UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+					if (onPathUpdated != null)
+						onPathUpdated(null, new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 					return;
 				}
-				if (QualifiedNormalList.Count > 20)
-					QualifiedNormalList = QualifiedNormalList.Take(20).ToList();
+
+				int maxCount = CurrentConfig.MaxWords;
+				if (QualifiedNormalList.Count > maxCount)
+					QualifiedNormalList = QualifiedNormalList.Take(maxCount).ToList();
 
 				FinalList = QualifiedNormalList;
 				watch.Stop();
 				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds);
-				if (UpdatedPath != null)
-					UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+				if (onPathUpdated != null)
+					onPathUpdated(null, new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
 		}
 

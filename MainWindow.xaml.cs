@@ -124,7 +124,7 @@ namespace AutoKkutu
 		{
 			browser.FrameLoadEnd -= Browser_FrameLoadEnd_RunOnce;
 
-			PathFinder.UpdatedPath += PathFinder_UpdatedPath;
+			PathFinder.onPathUpdated += PathFinder_UpdatedPath;
 			DatabaseManager.DBJobStart += DatabaseManager_DBJobStart;
 			DatabaseManager.DBJobDone += DatabaseManager_DBJobDone;
 			DatabaseManagement.AddWordStart += DatabaseManagement_AddWordStart;
