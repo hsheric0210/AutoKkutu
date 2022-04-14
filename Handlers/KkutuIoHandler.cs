@@ -3,6 +3,8 @@ using CefSharp.Wpf;
 
 namespace AutoKkutu.Handlers
 {
+	// Fixme: Detected by their cheat detection
+
 	internal partial class KkutuIoHandler : CommonHandler
 	{
 		private string _parseExtraVisibleStyleTags;

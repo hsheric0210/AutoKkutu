@@ -3,6 +3,8 @@ using CefSharp.Wpf;
 
 namespace AutoKkutu.Handlers
 {
+	// Fixme: Detected by their cheat detection
+
 	internal partial class KkutuCoKrHandler : CommonHandler
 	{
 		private string _writeInputFuncName;
