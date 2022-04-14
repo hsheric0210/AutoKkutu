@@ -3,18 +3,18 @@ using CefSharp.Wpf;
 
 namespace AutoKkutu.Handlers
 {
-	internal partial class KkutuCoKrHandler : CommonHandler
+	internal partial class BFKkutuHandler : CommonHandler
 	{
 		private string _writeInputFuncName;
 		private string _clickSubmitFuncName;
 
-		public KkutuCoKrHandler(ChromiumWebBrowser browser) : base(browser)
+		public BFKkutuHandler(ChromiumWebBrowser browser) : base(browser)
 		{
 		}
 
-		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.co\\.kr\\/.*\\/game.*$";
+		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?bfkkutu\\.kr\\/.*$";
 
-		public override string GetHandlerName() => "Kkutu.co.kr Handler";
+		public override string GetHandlerName() => "BFKkutu.kr Handler";
 
 		public override void SendMessage(string input)
 		{
@@ -24,17 +24,18 @@ namespace AutoKkutu.Handlers
 
 				Browser.EvaluateScriptAsync($@"
 function {_writeInputFuncName}(input) {{
-	var userMessages = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
-    var maxIndex = userMessages.length, index = 0;
+	var chatFields = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
+    var maxIndex = chatFields.length, index = 0;
     while (index < maxIndex) {{
-        if (window.getComputedStyle(userMessages[index]).display != 'none') {{
-			userMessages[index].value = input;
+        if (window.getComputedStyle(chatFields[index]).display != 'none') {{
+			chatFields[index].value = input;
             break;
         }}
 		index++;
     }}
 }}
 ");
+				GetLogger().Info($"Registered writeInputFunc: {_writeInputFuncName}()");
 			}
 
 			if (string.IsNullOrEmpty(_clickSubmitFuncName) || EvaluateJSBool($"typeof {_clickSubmitFuncName} != 'function'"))
@@ -55,6 +56,7 @@ function {_clickSubmitFuncName}() {{
     }}
 }}
 ");
+				GetLogger().Info($"Registered clickSubmitFunc: {_clickSubmitFuncName}()");
 			}
 
 			EvaluateJS($"{_writeInputFuncName}('{input}')");

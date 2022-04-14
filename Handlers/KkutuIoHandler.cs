@@ -19,11 +19,11 @@ namespace AutoKkutu.Handlers
 
 		public override string GetHandlerName() => "Kkutu.io Handler";
 
-		public new void SendMessage(string input)
+		public override void SendMessage(string input)
 		{
 			if (string.IsNullOrEmpty(_parseExtraVisibleStyleTags) || EvaluateJSBool($"typeof {_parseExtraVisibleStyleTags} != 'function'"))
 			{
-				_parseExtraVisibleStyleTags = $"__{Utils.GenerateRandomString(new System.Random(), 64, true)}";
+				_parseExtraVisibleStyleTags = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
 
 				// https://stackoverflow.com/a/14865690
 				Browser.EvaluateScriptAsync($@"
@@ -52,7 +52,7 @@ function {_parseExtraVisibleStyleTags}() {{
 
 			if (string.IsNullOrEmpty(_writeInputFuncName) || EvaluateJSBool($"typeof {_writeInputFuncName} != 'function'"))
 			{
-				_writeInputFuncName = $"__{Utils.GenerateRandomString(new System.Random(), 64, true)}";
+				_writeInputFuncName = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
 
 				Browser.EvaluateScriptAsync($@"
 function {_writeInputFuncName}(input) {{
@@ -72,7 +72,7 @@ function {_writeInputFuncName}(input) {{
 
 			if (string.IsNullOrEmpty(_clickSubmitFuncName) || EvaluateJSBool($"typeof {_clickSubmitFuncName} != 'function'"))
 			{
-				_clickSubmitFuncName = $"__{Utils.GenerateRandomString(new System.Random(), 64, true)}";
+				_clickSubmitFuncName = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
 				
 				// https://stackoverflow.com/questions/6338217/get-a-css-value-with-javascript
 				Browser.EvaluateScriptAsync($@"
@@ -92,7 +92,7 @@ function {_clickSubmitFuncName}() {{
 			}
 
 			EvaluateJS($"{_writeInputFuncName}('{input}')");
-			//EvaluateJS($"{_clickSubmitFuncName}()");
+			EvaluateJS($"{_clickSubmitFuncName}()");
 		}
 	}
 }

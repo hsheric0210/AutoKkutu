@@ -152,7 +152,7 @@ namespace AutoKkutu
 				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), false));
 			Random random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(random, 256, false), false));
+				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), false));
 			watch.Stop();
 			if (UpdatedPath != null)
 				UpdatedPath(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));

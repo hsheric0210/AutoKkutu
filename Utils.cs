@@ -17,8 +17,12 @@ namespace AutoKkutu
 			public static Color WaitColor = Color.FromRgb(121, 121, 121);
 		}
 
-		public static string GenerateRandomString(Random random, int length, bool english)
+		public static Random GLOBAL_RANDOM = new Random();
+
+		public static string GenerateRandomString(int length, bool english, Random random = null)
 		{
+			if (random == null)
+				random = GLOBAL_RANDOM;
 			var builder = new StringBuilder(length);
 			char start = '가';
 			char end = '힣';

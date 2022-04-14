@@ -9,7 +9,7 @@ namespace AutoKkutu.Handlers
 		{
 		}
 
-		public new void SendMessage(string input)
+		public override void SendMessage(string input)
 		{
 			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
 			EvaluateJS("document.getElementById('ChatBtn').click()");

@@ -13,7 +13,7 @@ namespace AutoKkutu
 {
 	public abstract class CommonHandler
 	{
-		private ILog GetLogger(int watchdogID, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID}");
+		protected ILog GetLogger(int? watchdogID = null, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
 
 		public ChromiumWebBrowser Browser;
 		public bool IsWatchdogAlive;
@@ -69,10 +69,11 @@ namespace AutoKkutu
 
 		public static void InitHandlers(ChromiumWebBrowser browser)
 		{
-			HANDLERS = new CommonHandler[2];
+			HANDLERS = new CommonHandler[4];
 			HANDLERS[0] = new KkutuOrgHandler(browser);
 			HANDLERS[1] = new KkutuPinkHandler(browser);
-			//HANDLERS[2] = new KkutuCoKrHandler(browser);
+			HANDLERS[2] = new BFKkutuHandler(browser);
+			HANDLERS[3] = new KkutuCoKrHandler(browser);
 			//HANDLERS[3] = new KkutuIoHandler(browser);
 		}
 
@@ -314,7 +315,7 @@ namespace AutoKkutu
 					return;
 				if (_currentRoundIndexFuncName != null)
 				{
-					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(new Random(), 64, true)}()";
+					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(64, true, new Random())}()";
 					Task.Run(() =>
 					{
 						var result = Browser.EvaluateScriptAsync($@"
@@ -468,7 +469,7 @@ function {_currentRoundIndexFuncName} {{
 		}
 
 
-		private int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
+		protected int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
 
 		private ResponsePresentedWord GetPresentedWord()
 		{
@@ -581,26 +582,26 @@ function {_currentRoundIndexFuncName} {{
 		public abstract string GetSiteURLPattern();
 		public abstract string GetHandlerName();
 
-		public bool IsGameNotInProgress()
+		public virtual bool IsGameNotInProgress()
 		{
 			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", "IsGameNotInProgress");
 			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", "IsGameNotInProgress");
 			return (string.IsNullOrWhiteSpace(height) || !string.IsNullOrWhiteSpace(display)) && (string.IsNullOrWhiteSpace(display) || display.Equals("none", StringComparison.InvariantCultureIgnoreCase));
 		}
 
-		public bool IsGameNotInMyTurn()
+		public virtual bool IsGameNotInMyTurn()
 		{
 			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]", "IsGameNotInMyTurn");
 			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", "IsGameNotInMyTurn");
 			return string.Equals(element, "undefined", StringComparison.InvariantCultureIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
 		}
 
-		public string GetGamePresentedWord()
+		public virtual string GetGamePresentedWord()
 		{
 			return EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetGamePresentedWord");
 		}
 
-		public string GetGamePreviousWord(int index)
+		public virtual string GetGamePreviousWord(int index)
 		{
 			if (index < 0 || index >= 6)
 				throw new ArgumentOutOfRangeException($"index: {index}");
@@ -609,37 +610,38 @@ function {_currentRoundIndexFuncName} {{
 			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", "GetGamePreviousWord");
 		}
 
-		public string GetGameRoundText()
+		public virtual string GetGameRoundText()
 		{
 			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", "GetGameRoundText");
 		}
 
-		public int GetGameRoundIndex()
+		public virtual int GetGameRoundIndex()
 		{
 			return EvaluateJSInt(_currentRoundIndexFuncName, "GetGameRoundIndex");
 		}
 
-		public string GetUnsupportedWord()
+		public virtual string GetUnsupportedWord()
 		{
 			return EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", "GetUnsupportedWord") : "";
 		}
 
-		public string GetExampleWord()
+		public virtual string GetExampleWord()
 		{
 			string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML", "GetExampleWord");
 			string content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetExampleWord");
 			return innerHTML.Contains("label") && innerHTML.Contains("color") && innerHTML.Contains("170,") && content.Length > 1 ? content : "";
 		}
 
-		public string GetMissionWord()
+		public virtual string GetMissionWord()
 		{
 			return EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", "GetMissionWord") : "";
 		}
 
-		public void SendMessage(string input)
+		public virtual void SendMessage(string input)
 		{
-			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'", "SendMessage"); // "UserMessage"
-			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
+			GetLogger(CurrentMainWatchdogID).Warn("Default SendMessage() called");
+			//EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'", "SendMessage"); // "UserMessage"
+			//EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
 		}
 
 		public GameMode GetCurrentGameMode()
