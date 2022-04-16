@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Text;
+using static AutoKkutu.DatabaseManager;
+using static AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
@@ -16,17 +18,28 @@ namespace AutoKkutu
 	{
 		NONE = 0,
 		USING_END_WORD = 1,
-		RETRIAL = 2
+		USING_ATTACK_WORD = 2,
+		RETRIAL = 4,
 	}
 
-	class PathFinder
+	public class PathFinder
 	{
 		private static readonly ILog Logger = LogManager.GetLogger("PathFinder");
 
+		public static List<string> AttackWordList;
 		public static List<string> EndWordList;
+
+		public static List<string> ReverseAttackWordList;
+		public static List<string> ReverseEndWordList;
+
+		public static List<string> KkutuAttackWordList;
+		public static List<string> KkutuEndWordList;
+
 		public static List<PathObject> FinalList;
+
 		public static List<string> PreviousPath = new List<string>();
 		public static List<string> UnsupportedPathList = new List<string>();
+
 		public static ConcurrentBag<string> InexistentPathList = new ConcurrentBag<string>();
 		public static ConcurrentBag<string> NewPathList = new ConcurrentBag<string>();
 
@@ -37,7 +50,12 @@ namespace AutoKkutu
 		{
 			try
 			{
-				EndWordList = DatabaseManager.GetEndWordList();
+				AttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.EndWordListName);
+				EndWordList = DatabaseManager.GetNodeList(DatabaseConstants.AttackWordListName);
+				ReverseAttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.ReverseAttackWordListName);
+				ReverseEndWordList = DatabaseManager.GetNodeList(DatabaseConstants.ReverseEndWordListName);
+				KkutuAttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.KkutuAttackWordListName);
+				KkutuEndWordList = DatabaseManager.GetNodeList(DatabaseConstants.KkutuEndWordListName);
 			}
 			catch (Exception ex)
 			{
@@ -48,6 +66,20 @@ namespace AutoKkutu
 		public static void UpdateConfig(Config newConfig)
 		{
 			CurrentConfig = newConfig;
+		}
+
+		public static bool CheckNodePresence(string nodeType, string item, List<string> nodeList, WordFlags theFlag, ref WordFlags flags, bool add = false)
+		{
+			bool exists = nodeList.Contains(item);
+			if (exists)
+				flags |= theFlag;
+			else if (add && flags.HasFlag(theFlag))
+			{
+				nodeList.Add(item);
+				Logger.Info($"Added new {nodeType} node '{item}");
+				return true;
+			}
+			return false;
 		}
 
 		public static string AutoDBUpdate()
@@ -69,11 +101,12 @@ namespace AutoKkutu
 				Logger.DebugFormat("Get {0} elements from NewPathList.", NewPathCount);
 				foreach (string word in NewPathList)
 				{
-					bool isEndWord = EndWordList.Contains(word.Last().ToString());
+					WordFlags flags = Utils.GetFlags(word);
+
 					try
 					{
-						Logger.Debug($"Check and add '{word}' into database.");
-						if (DatabaseManager.AddWord(word, isEndWord))
+						Logger.Debug($"Check and add '{word}' into database. (flags: {flags})");
+						if (DatabaseManager.AddWord(word, flags))
 						{
 							Logger.Info($"Added '{word}' into database.");
 							AddedPathCount++;
@@ -134,10 +167,10 @@ namespace AutoKkutu
 			watch.Start();
 			FinalList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
-				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), false));
+				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordFlags.None));
 			Random random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), false));
+				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), WordFlags.None));
 			watch.Stop();
 			if (onPathUpdated != null)
 				onPathUpdated(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
@@ -166,27 +199,27 @@ namespace AutoKkutu
 				var QualifiedNormalList = new List<PathObject>();
 				try
 				{
-					if (wordPreference == WordPreference.WORD_LENGTH)
-					{
-						WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags.HasFlag(PathFinderFlags.USING_END_WORD) ? 2 : 0, mode);
-						Logger.InfoFormat("Found {0} words.", WordList.Count);
-					}
-					else
-					{
-						if (flags.HasFlag(PathFinderFlags.USING_END_WORD))
-						{
-							WordList = DatabaseManager.FindWord(wordCondition, missionChar, 1, mode);
-							Logger.InfoFormat("Find {0} words (EndWord inclued).", WordList.Count);
-						}
-						else
-						{
-							WordList = DatabaseManager.FindWord(wordCondition, missionChar, 0, mode);
-							Logger.InfoFormat("Found {0} words (EndWord excluded).", WordList.Count);
-						}
-						// TODO: Attack word search here
-						// AttackWord = DatabaseManager.FindWord(i, 3); // 3 for only attack words
-						// Logger.Info(string.Format("Found {0} attack words.", NormalWord.Count), PATHFINDER_WORKER_THREAD_NAME);
-					}
+					WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags, wordPreference, mode);
+					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderFlags.USING_ATTACK_WORD), flags.HasFlag(PathFinderFlags.USING_END_WORD));
+
+					//if (wordPreference == WordPreference.WORD_LENGTH)
+					//{
+					//	WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags, false, mode);
+					//	Logger.InfoFormat("Found {0} words.", WordList.Count);
+					//}
+					//else
+					//{
+					//	if (flags.HasFlag(PathFinderFlags.USING_END_WORD))
+					//	{
+					//		WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags | PathFinderFlags.USING_END_WORD, true, mode);
+					//		Logger.InfoFormat("Find {0} words (EndWord inclued).", WordList.Count);
+					//	}
+					//	else
+					//	{
+					//		WordList = DatabaseManager.FindWord(wordCondition, missionChar, (flags & ~PathFinderFlags.USING_END_WORD), false, mode);
+					//		Logger.InfoFormat("Found {0} words (EndWord excluded).", WordList.Count);
+					//	}
+					//}
 				}
 				catch (Exception e)
 				{
@@ -293,16 +326,12 @@ namespace AutoKkutu
 				get; private set;
 			}
 
-			public bool IsEndWord
-			{
-				get; private set;
-			}
-
-			public PathObject(string _content, bool _isEndWord)
+			public PathObject(string _content, WordFlags _wordFlags)
 			{
 				Content = _content;
 				Title = _content;
-				if (IsEndWord = _isEndWord)
+				// TODO: 한방 단어나 공격 단어의 경우, 리스트에 렌더링할 때 다른 색으로 렌더링함으로서 강조 효과 주기
+				if (_wordFlags.HasFlag(WordFlags.EndWord))
 					ToolTip = "이 단어는 한방 단어로, 이을 수 있는 다음 단어가 없습니다.";
 				else
 					ToolTip = _content;

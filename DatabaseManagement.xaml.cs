@@ -17,6 +17,8 @@ using Microsoft.Win32;
 using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using log4net;
+using static AutoKkutu.DatabaseManager;
+using static AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
@@ -72,10 +74,20 @@ namespace AutoKkutu
 			}
 		}
 
-		public static void BatchAddWord(string content, bool onlineVerify, bool forceEndword, bool remove)
+		public enum BatchAddWordMode
+		{
+			Add,
+			Remove,
+			VerifyAndAdd
+		}
+
+		public static void BatchAddWord(string content, BatchAddWordMode mode, WordFlags flags)
 		{
 			if (string.IsNullOrWhiteSpace(content))
 				return;
+
+			bool remove = mode == BatchAddWordMode.Remove;
+			bool onlineVerify = mode == BatchAddWordMode.VerifyAndAdd;
 			if (onlineVerify && string.IsNullOrWhiteSpace(EvaluateJS("document.getElementById('dict-output').style")))
 			{
 				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -92,6 +104,7 @@ namespace AutoKkutu
 				int DuplicateCount = 0;
 				int FailedCount = 0;
 				int NewEndNode = 0;
+				int NewAttackNode = 0;
 
 				Logger.Info($"{WordList.Length} elements queued.");
 				foreach (string word in WordList)
@@ -100,12 +113,12 @@ namespace AutoKkutu
 						continue;
 
 					if (!remove && onlineVerify)
-						Logger.Info("Check kkutu dict : '" + word + "' .");
+						Logger.Info($"Check kkutu dict : '{word}' .");
 
 					// Check word length
 					if (!remove && word.Length <= 1)
 					{
-						Logger.Error("'" + word + "' is too short to add!");
+						Logger.Error($"'{word}' is too short to add!");
 						FailedCount++;
 					}
 					else if (remove || !onlineVerify || KkutuOnlineDictCheck(word))
@@ -120,7 +133,7 @@ namespace AutoKkutu
 							catch (Exception ex)
 							{
 								FailedCount++;
-								Logger.Error($"Failed to Add/Remove '{word}' to/from database", ex);
+								Logger.Error($"Failed to remove '{word}' from database", ex);
 								continue;
 							}
 						}
@@ -128,15 +141,10 @@ namespace AutoKkutu
 						{
 							try
 							{
-								bool isEndword = PathFinder.EndWordList.Contains(word[word.Length - 1].ToString());
+								Utils.CorrectFlags(word, ref flags, ref NewEndNode, ref NewAttackNode);
 
-								if (forceEndword || isEndword)
-									Logger.Info("'" + word + "' is End word.");
-								else
-									Logger.Info("'" + word + "' isn't End word.");
-
-								Logger.Info("Adding'" + word + "' into database...");
-								if (DatabaseManager.AddWord(word, forceEndword || isEndword))
+								Logger.Info($"Adding'{word}' into database... (flags: {flags})");
+								if (DatabaseManager.AddWord(word, flags))
 								{
 									SuccessCount++;
 									Logger.Info($"Successfully Add '{word}' to database!");
@@ -146,39 +154,30 @@ namespace AutoKkutu
 									DuplicateCount++;
 									Logger.Warn($"'{word}' already exists on database");
 								}
-								if (forceEndword && !isEndword)
-								{
-									// Add to endword dictionary
-									string endnode = word.Last().ToString();
-									PathFinder.EndWordList.Add(endnode);
-									Logger.Warn($"Added new end word node '{endnode}");
-									NewEndNode++;
-								}
 							}
 							catch (Exception ex)
 							{
 								// Check one or more exceptions are occurred during addition
 								FailedCount++;
-								Logger.Error($"Failed to Add/Remove '{word}' to/from database", ex);
+								Logger.Error($"Failed to add '{word}' to database", ex);
 								continue;
 							}
 						}
 					}
 				}
-				Logger.Info($"Database Operation Complete. {SuccessCount} Success / {NewEndNode} New end node / {DuplicateCount} Duplicated / {FailedCount} Failed.");
+				Logger.Info($"Database Operation Complete. {SuccessCount} success / {NewEndNode} new end nodes / {NewAttackNode} new attack nodes / {DuplicateCount} duplicated / {FailedCount} failed.");
 				string StatusMessage;
 				if (remove)
 					StatusMessage = $"{SuccessCount} 개 성공적으로 제거 / {FailedCount} 개 제거 실패";
-				else if (forceEndword)
-					StatusMessage = $"{SuccessCount} 개 성공 / {NewEndNode} 개의 새로운 한방 끝말 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
 				else
-					StatusMessage = $"{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
+					StatusMessage = $"{SuccessCount} 개 성공 / {NewEndNode} 개의 새로운 한방 노드 / {NewAttackNode} 개의 새로운 공격 노드 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
 				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{StatusMessage}", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 				if (AddWordDone != null)
 					AddWordDone(null, EventArgs.Empty);
 			});
 		}
-		private void Batch_Submit_EndWord(string content)
+
+		private void BatchAddNode(string content, bool remove, NodeFlags type)
 		{
 			if (string.IsNullOrWhiteSpace(content) || content == INPUT_NODE_PLACEHOLDER)
 				return;
@@ -196,7 +195,11 @@ namespace AutoKkutu
 					continue;
 				try
 				{
-					if (DatabaseManager.AddEndWord(node))
+					if (remove)
+					{
+						SuccessCount += DatabaseManager.DeleteNode(node, type);
+					}
+					else if (DatabaseManager.AddNode(node, type))
 					{
 						Logger.Info(string.Format("Successfully add Endword '{0}'!", node[0]));
 						SuccessCount++;
@@ -237,15 +240,71 @@ namespace AutoKkutu
 
 		// Button Handlers
 
-		private void Node_Submit_Click(object sender, RoutedEventArgs e)
+		private NodeFlags GetSelectedNodeTypes()
 		{
-			Batch_Submit_EndWord(Node_Input.Text);
+			NodeFlags type = (NodeFlags)0;
+			if (Node_EndWord.IsChecked ?? false)
+				type |= NodeFlags.EndWord;
+			if (Node_AttackWord.IsChecked ?? false)
+				type |= NodeFlags.AttackWord;
+			if (Node_Reverse_EndWord.IsChecked ?? false)
+				type |= NodeFlags.ReverseEndWord;
+			if (Node_Reverse_AttackWord.IsChecked ?? false)
+				type |= NodeFlags.ReverseAttackWord;
+			if (Node_Kkutu_EndWord.IsChecked ?? false)
+				type |= NodeFlags.KkutuEndWord;
+			if (Node_Kkutu_AttackWord.IsChecked ?? false)
+				type |= NodeFlags.KkutuAttackWord;
+			return type;
 		}
 
+		private void Node_Submit_Click(object sender, RoutedEventArgs e)
+		{
+			BatchAddNode(Node_Input.Text, false, GetSelectedNodeTypes());
+		}
+
+		private void Node_Remove_Click(object sender, RoutedEventArgs e)
+		{
+			BatchAddNode(Node_Input.Text, true, GetSelectedNodeTypes());
+		}
+
+		private BatchAddWordMode GetBatchAddWordMode()
+		{
+			BatchAddWordMode mode;
+			if (Batch_Remove.IsChecked ?? false)
+				mode = BatchAddWordMode.Remove;
+			else if (Batch_Verify.IsChecked ?? false)
+				mode = BatchAddWordMode.VerifyAndAdd;
+			else
+				mode = BatchAddWordMode.Add;
+			return mode;
+		}
+
+		private WordFlags GetBatchAddWordFlags()
+		{
+			WordFlags flags = WordFlags.None;
+			if (Batch_EndWord.IsChecked ?? false)
+				flags |= WordFlags.EndWord;
+			if (Batch_AttackWord.IsChecked ?? false)
+				flags |= WordFlags.AttackWord;
+			if (Batch_Reverse_EndWord.IsChecked ?? false)
+				flags |= WordFlags.ReverseEndWord;
+			if (Batch_Reverse_AttackWord.IsChecked ?? false)
+				flags |= WordFlags.ReverseAttackWord;
+			if (Batch_Middle_EndWord.IsChecked ?? false)
+				flags |= WordFlags.MiddleEndWord;
+			if (Batch_Middle_AttackWord.IsChecked ?? false)
+				flags |= WordFlags.MiddleAttackWord;
+			if (Batch_Kkutu_EndWord.IsChecked ?? false)
+				flags |= WordFlags.KkutuEndWord;
+			if (Batch_Kkutu_AttackWord.IsChecked ?? false)
+				flags |= WordFlags.KkutuAttackWord;
+			return flags;
+		}
 
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
 		{
-			BatchAddWord(Batch_Input.Text, Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false, Batch_Remove.IsChecked ?? false);
+			BatchAddWord(Batch_Input.Text, GetBatchAddWordMode(), GetBatchAddWordFlags());
 		}
 
 		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
@@ -278,7 +337,7 @@ namespace AutoKkutu
 					{
 						Logger.Error($"IOException occurred during reading word list files", ioe);
 					}
-				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false, Batch_Remove.IsChecked ?? false);
+				BatchAddWord(builder.ToString(), GetBatchAddWordMode(), GetBatchAddWordFlags());
 			}
 		}
 
@@ -316,7 +375,7 @@ namespace AutoKkutu
 						Logger.Error($"Unable to enumerate files in folder {foldername}", ioe);
 					}
 				}
-				BatchAddWord(builder.ToString(), Batch_Verify.IsChecked ?? false, Batch_EndWord.IsChecked ?? false, Batch_Remove.IsChecked ?? false);
+				BatchAddWord(builder.ToString(), GetBatchAddWordMode(), GetBatchAddWordFlags());
 			}
 		}
 
