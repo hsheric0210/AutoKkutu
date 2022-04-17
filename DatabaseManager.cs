@@ -439,6 +439,8 @@ namespace AutoKkutu
 						ExecuteCommand($"UPDATE {DatabaseConstants.WordListName} SET flags = {pair.Value} WHERE word = '{pair.Key}';");
 					}
 
+					Logger.InfoFormat("Execute vacuum", new SqliteCommand("VACUUM", DatabaseConnection).ExecuteNonQuery()); // Clean-up
+
 					_ChecksqlLiteConnection.Close();
 
 					Logger.InfoFormat("Total {0} / Removed {1} / Fixed {2}.", dbTotalCount, RemovedCount, FixedCount);
@@ -608,6 +610,7 @@ namespace AutoKkutu
 						MakeTable(DatabaseConstants.WordListName);
 						new SqliteCommand($"INSERT INTO {DatabaseConstants.WordListName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListName};", DatabaseConnection).ExecuteNonQuery();
 						new SqliteCommand($"DROP TABLE _{DatabaseConstants.WordListName};", DatabaseConnection).ExecuteNonQuery();
+						new SqliteCommand("VACUUM", DatabaseConnection).ExecuteNonQuery(); // Clean-up
 
 						Logger.Warn("Dropped is_endword column as it is no longer used.");
 					}
