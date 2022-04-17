@@ -201,7 +201,7 @@ namespace AutoKkutu
 					}
 					else if (DatabaseManager.AddNode(node, type))
 					{
-						Logger.Info(string.Format("Successfully add Endword '{0}'!", node[0]));
+						Logger.Info(string.Format("Successfully add node '{0}'!", node[0]));
 						SuccessCount++;
 					}
 					else
@@ -212,7 +212,7 @@ namespace AutoKkutu
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Failed to add Endword '{node[0]}'!", ex);
+					Logger.Error($"Failed to add node '{node[0]}'!", ex);
 					FailedCount++;
 				}
 			}

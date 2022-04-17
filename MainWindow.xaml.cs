@@ -357,12 +357,15 @@ namespace AutoKkutu
 				}
 				else
 				{
+					var wordPreference = CurrentConfig.WordPreference;
 					ChangeStatusBar(CurrentStatus.Searching);
 					if (CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0)  // 첫 턴 한방 방지
 						flags |= PathFinderFlags.USING_END_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_END_WORD;
-					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", CurrentConfig.WordPreference, CurrentConfig.Mode, flags);
+					if (wordPreference == WordPreference.ATTACK_DAMAGE)
+						flags |= PathFinderFlags.USING_ATTACK_WORD;
+					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", wordPreference, CurrentConfig.Mode, flags);
 				}
 			}
 			catch (Exception ex)

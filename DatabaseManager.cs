@@ -523,15 +523,15 @@ namespace AutoKkutu
 
 			// 한방 단어
 			if (!flags.HasFlag(PathFinderFlags.USING_END_WORD))
-				auxiliaryCondition = $"AND (flags & {endWordFlag} = '0')";
+				auxiliaryCondition = $"AND (flags & {endWordFlag} = 0)";
 			else if (wordPreference == WordPreference.ATTACK_DAMAGE)
-				auxiliaryOrderCondition = $"(CASE WHEN (flags & {endWordFlag} != '0') THEN 768 ELSE 0 END) +";
+				auxiliaryOrderCondition = $"(CASE WHEN (flags & {endWordFlag} != 0) THEN 768 ELSE 0 END) +";
 
 			// 공격 단어
 			if (!flags.HasFlag(PathFinderFlags.USING_ATTACK_WORD))
-				auxiliaryCondition = $"AND (flags & {attackWordFlag} = '0')";
+				auxiliaryCondition = $"AND (flags & {attackWordFlag} = 0)";
 			else if (wordPreference == WordPreference.ATTACK_DAMAGE)
-				auxiliaryOrderCondition = $"(CASE WHEN (flags & {attackWordFlag} != '0') THEN 512 ELSE 0 END) +";
+				auxiliaryOrderCondition = $"(CASE WHEN (flags & {attackWordFlag} != 0) THEN 512 ELSE 0 END) +";
 
 			// 미션 단어
 			string orderCondition;
@@ -591,15 +591,24 @@ namespace AutoKkutu
 					}
 				}
 
-				if (CheckColumnExistence("is_endword") && !CheckColumnExistence("flags"))
+				if (CheckColumnExistence("is_endword"))
 				{
 					try
 					{
-						new SqliteCommand($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN flags SMALLINT NOT NULL DEFAULT 0", DatabaseConnection).ExecuteNonQuery();
-						Logger.Warn("Added flags column.");
-						new SqliteCommand($"UPDATE {DatabaseConstants.WordListName} SET flags = CAST(is_endword AS SMALLINT)", DatabaseConnection).ExecuteNonQuery();
-						Logger.Warn("Converted is_endword column into flags column.");
-						new SqliteCommand($"ALTER TABLE {DatabaseConstants.WordListName} DROP COLUMN is_endword");
+						if (!CheckColumnExistence("flags"))
+						{
+							new SqliteCommand($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN flags SMALLINT NOT NULL DEFAULT 0", DatabaseConnection).ExecuteNonQuery();
+							Logger.Warn("Added flags column.");
+							new SqliteCommand($"UPDATE {DatabaseConstants.WordListName} SET flags = CAST(is_endword AS SMALLINT)", DatabaseConnection).ExecuteNonQuery();
+							Logger.Warn("Converted is_endword column into flags column.");
+						}
+
+						// We can't drop a column from table with single query, as yet.
+						new SqliteCommand($"ALTER TABLE {DatabaseConstants.WordListName} RENAME TO _{DatabaseConstants.WordListName};", DatabaseConnection).ExecuteNonQuery();
+						MakeTable(DatabaseConstants.WordListName);
+						new SqliteCommand($"INSERT INTO {DatabaseConstants.WordListName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListName};", DatabaseConnection).ExecuteNonQuery();
+						new SqliteCommand($"DROP TABLE _{DatabaseConstants.WordListName};", DatabaseConnection).ExecuteNonQuery();
+
 						Logger.Warn("Dropped is_endword column as it is no longer used.");
 					}
 					catch (Exception ex)

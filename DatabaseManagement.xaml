@@ -25,7 +25,7 @@
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
-				<TextBox Name="Node_Input" Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Margin="5,0,5,0" TextWrapping="Wrap" Text="노드 입력 (여러 개는 줄바꿈으로 구분)" GotFocus="Node_Input_GotFocus" LostFocus="Node_Input_LostFocus" MinHeight="50" MinWidth="300" FontStyle="Italic" />
+				<TextBox Name="Node_Input" Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Margin="5,0,5,0" TextWrapping="NoWrap" Text="노드 입력 (여러 개는 줄바꿈으로 구분)" AcceptsReturn="True" GotFocus="Node_Input_GotFocus" LostFocus="Node_Input_LostFocus" MinHeight="50" MinWidth="300" FontStyle="Italic" />
 				<Button Name="Node_Submit" Grid.Row="1" Grid.Column="1" Content="추가" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Submit_Click" Margin="5,5,5,5" />
 				<Button x:Name="Node_Remove" Grid.Row="1" Grid.Column="2" Content="제거" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Remove_Click" Margin="5,5,5,5" />
 				<CheckBox x:Name="Node_AttackWord" Grid.Row="2" Grid.Column="1" Content="끝말잇기 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,10,0,0" />

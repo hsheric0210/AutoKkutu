@@ -50,8 +50,8 @@ namespace AutoKkutu
 		{
 			try
 			{
-				AttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.EndWordListName);
-				EndWordList = DatabaseManager.GetNodeList(DatabaseConstants.AttackWordListName);
+				AttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.AttackWordListName);
+				EndWordList = DatabaseManager.GetNodeList(DatabaseConstants.EndWordListName);
 				ReverseAttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.ReverseAttackWordListName);
 				ReverseEndWordList = DatabaseManager.GetNodeList(DatabaseConstants.ReverseEndWordListName);
 				KkutuAttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.KkutuAttackWordListName);
