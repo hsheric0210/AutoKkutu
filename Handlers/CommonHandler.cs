@@ -313,7 +313,7 @@ namespace AutoKkutu
 			{
 				if (_isGameStarted)
 					return;
-				if (_currentRoundIndexFuncName != null)
+				if (_currentRoundIndexFuncName == null || EvaluateJSBool($"typeof {_currentRoundIndexFuncName} != 'function'"))
 				{
 					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(64, true, new Random())}()";
 					Task.Run(() =>

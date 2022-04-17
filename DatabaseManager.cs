@@ -534,11 +534,11 @@ namespace AutoKkutu
 				auxiliaryOrderCondition = $"(CASE WHEN (flags & {attackWordFlag} != 0) THEN 512 ELSE 0 END) +";
 
 			// 미션 단어
-			string orderCondition;
+			string orderCondition = "";
 			if (string.IsNullOrWhiteSpace(missionChar))
-				orderCondition = $"({auxiliaryOrderCondition} LENGTH(word))";
+				orderCondition += $"({auxiliaryOrderCondition} LENGTH(word))";
 			else
-				orderCondition = $"(checkMissionChar(word, '{missionChar}') + {auxiliaryOrderCondition} LENGTH(word))";
+				orderCondition += $"(checkMissionChar(word, '{missionChar}') + {auxiliaryOrderCondition} LENGTH(word))";
 
 			if (mode == GameMode.All)
 				condition = auxiliaryCondition = "";
