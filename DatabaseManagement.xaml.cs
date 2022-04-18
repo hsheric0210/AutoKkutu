@@ -17,17 +17,21 @@ using Microsoft.Win32;
 using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using log4net;
-using static AutoKkutu.DatabaseManager;
+using static AutoKkutu.CommonDatabase;
 using static AutoKkutu.Constants;
+using AutoKkutu.Databases;
 
 namespace AutoKkutu
 {
 	public partial class DatabaseManagement : Window
 	{
-		public DatabaseManagement()
+		private CommonDatabase Database;
+
+		public DatabaseManagement(CommonDatabase database)
 		{
-			Title = "Data-base Management";
+			Database = database;
 			InitializeComponent();
+			Title = $"Data-base Management : {database.GetDBInfo()}";
 		}
 
 		private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -81,7 +85,7 @@ namespace AutoKkutu
 			VerifyAndAdd
 		}
 
-		public static void BatchAddWord(string content, BatchAddWordMode mode, WordFlags flags)
+		public void BatchAddWord(string content, BatchAddWordMode mode, WordFlags flags)
 		{
 			if (string.IsNullOrWhiteSpace(content))
 				return;
@@ -127,7 +131,7 @@ namespace AutoKkutu
 						{
 							try
 							{
-								DatabaseManager.DeleteWord(word);
+								Database.DeleteWord(word);
 								SuccessCount++;
 							}
 							catch (Exception ex)
@@ -144,7 +148,7 @@ namespace AutoKkutu
 								Utils.CorrectFlags(word, ref flags, ref NewEndNode, ref NewAttackNode);
 
 								Logger.Info($"Adding'{word}' into database... (flags: {flags})");
-								if (DatabaseManager.AddWord(word, flags))
+								if (Database.AddWord(word, flags))
 								{
 									SuccessCount++;
 									Logger.Info($"Successfully Add '{word}' to database!");
@@ -197,9 +201,9 @@ namespace AutoKkutu
 				{
 					if (remove)
 					{
-						SuccessCount += DatabaseManager.DeleteNode(node, type);
+						SuccessCount += Database.DeleteNode(node, type);
 					}
-					else if (DatabaseManager.AddNode(node, type))
+					else if (Database.AddNode(node, type))
 					{
 						Logger.Info(string.Format("Successfully add node '{0}'!", node[0]));
 						SuccessCount++;
@@ -310,12 +314,12 @@ namespace AutoKkutu
 		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
 		{
 			var dialog = new OpenFileDialog();
-			dialog.Title = "단어 목록을 불러올 데이터베이스 파일을 선택하세요";
+			dialog.Title = "단어 목록을 불러올 외부 SQLite 데이터베이스 파일을 선택하세요";
 			dialog.Multiselect = false;
 			dialog.CheckPathExists = true;
 			dialog.CheckFileExists = true;
 			if (dialog.ShowDialog() ?? false)
-				DatabaseManager.LoadFromDB(dialog.FileName);
+				Database.LoadFromExternalSQLite(dialog.FileName);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -379,7 +383,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => DatabaseManager.CheckDB(Use_OnlineDic.IsChecked.Value);
+		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked.Value);
 
 		private void Node_Input_GotFocus(object sender, RoutedEventArgs e)
 		{

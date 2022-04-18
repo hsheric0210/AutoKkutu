@@ -20,7 +20,7 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ConfigWindow : Window
 	{
-		public ConfigWindow(Config config)
+		public ConfigWindow(Configuration config)
 		{
 			InitializeComponent();
 			DBAutoUpdateModeCB.ItemsSource = ConfigEnums.DBAutoUpdateModeValues.Select(ConfigEnums.GetDBAutoUpdateModeName);
@@ -54,7 +54,7 @@ namespace AutoKkutu
 			{
 				try
 				{
-					MainWindow.UpdateConfig(new Config
+					MainWindow.UpdateConfig(new Configuration
 					{
 						AutoEnter = AutoEnter.IsChecked ?? false,
 						AutoDBUpdate = DBAutoUpdate.IsChecked ?? false,

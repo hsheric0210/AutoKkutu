@@ -1,4 +1,5 @@
-﻿using AutoKkutu.Handlers;
+﻿using AutoKkutu.Databases;
+using AutoKkutu.Handlers;
 using CefSharp;
 using CefSharp.Handler;
 using CefSharp.Wpf;
@@ -41,7 +42,8 @@ namespace AutoKkutu
 
 		public CommonHandler Handler;
 
-		public static Config CurrentConfig;
+		public static Configuration CurrentConfig;
+		public static CommonDatabase Database;
 
 		private Stopwatch inputStopwatch = new Stopwatch();
 
@@ -80,7 +82,7 @@ namespace AutoKkutu
 			}, true, (IApp)null);
 
 			// Load default config
-			PathFinder.UpdateConfig(CurrentConfig = new Config());
+			PathFinder.UpdateConfig(CurrentConfig = new Configuration());
 			CommonHandler.UpdateConfig(CurrentConfig);
 
 			// Initialize Browser
@@ -106,12 +108,11 @@ namespace AutoKkutu
 			browser.FrameLoadEnd += Browser_FrameLoadEnd;
 			browser.FrameLoadEnd += Browser_FrameLoadEnd_RunOnce;
 			browserContainer.Content = browser;
-			DatabaseManager.DBError = (EventHandler)Delegate.Combine(DatabaseManager.DBError, new EventHandler(DatabaseManager_DBError));
-			DatabaseManager.Init();
-			PathFinder.Init();
+			SQLiteDatabase.DBError += DatabaseManager_DBError;
+			PathFinder.Init(Database = new SQLiteDatabase()); // TODO: Make database configuration (database.config)
 		}
 
-		public static void UpdateConfig(Config newConfig)
+		public static void UpdateConfig(Configuration newConfig)
 		{
 			Logger.Info("Updated config.");
 			CurrentConfig = newConfig;
@@ -126,8 +127,8 @@ namespace AutoKkutu
 			browser.FrameLoadEnd -= Browser_FrameLoadEnd_RunOnce;
 
 			PathFinder.onPathUpdated += PathFinder_UpdatedPath;
-			DatabaseManager.DBJobStart += DatabaseManager_DBJobStart;
-			DatabaseManager.DBJobDone += DatabaseManager_DBJobDone;
+			CommonDatabase.DBJobStart += DatabaseManager_DBJobStart;
+			CommonDatabase.DBJobDone += DatabaseManager_DBJobDone;
 			DatabaseManagement.AddWordStart += DatabaseManagement_AddWordStart;
 			DatabaseManagement.AddWordDone += DatabaseManagement_AddWordDone;
 		}
@@ -176,7 +177,7 @@ namespace AutoKkutu
 				Dispatcher.Invoke(() =>
 				{
 					Logger.Info("Hide LoadOverlay.");
-					DBStatus.Content = DatabaseManager.GetDBInfo();
+					DBStatus.Content = Database.GetDBInfo();
 					LoadOverlay.Visibility = Visibility.Hidden;
 				});
 			}
@@ -186,12 +187,12 @@ namespace AutoKkutu
 
 		private void DatabaseManager_DBJobStart(object sender, EventArgs e)
 		{
-			ChangeStatusBar(CurrentStatus.DB_Job, ((DatabaseManager.DBJobArgs)e).JobName);
+			ChangeStatusBar(CurrentStatus.DB_Job, ((CommonDatabase.DBJobArgs)e).JobName);
 		}
 
 		private void DatabaseManager_DBJobDone(object sender, EventArgs e)
 		{
-			var args = ((DatabaseManager.DBJobArgs)e);
+			var args = ((CommonDatabase.DBJobArgs)e);
 			ChangeStatusBar(CurrentStatus.DB_Job_Done, args.JobName, args.Result);
 		}
 
@@ -649,7 +650,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private void DBManager_Click(object sender, RoutedEventArgs e) => new DatabaseManagement().Show();
+		private void DBManager_Click(object sender, RoutedEventArgs e) => new DatabaseManagement(Database).Show();
 
 		private void Settings_Click(object sender, RoutedEventArgs e)
 		{

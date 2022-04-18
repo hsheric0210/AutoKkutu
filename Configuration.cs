@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
-	public class Config
+	public class Configuration
 	{
 		public bool AutoEnter = true;
 		public bool AutoDBUpdate = true;
@@ -26,7 +26,7 @@ namespace AutoKkutu
 		public bool GameModeAutoDetect = true;
 		public int MaxWords = 20;
 
-		public Config()
+		public Configuration()
 		{
 		}
 	}

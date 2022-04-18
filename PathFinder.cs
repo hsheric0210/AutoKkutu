@@ -7,8 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Text;
-using static AutoKkutu.DatabaseManager;
+using static AutoKkutu.CommonDatabase;
 using static AutoKkutu.Constants;
+using AutoKkutu.Databases;
 
 namespace AutoKkutu
 {
@@ -45,17 +46,20 @@ namespace AutoKkutu
 
 		public static event EventHandler<PathFinder.UpdatedPathEventArgs> onPathUpdated;
 
-		public static Config CurrentConfig;
-		public static void Init()
+		public static Configuration CurrentConfig;
+		public static CommonDatabase Database;
+		
+		public static void Init(CommonDatabase database)
 		{
+			UpdateDatabase(database);
 			try
 			{
-				AttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.AttackWordListName);
-				EndWordList = DatabaseManager.GetNodeList(DatabaseConstants.EndWordListName);
-				ReverseAttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.ReverseAttackWordListName);
-				ReverseEndWordList = DatabaseManager.GetNodeList(DatabaseConstants.ReverseEndWordListName);
-				KkutuAttackWordList = DatabaseManager.GetNodeList(DatabaseConstants.KkutuAttackWordListName);
-				KkutuEndWordList = DatabaseManager.GetNodeList(DatabaseConstants.KkutuEndWordListName);
+				AttackWordList = Database.GetNodeList(DatabaseConstants.AttackWordListName);
+				EndWordList = Database.GetNodeList(DatabaseConstants.EndWordListName);
+				ReverseAttackWordList = Database.GetNodeList(DatabaseConstants.ReverseAttackWordListName);
+				ReverseEndWordList = Database.GetNodeList(DatabaseConstants.ReverseEndWordListName);
+				KkutuAttackWordList = Database.GetNodeList(DatabaseConstants.KkutuAttackWordListName);
+				KkutuEndWordList = Database.GetNodeList(DatabaseConstants.KkutuEndWordListName);
 			}
 			catch (Exception ex)
 			{
@@ -63,9 +67,14 @@ namespace AutoKkutu
 			}
 		}
 
-		public static void UpdateConfig(Config newConfig)
+		public static void UpdateConfig(Configuration newConfig)
 		{
 			CurrentConfig = newConfig;
+		}
+
+		public static void UpdateDatabase(CommonDatabase database)
+		{
+			Database = database;
 		}
 
 		public static bool CheckNodePresence(string nodeType, string item, List<string> nodeList, WordFlags theFlag, ref WordFlags flags, bool add = false)
@@ -106,7 +115,7 @@ namespace AutoKkutu
 					try
 					{
 						Logger.Debug($"Check and add '{word}' into database. (flags: {flags})");
-						if (DatabaseManager.AddWord(word, flags))
+						if (Database.AddWord(word, flags))
 						{
 							Logger.Info($"Added '{word}' into database.");
 							AddedPathCount++;
@@ -125,7 +134,7 @@ namespace AutoKkutu
 				{
 					try
 					{
-						RemovedPathCount += DatabaseManager.DeleteWord(word);
+						RemovedPathCount += Database.DeleteWord(word);
 					}
 					catch (Exception ex)
 					{
@@ -199,7 +208,7 @@ namespace AutoKkutu
 				var QualifiedNormalList = new List<PathObject>();
 				try
 				{
-					WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags, wordPreference, mode);
+					WordList = Database.FindWord(wordCondition, missionChar, flags, wordPreference, mode);
 					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderFlags.USING_ATTACK_WORD), flags.HasFlag(PathFinderFlags.USING_END_WORD));
 
 					//if (wordPreference == WordPreference.WORD_LENGTH)

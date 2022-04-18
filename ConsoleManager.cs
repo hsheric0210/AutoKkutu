@@ -14,29 +14,30 @@ namespace AutoKkutu
 	{
 
 		private const string Kernel32_DllName = "kernel32.dll";
+		private const string User32_DllName = "user32.dll";
 
 		private const int MF_BYCOMMAND = 0;
 
 		public const int SC_CLOSE = 61536;
 
-		[DllImport("kernel32.dll")]
+		[DllImport(Kernel32_DllName)]
 		private static extern bool AllocConsole();
 
-		[DllImport("kernel32.dll")]
+		[DllImport(Kernel32_DllName)]
 		private static extern bool FreeConsole();
 
-		[DllImport("kernel32.dll")]
+		[DllImport(Kernel32_DllName)]
 		private static extern IntPtr GetConsoleWindow();
 
-		[DllImport("kernel32.dll")]
+		[DllImport(Kernel32_DllName)]
 		private static extern int GetConsoleOutputCP();
 
 		public static bool HasConsole => GetConsoleWindow() != IntPtr.Zero;
 
-		[DllImport("user32.dll")]
+		[DllImport(User32_DllName)]
 		public static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
 
-		[DllImport("user32.dll")]
+		[DllImport(User32_DllName)]
 		private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
 
 		public static void Show()
@@ -47,7 +48,7 @@ namespace AutoKkutu
 				InvalidateOutAndError();
 				Console.InputEncoding = Encoding.UTF8;
 				Console.OutputEncoding = Encoding.UTF8;
-				DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), 61536, 0);
+				DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND);
 				Console.WriteLine("*** AutoKkutu v1.0 (Inspired from KKutu Helper)");
 				Console.WriteLine("- Verbose console enabled because debugger is not attached.");
 				Console.WriteLine("");
