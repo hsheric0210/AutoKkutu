@@ -10,5 +10,7 @@ namespace AutoKkutu.Databases
 	{
 		bool Read();
 		object GetObject(string name);
+		string GetString(int index);
+		int GetOrdinal(string name);
 	}
 }

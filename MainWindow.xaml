@@ -55,7 +55,7 @@
 								<StackPanel Orientation="Horizontal" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="185" ToolTip="{Binding ToolTip}">
 									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,5,5" Source="{Binding Image}" />
 									<Border Height="35" Width="150" VerticalAlignment="Center" BorderBrush="{x:Null}">
-										<TextBlock Foreground="#FFFFFFFF" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" />
+										<TextBlock Foreground="{Binding Color}" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" />
 									</Border>
 								</StackPanel>
 							</DataTemplate>

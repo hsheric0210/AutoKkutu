@@ -48,7 +48,7 @@ namespace AutoKkutu
 
 		public static Configuration CurrentConfig;
 		public static CommonDatabase Database;
-		
+
 		public static void Init(CommonDatabase database)
 		{
 			UpdateDatabase(database);
@@ -335,15 +335,17 @@ namespace AutoKkutu
 				get; private set;
 			}
 
-			public PathObject(string _content, WordFlags _wordFlags)
+			public string Color
+			{
+				get; private set;
+			}
+
+			public PathObject(string _content, WordFlags _wordFlags, bool isMissionWord = false)
 			{
 				Content = _content;
 				Title = _content;
-				// TODO: 한방 단어나 공격 단어의 경우, 리스트에 렌더링할 때 다른 색으로 렌더링함으로서 강조 효과 주기
-				if (_wordFlags.HasFlag(WordFlags.EndWord))
-					ToolTip = "이 단어는 한방 단어로, 이을 수 있는 다음 단어가 없습니다.";
-				else
-					ToolTip = _content;
+				ToolTip = $"{Utils.GetWordTooltip(_wordFlags)}{_content}";
+				Color = Utils.GetWordColor(_wordFlags, isMissionWord);
 			}
 		}
 	}

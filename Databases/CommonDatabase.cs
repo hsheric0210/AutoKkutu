@@ -11,12 +11,8 @@ using static AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
-	// TODO: Change to non-utility class (make static methods non-static) and add multiple DBMS support.
-
 	public abstract class CommonDatabase
 	{
-		public abstract string GetDBInfo();
-
 		public const string LoadFromLocalSQLite = "SQLite 데이터베이스 불러오기";
 		public static readonly ILog Logger = LogManager.GetLogger("DatabaseManager");
 
@@ -38,11 +34,6 @@ namespace AutoKkutu
 			Logger.InfoFormat("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}
-
-		protected abstract int ExecuteNonQuery(string query, IDisposable connection = null);
-		protected abstract object ExecuteScalar(string query, IDisposable connection = null);
-
-		protected abstract CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null);
 
 		public int DeleteWord(string word)
 		{
@@ -113,12 +104,6 @@ namespace AutoKkutu
 				count += DeleteNode(node, DatabaseConstants.KkutuAttackWordListName);
 			return count;
 		}
-
-		public abstract string GetCheckMissionCharFuncName();
-
-		protected abstract int DeduplicateDatabase(IDisposable connection);
-
-		protected abstract IDisposable OpenSecondaryConnection();
 
 		public void CheckDB(bool UseOnlineDB)
 		{
@@ -322,7 +307,10 @@ namespace AutoKkutu
 			//Logger.InfoFormat("Query: {0}", query);
 			using (CommonDatabaseReader reader = ExecuteReader(query))
 				while (reader.Read())
-					result.Add(new PathFinder.PathObject(reader.GetObject("word").ToString().Trim(), (WordFlags)Convert.ToInt32(reader.GetObject("flags"))));
+				{
+					string word = reader.GetObject("word").ToString().Trim();
+					result.Add(new PathFinder.PathObject(word, (WordFlags)Convert.ToInt32(reader.GetObject("flags")), !string.IsNullOrWhiteSpace(missionChar) && word.Any(c => c == missionChar.First()))); 
+				}
 			return result;
 		}
 
@@ -472,8 +460,6 @@ namespace AutoKkutu
 				MakeTable(DatabaseConstants.KkutuAttackWordListName);
 		}
 
-		protected abstract bool IsColumnExists(string columnName, string tableName = null);
-
 		private void MakeTable(string tablename)
 		{
 			Logger.Info("Create Table : " + tablename);
@@ -528,6 +514,24 @@ namespace AutoKkutu
 
 			return true;
 		}
+
+		public abstract bool IsColumnExists(string tableName, string columnName, IDisposable connection = null);
+
+		public abstract string GetDBInfo();
+
+		protected abstract int ExecuteNonQuery(string query, IDisposable connection = null);
+
+		protected abstract object ExecuteScalar(string query, IDisposable connection = null);
+
+		protected abstract CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null);
+
+		public abstract string GetCheckMissionCharFuncName();
+
+		protected abstract int DeduplicateDatabase(IDisposable connection);
+
+		protected abstract IDisposable OpenSecondaryConnection();
+
+		protected abstract bool IsColumnExists(string columnName, string tableName = null);
 
 		public class DBJobArgs : EventArgs
 		{

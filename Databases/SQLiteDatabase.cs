@@ -52,7 +52,7 @@ namespace AutoKkutu.Databases
 			}
 		}
 
-		public override string GetCheckMissionCharFuncName() => "CheckMissionChar()";
+		public override string GetCheckMissionCharFuncName() => "CheckMissionChar";
 
 		public override string GetDBInfo() => "SQLite";
 
@@ -95,6 +95,25 @@ namespace AutoKkutu.Databases
 		{
 			return SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 		}
+
+		public override bool IsColumnExists(string tableName, string columnName, IDisposable connection)
+		{
+			try
+			{
+				using (CommonDatabaseReader reader = ExecuteReader($"PRAGMA table_info({tableName})", (SqliteConnection)(connection ?? DatabaseConnection)))
+				{
+					int nameIndex = reader.GetOrdinal("Name");
+					while (reader.Read())
+						if (reader.GetString(nameIndex).Equals(columnName))
+							return true;
+				}
+			}
+			catch (Exception)
+			{
+			}
+
+			return false;
+		}
 	}
 
 	public class SQLiteDatabaseReader : CommonDatabaseReader
@@ -103,6 +122,8 @@ namespace AutoKkutu.Databases
 		public SQLiteDatabaseReader(SqliteDataReader reader) => Reader = reader;
 
 		public object GetObject(string name) => Reader[name];
+		public string GetString(int index) => Reader.GetString(index);
+		public int GetOrdinal(string name) => Reader.GetOrdinal(name);
 		public bool Read() => Reader.Read();
 		void IDisposable.Dispose() => Reader.Dispose();
 	}

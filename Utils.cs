@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using static AutoKkutu.Constants;
@@ -75,6 +76,23 @@ namespace AutoKkutu
 						NewAttackNode++;
 				}
 			}
+		}
+
+		public static string GetWordTooltip(WordFlags flags)
+		{
+			if ((flags & (WordFlags.EndWord | WordFlags.ReverseEndWord | WordFlags.MiddleEndWord | WordFlags.KkutuEndWord)) != 0)
+				return "한방 단어: ";
+			if ((flags & (WordFlags.AttackWord | WordFlags.ReverseAttackWord | WordFlags.MiddleAttackWord | WordFlags.KkutuAttackWord)) != 0)
+				return "공격 단어: ";
+			return "";
+		}
+		public static string GetWordColor(WordFlags flags, bool isMissionWord)
+		{
+			if ((flags & (WordFlags.EndWord | WordFlags.ReverseEndWord | WordFlags.MiddleEndWord | WordFlags.KkutuEndWord)) != 0)
+				return isMissionWord ? "#FF20C0A8" : "#FFFF1100";
+			if ((flags & (WordFlags.AttackWord | WordFlags.ReverseAttackWord | WordFlags.MiddleAttackWord | WordFlags.KkutuAttackWord)) != 0)
+				return isMissionWord ? "#FFFFFF40" : "#FFFF8000";
+			return isMissionWord ? "#FF40FF40" : "#FFFFFFFF";
 		}
 	}
 }
