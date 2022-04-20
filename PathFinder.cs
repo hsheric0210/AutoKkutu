@@ -46,7 +46,7 @@ namespace AutoKkutu
 
 		public static event EventHandler<PathFinder.UpdatedPathEventArgs> onPathUpdated;
 
-		public static Configuration CurrentConfig;
+		public static AutoKkutuConfiguration CurrentConfig;
 		public static CommonDatabase Database;
 
 		public static void Init(CommonDatabase database)
@@ -67,7 +67,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public static void UpdateConfig(Configuration newConfig)
+		public static void UpdateConfig(AutoKkutuConfiguration newConfig)
 		{
 			CurrentConfig = newConfig;
 		}
@@ -344,7 +344,7 @@ namespace AutoKkutu
 			{
 				Content = _content;
 				Title = _content;
-				ToolTip = $"{Utils.GetWordTooltip(_wordFlags)}{_content}";
+				ToolTip = $"{Utils.GetWordTooltip(_wordFlags, isMissionWord)}{_content}";
 				Color = Utils.GetWordColor(_wordFlags, isMissionWord);
 			}
 		}

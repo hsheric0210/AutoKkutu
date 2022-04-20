@@ -12,10 +12,12 @@ namespace AutoKkutu.Databases
 	{
 		private static SqliteConnection DatabaseConnection;
 
-		private static readonly string DatabaseFilePath = $"{Environment.CurrentDirectory}\\{DatabaseConstants.DatabaseFileName}";
+		private string DatabaseFilePath;
 
-		public SQLiteDatabase() : base()
+		public SQLiteDatabase(string fileName) : base()
 		{
+			DatabaseFilePath = $"{Environment.CurrentDirectory}\\{fileName}";
+
 			try
 			{
 				// Create database if not exists
@@ -29,11 +31,11 @@ namespace AutoKkutu.Databases
 				Logger.Info("Opening database connection...");
 				DatabaseConnection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 
-				DatabaseConnection.CreateFunction(GetCheckMissionCharFuncName(), (string str, string ch) =>
+				DatabaseConnection.CreateFunction(GetCheckMissionCharFuncName(), (string word, string missionWord) =>
 				{
 					int occurrence = 0;
-					char target = ch.First();
-					foreach (char c in str.ToCharArray())
+					char target = char.ToLowerInvariant(missionWord.First());
+					foreach (char c in word.ToLowerInvariant().ToCharArray())
 						if (c == target)
 							occurrence++;
 					return occurrence > 0 ? DatabaseConstants.MissionCharIndexPriority + occurrence : 0;
@@ -74,8 +76,6 @@ namespace AutoKkutu.Databases
 			return new SQLiteDatabaseReader(SQLiteDatabaseHelper.ExecuteReader((SqliteConnection)(connection ?? DatabaseConnection), query));
 		}
 
-		protected override bool IsColumnExists(string columnName, string tableName = null) => SQLiteDatabaseHelper.IsColumnExists(DatabaseConnection, tableName ?? DatabaseConstants.WordListName, columnName);
-
 		private void CheckConnectionType(object connection)
 		{
 			if (connection != null && connection.GetType() != typeof(SqliteConnection))
@@ -96,24 +96,7 @@ namespace AutoKkutu.Databases
 			return SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 		}
 
-		public override bool IsColumnExists(string tableName, string columnName, IDisposable connection)
-		{
-			try
-			{
-				using (CommonDatabaseReader reader = ExecuteReader($"PRAGMA table_info({tableName})", (SqliteConnection)(connection ?? DatabaseConnection)))
-				{
-					int nameIndex = reader.GetOrdinal("Name");
-					while (reader.Read())
-						if (reader.GetString(nameIndex).Equals(columnName))
-							return true;
-				}
-			}
-			catch (Exception)
-			{
-			}
-
-			return false;
-		}
+		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.IsColumnExists((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListName, columnName);
 	}
 
 	public class SQLiteDatabaseReader : CommonDatabaseReader

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ namespace AutoKkutu
 {
 	public abstract class CommonDatabase
 	{
-		public const string LoadFromLocalSQLite = "SQLite 데이터베이스 불러오기";
 		public static readonly ILog Logger = LogManager.GetLogger("DatabaseManager");
 
 		public static EventHandler DBError;
@@ -22,6 +22,29 @@ namespace AutoKkutu
 
 		public CommonDatabase()
 		{
+		}
+
+		public static CommonDatabase GetInstance(Configuration config)
+		{
+			switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToLowerInvariant())
+			{
+				case "mysql":
+				case "mariadb":
+					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
+					Logger.InfoFormat("MySQL selected: {0}", mysqlConnectionString);
+					//return new MySQLDatabase(query);
+					break;
+				case "postgresql":
+				case "pgsql":
+					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
+					Logger.InfoFormat("PostgreSQL selected: {0}", pgsqlConnectionString);
+					//return new PostgreSQLDatabase(query);
+					break;
+			}
+
+			string file = ((SQLiteSection)config.GetSection("sqlite")).File;
+			Logger.InfoFormat("SQLite selected: File={0}", file);
+			return new SQLiteDatabase(file);
 		}
 
 		public List<string> GetNodeList(string tableName)
@@ -515,8 +538,6 @@ namespace AutoKkutu
 			return true;
 		}
 
-		public abstract bool IsColumnExists(string tableName, string columnName, IDisposable connection = null);
-
 		public abstract string GetDBInfo();
 
 		protected abstract int ExecuteNonQuery(string query, IDisposable connection = null);
@@ -531,7 +552,7 @@ namespace AutoKkutu
 
 		protected abstract IDisposable OpenSecondaryConnection();
 
-		protected abstract bool IsColumnExists(string columnName, string tableName = null);
+		protected abstract bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null);
 
 		public class DBJobArgs : EventArgs
 		{

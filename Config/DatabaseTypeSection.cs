@@ -9,8 +9,8 @@ namespace AutoKkutu
 {
 	public class DatabaseTypeSection : ConfigurationSection
 	{
-		[ConfigurationProperty("type", DefaultValue = "SQLite")]
-		public string Title
+		[ConfigurationProperty("type", DefaultValue = "Local")]
+		public string Type
 		{
 			get
 			{

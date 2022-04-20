@@ -78,12 +78,13 @@ namespace AutoKkutu
 			}
 		}
 
-		public static string GetWordTooltip(WordFlags flags)
+		public static string GetWordTooltip(WordFlags flags, bool isMissionWord)
 		{
+			string mission = isMissionWord ? "미션 " : "";
 			if ((flags & (WordFlags.EndWord | WordFlags.ReverseEndWord | WordFlags.MiddleEndWord | WordFlags.KkutuEndWord)) != 0)
-				return "한방 단어: ";
+				return $"한방 {mission}단어: ";
 			if ((flags & (WordFlags.AttackWord | WordFlags.ReverseAttackWord | WordFlags.MiddleAttackWord | WordFlags.KkutuAttackWord)) != 0)
-				return "공격 단어: ";
+				return $"공격 {mission}단어: ";
 			return "";
 		}
 		public static string GetWordColor(WordFlags flags, bool isMissionWord)

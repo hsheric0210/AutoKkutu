@@ -37,7 +37,7 @@ namespace AutoKkutu.Databases
 				return;
 
 			if (CommonDatabase.DBJobStart != null)
-				CommonDatabase.DBJobStart(null, new DBJobArgs(CommonDatabase.LoadFromLocalSQLite));
+				CommonDatabase.DBJobStart(null, new DBJobArgs(DatabaseConstants.LoadFromLocalSQLite));
 
 			Task.Run(() =>
 			{
@@ -123,7 +123,7 @@ namespace AutoKkutu.Databases
 
 					Logger.InfoFormat("DB Import Complete. ({0} Words / {1} EndWord Nodes / {2} Reverse EndWord Nodes / {3} Kkutu EndWord Nodes)", WordCount, EndWordCount, ReverseEndWordCount, KkutuEndWordCount);
 					if (CommonDatabase.DBJobDone != null)
-						CommonDatabase.DBJobDone(null, new DBJobArgs(LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드"));
+						CommonDatabase.DBJobDone(null, new DBJobArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드"));
 				}
 				catch (Exception ex)
 				{
@@ -136,7 +136,8 @@ namespace AutoKkutu.Databases
 		{
 			try
 			{
-				return new SqliteCommand(query, connection).ExecuteNonQuery();
+				using (var command = new SqliteCommand(query, connection))
+					return command.ExecuteNonQuery();
 			}
 			catch (Exception ex)
 			{
@@ -149,7 +150,8 @@ namespace AutoKkutu.Databases
 		{
 			try
 			{
-				return new SqliteCommand(query, connection).ExecuteScalar();
+				using (var command = new SqliteCommand(query, connection))
+					return command.ExecuteScalar();
 			}
 			catch (Exception ex)
 			{

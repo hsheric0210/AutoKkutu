@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
-	public class PostgreSQLSection : ConfigurationSection
+	public class SQLiteSection : ConfigurationSection
 	{
-		[ConfigurationProperty("connectionString")]
-		public string ConnectionString
+		[ConfigurationProperty("file")]
+		public string File
 		{
 			get
 			{
-				return (string)base["connectionString"];
+				return (string)base["file"];
 			}
 			set
 			{
-				base["connectionString"] = value;
+				base["file"] = value;
 			}
 		}
 	}

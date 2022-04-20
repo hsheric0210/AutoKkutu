@@ -55,7 +55,7 @@ namespace AutoKkutu
 		// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
 		public event EventHandler<WordPresentEventArgs> onWordPresented;
 
-		private static Configuration CurrentConfig;
+		private static AutoKkutuConfiguration CurrentConfig;
 
 		private string _currentRoundIndexFuncName;
 
@@ -86,7 +86,7 @@ namespace AutoKkutu
 			return null;
 		}
 
-		public static void UpdateConfig(Configuration newConfig) => CurrentConfig = newConfig;
+		public static void UpdateConfig(AutoKkutuConfiguration newConfig) => CurrentConfig = newConfig;
 
 		public CommonHandler(ChromiumWebBrowser browser) => Browser = browser;
 

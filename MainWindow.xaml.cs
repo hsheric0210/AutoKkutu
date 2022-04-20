@@ -6,6 +6,7 @@ using CefSharp.Wpf;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace AutoKkutu
 
 		public CommonHandler Handler;
 
-		public static Configuration CurrentConfig;
+		public static AutoKkutuConfiguration CurrentConfig;
 		public static CommonDatabase Database;
 
 		private Stopwatch inputStopwatch = new Stopwatch();
@@ -82,8 +83,9 @@ namespace AutoKkutu
 			}, true, (IApp)null);
 
 			// Load default config
-			PathFinder.UpdateConfig(CurrentConfig = new Configuration());
+			PathFinder.UpdateConfig(CurrentConfig = new AutoKkutuConfiguration());
 			CommonHandler.UpdateConfig(CurrentConfig);
+			var databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
 
 			// Initialize Browser
 			browser = new ChromiumWebBrowser
@@ -108,11 +110,11 @@ namespace AutoKkutu
 			browser.FrameLoadEnd += Browser_FrameLoadEnd;
 			browser.FrameLoadEnd += Browser_FrameLoadEnd_RunOnce;
 			browserContainer.Content = browser;
-			SQLiteDatabase.DBError += DatabaseManager_DBError;
-			PathFinder.Init(Database = new SQLiteDatabase()); // TODO: Make database configuration (database.config)
+			MySQLDatabase.DBError += DatabaseManager_DBError;
+			PathFinder.Init(Database = CommonDatabase.GetInstance(databaseConfig)); // TODO: Make database configuration (database.config)
 		}
 
-		public static void UpdateConfig(Configuration newConfig)
+		public static void UpdateConfig(AutoKkutuConfiguration newConfig)
 		{
 			Logger.Info("Updated config.");
 			CurrentConfig = newConfig;
