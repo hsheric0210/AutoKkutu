@@ -54,7 +54,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to execute MySQL query '{query}'", ex);
+				Logger.Error($"Failed to execute PostgreSQL query '{query}'", ex);
 			}
 			return -1;
 		}
@@ -69,7 +69,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to execute MySQL query '{query}'", ex);
+				Logger.Error($"Failed to execute PostgreSQL query '{query}'", ex);
 			}
 			return null;
 		}
