@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using static AutoKkutu.CommonHandler;
 using static AutoKkutu.Constants;
 
@@ -525,57 +526,69 @@ namespace AutoKkutu
 		{
 			Color StatusColor;
 			string StatusContent;
+			string ImageName;
 			switch (status)
 			{
 				case CurrentStatus.Normal:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "준비";
+					ImageName = "waiting";
 					break;
 				case CurrentStatus.NotFound:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "이 턴에 낼 수 있는 단어를 데이터 집합에서 찾을 수 없었습니다. 수동으로 입력하십시오.";
+					ImageName = "warning";
 					break;
 				case CurrentStatus.EndWord:
 					StatusColor = ColorDefinitions.ErrorColor;
 					StatusContent = "더 이상 이 턴에 낼 수 있는 단어가 없습니다.";
+					ImageName = "skull";
 					break;
 				case CurrentStatus.Error:
 					StatusColor = ColorDefinitions.ErrorColor;
 					StatusContent = "프로그램에 오류가 발생하였습니다. 자세한 사항은 콘솔을 참조하십시오.";
+					ImageName = "error";
 					break;
 				case CurrentStatus.Searching:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "단어 찾는 중...";
+					ImageName = "searching";
 					break;
 				case CurrentStatus.AutoEntered:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 자동 입력됨: {0}";
+					ImageName = "ok";
 					break;
 				case CurrentStatus.DB_Job:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "데이터베이스 작업 '{0}' 진행 중...";
+					ImageName = "cleaning";
 					break;
 				case CurrentStatus.DB_Job_Done:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "데이터베이스 작업 '{0}' 완료: {1}";
+					ImageName = "ok";
 					break;
 				case CurrentStatus.Adding_Words:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "단어 일괄 추가 작업 중...";
+					ImageName = "cleaning";
 					break;
 				case CurrentStatus.Adding_Words_Done:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 일괄 추가 작업 완료";
+					ImageName = "ok";
 					break;
 				case CurrentStatus.Delaying:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 찾음! 딜레이 대기 중: {0}ms";
+					ImageName = "waiting";
 					break;
 				default:
 					StatusColor = ColorDefinitions.WaitColor;
 					StatusContent = "게임 참가를 기다리는 중.";
+					ImageName = "waiting";
 					break;
-
 			}
 
 			Logger.DebugFormat("Statusbar status change to {0}.", status);
@@ -583,6 +596,11 @@ namespace AutoKkutu
 			{
 				StatusGrid.Background = new SolidColorBrush(StatusColor);
 				StatusLabel.Content = string.Format(StatusContent, formatterArgs);
+				var img = new BitmapImage();
+				img.BeginInit();
+				img.UriSource = new Uri($@"images\{ImageName}.png", UriKind.Relative);
+				img.EndInit();
+				StatusIcon.Source = img;
 			});
 		}
 

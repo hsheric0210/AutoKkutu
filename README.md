@@ -25,3 +25,14 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * 핑크끄투(https://kkutu.pink/)
 * BF 끄투(https://bfkkutu.kr/)
 * 끄투코리아(https://kkutu.co.kr/)
+
+
+# 아이콘 출처
+* [Waiting](https://icons8.com/icon/4LVMPYVBsSXd/waiting) icon by [Icons8](https://icons8.com)
+* [Search More](https://icons8.com/icon/102557/search-mor) icon by [Icons8](https://icons8.com)
+* [Broom](https://icons8.com/icon/Xnx8cxDef16O/broom) icon by [Icons8](https://icons8.com)
+* [error](https://icons8.com/icon/103174/error) icon by [Icons8](https://icons8.com)
+* [Attack](https://icons8.com/icon/8fgdm3cVkheA/attack) icon by [Icons8](https://icons8.com)
+* [Skull](https://icons8.com/icon/mIIa0TRNmD4k/skull) icon by [Icons8](https://icons8.com)
+* [mission](https://icons8.com/icon/cjURgjzPYDlN/mission) icon by [Icons8](https://icons8.com)
+* [Warning](https://icons8.com/icon/5tH5sHqq0t2q/warning) icon by [Icons8](https://icons8.com)

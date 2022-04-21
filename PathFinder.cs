@@ -340,12 +340,42 @@ namespace AutoKkutu
 				get; private set;
 			}
 
+			public string PrimaryImage
+			{
+				get; private set;
+			}
+			public string SecondaryImage
+			{
+				get; private set;
+			}
+
 			public PathObject(string _content, WordFlags _wordFlags, bool isMissionWord = false)
 			{
 				Content = _content;
 				Title = _content;
-				ToolTip = $"{Utils.GetWordTooltip(_wordFlags, isMissionWord)}{_content}";
-				Color = Utils.GetWordColor(_wordFlags, isMissionWord);
+
+				string tooltipPrefix = "";
+				string mission = isMissionWord ? "미션 " : "";
+				if ((_wordFlags & (WordFlags.EndWord | WordFlags.ReverseEndWord | WordFlags.MiddleEndWord | WordFlags.KkutuEndWord)) != 0)
+				{
+					tooltipPrefix = $"한방 {mission}단어: ";
+					Color = isMissionWord ? "#FF20C0A8" : "#FFFF1100";
+					PrimaryImage = @"images\skull.png";
+				}
+				else if ((_wordFlags & (WordFlags.AttackWord | WordFlags.ReverseAttackWord | WordFlags.MiddleAttackWord | WordFlags.KkutuAttackWord)) != 0)
+				{
+					tooltipPrefix = $"공격 {mission}단어: ";
+					Color = isMissionWord ? "#FFFFFF40" : "#FFFF8000";
+					PrimaryImage = @"images\attack.png";
+				}
+				else
+				{
+					Color = isMissionWord ? "#FF40FF40" : "#FFFFFFFF";
+					tooltipPrefix = isMissionWord ? "미션 단어: " : "";
+				}
+				SecondaryImage = isMissionWord ? @"images\mission.png" : "";
+
+				ToolTip = $"{tooltipPrefix}{_content}";
 			}
 		}
 	}

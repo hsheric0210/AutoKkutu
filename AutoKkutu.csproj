@@ -11,7 +11,18 @@
 
   <ItemGroup>
     <None Remove="database.config" />
+    <None Remove="Images\attack.png" />
+    <None Remove="Images\cleaning.png" />
+    <None Remove="Images\error.png" />
+    <None Remove="Images\mission.png" />
+    <None Remove="Images\ok.png" />
+    <None Remove="Images\searching.png" />
+    <None Remove="Images\skull.png" />
+    <None Remove="Images\waiting.png" />
+    <None Remove="Images\warning.png" />
     <None Remove="Properties\Logger.config" />
+    <None Remove="statusicon.png" />
+    <None Remove="warning_480.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +32,36 @@
     <Content Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\attack.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\cleaning.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\error.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\mission.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ok.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\searching.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\skull.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\waiting.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\warning.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

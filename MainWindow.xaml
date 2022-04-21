@@ -52,9 +52,10 @@
 					<ListBox Name="PathList" Grid.Row="0" Background="#FF333337" Margin="0,70,5,168" BorderThickness="1" BorderBrush="{x:Null}" MouseDoubleClick="PathList_MouseDoubleClick" Grid.RowSpan="2">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<StackPanel Orientation="Horizontal" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="185" ToolTip="{Binding ToolTip}">
-									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,5,5" Source="{Binding Image}" />
-									<Border Height="35" Width="150" VerticalAlignment="Center" BorderBrush="{x:Null}">
+								<StackPanel Orientation="Horizontal" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="Auto" ToolTip="{Binding ToolTip}">
+									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,0,5" Source="{Binding PrimaryImage}" />
+									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,10,5" Source="{Binding SecondaryImage}" />
+									<Border Height="40" Width="Auto" VerticalAlignment="Center" BorderBrush="{x:Null}">
 										<TextBlock Foreground="{Binding Color}" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" />
 									</Border>
 								</StackPanel>
@@ -62,6 +63,7 @@
 						</ItemsControl.ItemTemplate>
 					</ListBox>
 					<Grid Name="SearchStatus" Grid.Row="1" Margin="0,366,4,120" Background="#FF444444" VerticalAlignment="Bottom">
+						<Image Name="SearchIcon" Width="25" Height="25" Source="/images/warning.png" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" />
 						<Border Height="50" Margin="43,0,0,-3" HorizontalAlignment="Left" Width="197" BorderBrush="{x:Null}">
 							<TextBlock Name="SearchResult" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="11" Foreground="#FFFFFFFF" TextWrapping="Wrap" VerticalAlignment="Center">총 112개의 단어 중, 30개 고려 27ms 소요. (한방 단어 사용)</TextBlock>
 						</Border>
@@ -84,10 +86,11 @@
 			</Grid>
 			<Grid Name="StatusGrid" Row="1" Background="#FF797979" MinHeight="35">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="319*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
-				<Label Name="StatusLabel" FontFamily="NanumGothic" FontSize="12" Foreground="#FFFFFFFF" Content="CurrentStatusLabel" Margin="10,0,-20,0" Grid.Column="1" VerticalAlignment="Center" />
+				<Image Name="StatusIcon" Width="20" Height="20" Source="\images\ok.png" Grid.Column="0" RenderOptions.BitmapScalingMode="Linear" Margin="10,0,0,0" />
+				<Label Name="StatusLabel" FontFamily="NanumGothic" FontSize="12" Foreground="#FFFFFFFF" Content="CurrentStatusLabel" Margin="5,0,0,0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
 			</Grid>
 		</Grid>
 	</Grid>
