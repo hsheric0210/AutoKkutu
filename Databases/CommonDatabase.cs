@@ -280,7 +280,8 @@ namespace AutoKkutu
 							FixedCount++;
 						}
 
-						Logger.InfoFormat("Execute vacuum", ExecuteNonQuery("VACUUM")); // Vacuum
+						Logger.Info("Executing vacuum...");
+						PerformVacuum();
 					}
 
 					Logger.InfoFormat("Total {0} / Removed {1} / Fixed {2}.", dbTotalCount, RemovedCount, FixedCount);
@@ -487,7 +488,7 @@ namespace AutoKkutu
 				if (needToCleanUp)
 				{
 					Logger.Warn($"Executing vacuum...");
-					ExecuteNonQuery("VACUUM"); // Clean-up
+					PerformVacuum();
 				}
 			}
 
@@ -581,6 +582,8 @@ namespace AutoKkutu
 		protected abstract void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null);
 
 		protected abstract void DropWordListColumn(string columnName);
+
+		protected abstract void PerformVacuum();
 
 		public class DBJobArgs : EventArgs
 		{

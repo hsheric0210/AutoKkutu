@@ -14,7 +14,7 @@ namespace AutoKkutu.Databases
 
 		private string ConnectionString;
 
-		private const string DatabaseName = "autokkutu";
+		private string DatabaseName = "autokkutu";
 
 		public MySQLDatabase(string connectionString) : base()
 		{
@@ -22,6 +22,11 @@ namespace AutoKkutu.Databases
 
 			try
 			{
+				int databaseNameIndex = connectionString.ToLowerInvariant().IndexOf("database") + 9;
+				int databaseNameIndexEnd = connectionString.Substring(databaseNameIndex).IndexOf(';');
+				DatabaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
+				Logger.InfoFormat("MySQL database name is '{0}'", DatabaseName);
+
 				// Open the connection
 				Logger.Info("Opening database connection...");
 				DatabaseConnection = new MySqlConnection(connectionString);
@@ -175,6 +180,10 @@ END;
 		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} MODIFY {columnName} {newType}");
 
 		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} DROP {columnName}");
+
+		protected override void PerformVacuum()
+		{
+		}
 	}
 
 	public class MySQLDatabaseReader : CommonDatabaseReader

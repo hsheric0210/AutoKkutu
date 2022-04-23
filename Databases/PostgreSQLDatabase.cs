@@ -173,6 +173,8 @@ $$ LANGUAGE plpgsql
 		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ALTER COLUMN {columnName} TYPE {newType}");
 
 		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} DROP COLUMN {columnName}");
+
+		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
 	}
 
 	public class PostgreSQLDatabaseReader : CommonDatabaseReader

@@ -126,6 +126,8 @@ namespace AutoKkutu.Databases
 			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListName};");
 			ExecuteNonQuery($"DROP TABLE _{DatabaseConstants.WordListName};");
 		}
+
+		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
 	}
 
 	public class SQLiteDatabaseReader : CommonDatabaseReader
