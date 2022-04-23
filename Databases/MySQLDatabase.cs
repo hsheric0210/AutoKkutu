@@ -32,8 +32,8 @@ namespace AutoKkutu.Databases
 				DatabaseConnection = new MySqlConnection(connectionString);
 				DatabaseConnection.Open();
 
-				ExecuteNonQuery($"DROP FUNCTION IF EXISTS {GetCheckMissionCharFuncName()};");
-				ExecuteNonQuery($@"CREATE FUNCTION {GetCheckMissionCharFuncName()}(word VARCHAR(256), missionWord VARCHAR(2)) RETURNS INT
+				TryExecuteNonQuery("drop existing checkMissionCharFunc", $"DROP FUNCTION IF EXISTS {GetCheckMissionCharFuncName()};");
+				TryExecuteNonQuery("register checkMissionCharFunc", $@"CREATE FUNCTION {GetCheckMissionCharFuncName()}(word VARCHAR(256), missionWord VARCHAR(2)) RETURNS INT
 DETERMINISTIC
 NO SQL
 BEGIN
@@ -55,7 +55,7 @@ END;
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Failed to connect to the database", ex);
+				Logger.Error(DatabaseConstants.Error_Connect, ex);
 				if (DBError != null)
 					DBError(null, EventArgs.Empty);
 			}
@@ -68,59 +68,34 @@ END;
 		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
-			try
-			{
-				using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
-					return command.ExecuteNonQuery();
-			}
-			catch (Exception ex)
-			{
-				Logger.Error($"Failed to execute MySQL query '{query}'", ex);
-			}
-			return -1;
+			using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
+				return command.ExecuteNonQuery();
 		}
 
 		protected override object ExecuteScalar(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
-			try
-			{
-				using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
-					return command.ExecuteScalar();
-			}
-			catch (Exception ex)
-			{
-				Logger.Error($"Failed to execute MySQL query '{query}'", ex);
-			}
-			return null;
+			using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
+				return command.ExecuteScalar();
 		}
 
 		protected override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
-			try
-			{
-				using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
-					return new MySQLDatabaseReader(command.ExecuteReader());
-			}
-			catch (Exception ex)
-			{
-				Logger.Error($"Failed to execute MySQL query '{query}'", ex);
-			}
-			return null;
+			using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
+				return new MySQLDatabaseReader(command.ExecuteReader());
 		}
 
 		private void CheckConnectionType(object connection)
 		{
 			if (connection != null && connection.GetType() != typeof(MySqlConnection))
-				throw new ArgumentException("Connection is not SqliteConnection");
+				throw new ArgumentException("Connection is not MySqlConnection");
 		}
 
 		protected override int DeduplicateDatabase(IDisposable connection)
 		{
 			CheckConnectionType(connection);
 
-			// Deduplicate db
 			// https://wiki.postgresql.org/wiki/Deleting_duplicates
 			return ExecuteNonQuery(DatabaseConstants.DeduplicationQuery, (MySqlConnection)connection);
 		}
@@ -134,14 +109,14 @@ END;
 
 		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null)
 		{
-			tableName = tableName ?? DatabaseConstants.WordListName;
+			tableName = tableName ?? DatabaseConstants.WordListTableName;
 			try
 			{
 				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM Information_schema.columns WHERE table_schema='{DatabaseName}' AND table_name='{tableName}' AND column_name='{columnName}';")) > 0;
 			}
 			catch (Exception ex)
 			{
-				Logger.Info($"Failed to check the existence of column '{columnName}' in table '{tableName}' : {ex.ToString()}");
+				Logger.Info(string.Format(DatabaseConstants.Error_IsColumnExists, columnName, tableName), ex);
 				return false;
 			}
 		}
@@ -154,32 +129,32 @@ END;
 			}
 			catch (Exception ex)
 			{
-				Logger.Info($"Failed to check the existence of table '{tableName}' : {ex.ToString()}");
+				Logger.Info(string.Format(DatabaseConstants.Error_IsTableExists, tableName), ex);
 				return false;
 			}
 		}
 
-		protected override void AddSequenceColumnToWordList() => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
+		protected override void AddSequenceColumnToWordList() => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
 
 		protected override string GetWordListColumnOptions() => "seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
 		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null)
 		{
-			tableName = tableName ?? DatabaseConstants.WordListName;
+			tableName = tableName ?? DatabaseConstants.WordListTableName;
 			try
 			{
 				return ExecuteScalar($"SELECT data_type FROM Information_schema.columns WHERE table_name='{tableName}' AND column_name='{columnName}';", connection).ToString();
 			}
 			catch (Exception ex)
 			{
-				Logger.Info($"Failed to get data type of column '{columnName}' in table '{tableName}' : {ex.ToString()}");
+				Logger.Info(string.Format(DatabaseConstants.Error_GetColumnType, columnName, tableName), ex);
 				return "";
 			}
 		}
 
-		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} MODIFY {columnName} {newType}");
+		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} MODIFY {columnName} {newType}");
 
-		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} DROP {columnName}");
+		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP {columnName}");
 
 		protected override void PerformVacuum()
 		{
@@ -191,10 +166,11 @@ END;
 		private MySqlDataReader Reader;
 		public MySQLDatabaseReader(MySqlDataReader reader) => Reader = reader;
 
-		public object GetObject(string name) => Reader[name];
-		public string GetString(int index) => Reader.GetString(index);
-		public int GetOrdinal(string name) => Reader.GetOrdinal(name);
-		public bool Read() => Reader.Read();
-		void IDisposable.Dispose() => Reader.Dispose();
+		protected override object GetObject(string name) => Reader[name];
+		public override string GetString(int index) => Reader.GetString(index);
+		public override int GetOrdinal(string name) => Reader.GetOrdinal(name);
+		public override int GetInt32(int index) => Reader.GetInt32(index);
+		public override bool Read() => Reader.Read();
+		public override void Dispose() => Reader.Dispose();
 	}
 }

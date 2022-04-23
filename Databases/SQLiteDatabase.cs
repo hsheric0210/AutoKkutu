@@ -48,7 +48,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Failed to connect to the database", ex);
+				Logger.Error(DatabaseConstants.Error_Connect, ex);
 				if (DBError != null)
 					DBError(null, EventArgs.Empty);
 			}
@@ -96,11 +96,11 @@ namespace AutoKkutu.Databases
 			return SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 		}
 
-		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.IsColumnExists((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListName, columnName);
+		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.IsColumnExists((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListTableName, columnName);
 
 		public override bool IsTableExists(string tablename, IDisposable connection = null) => SQLiteDatabaseHelper.IsTableExists((SqliteConnection)(connection ?? DatabaseConnection), tablename);
 
-		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.GetColumnType((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListName, columnName);
+		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.GetColumnType((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListTableName, columnName);
 
 		protected override void AddSequenceColumnToWordList()
 		{
@@ -121,10 +121,10 @@ namespace AutoKkutu.Databases
 
 		private void RebuildWordList()
 		{
-			ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} RENAME TO _{DatabaseConstants.WordListName};");
-			MakeTable(DatabaseConstants.WordListName);
-			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListName};");
-			ExecuteNonQuery($"DROP TABLE _{DatabaseConstants.WordListName};");
+			ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} RENAME TO _{DatabaseConstants.WordListTableName};");
+			MakeTable(DatabaseConstants.WordListTableName);
+			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListTableName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListTableName};");
+			ExecuteNonQuery($"DROP TABLE _{DatabaseConstants.WordListTableName};");
 		}
 
 		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
@@ -135,10 +135,11 @@ namespace AutoKkutu.Databases
 		private SqliteDataReader Reader;
 		public SQLiteDatabaseReader(SqliteDataReader reader) => Reader = reader;
 
-		public object GetObject(string name) => Reader[name];
-		public string GetString(int index) => Reader.GetString(index);
-		public int GetOrdinal(string name) => Reader.GetOrdinal(name);
-		public bool Read() => Reader.Read();
-		void IDisposable.Dispose() => Reader.Dispose();
+		protected override object GetObject(string name) => Reader[name];
+		public override string GetString(int index) => Reader.GetString(index);
+		public override int GetOrdinal(string name) => Reader.GetOrdinal(name);
+		public override int GetInt32(int index) => Reader.GetInt32(index);
+		public override bool Read() => Reader.Read();
+		public override void Dispose() => Reader.Dispose();
 	}
 }

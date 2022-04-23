@@ -113,7 +113,7 @@ namespace AutoKkutu
 			browser.FrameLoadEnd += Browser_FrameLoadEnd_RunOnce;
 			browserContainer.Content = browser;
 			MySQLDatabase.DBError += DatabaseManager_DBError;
-			PathFinder.Init(Database = CommonDatabase.GetInstance(databaseConfig)); // TODO: Make database configuration (database.config)
+			PathFinder.Init(Database = CommonDatabase.GetInstance(databaseConfig));
 		}
 
 		public static void UpdateConfig(AutoKkutuConfiguration newConfig)

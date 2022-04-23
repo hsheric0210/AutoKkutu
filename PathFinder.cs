@@ -55,16 +55,18 @@ namespace AutoKkutu
 			UpdateDatabase(database);
 			try
 			{
-				AttackWordList = Database.GetNodeList(DatabaseConstants.AttackWordListName);
-				EndWordList = Database.GetNodeList(DatabaseConstants.EndWordListName);
-				ReverseAttackWordList = Database.GetNodeList(DatabaseConstants.ReverseAttackWordListName);
-				ReverseEndWordList = Database.GetNodeList(DatabaseConstants.ReverseEndWordListName);
-				KkutuAttackWordList = Database.GetNodeList(DatabaseConstants.KkutuAttackWordListName);
-				KkutuEndWordList = Database.GetNodeList(DatabaseConstants.KkutuEndWordListName);
+				AttackWordList = Database.GetNodeList(DatabaseConstants.AttackWordListTableName);
+				EndWordList = Database.GetNodeList(DatabaseConstants.EndWordListTableName);
+				ReverseAttackWordList = Database.GetNodeList(DatabaseConstants.ReverseAttackWordListTableName);
+				ReverseEndWordList = Database.GetNodeList(DatabaseConstants.ReverseEndWordListTableName);
+				KkutuAttackWordList = Database.GetNodeList(DatabaseConstants.KkutuAttackWordListTableName);
+				KkutuEndWordList = Database.GetNodeList(DatabaseConstants.KkutuEndWordListTableName);
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to Get End word", ex);
+				Logger.Error($"Failed to get end nodes", ex);
+				if (DBError != null)
+					DBError(null, EventArgs.Empty);
 			}
 		}
 
@@ -211,25 +213,6 @@ namespace AutoKkutu
 				{
 					WordList = Database.FindWord(wordCondition, missionChar, flags, wordPreference, mode);
 					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderFlags.USING_ATTACK_WORD), flags.HasFlag(PathFinderFlags.USING_END_WORD));
-
-					//if (wordPreference == WordPreference.WORD_LENGTH)
-					//{
-					//	WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags, false, mode);
-					//	Logger.InfoFormat("Found {0} words.", WordList.Count);
-					//}
-					//else
-					//{
-					//	if (flags.HasFlag(PathFinderFlags.USING_END_WORD))
-					//	{
-					//		WordList = DatabaseManager.FindWord(wordCondition, missionChar, flags | PathFinderFlags.USING_END_WORD, true, mode);
-					//		Logger.InfoFormat("Find {0} words (EndWord inclued).", WordList.Count);
-					//	}
-					//	else
-					//	{
-					//		WordList = DatabaseManager.FindWord(wordCondition, missionChar, (flags & ~PathFinderFlags.USING_END_WORD), false, mode);
-					//		Logger.InfoFormat("Found {0} words (EndWord excluded).", WordList.Count);
-					//	}
-					//}
 				}
 				catch (Exception e)
 				{

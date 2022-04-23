@@ -6,11 +6,17 @@ using System.Threading.Tasks;
 
 namespace AutoKkutu.Databases
 {
-	public interface CommonDatabaseReader : IDisposable
+	public abstract class CommonDatabaseReader : IDisposable
 	{
-		bool Read();
-		object GetObject(string name);
-		string GetString(int index);
-		int GetOrdinal(string name);
+		public object this[string name] => GetObject(name);
+		public string GetString(string name) => GetString(GetOrdinal(name));
+		public int GetInt32(string name) => GetInt32(GetOrdinal(name));
+
+		public abstract bool Read();
+		protected abstract object GetObject(string name);
+		public abstract string GetString(int index);
+		public abstract int GetInt32(int index);
+		public abstract int GetOrdinal(string name);
+		public abstract void Dispose();
 	}
 }
