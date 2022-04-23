@@ -25,7 +25,7 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * 핑크끄투(https://kkutu.pink/)
 * BF 끄투(https://bfkkutu.kr/)
 * 끄투코리아(https://kkutu.co.kr/)
-
+* 뮤직끄투(https://musickkutu.xyz/)
 
 # 아이콘 출처
 * [Waiting](https://icons8.com/icon/4LVMPYVBsSXd/waiting) icon by [Icons8](https://icons8.com)

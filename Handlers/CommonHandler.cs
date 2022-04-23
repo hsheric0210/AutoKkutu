@@ -69,12 +69,12 @@ namespace AutoKkutu
 
 		public static void InitHandlers(ChromiumWebBrowser browser)
 		{
-			HANDLERS = new CommonHandler[4];
+			HANDLERS = new CommonHandler[5];
 			HANDLERS[0] = new KkutuOrgHandler(browser);
 			HANDLERS[1] = new KkutuPinkHandler(browser);
 			HANDLERS[2] = new BFKkutuHandler(browser);
 			HANDLERS[3] = new KkutuCoKrHandler(browser);
-			//HANDLERS[3] = new KkutuIoHandler(browser);
+			HANDLERS[4] = new MusicKkutuHandler(browser);
 		}
 
 		public static CommonHandler getHandler(string url)

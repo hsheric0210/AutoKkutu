@@ -222,12 +222,13 @@ namespace AutoKkutu
 									KkutuIndexCorrection.Add(content, currentKkutuIndex);
 								}
 
-								int correctFlags = (int)Utils.GetFlags(content);
+								WordFlags correctFlags = Utils.GetFlags(content);
+								int correctFlagsI = (int)correctFlags;
 								int currentFlags = reader.GetInt32(DatabaseConstants.FlagsColumnName);
-								if (correctFlags != currentFlags)
+								if (correctFlagsI != currentFlags)
 								{
 									Logger.InfoFormat("Invaild flags; Will be fixed to '{0}'.", correctFlags);
-									FlagCorrection.Add(content, (currentFlags, correctFlags));
+									FlagCorrection.Add(content, (currentFlags, correctFlagsI));
 								}
 							}
 						}
@@ -274,8 +275,7 @@ namespace AutoKkutu
 
 						foreach (var pair in FlagCorrection)
 						{
-
-							Logger.InfoFormat("Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, pair.Value.Item1, pair.Value.Item2);
+							Logger.InfoFormat("Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordFlags)pair.Value.Item1, (WordFlags)pair.Value.Item2);
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
 							FixedCount++;
 						}
