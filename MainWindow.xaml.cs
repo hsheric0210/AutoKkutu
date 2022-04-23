@@ -28,6 +28,7 @@ namespace AutoKkutu
 		public const string VERSION = "1.0.0000";
 		private const string MAINTHREAD_NAME = "MainThread";
 		private const string INPUT_TEXT_PLACEHOLDER = "여기에 텍스트를 입력해주세요";
+		private const string SEARCH_TEXT_PLACEHOLDER = "검색할 키워드를 입력해주세요";
 		private const string PATHFINDER_WAITING = "단어 검색 대기중.";
 		private const string PATHFINDER_ERROR = "오류가 발생하여 단어 검색 실패.";
 		private const string PATHFINDER_UNAVAILABLE = "이 턴에 사용 가능한 단어 없음.";
@@ -104,8 +105,8 @@ namespace AutoKkutu
 			CommonHandler.InitHandlers(browser);
 			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
-			SubmitWord.Text = INPUT_TEXT_PLACEHOLDER;
-			SubmitWord.FontStyle = FontStyles.Italic;
+			ChatField.Text = INPUT_TEXT_PLACEHOLDER;
+			ChatField.FontStyle = FontStyles.Italic;
 			ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
 			browser.FrameLoadEnd += Browser_FrameLoadEnd;
@@ -180,7 +181,7 @@ namespace AutoKkutu
 				Dispatcher.Invoke(() =>
 				{
 					Logger.Info("Hide LoadOverlay.");
-					DBStatus.Content = Database.GetDBInfo();
+					DBMode.Content = Database.GetDBInfo();
 					LoadOverlay.Visibility = Visibility.Hidden;
 				});
 			}
@@ -249,20 +250,21 @@ namespace AutoKkutu
 			if (!CheckPathIsValid(args, PathFinderFlags.NONE))
 				return;
 
-			if (args.Result == PathFinder.FindResult.None)
+			bool autoEnter = CurrentConfig.AutoEnter && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH);
+
+			if (args.Result == PathFinder.FindResult.None && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				ChangeStatusBar(CurrentStatus.NotFound);
 			else if (args.Result == PathFinder.FindResult.Error)
 				ChangeStatusBar(CurrentStatus.Error);
+			else if (!autoEnter)
+				ChangeStatusBar(CurrentStatus.Normal);
 
 			Task.Run(() => SetSearchState(args));
 
-			Dispatcher.Invoke(() =>
-			{
-				PathList.ItemsSource = PathFinder.FinalList;
-			});
+			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 
 			//_pathSelected = false;
-			if (CurrentConfig.AutoEnter)
+			if (autoEnter)
 			{
 				if (args.Result == PathFinder.FindResult.None)
 				{
@@ -298,8 +300,6 @@ namespace AutoKkutu
 						performAutoEnter(args, content);
 				}
 			}
-			else
-				ChangeStatusBar(CurrentStatus.Normal);
 		}
 
 		private bool CheckPathIsValid(PathFinder.UpdatedPathEventArgs args, PathFinderFlags flags)
@@ -480,7 +480,6 @@ namespace AutoKkutu
 		private void CommonHandler_WordPresentedEvent(object sender, WordPresentEventArgs args)
 		{
 			string word = args.Word.Content;
-			Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
 			if (CurrentConfig.Delay)
 			{
 				int delay = CurrentConfig.nDelay;
@@ -494,16 +493,21 @@ namespace AutoKkutu
 						while (inputStopwatch.ElapsedMilliseconds <= delay)
 							await Task.Delay(1);
 						SendMessage(word);
+						Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
 					});
 				else
 					Task.Run(async () =>
 					{
 						await Task.Delay(delay);
 						SendMessage(word);
+						Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
 					});
 			}
 			else
+			{
 				SendMessage(word);
+				Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+			}
 		}
 
 		private void RemoveAd()
@@ -604,12 +608,12 @@ namespace AutoKkutu
 			});
 		}
 
-		private void Submit_Click(object sender, RoutedEventArgs e)
+		private void SubmitChat_Click(object sender, RoutedEventArgs e)
 		{
-			if (!(string.IsNullOrWhiteSpace(SubmitWord.Text) || SubmitWord.Text == INPUT_TEXT_PLACEHOLDER))
+			if (!(string.IsNullOrWhiteSpace(ChatField.Text) || ChatField.Text == INPUT_TEXT_PLACEHOLDER))
 			{
-				SendMessage(SubmitWord.Text);
-				SubmitWord.Text = "";
+				SendMessage(ChatField.Text);
+				ChatField.Text = "";
 			}
 		}
 
@@ -632,22 +636,60 @@ namespace AutoKkutu
 			inputStopwatch.Restart();
 		}
 
-		private void TextInput_GotFocus(object sender, RoutedEventArgs e)
+		private void ChatField_GotFocus(object sender, RoutedEventArgs e)
 		{
-			if (SubmitWord.Text == INPUT_TEXT_PLACEHOLDER)
+			if (ChatField.Text == INPUT_TEXT_PLACEHOLDER)
 			{
-				SubmitWord.Text = "";
-				SubmitWord.FontStyle = FontStyles.Normal;
+				ChatField.Text = "";
+				ChatField.FontStyle = FontStyles.Normal;
 			}
 		}
 
-		private void TextInput_LostFocus(object sender, RoutedEventArgs e)
+		private void ChatField_LostFocus(object sender, RoutedEventArgs e)
 		{
-			if (string.IsNullOrWhiteSpace(SubmitWord.Text))
+			if (string.IsNullOrWhiteSpace(ChatField.Text))
 			{
-				SubmitWord.Text = INPUT_TEXT_PLACEHOLDER;
-				SubmitWord.FontStyle = FontStyles.Normal;
+				ChatField.Text = INPUT_TEXT_PLACEHOLDER;
+				ChatField.FontStyle = FontStyles.Italic;
 			}
+		}
+
+		private void ChatField_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter || e.Key == Key.Return)
+				SubmitChat_Click(sender, e);
+		}
+
+		private void SubmitSearch_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(string.IsNullOrWhiteSpace(SearchField.Text) || SearchField.Text == SEARCH_TEXT_PLACEHOLDER))
+			{
+				StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), Handler.CurrentMissionChar, PathFinderFlags.MANUAL_SEARCH);
+			}
+		}
+
+		private void SearchField_GotFocus(object sender, RoutedEventArgs e)
+		{
+			if (SearchField.Text == SEARCH_TEXT_PLACEHOLDER)
+			{
+				SearchField.Text = "";
+				SearchField.FontStyle = FontStyles.Normal;
+			}
+		}
+
+		private void SearchField_LostFocus(object sender, RoutedEventArgs e)
+		{
+			if (string.IsNullOrWhiteSpace(SearchField.Text))
+			{
+				SearchField.Text = SEARCH_TEXT_PLACEHOLDER;
+				SearchField.FontStyle = FontStyles.Italic;
+			}
+		}
+
+		private void SearchField_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter || e.Key == Key.Return)
+				SubmitSearch_Click(sender, e);
 		}
 
 		private void PathList_MouseDoubleClick(object sender, MouseButtonEventArgs e)

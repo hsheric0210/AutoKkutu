@@ -21,6 +21,7 @@ namespace AutoKkutu
 		USING_END_WORD = 1,
 		USING_ATTACK_WORD = 2,
 		RETRIAL = 4,
+		MANUAL_SEARCH = 8
 	}
 
 	public class PathFinder

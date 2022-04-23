@@ -32,14 +32,12 @@ namespace AutoKkutu
 				case "mariadb":
 					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
 					Logger.InfoFormat("MySQL selected: {0}", mysqlConnectionString);
-					//return new MySQLDatabase(query);
-					break;
+					return new MySQLDatabase(mysqlConnectionString);
 				case "postgresql":
 				case "pgsql":
 					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
 					Logger.InfoFormat("PostgreSQL selected: {0}", pgsqlConnectionString);
-					//return new PostgreSQLDatabase(query);
-					break;
+					return new PostgreSQLDatabase(pgsqlConnectionString);
 			}
 
 			string file = ((SQLiteSection)config.GetSection("sqlite")).File;
@@ -74,7 +72,7 @@ namespace AutoKkutu
 			if (string.IsNullOrWhiteSpace(node))
 				throw new ArgumentNullException("node");
 
-			if (int.TryParse(ExecuteScalar($"SELECT COUNT(*) FROM {tableName} WHERE word_index = '{node[0]}';").ToString(), out int i) && i > 0)
+			if (Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {tableName} WHERE word_index = '{node[0]}';")) > 0)
 				return false;
 
 			ExecuteNonQuery($"INSERT INTO {tableName}(word_index) VALUES('{node[0]}')");
@@ -145,10 +143,8 @@ namespace AutoKkutu
 				try
 				{
 					Logger.Info("Database Intergrity Check....\nIt will be very long task.");
-					int dbTotalCount;
 
-					int.TryParse(ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListName}").ToString(), out dbTotalCount);
-
+					int dbTotalCount = Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListName}"));
 					Logger.InfoFormat("Database has Total {0} elements.", dbTotalCount);
 					Logger.Info("Getting all elements from database..");
 					int elementCount = 0;
@@ -157,10 +153,10 @@ namespace AutoKkutu
 					int FixedCount = 0;
 					var DeletionList = new List<string>();
 					var WordFixList = new Dictionary<string, string>();
-					var WordIndexCorrection = new List<string>();
-					var ReverseWordIndexCorrection = new List<string>();
-					var KkutuIndexCorrection = new List<string>();
-					var FlagCorrection = new Dictionary<string, int>();
+					var WordIndexCorrection = new Dictionary<string, string>();
+					var ReverseWordIndexCorrection = new Dictionary<string, string>();
+					var KkutuIndexCorrection = new Dictionary<string, string>();
+					var FlagCorrection = new Dictionary<string, (int, int)>();
 
 					Logger.Info("Opening auxiliary SQLite connection...");
 					using (var auxiliaryConnection = OpenSecondaryConnection())
@@ -201,33 +197,37 @@ namespace AutoKkutu
 
 								// Check WordIndex tag
 								string correctWordIndex = content.First().ToString();
-								if (correctWordIndex != reader.GetObject("word_index").ToString())
+								string currentWordIndex = reader.GetObject("word_index").ToString();
+								if (correctWordIndex != currentWordIndex)
 								{
 									Logger.InfoFormat("Invaild Word Index; Will be fixed to '{0}'.", correctWordIndex);
-									WordIndexCorrection.Add(content);
+									WordIndexCorrection.Add(content, currentWordIndex);
 								}
 
 								// Check ReverseWordIndex tag
 								string correctReverseWordIndex = content.Last().ToString();
-								if (correctReverseWordIndex != reader.GetObject("reverse_word_index").ToString())
+								string currentReverseWordIndex = reader.GetObject("reverse_word_index").ToString();
+								if (correctReverseWordIndex != currentReverseWordIndex)
 								{
 									Logger.InfoFormat("Invaild Reverse Word Index; Will be fixed to '{0}'.", correctReverseWordIndex);
-									ReverseWordIndexCorrection.Add(content);
+									ReverseWordIndexCorrection.Add(content, currentReverseWordIndex);
 								}
 
 								// Check KkutuIndex tag
 								string correctKkutuIndex = content.Length > 2 ? content.Substring(0, 2) : content.First().ToString();
-								if (correctKkutuIndex != reader.GetObject("kkutu_index").ToString())
+								string currentKkutuIndex = reader.GetObject("kkutu_index").ToString();
+								if (correctKkutuIndex != currentKkutuIndex)
 								{
 									Logger.InfoFormat("Invaild Kkutu Index; Will be fixed to '{0}'.", correctKkutuIndex);
-									KkutuIndexCorrection.Add(content);
+									KkutuIndexCorrection.Add(content, currentKkutuIndex);
 								}
 
 								int correctFlags = (int)Utils.GetFlags(content);
-								if (correctFlags != Convert.ToInt32(reader.GetObject("flags")))
+								int currentFlags = Convert.ToInt32(reader.GetObject("flags"));
+								if (correctFlags != currentFlags)
 								{
 									Logger.InfoFormat("Invaild flags; Will be fixed to '{0}'.", correctFlags);
-									FlagCorrection.Add(content, correctFlags);
+									FlagCorrection.Add(content, (currentFlags, correctFlags));
 								}
 							}
 						}
@@ -235,52 +235,49 @@ namespace AutoKkutu
 						// Start fixing
 						foreach (string content in DeletionList)
 						{
-							RemovedCount++;
 							Logger.InfoFormat("Removed '{0}' from database.", content);
 							ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListName} WHERE word = '" + content + "'");
+							RemovedCount++;
 						}
 
 						foreach (var pair in WordFixList)
 						{
-							FixedCount++;
-
 							Logger.InfoFormat("Fixed word from '{0}' to '{1}'.", pair.Key, pair.Value);
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET word = '{pair.Value}' WHERE word = '{pair.Key}';");
+							FixedCount++;
 						}
 
-						foreach (string content in WordIndexCorrection)
+						foreach (var pair in WordIndexCorrection)
 						{
+							string correctWordIndex = pair.Key.First().ToString();
+							Logger.InfoFormat("Fixed word_index of '{0}': from '{1}' to '{2}'.", pair.Key, pair.Value, correctWordIndex);
+							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET word_index = '{correctWordIndex}' WHERE word = '{pair.Key}';");
 							FixedCount++;
-
-							string correctWordIndex = content.First().ToString();
-							Logger.InfoFormat("Fixed word_index of '{0}' to '{1}'.", content, correctWordIndex);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET word_index = '{correctWordIndex}' WHERE word = '{content}';");
 						}
 
-						foreach (string content in ReverseWordIndexCorrection)
+						foreach (var pair in ReverseWordIndexCorrection)
 						{
+							string correctReverseWordIndex = pair.Value.Last().ToString();
+							Logger.InfoFormat("Fixed reverse_word_index of '{0}': from '{1}' to '{2}'.", pair.Key, pair.Value, correctReverseWordIndex);
+							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET reverse_word_index = '{correctReverseWordIndex}' WHERE word = '{pair.Key}';");
 							FixedCount++;
-
-							string correctReverseWordIndex = content.Last().ToString();
-							Logger.InfoFormat("Fixed reverse_word_index of '{0}' to '{1}'.", content, correctReverseWordIndex);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET reverse_word_index = '{correctReverseWordIndex}' WHERE word = '{content}';");
 						}
 
-						foreach (string content in KkutuIndexCorrection)
+						foreach (var pair in KkutuIndexCorrection)
 						{
-							FixedCount++;
-
+							string content = pair.Key;
 							string correctKkutuIndex = content.Length > 2 ? content.Substring(0, 2) : content.First().ToString();
-							Logger.InfoFormat("Fixed kkutu_index of '{0}' to '{1}'.", content, correctKkutuIndex);
+							Logger.InfoFormat("Fixed kkutu_index of '{0}': from '{1}' to '{2}'.", content, pair.Value, correctKkutuIndex);
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET kkutu_index = '{correctKkutuIndex}' WHERE word = '{content}';");
+							FixedCount++;
 						}
 
 						foreach (var pair in FlagCorrection)
 						{
-							FixedCount++;
 
-							Logger.InfoFormat("Fixed flags of '{0}' to '{1}'.", pair.Key, pair.Value);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET flags = {pair.Value} WHERE word = '{pair.Key}';");
+							Logger.InfoFormat("Fixed flags of '{0}': from {1} to {2}.", pair.Key, pair.Value.Item1, pair.Value.Item2);
+							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET flags = {pair.Value.Item2} WHERE word = '{pair.Key}';");
+							FixedCount++;
 						}
 
 						Logger.InfoFormat("Execute vacuum", ExecuteNonQuery("VACUUM")); // Vacuum
@@ -332,7 +329,7 @@ namespace AutoKkutu
 				while (reader.Read())
 				{
 					string word = reader.GetObject("word").ToString().Trim();
-					result.Add(new PathFinder.PathObject(word, (WordFlags)Convert.ToInt32(reader.GetObject("flags")), !string.IsNullOrWhiteSpace(missionChar) && word.Any(c => c == missionChar.First()))); 
+					result.Add(new PathFinder.PathObject(word, (WordFlags)Convert.ToInt32(reader.GetObject("flags")), !string.IsNullOrWhiteSpace(missionChar) && word.Any(c => c == missionChar.First())));
 				}
 			return result;
 		}
@@ -401,7 +398,7 @@ namespace AutoKkutu
 			if (string.IsNullOrWhiteSpace(word))
 				throw new ArgumentNullException("word");
 
-			if (int.TryParse(ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListName} WHERE word = '{word}';").ToString(), out int i) && i > 0)
+			if (Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListName} WHERE word = '{word}';")) > 0)
 				return false;
 
 			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListName}(word_index, reverse_word_index, kkutu_index, word, flags) VALUES('{word.First()}', '{word.Last()}', '{(word.Length >= 2 ? word.Substring(0, 2) : word.First().ToString())}', '{word}', {((int)flags)})");
@@ -414,17 +411,19 @@ namespace AutoKkutu
 				MakeTable(DatabaseConstants.WordListName);
 			else
 			{
+				const string BackwardCompat = "[Backward-compatibility] ";
+				bool needToCleanUp = false;
 				// For backward compatibility
 				if (!IsColumnExists("reverse_word_index"))
 				{
 					try
 					{
 						ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN reverse_word_index CHAR(1) NOT NULL DEFAULT ' '");
-						Logger.Warn("Added reverse_word_index column");
+						Logger.Warn($"{BackwardCompat}Added reverse_word_index column");
 					}
 					catch (Exception ex)
 					{
-						Logger.Error($"Failed to add reverse_word_index", ex);
+						Logger.Error($"{BackwardCompat}Failed to add reverse_word_index", ex);
 					}
 				}
 
@@ -433,11 +432,11 @@ namespace AutoKkutu
 					try
 					{
 						ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN kkutu_index CHAR(2) NOT NULL DEFAULT ' '");
-						Logger.Warn("Added kkutu_index column");
+						Logger.Warn($"{BackwardCompat}Added kkutu_index column");
 					}
 					catch (Exception ex)
 					{
-						Logger.Error($"Failed to add kkutu_index", ex);
+						Logger.Error($"{BackwardCompat}Failed to add kkutu_index", ex);
 					}
 				}
 
@@ -448,72 +447,90 @@ namespace AutoKkutu
 						if (!IsColumnExists("flags"))
 						{
 							ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN flags SMALLINT NOT NULL DEFAULT 0");
-							Logger.Warn("Added flags column.");
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListName} SET flags = CAST(is_endword AS SMALLINT)");
-							Logger.Warn("Converted is_endword column into flags column.");
+							Logger.Warn($"{BackwardCompat}Converted is_endword into flags.");
 						}
 
-						// We can't drop a column from table with single query, as yet.
-						ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} RENAME TO _{DatabaseConstants.WordListName};");
-						MakeTable(DatabaseConstants.WordListName);
-						ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListName};");
-						ExecuteNonQuery($"DROP TABLE _{DatabaseConstants.WordListName};");
-						ExecuteNonQuery("VACUUM"); // Clean-up
+						DropWordListColumn("is_endword");
+						needToCleanUp = true;
 
-						Logger.Warn("Dropped is_endword column as it is no longer used.");
+						Logger.Warn($"{BackwardCompat}Dropped is_endword column as it is no longer used.");
 					}
 					catch (Exception ex)
 					{
-						Logger.Error($"Failed to add flags", ex);
+						Logger.Error($"{BackwardCompat}Failed to add flags", ex);
 					}
+				}
+
+				if (!IsColumnExists("seq"))
+				{
+					try
+					{
+						AddSequenceColumnToWordList();
+						Logger.Warn($"{BackwardCompat}Added sequence column");
+						needToCleanUp = true;
+					}
+					catch (Exception ex)
+					{
+						Logger.Error($"{BackwardCompat}Failed to add sequence column", ex);
+					}
+				}
+
+				string kkutuindextype = GetColumnType("kkutu_index");
+				if (kkutuindextype.Equals("CHAR(2)", StringComparison.InvariantCultureIgnoreCase) || kkutuindextype.Equals("character", StringComparison.InvariantCultureIgnoreCase))
+				{
+					ChangeWordListColumnType("kkutu_index", "VARCHAR(2)");
+					Logger.Warn($"{BackwardCompat}Changed type of 'kkutu_index' from CHAR(2) to VARCHAR(2)");
+					needToCleanUp = true;
+				}
+
+				if (needToCleanUp)
+				{
+					Logger.Warn($"Executing vacuum...");
+					ExecuteNonQuery("VACUUM"); // Clean-up
 				}
 			}
 
-			if (!IsTableExists(DatabaseConstants.EndWordListName))
-				MakeTable(DatabaseConstants.EndWordListName);
-			if (!IsTableExists(DatabaseConstants.ReverseEndWordListName))
-				MakeTable(DatabaseConstants.ReverseEndWordListName);
-			if (!IsTableExists(DatabaseConstants.KkutuEndWordListName))
-				MakeTable(DatabaseConstants.KkutuEndWordListName);
-			if (!IsTableExists(DatabaseConstants.AttackWordListName))
-				MakeTable(DatabaseConstants.AttackWordListName);
-			if (!IsTableExists(DatabaseConstants.ReverseAttackWordListName))
-				MakeTable(DatabaseConstants.ReverseAttackWordListName);
-			if (!IsTableExists(DatabaseConstants.KkutuAttackWordListName))
-				MakeTable(DatabaseConstants.KkutuAttackWordListName);
+			CreateIndex(DatabaseConstants.WordListName, "word_index");
+			CreateIndex(DatabaseConstants.WordListName, "reverse_word_index");
+			CreateIndex(DatabaseConstants.WordListName, "kkutu_index");
+
+			MakeTableIfNotExists(DatabaseConstants.EndWordListName);
+			MakeTableIfNotExists(DatabaseConstants.ReverseEndWordListName);
+			MakeTableIfNotExists(DatabaseConstants.KkutuEndWordListName);
+			MakeTableIfNotExists(DatabaseConstants.AttackWordListName);
+			MakeTableIfNotExists(DatabaseConstants.ReverseAttackWordListName);
+			MakeTableIfNotExists(DatabaseConstants.KkutuAttackWordListName);
 		}
 
-		private void MakeTable(string tablename)
+		private void MakeTableIfNotExists(string tableName)
+		{
+			if (!IsTableExists(tableName))
+				MakeTable(tableName);
+		}
+
+		private void CreateIndex(string tableName, string columnName)
+		{
+			ExecuteNonQuery($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
+		}
+
+		protected void MakeTable(string tablename)
 		{
 			Logger.Info("Create Table : " + tablename);
 			string columnOptions;
 			switch (tablename)
 			{
 				case DatabaseConstants.WordListName:
-					columnOptions = "(word VARCHAR(256) NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index CHAR(2) NOT NULL, flags SMALLINT NOT NULL)";
+					columnOptions = GetWordListColumnOptions();
 					break;
 				case DatabaseConstants.KkutuEndWordListName:
-					columnOptions = "(word_index CHAR(2) NOT NULL)";
+					columnOptions = "word_index CHAR(2) NOT NULL";
 					break;
 				default:
-					columnOptions = "(word_index CHAR(1) NOT NULL)";
+					columnOptions = "word_index CHAR(1) NOT NULL";
 					break;
 			}
-			ExecuteNonQuery($"CREATE TABLE {tablename} {columnOptions};");
-		}
-
-		public bool IsTableExists(string tablename)
-		{
-			Logger.InfoFormat("Check Table : {0}", tablename);
-			try
-			{
-				return int.TryParse(ExecuteScalar($"SELECT COUNT(*) FROM sqlite_master WHERE name='{tablename}';").ToString(), out int i) && i > 0;
-			}
-			catch (Exception ex)
-			{
-				Logger.Info($"Failed to Execute Check DB Table '{tablename}' : {ex.ToString()}");
-				return false;
-			}
+			ExecuteNonQuery($"CREATE TABLE {tablename} ({columnOptions});");
 		}
 
 		private bool GetWordIndexColumnName(GameMode gameMode, out string str)
@@ -546,13 +563,24 @@ namespace AutoKkutu
 
 		protected abstract CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null);
 
-		public abstract string GetCheckMissionCharFuncName();
+		protected abstract string GetCheckMissionCharFuncName();
 
 		protected abstract int DeduplicateDatabase(IDisposable connection);
 
 		protected abstract IDisposable OpenSecondaryConnection();
 
 		protected abstract bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null);
+
+		public abstract bool IsTableExists(string tablename, IDisposable connection = null);
+
+		protected abstract string GetWordListColumnOptions();
+		protected abstract string GetColumnType(string columnName, string tableName = null, IDisposable connection = null);
+
+		protected abstract void AddSequenceColumnToWordList();
+
+		protected abstract void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null);
+
+		protected abstract void DropWordListColumn(string columnName);
 
 		public class DBJobArgs : EventArgs
 		{

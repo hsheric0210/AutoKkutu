@@ -54,7 +54,7 @@ namespace AutoKkutu.Databases
 			}
 		}
 
-		public override string GetCheckMissionCharFuncName() => "CheckMissionChar";
+		protected override string GetCheckMissionCharFuncName() => "CheckMissionChar";
 
 		public override string GetDBInfo() => "SQLite";
 
@@ -88,7 +88,7 @@ namespace AutoKkutu.Databases
 
 			// Deduplicate db
 			// https://wiki.postgresql.org/wiki/Deleting_duplicates
-			return SQLiteDatabaseHelper.ExecuteNonQuery((SqliteConnection)connection, DatabaseConstants.SQLiteDeduplicationQuery);
+			return SQLiteDatabaseHelper.ExecuteNonQuery((SqliteConnection)connection, DatabaseConstants.DeduplicationQuery);
 		}
 
 		protected override IDisposable OpenSecondaryConnection()
@@ -97,6 +97,35 @@ namespace AutoKkutu.Databases
 		}
 
 		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.IsColumnExists((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListName, columnName);
+
+		public override bool IsTableExists(string tablename, IDisposable connection = null) => SQLiteDatabaseHelper.IsTableExists((SqliteConnection)(connection ?? DatabaseConnection), tablename);
+
+		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.GetColumnType((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListName, columnName);
+
+		protected override void AddSequenceColumnToWordList()
+		{
+			RebuildWordList();
+		}
+
+		protected override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
+
+		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null)
+		{
+			RebuildWordList();
+		}
+
+		protected override void DropWordListColumn(string columnName)
+		{
+			RebuildWordList();
+		}
+
+		private void RebuildWordList()
+		{
+			ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} RENAME TO _{DatabaseConstants.WordListName};");
+			MakeTable(DatabaseConstants.WordListName);
+			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListName};");
+			ExecuteNonQuery($"DROP TABLE _{DatabaseConstants.WordListName};");
+		}
 	}
 
 	public class SQLiteDatabaseReader : CommonDatabaseReader

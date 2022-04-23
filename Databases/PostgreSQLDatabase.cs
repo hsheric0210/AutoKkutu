@@ -24,8 +24,22 @@ namespace AutoKkutu.Databases
 				Logger.Info("Opening database connection...");
 				DatabaseConnection = new NpgsqlConnection(connectionString);
 				DatabaseConnection.Open();
+				ExecuteNonQuery($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
-				ExecuteNonQuery(DatabaseConstants.MissionWordOccurrenceFinder(GetCheckMissionCharFuncName()));
+				ExecuteNonQuery($@"CREATE OR REPLACE FUNCTION {GetCheckMissionCharFuncName()}(word VARCHAR, missionWord VARCHAR)
+RETURNS INTEGER AS $$
+DECLARE
+	occurrence INTEGER;
+BEGIN
+	occurrence := ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
+	IF occurrence > 0 THEN
+		RETURN occurrence + {DatabaseConstants.MissionCharIndexPriority};
+	ELSE
+		RETURN 0;
+	END IF;
+END;
+$$ LANGUAGE plpgsql
+");
 
 				// Check the database tables
 				CheckTable();
@@ -40,7 +54,7 @@ namespace AutoKkutu.Databases
 			}
 		}
 
-		public override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
+		protected override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
 
 		public override string GetDBInfo() => "PostgreSQL";
 
@@ -84,7 +98,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to execute SQLite query '{query}'", ex);
+				Logger.Error($"Failed to execute PostgreSQL query '{query}'", ex);
 			}
 			return null;
 		}
@@ -99,19 +113,66 @@ namespace AutoKkutu.Databases
 		{
 			CheckConnectionType(connection);
 
-			// Deduplicate db
 			// https://wiki.postgresql.org/wiki/Deleting_duplicates
-			return ExecuteNonQuery(DatabaseConstants.SQLiteDeduplicationQuery, (NpgsqlConnection)connection);
+			return ExecuteNonQuery(DatabaseConstants.DeduplicationQuery, (NpgsqlConnection)connection);
 		}
 
 		protected override IDisposable OpenSecondaryConnection()
 		{
 			var connection = new NpgsqlConnection(ConnectionString);
 			connection.Open();
+			ExecuteNonQuery($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';", connection);
 			return connection;
 		}
 
-		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => throw new NotImplementedException();
+		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null)
+		{
+			tableName = tableName ?? DatabaseConstants.WordListName;
+			try
+			{
+				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='{tableName}' AND column_name='{columnName}';")) > 0;
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to check the existence of column '{columnName}' in table '{tableName}' : {ex.ToString()}");
+				return false;
+			}
+		}
+
+		public override bool IsTableExists(string tableName, IDisposable connection = null)
+		{
+			try
+			{
+				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM information_schema.tables WHERE table_name='{tableName}';", connection)) > 0;
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to check the existence of table '{tableName}' : {ex.ToString()}");
+				return false;
+			}
+		}
+
+		protected override void AddSequenceColumnToWordList() => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN seq SERIAL PRIMARY KEY");
+
+		protected override string GetWordListColumnOptions() => "seq SERIAL PRIMARY KEY, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
+
+		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null)
+		{
+			tableName = tableName ?? DatabaseConstants.WordListName;
+			try
+			{
+				return ExecuteScalar($"SELECT data_type FROM information_schema.columns WHERE table_name='{tableName}' AND column_name='{columnName}';", connection).ToString();
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to get data type of column '{columnName}' in table '{tableName}' : {ex.ToString()}");
+				return "";
+			}
+		}
+
+		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ALTER COLUMN {columnName} TYPE {newType}");
+
+		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} DROP COLUMN {columnName}");
 	}
 
 	public class PostgreSQLDatabaseReader : CommonDatabaseReader

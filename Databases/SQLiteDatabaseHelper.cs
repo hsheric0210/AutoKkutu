@@ -47,15 +47,18 @@ namespace AutoKkutu.Databases
 					var externalDBConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
 					externalDBConnection.Open();
 
-					if (!target.IsTableExists(DatabaseConstants.WordListName))
+					if (!SQLiteDatabaseHelper.IsTableExists(externalDBConnection, DatabaseConstants.WordListName))
 					{
 						Logger.InfoFormat("Database doesn't contain table '{0}'", DatabaseConstants.WordListName);
 						return;
 					}
 
 					int WordCount = 0;
+					int AttackWordCount = 0;
 					int EndWordCount = 0;
+					int ReverseAttackWordCount = 0;
 					int ReverseEndWordCount = 0;
+					int KkutuAttackWordCount = 0;
 					int KkutuEndWordCount = 0;
 
 					bool hasIsEndwordColumn = IsColumnExists(externalDBConnection, DatabaseConstants.WordListName, "is_endword");
@@ -85,6 +88,18 @@ namespace AutoKkutu.Databases
 							WordCount++;
 						}
 
+					if (target.IsTableExists(DatabaseConstants.AttackWordListName))
+						using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {DatabaseConstants.AttackWordListName}", externalDBConnection).ExecuteReader())
+							while (reader.Read())
+							{
+								string endword = reader["word_index"].ToString();
+								if (target.AddNode(endword, DatabaseConstants.AttackWordListName))
+									Logger.InfoFormat("Added attack word '{0}'", endword);
+								else
+									Logger.WarnFormat("Attack word '{0}' is already existing in database.", endword);
+								AttackWordCount++;
+							}
+
 					if (target.IsTableExists(DatabaseConstants.EndWordListName))
 						using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {DatabaseConstants.EndWordListName}", externalDBConnection).ExecuteReader())
 							while (reader.Read())
@@ -95,6 +110,18 @@ namespace AutoKkutu.Databases
 								else
 									Logger.WarnFormat("End-word '{0}' is already existing in database.", endword);
 								EndWordCount++;
+							}
+
+					if (target.IsTableExists(DatabaseConstants.ReverseAttackWordListName))
+						using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {DatabaseConstants.ReverseAttackWordListName}", externalDBConnection).ExecuteReader())
+							while (reader.Read())
+							{
+								string endword = reader["word_index"].ToString();
+								if (target.AddNode(endword, DatabaseConstants.ReverseAttackWordListName))
+									Logger.InfoFormat("Added reverse attack word '{0}'", endword);
+								else
+									Logger.WarnFormat("Reverse Attack word '{0}' is already existing in database.", endword);
+								ReverseAttackWordCount++;
 							}
 
 					if (target.IsTableExists(DatabaseConstants.ReverseEndWordListName))
@@ -109,19 +136,31 @@ namespace AutoKkutu.Databases
 								ReverseEndWordCount++;
 							}
 
+					if (target.IsTableExists(DatabaseConstants.KkutuAttackWordListName))
+						using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {DatabaseConstants.KkutuAttackWordListName}", externalDBConnection).ExecuteReader())
+							while (reader.Read())
+							{
+								string endword = reader["word_index"].ToString();
+								if (target.AddNode(endword, DatabaseConstants.KkutuAttackWordListName))
+									Logger.InfoFormat("Added kkutu attack word '{0}'", endword);
+								else
+									Logger.WarnFormat("Kkutu attack word '{0}' is already existing in database.", endword);
+								KkutuAttackWordCount++;
+							}
+
 					if (target.IsTableExists(DatabaseConstants.KkutuEndWordListName))
 						using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {DatabaseConstants.KkutuEndWordListName}", externalDBConnection).ExecuteReader())
 							while (reader.Read())
 							{
 								string endword = reader["word_index"].ToString();
 								if (target.AddNode(endword, DatabaseConstants.KkutuEndWordListName))
-									Logger.InfoFormat("Added reverse end-word '{0}'", endword);
+									Logger.InfoFormat("Added kkutu end-word '{0}'", endword);
 								else
-									Logger.WarnFormat("Reverse End-word '{0}' is already existing in database.", endword);
+									Logger.WarnFormat("Kkutu End-word '{0}' is already existing in database.", endword);
 								KkutuEndWordCount++;
 							}
 
-					Logger.InfoFormat("DB Import Complete. ({0} Words / {1} EndWord Nodes / {2} Reverse EndWord Nodes / {3} Kkutu EndWord Nodes)", WordCount, EndWordCount, ReverseEndWordCount, KkutuEndWordCount);
+					Logger.InfoFormat("DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount);
 					if (CommonDatabase.DBJobDone != null)
 						CommonDatabase.DBJobDone(null, new DBJobArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {EndWordCount} 개의 한방 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드"));
 				}
@@ -178,6 +217,39 @@ namespace AutoKkutu.Databases
 			var connection = new SqliteConnection($"Data Source={databaseFile}");
 			connection.Open();
 			return connection;
+		}
+
+		public static bool IsTableExists(SqliteConnection connection, string tableName)
+		{
+			try
+			{
+				return Convert.ToInt32(ExecuteScalar(connection, $"SELECT COUNT(*) FROM sqlite_master WHERE name='{tableName}';")) > 0;
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to check the existence of table '{tableName}' : {ex.ToString()}");
+				return false;
+			}
+		}
+
+		public static string GetColumnType(SqliteConnection databaseConnection, string tableName, string columnName)
+		{
+			try
+			{
+				using (SqliteDataReader reader = new SqliteCommand($"PRAGMA table_info({tableName})", databaseConnection).ExecuteReader())
+				{
+					int nameIndex = reader.GetOrdinal("Name");
+					int typeIndex = reader.GetOrdinal("Type");
+					while (reader.Read())
+						if (reader.GetString(nameIndex).Equals(columnName))
+							return reader.GetString(typeIndex);
+				}
+			}
+			catch (Exception)
+			{
+			}
+
+			return null;
 		}
 	}
 }

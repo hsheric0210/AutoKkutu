@@ -14,6 +14,8 @@ namespace AutoKkutu.Databases
 
 		private string ConnectionString;
 
+		private const string DatabaseName = "autokkutu";
+
 		public MySQLDatabase(string connectionString) : base()
 		{
 			ConnectionString = connectionString;
@@ -25,7 +27,21 @@ namespace AutoKkutu.Databases
 				DatabaseConnection = new MySqlConnection(connectionString);
 				DatabaseConnection.Open();
 
-				ExecuteNonQuery(DatabaseConstants.MissionWordOccurrenceFinder(GetCheckMissionCharFuncName()));
+				ExecuteNonQuery($"DROP FUNCTION IF EXISTS {GetCheckMissionCharFuncName()};");
+				ExecuteNonQuery($@"CREATE FUNCTION {GetCheckMissionCharFuncName()}(word VARCHAR(256), missionWord VARCHAR(2)) RETURNS INT
+DETERMINISTIC
+NO SQL
+BEGIN
+	DECLARE occurrence INT;
+
+	SET occurrence = ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
+	IF occurrence > 0 THEN
+		RETURN occurrence + {DatabaseConstants.MissionCharIndexPriority};
+	ELSE
+		RETURN 0;
+	END IF;
+END;
+");
 
 				// Check the database tables
 				CheckTable();
@@ -40,7 +56,7 @@ namespace AutoKkutu.Databases
 			}
 		}
 
-		public override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
+		protected override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
 
 		public override string GetDBInfo() => "MySQL";
 
@@ -84,7 +100,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to execute SQLite query '{query}'", ex);
+				Logger.Error($"Failed to execute MySQL query '{query}'", ex);
 			}
 			return null;
 		}
@@ -101,7 +117,7 @@ namespace AutoKkutu.Databases
 
 			// Deduplicate db
 			// https://wiki.postgresql.org/wiki/Deleting_duplicates
-			return ExecuteNonQuery(DatabaseConstants.SQLiteDeduplicationQuery, (MySqlConnection)connection);
+			return ExecuteNonQuery(DatabaseConstants.DeduplicationQuery, (MySqlConnection)connection);
 		}
 
 		protected override IDisposable OpenSecondaryConnection()
@@ -111,7 +127,54 @@ namespace AutoKkutu.Databases
 			return connection;
 		}
 
-		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => throw new NotImplementedException();
+		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null)
+		{
+			tableName = tableName ?? DatabaseConstants.WordListName;
+			try
+			{
+				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM Information_schema.columns WHERE table_schema='{DatabaseName}' AND table_name='{tableName}' AND column_name='{columnName}';")) > 0;
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to check the existence of column '{columnName}' in table '{tableName}' : {ex.ToString()}");
+				return false;
+			}
+		}
+
+		public override bool IsTableExists(string tableName, IDisposable connection = null)
+		{
+			try
+			{
+				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM information_schema.tables WHERE table_name='{tableName}';", connection).ToString()) > 0;
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to check the existence of table '{tableName}' : {ex.ToString()}");
+				return false;
+			}
+		}
+
+		protected override void AddSequenceColumnToWordList() => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
+
+		protected override string GetWordListColumnOptions() => "seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
+
+		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null)
+		{
+			tableName = tableName ?? DatabaseConstants.WordListName;
+			try
+			{
+				return ExecuteScalar($"SELECT data_type FROM Information_schema.columns WHERE table_name='{tableName}' AND column_name='{columnName}';", connection).ToString();
+			}
+			catch (Exception ex)
+			{
+				Logger.Info($"Failed to get data type of column '{columnName}' in table '{tableName}' : {ex.ToString()}");
+				return "";
+			}
+		}
+
+		protected override void ChangeWordListColumnType(string columnName, string newType, string tableName = null, IDisposable connection = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} MODIFY {columnName} {newType}");
+
+		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListName} DROP {columnName}");
 	}
 
 	public class MySQLDatabaseReader : CommonDatabaseReader
