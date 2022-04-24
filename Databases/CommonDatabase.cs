@@ -12,7 +12,7 @@ using static AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
-	public abstract class CommonDatabase
+	public abstract class CommonDatabase : IDisposable
 	{
 		public static readonly ILog Logger = LogManager.GetLogger("DatabaseManager");
 
@@ -610,6 +610,7 @@ namespace AutoKkutu
 		protected abstract void DropWordListColumn(string columnName);
 
 		protected abstract void PerformVacuum();
+		public abstract void Dispose();
 
 		public class DBJobArgs : EventArgs
 		{

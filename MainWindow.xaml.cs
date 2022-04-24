@@ -6,6 +6,7 @@ using CefSharp.Wpf;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -728,6 +729,12 @@ namespace AutoKkutu
 		private void Open_DevConsole(object sender, RoutedEventArgs e)
 		{
 			browser.ShowDevTools();
+		}
+
+		private void OnClose(object sender, CancelEventArgs e)
+		{
+			Logger.Info("Closing database connection...");
+			Database.Dispose();
 		}
 	}
 }

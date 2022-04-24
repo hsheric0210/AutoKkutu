@@ -159,6 +159,8 @@ END;
 		protected override void PerformVacuum()
 		{
 		}
+
+		public override void Dispose() => DatabaseConnection.Dispose();
 	}
 
 	public class MySQLDatabaseReader : CommonDatabaseReader

@@ -152,6 +152,8 @@ $$ LANGUAGE plpgsql
 		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP COLUMN {columnName}");
 
 		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
+
+		public override void Dispose() => DatabaseConnection.Dispose();
 	}
 
 	public class PostgreSQLDatabaseReader : CommonDatabaseReader

@@ -128,6 +128,8 @@ namespace AutoKkutu.Databases
 		}
 
 		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
+
+		public override void Dispose() => DatabaseConnection.Dispose();
 	}
 
 	public class SQLiteDatabaseReader : CommonDatabaseReader
