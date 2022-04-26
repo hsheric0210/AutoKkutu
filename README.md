@@ -25,8 +25,8 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * 자유 끝말잇기
 
 ## 개발 언어
-![.NET](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
-![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
+[![.NET](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)](https://docs.microsoft.com/ko-kr/dotnet/)
+[![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)](https://docs.microsoft.com/ko-kr/dotnet/csharp/)
 
 ## 지원하는 데이터베이스 종류
 * [![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/index.html)
