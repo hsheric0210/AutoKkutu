@@ -1,0 +1,16 @@
+﻿version: 1.0 b{build}
+configuration: Release
+platform:
+- x64
+- x86
+before_build:
+- cmd: nuget restore
+build:
+  project: AutoKkutu.sln
+  parallel: true
+  verbosity: normal
+after_build:
+- cmd: 7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- Windows.%PLATFORM%.%CONFIGURATION%.7z %APPVEYOR_BUILD_FOLDER%\bin\%PLATFORM%\%CONFIGURATION%\net48\
+artifacts:
+- path: Windows.%PLATFORM%.%CONFIGURATION%.7z
+  name: For Windows
