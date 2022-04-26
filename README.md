@@ -1,7 +1,7 @@
 # AutoKkutu - KKutu-Helper 기반 끄투 단어 추천 및 자동 입력기
 
 [![Build status](https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4/branch/main?svg=true)](https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main)
-![Issues](	https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg)
+![Issues](https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg)
 
 AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌습니다
 (제작자가 리버싱 후 수정 허용함)
@@ -25,15 +25,14 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * 자유 끝말잇기
 
 ## 개발 언어
-<img src="https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white"/>
-<img src="https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white"/>
+![.NET](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
 
 ## 지원하는 데이터베이스 종류
-<img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white"/>
-<img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white"/>
-<img src="https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white"/>
-
-* MariaDB는 MySQL과 함께 지원됩니다
+* [![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/index.html)
+* [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+* [![MySQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+  * [![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&color=003545)](https://mariadb.org/)
 
 # 현재 (공식적으로) 지원되는 사이트
 * 이름 없는 끄투(https://kkutu.org/)
@@ -56,4 +55,4 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * [CefSharp](https://github.com/cefsharp/CefSharp/) - AutoKkutu는 CefSharp을(를) 기반으로 만들어졌습니다
 * [Npgsql](https://github.com/npgsql/npgsql) - .NET용 PostgreSQL 접속 및 데이터 제공 라이브러리
 * [Log4net](https://github.com/apache/logging-log4net/) - .NET용 로깅 라이브러리
-
+* [MySqlConnector](https://github.com/mysql-net/MySqlConnector) - .NET용 MySQL 접속 및 데이터 제공 라이브러리
