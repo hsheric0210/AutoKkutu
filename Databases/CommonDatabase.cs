@@ -321,34 +321,8 @@ namespace AutoKkutu
 			return DatabaseConstants.WordIndexColumnName;
 		}
 
-		public List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, PathFinderFlags flags, WordPreference wordPreference, GameMode mode)
+		public void GetOptimalWordFlags(GameMode mode, out int endWordFlag, out int attackWordFlag)
 		{
-			var result = new List<PathFinder.PathObject>();
-			string query = CreateQuery(data, missionChar, flags, wordPreference, mode);
-			//Logger.InfoFormat("Query: {0}", query);
-			using (CommonDatabaseReader reader = ExecuteReader(query))
-				while (reader.Read())
-				{
-					string word = reader.GetString(DatabaseConstants.WordColumnName).ToString().Trim();
-					result.Add(new PathFinder.PathObject(word, (WordFlags)reader.GetInt32(DatabaseConstants.FlagsColumnName), !string.IsNullOrWhiteSpace(missionChar) && word.Any(c => c == missionChar.First())));
-				}
-			return result;
-		}
-
-		private string CreateQuery(CommonHandler.ResponsePresentedWord data, string missionChar, PathFinderFlags flags, WordPreference wordPreference, GameMode mode)
-		{
-			string indexColumnName = GetIndexColumnName(data, mode);
-			string condition;
-			if (data.CanSubstitution)
-				condition = $"WHERE ({indexColumnName} = '{data.Content}' OR {indexColumnName} = '{data.Substitution}')";
-			else
-				condition = $"WHERE {indexColumnName} = '{data.Content}'";
-
-			string auxiliaryCondition = "";
-			string auxiliaryOrderCondition = "";
-
-			int endWordFlag;
-			int attackWordFlag;
 			switch (mode)
 			{
 				case GameMode.First_and_Last:
@@ -363,11 +337,49 @@ namespace AutoKkutu
 					endWordFlag = (int)WordFlags.KkutuEndWord;
 					attackWordFlag = (int)WordFlags.KkutuAttackWord;
 					break;
-				default:
-					endWordFlag = (int)WordFlags.EndWord;
-					attackWordFlag = (int)WordFlags.AttackWord;
-					break;
 			}
+			endWordFlag = (int)WordFlags.EndWord;
+			attackWordFlag = (int)WordFlags.AttackWord;
+		}
+
+		public PathObjectFlags GetPathObjectFlags(string word, WordFlags wordFlags, int endWordFlag, int attackWordFlag, string missionChar)
+		{
+			PathObjectFlags pathFlags = PathObjectFlags.None;
+			if (wordFlags.HasFlag((WordFlags)endWordFlag))
+				pathFlags |= PathObjectFlags.EndWord;
+			if (wordFlags.HasFlag((WordFlags)attackWordFlag))
+				pathFlags |= PathObjectFlags.AttackWord;
+			if (!string.IsNullOrWhiteSpace(missionChar) && word.Any(c => c == missionChar.First()))
+				pathFlags |= PathObjectFlags.MissionWord;
+			return pathFlags;
+		}
+
+		public List<PathFinder.PathObject> FindWord(CommonHandler.ResponsePresentedWord data, string missionChar, PathFinderFlags findFlags, WordPreference wordPreference, GameMode mode)
+		{
+			var result = new List<PathFinder.PathObject>();
+			GetOptimalWordFlags(mode, out int endWordFlag, out int attackWordFlag);
+			string query = CreateQuery(data, missionChar, findFlags, wordPreference, mode, endWordFlag, attackWordFlag);
+			//Logger.InfoFormat("Query: {0}", query);
+			using (CommonDatabaseReader reader = ExecuteReader(query))
+				while (reader.Read())
+				{
+					string word = reader.GetString(DatabaseConstants.WordColumnName).ToString().Trim();
+					result.Add(new PathFinder.PathObject(word, GetPathObjectFlags(word, (WordFlags)reader.GetInt32(DatabaseConstants.FlagsColumnName), endWordFlag, attackWordFlag, missionChar)));
+				}
+			return result;
+		}
+
+		private string CreateQuery(CommonHandler.ResponsePresentedWord data, string missionChar, PathFinderFlags flags, WordPreference wordPreference, GameMode mode, int endWordFlag, int attackWordFlag)
+		{
+			string indexColumnName = GetIndexColumnName(data, mode);
+			string condition;
+			if (data.CanSubstitution)
+				condition = $"WHERE ({indexColumnName} = '{data.Content}' OR {indexColumnName} = '{data.Substitution}')";
+			else
+				condition = $"WHERE {indexColumnName} = '{data.Content}'";
+
+			string auxiliaryCondition = "";
+			string auxiliaryOrderCondition = "";
 
 			// 한방 단어
 			if (!flags.HasFlag(PathFinderFlags.USING_END_WORD))

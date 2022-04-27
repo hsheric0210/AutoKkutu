@@ -179,10 +179,10 @@ namespace AutoKkutu
 			watch.Start();
 			FinalList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
-				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordFlags.None));
+				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), PathObjectFlags.None));
 			Random random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), WordFlags.None));
+				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), PathObjectFlags.None));
 			watch.Stop();
 			if (onPathUpdated != null)
 				onPathUpdated(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
@@ -333,20 +333,21 @@ namespace AutoKkutu
 				get; private set;
 			}
 
-			public PathObject(string _content, WordFlags _wordFlags, bool isMissionWord = false)
+			public PathObject(string _content, PathObjectFlags _flags)
 			{
 				Content = _content;
 				Title = _content;
 
+				bool isMissionWord = _flags.HasFlag(PathObjectFlags.MissionWord);
 				string tooltipPrefix = "";
 				string mission = isMissionWord ? "미션 " : "";
-				if ((_wordFlags & (WordFlags.EndWord | WordFlags.ReverseEndWord | WordFlags.MiddleEndWord | WordFlags.KkutuEndWord)) != 0)
+				if (_flags.HasFlag(PathObjectFlags.EndWord))
 				{
 					tooltipPrefix = $"한방 {mission}단어: ";
 					Color = isMissionWord ? "#FF20C0A8" : "#FFFF1100";
 					PrimaryImage = @"images\skull.png";
 				}
-				else if ((_wordFlags & (WordFlags.AttackWord | WordFlags.ReverseAttackWord | WordFlags.MiddleAttackWord | WordFlags.KkutuAttackWord)) != 0)
+				else if (_flags.HasFlag(PathObjectFlags.AttackWord))
 				{
 					tooltipPrefix = $"공격 {mission}단어: ";
 					Color = isMissionWord ? "#FFFFFF40" : "#FFFF8000";
@@ -359,8 +360,17 @@ namespace AutoKkutu
 				}
 				SecondaryImage = isMissionWord ? @"images\mission.png" : "";
 
-				ToolTip = $"{tooltipPrefix}{_content}";
+				ToolTip = tooltipPrefix + _content;
 			}
 		}
+	}
+
+	[Flags]
+	public enum PathObjectFlags
+	{
+		None = 0,
+		EndWord = 1 << 0,
+		AttackWord = 1 << 1,
+		MissionWord = 1 << 2
 	}
 }
