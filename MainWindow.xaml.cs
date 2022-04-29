@@ -325,6 +325,9 @@ namespace AutoKkutu
 
 		private bool CheckPathIsValid(PathFinder.UpdatedPathEventArgs args, PathFinderFlags flags)
 		{
+			if (flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
+				return true;
+
 			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
 			bool differentMissionChar = !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
