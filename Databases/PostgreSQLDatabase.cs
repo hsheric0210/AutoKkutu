@@ -56,7 +56,7 @@ $$ LANGUAGE plpgsql
 
 		protected override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
 
-		public override string GetDBInfo() => "PostgreSQL";
+		public override string GetDBType() => "PostgreSQL";
 
 		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{

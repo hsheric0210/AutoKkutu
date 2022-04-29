@@ -14,7 +14,7 @@
 				UseLayoutRounding="True">
 				<Grid.RowDefinitions>
 					<RowDefinition MinHeight="810" />
-					<RowDefinition Height="55" />
+					<RowDefinition Height="80" />
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition MinWidth="1350" />
@@ -47,9 +47,9 @@
 						<RowDefinition Height="*"/>
 						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
-					<Grid Background="#FF333337" MinHeight="20" Margin="0,0,0,790" VerticalAlignment="Top" />
-					<Label Content="추천 단어" Grid.Row="0" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="7,31,41,0" />
-					<ListBox Name="PathList" Grid.Row="0" Background="#FF333337" Margin="0,70,5,246" BorderThickness="1" BorderBrush="{x:Null}" MouseDoubleClick="PathList_MouseDoubleClick" Grid.RowSpan="2">
+					<Grid Background="#FF333337" MinHeight="20" Margin="0,0,0,810" VerticalAlignment="Top" />
+					<Label Content="추천 단어" Grid.Row="0" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="10,31,10,0" />
+					<ListBox Name="PathList" Grid.Row="0" Background="#FF333337" Margin="5,70,5,275" BorderThickness="1" BorderBrush="{x:Null}" MouseDoubleClick="PathList_MouseDoubleClick" ContextMenuOpening="PathList_ContextMenuOpening" Grid.RowSpan="2">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<StackPanel Orientation="Horizontal" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="Auto" ToolTip="{Binding ToolTip}">
@@ -61,29 +61,45 @@
 								</StackPanel>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
+						<ItemsControl.ContextMenu>
+							<ContextMenu>
+								<MenuItem x:Name="MakeEnd" Header="한방 노드로 만들기" Click="PathList_Click_MakeEnd">
+									<MenuItem.Icon>
+										<Image Source="Images\skull.png"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<MenuItem x:Name="MakeAttack" Header="공격 노드로 만들기" Click="PathList_Click_MakeAttack">
+									<MenuItem.Icon>
+										<Image Source="Images\attack.png"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<MenuItem x:Name="MakeNormal" Header="일반 노드로 만들기" Click="PathList_Click_MakeNormal" />
+							</ContextMenu>
+						</ItemsControl.ContextMenu>
 					</ListBox>
-					<Grid Name="SearchStatus" Grid.Row="1" Margin="0,366,4,200" Background="#FF444444" VerticalAlignment="Bottom">
+					<Grid Name="SearchStatus" Grid.Row="1" Margin="0,365,4,230" Background="#FF444444" VerticalAlignment="Bottom">
 						<Image Name="SearchIcon" Width="25" Height="25" Source="/images/warning.png" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" />
 						<Border Height="50" Margin="43,0,0,-3" HorizontalAlignment="Left" Width="197" BorderBrush="{x:Null}">
 							<TextBlock Name="SearchResult" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="11" Foreground="#FFFFFFFF" TextWrapping="Wrap" VerticalAlignment="Center">총 112개의 단어 중, 30개 고려 27ms 소요. (한방 단어 사용)</TextBlock>
 						</Border>
 					</Grid>
-					<Label Grid.Row="1" Content="수동 검색" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,150" VerticalAlignment="Bottom" />
-					<Button Name="SubmitSearch" Content="검색" Margin="15,0,0,120" Grid.Row="1" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="SubmitSearch_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="40" />
-					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,120" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" GotFocus="SearchField_GotFocus" LostFocus="SearchField_LostFocus" />
-					<Label Grid.Row="1" Content="기타 메뉴" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,65" VerticalAlignment="Bottom" />
+					<Label Grid.Row="1" Content="수동 검색" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,170" VerticalAlignment="Bottom" />
+					<Button Name="SubmitSearch" Content="검색" Margin="15,0,0,150" Grid.Row="1" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="SubmitSearch_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="40" />
+					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,150" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" GotFocus="SearchField_GotFocus" LostFocus="SearchField_LostFocus" />
+					<Label Grid.Row="1" Content="기타 메뉴" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,90" VerticalAlignment="Bottom" />
 					<Grid Margin="15,15,15,15" Grid.Row="1" Background="#FF333337" VerticalAlignment="Bottom">
 						<Button Name="DBManager" Content="데이터베이스 관리" Grid.Column="0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="DBManager_Click" MinWidth="200" MaxHeight="30" VerticalAlignment="Bottom" />
 						<Button x:Name="Settings" Content="설정" Grid.Column="0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="Settings_Click" MinWidth="200" MaxHeight="30" VerticalAlignment="Bottom" Margin="0,0,0,25" />
+						<Button Name="ColorManager" Content="단어 강조 색상 설정" Grid.Column="0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="ColorManager_Click" MinWidth="200" MaxHeight="30" VerticalAlignment="Bottom" Margin="0,0,0,50" />
 					</Grid>
 				</Grid>
-				<Grid Row="1" Column="0" Background="#252526">
-					<Button x:Name="SubmitChat" Content="전송" Grid.Column="0" Margin="50,10,0,10" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="65" MinHeight="40" Click="SubmitChat_Click" VerticalAlignment="Center" HorizontalAlignment="Left" />
-					<Button x:Name="SubmitClipboard" Grid.Column="0" Margin="10,10,0,10" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="ClipboardSubmit_Click" MinWidth="40" MinHeight="40" HorizontalAlignment="Left" VerticalAlignment="Center">
+				<Grid Row="1" Column="0" Background="#252526" MinHeight="20">
+					<Button x:Name="SubmitChat" Content="전송" Grid.Column="0" Margin="40,10,0,10" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="65" MinHeight="30" Click="SubmitChat_Click" VerticalAlignment="Center" HorizontalAlignment="Left" />
+					<Button x:Name="SubmitClipboard" Grid.Column="0" Margin="10,10,0,10" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="ClipboardSubmit_Click" MinWidth="30" MinHeight="30" HorizontalAlignment="Left" VerticalAlignment="Center">
 					</Button>
-					<TextBox x:Name="ChatField" Margin="115,10,230,10" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="ChatField_KeyDown" GotFocus="ChatField_GotFocus" LostFocus="ChatField_LostFocus" />
-					<Label x:Name="VersionLabel" Content="VersionInfomation" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Margin="0,4,12,0" RenderOptions.ClearTypeHint="Enabled" RenderOptions.EdgeMode="Aliased" Height="24" VerticalAlignment="Top" HorizontalAlignment="Right" Width="235" HorizontalContentAlignment="Right" />
-					<Label x:Name="DBMode" Content="DBStatus" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Margin="-81,25,12,0" RenderOptions.ClearTypeHint="Enabled" RenderOptions.EdgeMode="Aliased" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="319" HorizontalContentAlignment="Right" />
+					<TextBox x:Name="ChatField" Margin="110,10,230,10" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="ChatField_KeyDown" GotFocus="ChatField_GotFocus" LostFocus="ChatField_LostFocus" VerticalAlignment="Center" MinHeight="30" />
+					<Label x:Name="VersionLabel" Content="VersionInfomation" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Margin="0,0,5,0" RenderOptions.ClearTypeHint="Enabled" RenderOptions.EdgeMode="Aliased" Height="24" VerticalAlignment="Top" HorizontalAlignment="Right" Width="235" HorizontalContentAlignment="Right" />
+					<Image x:Name="DBLogo" Source="Images\mysql.png" Margin="0,25,10,0" VerticalAlignment="Center" HorizontalAlignment="Right" Stretch="Uniform" MaxWidth="140" MaxHeight="60"/>
 				</Grid>
 				<Grid Row="1" Column="1" Background="#252526"/>
 			</Grid>

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AutoKkutu.Databases
+﻿namespace AutoKkutu.Databases
 {
 	public static class DatabaseConstants
 	{
@@ -31,7 +25,7 @@ namespace AutoKkutu.Databases
 		public const string LoadFromLocalSQLite = "SQLite 데이터베이스 불러오기";
 
 		public const int QueryResultLimit = 128;
-
+		
 		public const int MissionCharIndexPriority = 256;
 		public const int AttackWordIndexPriority = 512;
 		public const int EndWordIndexPriority = 1280; // 공격 미션 단어보다 한방 단어를 우선하기 위함; (256 + 256) + (512 + 256)

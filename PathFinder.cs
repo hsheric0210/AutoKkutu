@@ -48,11 +48,17 @@ namespace AutoKkutu
 		public static event EventHandler<PathFinder.UpdatedPathEventArgs> onPathUpdated;
 
 		public static AutoKkutuConfiguration CurrentConfig;
+		public static AutoKkutuColorPreference CurrentColorPreference;
 		public static CommonDatabase Database;
 
 		public static void Init(CommonDatabase database)
 		{
 			UpdateDatabase(database);
+			UpdateNodeLists();
+		}
+
+		public static void UpdateNodeLists()
+		{
 			try
 			{
 				AttackWordList = Database.GetNodeList(DatabaseConstants.AttackWordListTableName);
@@ -64,7 +70,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to get end nodes", ex);
+				Logger.Error($"Failed to update node lists", ex);
 				if (DBError != null)
 					DBError(null, EventArgs.Empty);
 			}
@@ -73,6 +79,11 @@ namespace AutoKkutu
 		public static void UpdateConfig(AutoKkutuConfiguration newConfig)
 		{
 			CurrentConfig = newConfig;
+		}
+
+		public static void UpdateColorPreference(AutoKkutuColorPreference newColorPref)
+		{
+			CurrentColorPreference = newColorPref;
 		}
 
 		public static void UpdateDatabase(CommonDatabase database)
@@ -247,22 +258,22 @@ namespace AutoKkutu
 			});
 		}
 
-		public static string ConvertToWord(string path)
+		public static string ConvertToPresentedWord(string path)
 		{
 			switch (CurrentConfig.Mode)
 			{
 				case GameMode.Last_and_First:
 				case GameMode.Kung_Kung_Tta:
 				case GameMode.Free_Last_and_First:
-					return path.First().ToString();
+					return Utils.GetLaFTailNode(path);
 				case GameMode.First_and_Last:
-					return path.Last().ToString();
+					return Utils.GetFaLHeadNode(path);
 				case GameMode.Middle_and_First:
+					if (path.Length > 2 && path.Length % 2 == 1)
+						return Utils.GetMaFNode(path);
 					break;
 				case GameMode.Kkutu:
-					if (path.Length >= 2)
-						return path.Substring(0, 2);
-					return path.First().ToString();
+					return Utils.GetKkutuTailNode(path);
 				case GameMode.Typing_Battle:
 					break;
 				case GameMode.All:
@@ -333,10 +344,29 @@ namespace AutoKkutu
 				get; private set;
 			}
 
+			public bool MakeEndAvailable
+			{
+				get; private set;
+			}
+
+			public bool MakeAttackAvailable
+			{
+				get; private set;
+			}
+
+			public bool MakeNormalAvailable
+			{
+				get; private set;
+			}
+
 			public PathObject(string _content, PathObjectFlags _flags)
 			{
 				Content = _content;
 				Title = _content;
+
+				MakeEndAvailable = !_flags.HasFlag(PathObjectFlags.EndWord);
+				MakeAttackAvailable = !_flags.HasFlag(PathObjectFlags.AttackWord);
+				MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;
 
 				bool isMissionWord = _flags.HasFlag(PathObjectFlags.MissionWord);
 				string tooltipPrefix = "";
@@ -344,23 +374,99 @@ namespace AutoKkutu
 				if (_flags.HasFlag(PathObjectFlags.EndWord))
 				{
 					tooltipPrefix = $"한방 {mission}단어: ";
-					Color = isMissionWord ? "#FF20C0A8" : "#FFFF1100";
+					Color = (isMissionWord ? CurrentColorPreference.EndMissionWordColor : CurrentColorPreference.EndWordColor).ToString();
 					PrimaryImage = @"images\skull.png";
 				}
 				else if (_flags.HasFlag(PathObjectFlags.AttackWord))
 				{
 					tooltipPrefix = $"공격 {mission}단어: ";
-					Color = isMissionWord ? "#FFFFFF40" : "#FFFF8000";
+					Color = (isMissionWord ? CurrentColorPreference.AttackMissionWordColor : CurrentColorPreference.AttackWordColor).ToString();
 					PrimaryImage = @"images\attack.png";
 				}
 				else
 				{
-					Color = isMissionWord ? "#FF40FF40" : "#FFFFFFFF";
+					Color = isMissionWord ? CurrentColorPreference.MissionWordColor.ToString() : "#FFFFFFFF";
 					tooltipPrefix = isMissionWord ? "미션 단어: " : "";
 				}
 				SecondaryImage = isMissionWord ? @"images\mission.png" : "";
 
 				ToolTip = tooltipPrefix + _content;
+			}
+
+			private string GetEndWordListTableName(GameMode mode)
+			{
+				switch (mode)
+				{
+					case GameMode.First_and_Last:
+						return DatabaseConstants.ReverseEndWordListTableName;
+					case GameMode.Kkutu:
+						return DatabaseConstants.KkutuEndWordListTableName;
+				}
+
+				return DatabaseConstants.EndWordListTableName;
+			}
+
+			private string GetAttackWordListTableName(GameMode mode)
+			{
+				switch (mode)
+				{
+					case GameMode.First_and_Last:
+						return DatabaseConstants.ReverseAttackWordListTableName;
+					case GameMode.Kkutu:
+						return DatabaseConstants.KkutuAttackWordListTableName;
+				}
+
+				return DatabaseConstants.AttackWordListTableName;
+			}
+
+			private string ToNode(GameMode mode)
+			{
+				switch (mode)
+				{
+					case GameMode.First_and_Last:
+						return Utils.GetFaLTailNode(Content);
+					case GameMode.Middle_and_First:
+						if (Content.Length % 2 == 1)
+							return Utils.GetMaFNode(Content);
+						break;
+					case GameMode.Kkutu:
+						if (Content.Length > 2)
+							return Utils.GetKkutuTailNode(Content);
+						break;
+				}
+
+				return Utils.GetLaFTailNode(Content);
+			}
+
+			public void MakeEnd(GameMode mode, CommonDatabase database)
+			{
+				string node = ToNode(mode);
+				database.DeleteNode(node, GetAttackWordListTableName(mode));
+				if (database.AddNode(node, GetEndWordListTableName(mode)))
+					Logger.InfoFormat("Successfully marked node '{0}' as EndWord.", node);
+				else
+					Logger.WarnFormat("Node '{0}' is already marked as EndWord.", node);
+			}
+
+			public void MakeAttack(GameMode mode, CommonDatabase database)
+			{
+				string node = ToNode(mode);
+				database.DeleteNode(node, GetEndWordListTableName(mode));
+				if (database.AddNode(node, GetAttackWordListTableName(mode)))
+					Logger.InfoFormat("Successfully marked node '{0}' as AttackWord.", node);
+				else
+					Logger.WarnFormat("Node '{0}' is already marked as AttackWord.", node);
+			}
+
+			public void MakeNormal(GameMode mode, CommonDatabase database)
+			{
+				string node = ToNode(mode);
+				var a = database.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
+				var b = database.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
+				if (a || b)
+					Logger.InfoFormat("Successfully marked node '{0}' as NormalWord.", node);
+				else
+					Logger.WarnFormat("Node '{0}' is already marked as NormalWord.", node);
 			}
 		}
 	}

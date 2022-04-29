@@ -14,7 +14,7 @@ namespace AutoKkutu.Databases
 
 		private string ConnectionString;
 
-		private string DatabaseName = "autokkutu";
+		private string DatabaseName = "";
 
 		public MySQLDatabase(string connectionString) : base()
 		{
@@ -63,7 +63,7 @@ END;
 
 		protected override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
 
-		public override string GetDBInfo() => "MySQL";
+		public override string GetDBType() => "MySQL";
 
 		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{

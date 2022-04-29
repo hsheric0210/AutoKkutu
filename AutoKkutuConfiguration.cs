@@ -29,6 +29,8 @@ namespace AutoKkutu
 		public AutoKkutuConfiguration()
 		{
 		}
+
+		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnter, AutoDBUpdate, AutoDBUpdateMode, WordPreference, UseEndWord, ReturnMode, AutoFix, MissionDetection), HashCode.Combine(Mode, Delay, DelayPerWord, nDelay, DelayStartAfterWordEnter, GameModeAutoDetect, MaxWords));
 	}
 
 	public static class ConfigEnums
@@ -49,6 +51,7 @@ namespace AutoKkutu
 					return null;
 			}
 		}
+
 		public static string GetWordPreferenceName(WordPreference key)
 		{
 			switch (key)
@@ -61,6 +64,7 @@ namespace AutoKkutu
 					return null;
 			}
 		}
+
 		public static string GetGameModeName(GameMode key)
 		{
 			switch (key)

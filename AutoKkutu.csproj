@@ -14,10 +14,14 @@
     <None Remove="Images\attack.png" />
     <None Remove="Images\cleaning.png" />
     <None Remove="Images\error.png" />
+    <None Remove="Images\MariaDB.png" />
     <None Remove="Images\mission.png" />
+    <None Remove="Images\MySQL.png" />
     <None Remove="Images\ok.png" />
+    <None Remove="Images\PostgreSQL.png" />
     <None Remove="Images\searching.png" />
     <None Remove="Images\skull.png" />
+    <None Remove="Images\SQLite.png" />
     <None Remove="Images\waiting.png" />
     <None Remove="Images\warning.png" />
     <None Remove="Properties\Logger.config" />
@@ -44,17 +48,29 @@
     <Resource Include="Images\error.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\MariaDB.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\mission.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\MySQL.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\ok.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\PostgreSQL.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\searching.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\skull.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SQLite.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\waiting.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -71,11 +87,25 @@
     <PackageReference Include="CefSharp.Wpf" Version="100.0.230" />
     <PackageReference Include="chromiumembeddedframework.runtime" Version="100.0.23" />
     <PackageReference Include="chromiumembeddedframework.runtime.win-x64" Version="100.0.23" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0" />
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.4" />
     <PackageReference Include="MySqlConnector" Version="2.1.8" />
     <PackageReference Include="Npgsql" Version="6.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ColorManagement.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="ColorManagement.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

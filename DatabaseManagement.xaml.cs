@@ -31,7 +31,7 @@ namespace AutoKkutu
 		{
 			Database = database;
 			InitializeComponent();
-			Title = $"Data-base Management : {database.GetDBInfo()}";
+			Title = $"Data-base Management";
 		}
 
 		private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -45,7 +45,7 @@ namespace AutoKkutu
 		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈으로 구분)";
 		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄은 줄바꿈으로 구분)";
 
-		private static readonly ILog Logger = LogManager.GetLogger("DatabaseManagement");
+		private static readonly ILog Logger = LogManager.GetLogger(nameof(DatabaseManagement));
 
 		public static EventHandler AddWordStart;
 		public static EventHandler AddWordDone;

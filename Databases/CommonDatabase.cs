@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,10 +30,13 @@ namespace AutoKkutu
 			switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToLowerInvariant())
 			{
 				case "mysql":
-				case "mariadb":
 					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
 					Logger.InfoFormat("MySQL selected: {0}", mysqlConnectionString);
 					return new MySQLDatabase(mysqlConnectionString);
+				case "mariadb":
+					string mariadbConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
+					Logger.InfoFormat("MariaDB selected: {0}", mariadbConnectionString);
+					return new MariaDBDatabase(mariadbConnectionString);
 				case "postgresql":
 				case "pgsql":
 					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
@@ -161,19 +165,31 @@ namespace AutoKkutu
 					Logger.Info("Opening auxiliary SQLite connection...");
 					using (var auxiliaryConnection = OpenSecondaryConnection())
 					{
+						var watch = new Stopwatch();
+						Logger.Info("Deduplicating entries...");
 						try
 						{
+							watch.Start();
 							DeduplicatedCount = DeduplicateDatabase(auxiliaryConnection);
-							Logger.InfoFormat("Removed {0} duplicate entries.", DeduplicatedCount);
+							watch.Stop();
+							Logger.InfoFormat("Removed {0} duplicate entries. Took {1}ms.", DeduplicatedCount, watch.ElapsedMilliseconds);
 						}
 						catch (Exception ex)
 						{
 							Logger.Error("Deduplication failed", ex);
 						}
 
+						Logger.Info("Updating node lists...");
+						watch.Restart();
+						PathFinder.UpdateNodeLists();
+						watch.Stop();
+						Logger.InfoFormat("Done updating node lists. Took {0}ms.", watch.ElapsedMilliseconds);
+
 						// Check for errors
 						using (CommonDatabaseReader reader = ExecuteReader($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC", auxiliaryConnection))
 						{
+							Logger.Info("Searching problems...");
+							watch.Restart();
 							while (reader.Read())
 							{
 								elementCount++;
@@ -196,7 +212,7 @@ namespace AutoKkutu
 								}
 
 								// Check WordIndex tag
-								string correctWordIndex = content.First().ToString();
+								string correctWordIndex = Utils.GetLaFHeadNode(content);
 								string currentWordIndex = reader.GetString(DatabaseConstants.WordIndexColumnName);
 								if (correctWordIndex != currentWordIndex)
 								{
@@ -205,7 +221,7 @@ namespace AutoKkutu
 								}
 
 								// Check ReverseWordIndex tag
-								string correctReverseWordIndex = content.Last().ToString();
+								string correctReverseWordIndex = Utils.GetFaLHeadNode(content);
 								string currentReverseWordIndex = reader.GetString(DatabaseConstants.ReverseWordIndexColumnName);
 								if (correctReverseWordIndex != currentReverseWordIndex)
 								{
@@ -214,7 +230,7 @@ namespace AutoKkutu
 								}
 
 								// Check KkutuIndex tag
-								string correctKkutuIndex = content.Length > 2 ? content.Substring(0, 2) : content.First().ToString();
+								string correctKkutuIndex = Utils.GetKkutuHeadNode(content);
 								string currentKkutuIndex = reader.GetString(DatabaseConstants.KkutuWordIndexColumnName);
 								if (correctKkutuIndex != currentKkutuIndex)
 								{
@@ -231,7 +247,11 @@ namespace AutoKkutu
 									FlagCorrection.Add(content, (currentFlags, correctFlagsI));
 								}
 							}
+							watch.Stop();
+							Logger.InfoFormat("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
 						}
+
+						watch.Restart();
 
 						// Start fixing
 						foreach (string content in DeletionList)
@@ -250,7 +270,7 @@ namespace AutoKkutu
 
 						foreach (var pair in WordIndexCorrection)
 						{
-							string correctWordIndex = pair.Key.First().ToString();
+							string correctWordIndex = Utils.GetLaFHeadNode(pair.Key);
 							Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", DatabaseConstants.WordIndexColumnName, pair.Key, pair.Value, correctWordIndex);
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.WordIndexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
 							FixedCount++;
@@ -258,7 +278,7 @@ namespace AutoKkutu
 
 						foreach (var pair in ReverseWordIndexCorrection)
 						{
-							string correctReverseWordIndex = pair.Value.Last().ToString();
+							string correctReverseWordIndex = Utils.GetFaLHeadNode(pair.Value);
 							Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", DatabaseConstants.ReverseWordIndexColumnName, pair.Key, pair.Value, correctReverseWordIndex);
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.ReverseWordIndexColumnName} = '{correctReverseWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
 							FixedCount++;
@@ -267,7 +287,7 @@ namespace AutoKkutu
 						foreach (var pair in KkutuIndexCorrection)
 						{
 							string content = pair.Key;
-							string correctKkutuIndex = content.Length > 2 ? content.Substring(0, 2) : content.First().ToString();
+							string correctKkutuIndex = Utils.GetKkutuHeadNode(content);
 							Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", DatabaseConstants.KkutuWordIndexColumnName, content, pair.Value, correctKkutuIndex);
 							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET kkutu_index = '{correctKkutuIndex}' WHERE {DatabaseConstants.WordColumnName} = '{content}';");
 							FixedCount++;
@@ -280,8 +300,14 @@ namespace AutoKkutu
 							FixedCount++;
 						}
 
+						watch.Stop();
+						Logger.InfoFormat("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
+
 						Logger.Info("Executing vacuum...");
+						watch.Restart();
 						PerformVacuum();
+						watch.Stop();
+						Logger.InfoFormat("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 					}
 
 					Logger.InfoFormat("Total {0} / Removed {1} / Fixed {2}.", dbTotalCount, RemovedCount, FixedCount);
@@ -414,7 +440,7 @@ namespace AutoKkutu
 			if (Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '{word}';")) > 0)
 				return false;
 
-			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES('{word.First()}', '{word.Last()}', '{(word.Length >= 2 ? word.Substring(0, 2) : word.First().ToString())}', '{word}', {((int)flags)})");
+			ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES('{Utils.GetLaFHeadNode(word)}', '{Utils.GetFaLHeadNode(word)}', '{Utils.GetKkutuHeadNode(word)}', '{word}', {((int)flags)})");
 			return true;
 		}
 
@@ -593,8 +619,7 @@ namespace AutoKkutu
 			return null;
 		}
 
-
-		public abstract string GetDBInfo();
+		public abstract string GetDBType();
 
 		protected abstract int ExecuteNonQuery(string query, IDisposable connection = null);
 

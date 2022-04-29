@@ -35,18 +35,18 @@ namespace AutoKkutu
 		public static WordFlags GetFlags(string word)
 		{
 			WordFlags flags = WordFlags.None;
-			PathFinder.CheckNodePresence(null, word.Last().ToString(), PathFinder.EndWordList, WordFlags.EndWord, ref flags);
-			PathFinder.CheckNodePresence(null, word.Last().ToString(), PathFinder.AttackWordList, WordFlags.AttackWord, ref flags);
-			PathFinder.CheckNodePresence(null, word.First().ToString(), PathFinder.ReverseEndWordList, WordFlags.ReverseEndWord, ref flags);
-			PathFinder.CheckNodePresence(null, word.First().ToString(), PathFinder.ReverseAttackWordList, WordFlags.ReverseAttackWord, ref flags);
+			PathFinder.CheckNodePresence(null, GetLaFTailNode(word), PathFinder.EndWordList, WordFlags.EndWord, ref flags);
+			PathFinder.CheckNodePresence(null, GetLaFTailNode(word), PathFinder.AttackWordList, WordFlags.AttackWord, ref flags);
+			PathFinder.CheckNodePresence(null, GetFaLTailNode(word), PathFinder.ReverseEndWordList, WordFlags.ReverseEndWord, ref flags);
+			PathFinder.CheckNodePresence(null, GetFaLTailNode(word), PathFinder.ReverseAttackWordList, WordFlags.ReverseAttackWord, ref flags);
 			if (word.Length > 2)
 			{
-				PathFinder.CheckNodePresence(null, word.Substring(word.Length - 3, 2), PathFinder.KkutuEndWordList, WordFlags.KkutuEndWord, ref flags);
-				PathFinder.CheckNodePresence(null, word.Substring(word.Length - 3, 2), PathFinder.KkutuAttackWordList, WordFlags.KkutuAttackWord, ref flags);
+				PathFinder.CheckNodePresence(null, GetKkutuTailNode(word), PathFinder.KkutuEndWordList, WordFlags.KkutuEndWord, ref flags);
+				PathFinder.CheckNodePresence(null, GetKkutuTailNode(word), PathFinder.KkutuAttackWordList, WordFlags.KkutuAttackWord, ref flags);
 				if (word.Length % 2 == 1)
 				{
-					PathFinder.CheckNodePresence(null, word[(word.Length - 1) / 2].ToString(), PathFinder.EndWordList, WordFlags.MiddleEndWord, ref flags);
-					PathFinder.CheckNodePresence(null, word[(word.Length - 1) / 2].ToString(), PathFinder.AttackWordList, WordFlags.MiddleAttackWord, ref flags);
+					PathFinder.CheckNodePresence(null, GetMaFNode(word), PathFinder.EndWordList, WordFlags.MiddleEndWord, ref flags);
+					PathFinder.CheckNodePresence(null, GetMaFNode(word), PathFinder.AttackWordList, WordFlags.MiddleAttackWord, ref flags);
 				}
 			}
 			return flags;
@@ -54,28 +54,37 @@ namespace AutoKkutu
 
 		public static void CorrectFlags(string word, ref WordFlags flags, ref int NewEndNode, ref int NewAttackNode)
 		{
-			if (PathFinder.CheckNodePresence("end", word.Last().ToString(), PathFinder.EndWordList, WordFlags.EndWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("end", GetLaFTailNode(word), PathFinder.EndWordList, WordFlags.EndWord, ref flags, true))
 				NewEndNode++;
-			if (PathFinder.CheckNodePresence("attack", word.Last().ToString(), PathFinder.AttackWordList, WordFlags.AttackWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("attack", GetLaFTailNode(word), PathFinder.AttackWordList, WordFlags.AttackWord, ref flags, true))
 				NewAttackNode++;
-			if (PathFinder.CheckNodePresence("reverse end", word.First().ToString(), PathFinder.ReverseEndWordList, WordFlags.ReverseEndWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("reverse end", GetFaLTailNode(word), PathFinder.ReverseEndWordList, WordFlags.ReverseEndWord, ref flags, true))
 				NewEndNode++;
-			if (PathFinder.CheckNodePresence("reverse attack", word.First().ToString(), PathFinder.ReverseAttackWordList, WordFlags.ReverseAttackWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("reverse attack", GetFaLTailNode(word), PathFinder.ReverseAttackWordList, WordFlags.ReverseAttackWord, ref flags, true))
 				NewAttackNode++;
 			if (word.Length > 2)
 			{
-				if (PathFinder.CheckNodePresence("kkutu end", word.Substring(word.Length - 3, 2), PathFinder.KkutuEndWordList, WordFlags.KkutuEndWord, ref flags, true))
+				if (PathFinder.CheckNodePresence("kkutu end", GetKkutuTailNode(word), PathFinder.KkutuEndWordList, WordFlags.KkutuEndWord, ref flags, true))
 					NewEndNode++;
-				if (PathFinder.CheckNodePresence("kkutu attack", word.Substring(word.Length - 3, 2), PathFinder.KkutuAttackWordList, WordFlags.KkutuAttackWord, ref flags, true))
+				if (PathFinder.CheckNodePresence("kkutu attack", GetKkutuTailNode(word), PathFinder.KkutuAttackWordList, WordFlags.KkutuAttackWord, ref flags, true))
 					NewAttackNode++;
 				if (word.Length % 2 == 1)
 				{
-					if (PathFinder.CheckNodePresence("middle end", word[(word.Length - 1) / 2].ToString(), PathFinder.EndWordList, WordFlags.MiddleEndWord, ref flags, true))
+					if (PathFinder.CheckNodePresence("middle end", GetMaFNode(word), PathFinder.EndWordList, WordFlags.MiddleEndWord, ref flags, true))
 						NewEndNode++;
-					if (PathFinder.CheckNodePresence("middle attack", word[(word.Length - 1) / 2].ToString(), PathFinder.AttackWordList, WordFlags.MiddleAttackWord, ref flags, true))
+					if (PathFinder.CheckNodePresence("middle attack", GetMaFNode(word), PathFinder.AttackWordList, WordFlags.MiddleAttackWord, ref flags, true))
 						NewAttackNode++;
 				}
 			}
 		}
+
+		public static string GetLaFHeadNode(string word) => word.First().ToString();
+		public static string GetFaLHeadNode(string word) => word.Last().ToString();
+		public static string GetKkutuHeadNode(string word) => word.Length >= 4 ? word.Substring(0, 2) : word.First().ToString();
+
+		public static string GetLaFTailNode(string word) => word.Last().ToString();
+		public static string GetFaLTailNode(string word) => word.First().ToString();
+		public static string GetKkutuTailNode(string word) => word.Substring(word.Length - 3, 2);
+		public static string GetMaFNode(string word) => word[(word.Length - 1) / 2].ToString();
 	}
 }

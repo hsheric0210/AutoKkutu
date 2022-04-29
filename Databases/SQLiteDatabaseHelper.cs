@@ -58,7 +58,7 @@ namespace AutoKkutu.Databases
 			{
 				try
 				{
-					CommonDatabase.Logger.InfoFormat("Loading external SQLite database: {0}", externalSQLiteFilePath);
+					Logger.InfoFormat("Loading external SQLite database: {0}", externalSQLiteFilePath);
 					var externalDBConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
 					externalDBConnection.Open();
 

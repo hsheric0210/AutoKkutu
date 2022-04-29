@@ -13,11 +13,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static AutoKkutu.CommonHandler;
 using static AutoKkutu.Constants;
+using static AutoKkutu.PathFinder;
 
 namespace AutoKkutu
 {
@@ -47,6 +49,7 @@ namespace AutoKkutu
 		public CommonHandler Handler;
 
 		public static AutoKkutuConfiguration CurrentConfig;
+		public static AutoKkutuColorPreference CurrentColorPreference;
 		public static CommonDatabase Database;
 
 		private Stopwatch inputStopwatch = new Stopwatch();
@@ -88,6 +91,10 @@ namespace AutoKkutu
 			// Load default config
 			PathFinder.UpdateConfig(CurrentConfig = new AutoKkutuConfiguration());
 			CommonHandler.UpdateConfig(CurrentConfig);
+			CurrentColorPreference = new AutoKkutuColorPreference();
+			CurrentColorPreference.LoadFromConfig();
+			PathFinder.UpdateColorPreference(CurrentColorPreference);
+
 			var databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
 
 			// Initialize Browser
@@ -123,6 +130,13 @@ namespace AutoKkutu
 			CurrentConfig = newConfig;
 			PathFinder.UpdateConfig(newConfig);
 			CommonHandler.UpdateConfig(newConfig);
+		}
+
+		public static void UpdateColorPreference(AutoKkutuColorPreference newColorPref)
+		{
+			Logger.Info("Updated color preference.");
+			CurrentColorPreference = newColorPref;
+			PathFinder.UpdateColorPreference(newColorPref);
 		}
 
 		private void DatabaseManager_DBError(object sender, EventArgs e) => ChangeStatusBar(CurrentStatus.Error);
@@ -182,7 +196,13 @@ namespace AutoKkutu
 				Dispatcher.Invoke(() =>
 				{
 					Logger.Info("Hide LoadOverlay.");
-					DBMode.Content = Database.GetDBInfo();
+
+					var img = new BitmapImage();
+					img.BeginInit();
+					img.UriSource = new Uri($@"Images\{Database.GetDBType()}.png", UriKind.Relative);
+					img.EndInit();
+					DBLogo.Source = img;
+
 					LoadOverlay.Visibility = Visibility.Hidden;
 				});
 			}
@@ -736,5 +756,61 @@ namespace AutoKkutu
 			Logger.Info("Closing database connection...");
 			Database.Dispose();
 		}
+
+		private void PathList_Click_MakeEnd(object sender, RoutedEventArgs e)
+		{
+			Logger.Info(nameof(PathList_Click_MakeEnd));
+			var currentSelected = PathList.SelectedItem;
+			if (currentSelected == null || !(currentSelected is PathObject))
+				return;
+			((PathObject)currentSelected).MakeEnd(CurrentConfig.Mode, Database);
+		}
+
+		private void PathList_Click_MakeAttack(object sender, RoutedEventArgs e)
+		{
+			Logger.Info(nameof(PathList_Click_MakeAttack));
+			var currentSelected = PathList.SelectedItem;
+			if (currentSelected == null || !(currentSelected is PathObject))
+				return;
+			((PathObject)currentSelected).MakeAttack(CurrentConfig.Mode, Database);
+		}
+
+		private void PathList_Click_MakeNormal(object sender, RoutedEventArgs e)
+		{
+
+			Logger.Info(nameof(PathList_Click_MakeNormal));
+			var currentSelected = PathList.SelectedItem;
+			if (currentSelected == null || !(currentSelected is PathObject))
+				return;
+			((PathObject)currentSelected).MakeNormal(CurrentConfig.Mode, Database);
+		}
+
+		private void PathList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		{
+			var source = (FrameworkElement)e.Source;
+			var contextMenu = source.ContextMenu;
+			var currentSelected = PathList.SelectedItem;
+			if (currentSelected == null || !(currentSelected is PathObject))
+				return;
+			var current = ((PathObject)currentSelected);
+			foreach (MenuItem item in contextMenu.Items)
+			{
+				bool available = false;
+				switch (item.Name.ToLower())
+				{
+					case "makeend":
+						available = current.MakeEndAvailable;
+						break;
+					case "makeattack":
+						available = current.MakeAttackAvailable;
+						break;
+					case "makenormal":
+						available = current.MakeNormalAvailable;
+						break;
+				}
+				item.IsEnabled = available;
+			}
+		}
+		private void ColorManager_Click(object sender, RoutedEventArgs e) => new ColorManagement(CurrentColorPreference).Show();
 	}
 }

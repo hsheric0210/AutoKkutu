@@ -20,6 +20,8 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ConfigWindow : Window
 	{
+		private static readonly ILog Logger = LogManager.GetLogger(nameof(ConfigWindow));
+
 		public ConfigWindow(AutoKkutuConfiguration config)
 		{
 			InitializeComponent();
@@ -46,10 +48,20 @@ namespace AutoKkutu
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
 		{
-			if (!int.TryParse(DelayNumber.Text, out int nDelay))
+			string delayNumber = DelayNumber.Text;
+			if (!int.TryParse(delayNumber, out int nDelay))
+			{
 				nDelay = 10;
-			if (!int.TryParse(MaxWordCount.Text, out int MaxWords))
+				Logger.WarnFormat("Can't parse delay number '{0}'; reset to {1}", delayNumber, nDelay);
+			}
+
+			string maxWordNumber = MaxWordCount.Text;
+			if (!int.TryParse(maxWordNumber, out int MaxWords))
+			{
 				MaxWords = 20;
+				Logger.WarnFormat("Can't parse maxWordCount number '{0}'; reset to {1}", maxWordNumber, MaxWords);
+			}
+
 			Dispatcher.Invoke(() =>
 			{
 				try
@@ -75,7 +87,7 @@ namespace AutoKkutu
 				}
 				catch (Exception ex)
 				{
-					LogManager.GetLogger("Config").Error("Failed to apply configuration", ex);
+					Logger.Error("Failed to apply configuration", ex);
 				}
 			});
 			Close();

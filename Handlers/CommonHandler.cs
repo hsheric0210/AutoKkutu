@@ -318,17 +318,10 @@ namespace AutoKkutu
 					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(64, true, new Random())}()";
 					Task.Run(() =>
 					{
+						// https://hjcode.tistory.com/94
 						var result = Browser.EvaluateScriptAsync($@"
 function {_currentRoundIndexFuncName} {{
-	var maxIndex = document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds > label').length,
-        index = 1;
-    while (index < maxIndex) {{
-        if (document.querySelector('#Middle > div.GameBox.Product > div > div.game-head > div.rounds :nth-child(' + index.toString() + ')').className == 'rounds-current') {{
-            return index;
-        }}
-        index++;
-    }}
-    return -1;
+    return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));
 }}").Result;
 						if (!string.IsNullOrWhiteSpace(result?.Message ?? ""))
 							GetLogger(watchdogID).Error("Failed to register currentRoundIndexFunc: " + result.Message);
@@ -491,7 +484,7 @@ function {_currentRoundIndexFuncName} {{
 			else if (content.Length <= 1)
 				primary = content;
 			else  // 가끔가다가 서버 랙때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 넘어오는 경우가 있음
-				primary = PathFinder.ConvertToWord(content);
+				primary = PathFinder.ConvertToPresentedWord(content);
 
 			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}

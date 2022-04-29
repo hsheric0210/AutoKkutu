@@ -56,7 +56,7 @@ namespace AutoKkutu.Databases
 
 		protected override string GetCheckMissionCharFuncName() => "CheckMissionChar";
 
-		public override string GetDBInfo() => "SQLite";
+		public override string GetDBType() => "SQLite";
 
 		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{
