@@ -387,7 +387,7 @@ namespace AutoKkutu
 				{
 					var wordPreference = CurrentConfig.WordPreference;
 					ChangeStatusBar(CurrentStatus.Searching);
-					if (CurrentConfig.UseEndWord && PathFinder.PreviousPath.Count > 0)  // 첫 턴 한방 방지
+					if (CurrentConfig.UseEndWord && (flags.HasFlag(PathFinderFlags.MANUAL_SEARCH) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
 						flags |= PathFinderFlags.USING_END_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_END_WORD;
