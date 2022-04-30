@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Databases;
+using AutoKkutu.Utils;
 using CefSharp;
 using CefSharp.Wpf;
 using log4net;
@@ -28,15 +29,13 @@ namespace AutoKkutu
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
 		public const string VERSION = "1.0.0000";
 		private const string MAINTHREAD_NAME = "MainThread";
-		private const string INPUT_TEXT_PLACEHOLDER = "여기에 텍스트를 입력해주세요";
-		private const string SEARCH_TEXT_PLACEHOLDER = "검색할 키워드를 입력해주세요";
 		private const string PATHFINDER_WAITING = "단어 검색 대기중.";
 		private const string PATHFINDER_ERROR = "오류가 발생하여 단어 검색 실패.";
 		private const string PATHFINDER_UNAVAILABLE = "이 턴에 사용 가능한 단어 없음.";
 
 		private static ILog Logger = LogManager.GetLogger("MainThread");
 
-		public static ChromiumWebBrowser browser;
+		public static ChromiumWebBrowser Browser;
 
 		public static string LastUsedPath = "";
 
@@ -96,12 +95,12 @@ namespace AutoKkutu
 			var databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
 
 			// Initialize Browser
-			browser = new ChromiumWebBrowser
+			Browser = new ChromiumWebBrowser
 			{
 				Address = "https://kkutu.pink",
 				UseLayoutRounding = true
 			};
-			JSEvaluator.RegisterBrowser(browser);
+			JSEvaluator.RegisterBrowser(Browser);
 
 			// Visual components setup
 			InitializeComponent();
@@ -112,13 +111,14 @@ namespace AutoKkutu
 			CommonHandler.InitializeHandlers();
 			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
-			ChatField.Text = INPUT_TEXT_PLACEHOLDER;
-			ChatField.FontStyle = FontStyles.Italic;
+			
 			ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
-			browser.FrameLoadEnd += Browser_FrameLoadEnd;
-			browser.FrameLoadEnd += Browser_FrameLoadEnd_RunOnce;
-			browserContainer.Content = browser;
+
+			Browser.FrameLoadEnd += Browser_FrameLoadEnd;
+			Browser.FrameLoadEnd += Browser_FrameLoadEnd_RunOnce;
+			browserContainer.Content = Browser;
+
 			MySQLDatabase.DBError += DatabaseManager_DBError;
 			PathFinder.Init(Database = CommonDatabase.GetInstance(databaseConfig));
 		}
@@ -142,13 +142,13 @@ namespace AutoKkutu
 
 		private void Browser_FrameLoadEnd_RunOnce(object sender, FrameLoadEndEventArgs e)
 		{
-			browser.FrameLoadEnd -= Browser_FrameLoadEnd_RunOnce;
+			Browser.FrameLoadEnd -= Browser_FrameLoadEnd_RunOnce;
 
 			PathFinder.onPathUpdated += PathFinder_UpdatedPath;
 			CommonDatabase.DBJobStart += DatabaseManager_DBJobStart;
 			CommonDatabase.DBJobDone += DatabaseManager_DBJobDone;
-			DatabaseManagement.AddWordStart += DatabaseManagement_AddWordStart;
-			DatabaseManagement.AddWordDone += DatabaseManagement_AddWordDone;
+			BatchJobUtils.BatchJobStart += DatabaseManagement_AddWordStart;
+			BatchJobUtils.BatchJobDone += DatabaseManagement_AddWordDone;
 		}
 
 		private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
@@ -176,7 +176,7 @@ namespace AutoKkutu
 			Handler = CommonHandler.getHandler(url);
 			if (Handler != null)
 			{
-				browser.FrameLoadEnd -= Browser_FrameLoadEnd;
+				Browser.FrameLoadEnd -= Browser_FrameLoadEnd;
 				Logger.Info("Browser frame-load end.");
 
 				Handler.onGameStarted += CommonHandler_GameStart;
@@ -230,7 +230,7 @@ namespace AutoKkutu
 			ChangeStatusBar(CurrentStatus.Adding_Words_Done);
 		}
 
-		private void SetSearchState(PathFinder.UpdatedPathEventArgs arg, bool IsEnd = false)
+		private void SetSearchState(UpdatedPathEventArgs arg, bool IsEnd = false)
 		{
 			string Result;
 			if (arg == null)
@@ -242,7 +242,7 @@ namespace AutoKkutu
 			}
 			else
 			{
-				if (arg.Result == PathFinder.FindResult.Normal)
+				if (arg.Result == PathFinderResult.Normal)
 				{
 					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.{Environment.NewLine}{arg.Time}ms 소요.";
 					if (arg.Flags.HasFlag(PathFinderFlags.USING_END_WORD))
@@ -250,7 +250,7 @@ namespace AutoKkutu
 				}
 				else
 				{
-					if (arg.Result == PathFinder.FindResult.None)
+					if (arg.Result == PathFinderResult.None)
 					{
 						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.{Environment.NewLine}{arg.Time}ms 소요.";
 						if (arg.Flags.HasFlag(PathFinderFlags.USING_END_WORD))
@@ -263,7 +263,7 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
-		private void PathFinder_UpdatedPath(object sender, PathFinder.UpdatedPathEventArgs args)
+		private void PathFinder_UpdatedPath(object sender, UpdatedPathEventArgs args)
 		{
 			Logger.Info("Path update received.");
 
@@ -272,9 +272,9 @@ namespace AutoKkutu
 
 			bool autoEnter = CurrentConfig.AutoEnter && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH);
 
-			if (args.Result == PathFinder.FindResult.None && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
+			if (args.Result == PathFinderResult.None && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				ChangeStatusBar(CurrentStatus.NotFound);
-			else if (args.Result == PathFinder.FindResult.Error)
+			else if (args.Result == PathFinderResult.Error)
 				ChangeStatusBar(CurrentStatus.Error);
 			else if (!autoEnter)
 				ChangeStatusBar(CurrentStatus.Normal);
@@ -285,7 +285,7 @@ namespace AutoKkutu
 			
 			if (autoEnter)
 			{
-				if (args.Result == PathFinder.FindResult.None)
+				if (args.Result == PathFinderResult.None)
 				{
 					Logger.Warn("Auto mode enabled. but can't find any path.");
 					ChangeStatusBar(CurrentStatus.NotFound);
@@ -321,7 +321,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private bool CheckPathIsValid(PathFinder.UpdatedPathEventArgs args, PathFinderFlags flags)
+		private bool CheckPathIsValid(UpdatedPathEventArgs args, PathFinderFlags flags)
 		{
 			if (flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				return true;
@@ -337,7 +337,7 @@ namespace AutoKkutu
 			return true;
 		}
 
-		private void PerformAutoEnter(PathFinder.UpdatedPathEventArgs args, string content)
+		private void PerformAutoEnter(UpdatedPathEventArgs args, string content)
 		{
 			if (!Handler.IsGameStarted || !Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderFlags.RETRIAL))
 				return;
@@ -356,7 +356,7 @@ namespace AutoKkutu
 		private void ResetPathList()
 		{
 			Logger.Info("Reset Path list... ");
-			PathFinder.FinalList = new List<PathFinder.PathObject>();
+			PathFinder.FinalList = new List<PathObject>();
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 		}
 
@@ -366,7 +366,7 @@ namespace AutoKkutu
 			WordIndex = 0;
 		}
 
-		private void CommonHandler_MyTurnEvent(object sender, CommonHandler.WordPresentEventArgs args)
+		private void CommonHandler_MyTurnEvent(object sender, WordPresentEventArgs args)
 		{
 			StartPathFinding(args.Word, args.MissionChar, PathFinderFlags.NONE);
 		}
@@ -383,7 +383,7 @@ namespace AutoKkutu
 			return PathFinder.EndWordList;
 		}
 
-		private void StartPathFinding(CommonHandler.ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
+		private void StartPathFinding(ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
 		{
 			GameMode mode = CurrentConfig.Mode;
 			if (mode == GameMode.Typing_Battle && !flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
@@ -419,7 +419,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CommonHandler_onUnsupportedWordEntered(object sender, CommonHandler.UnsupportedWordEventArgs args)
+		private void CommonHandler_onUnsupportedWordEntered(object sender, UnsupportedWordEventArgs args)
 		{
 			bool isInexistent = !args.IsExistingWord;
 			string theWord = args.Word;
@@ -431,7 +431,7 @@ namespace AutoKkutu
 		}
 
 		// TODO: 오답 수정 딜레이
-		private void CommonHandler_MyPathIsUnsupported(object sender, CommonHandler.UnsupportedWordEventArgs args)
+		private void CommonHandler_MyPathIsUnsupported(object sender, UnsupportedWordEventArgs args)
 		{
 			var word = args.Word;
 			Logger.WarnFormat("My path '{0}' is wrong.", word);
@@ -439,7 +439,7 @@ namespace AutoKkutu
 			if (!CurrentConfig.AutoFix)
 				return;
 
-			List<PathFinder.PathObject> localFinalList = PathFinder.FinalList;
+			List<PathObject> localFinalList = PathFinder.FinalList;
 			if (localFinalList.Count - 1 <= WordIndex)
 			{
 				Logger.Warn("Can't Find any other path.");
@@ -564,17 +564,17 @@ namespace AutoKkutu
 		private void RemoveAd()
 		{
 			// Kkutu.co.kr
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.body.style.overflow ='hidden'", false);
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADBox').style = 'display:none'", false);
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADVERTISEMENT').style = 'display:none'", false);
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADVERTISEMENT_TITLE').style = 'display:none'", false);
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('kktukorea__1LZzX_0')[0].style = 'display:none'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.body.style.overflow ='hidden'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADBox').style = 'display:none'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADVERTISEMENT').style = 'display:none'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADVERTISEMENT_TITLE').style = 'display:none'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('kktukorea__1LZzX_0')[0].style = 'display:none'", false);
 
 			// Kkutu.pink
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('google-center-div')[0].style = 'display:none'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('google-center-div')[0].style = 'display:none'", false);
 
 			// Kkutu.org
-			browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('ADBox Product')[0].style = 'display:none'", false);
+			Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('ADBox Product')[0].style = 'display:none'", false);
 		}
 
 		private void ChangeStatusBar(CurrentStatus status, params object[] formatterArgs)
@@ -661,7 +661,7 @@ namespace AutoKkutu
 
 		private void SubmitChat_Click(object sender, RoutedEventArgs e)
 		{
-			if (!(string.IsNullOrWhiteSpace(ChatField.Text) || ChatField.Text == INPUT_TEXT_PLACEHOLDER))
+			if (!string.IsNullOrWhiteSpace(ChatField.Text))
 			{
 				SendMessage(ChatField.Text);
 				ChatField.Text = "";
@@ -687,53 +687,19 @@ namespace AutoKkutu
 			inputStopwatch.Restart();
 		}
 
-		private void ChatField_GotFocus(object sender, RoutedEventArgs e)
-		{
-			if (ChatField.Text == INPUT_TEXT_PLACEHOLDER)
-			{
-				ChatField.Text = "";
-				ChatField.FontStyle = FontStyles.Normal;
-			}
-		}
-
-		private void ChatField_LostFocus(object sender, RoutedEventArgs e)
-		{
-			if (string.IsNullOrWhiteSpace(ChatField.Text))
-			{
-				ChatField.Text = INPUT_TEXT_PLACEHOLDER;
-				ChatField.FontStyle = FontStyles.Italic;
-			}
-		}
-
 		private void ChatField_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.Key == Key.Enter || e.Key == Key.Return)
 				SubmitChat_Click(sender, e);
 		}
 
+		// TODO: 검색 결과 (추천 목록) 맨 윗쪽이나 아랫쪽(걸린 시간 표시되는 곳)에 '무엇에 대한 검색 결과인지'까지 나타내도록 개선
 		private void SubmitSearch_Click(object sender, RoutedEventArgs e)
 		{
-			if (!(string.IsNullOrWhiteSpace(SearchField.Text) || SearchField.Text == SEARCH_TEXT_PLACEHOLDER))
+			if (!string.IsNullOrWhiteSpace(SearchField.Text))
 			{
 				StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), Handler.CurrentMissionChar, PathFinderFlags.MANUAL_SEARCH);
-			}
-		}
-
-		private void SearchField_GotFocus(object sender, RoutedEventArgs e)
-		{
-			if (SearchField.Text == SEARCH_TEXT_PLACEHOLDER)
-			{
 				SearchField.Text = "";
-				SearchField.FontStyle = FontStyles.Normal;
-			}
-		}
-
-		private void SearchField_LostFocus(object sender, RoutedEventArgs e)
-		{
-			if (string.IsNullOrWhiteSpace(SearchField.Text))
-			{
-				SearchField.Text = SEARCH_TEXT_PLACEHOLDER;
-				SearchField.FontStyle = FontStyles.Italic;
 			}
 		}
 
@@ -745,7 +711,11 @@ namespace AutoKkutu
 
 		private void PathList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
 		{
-			var i = (PathFinder.PathObject)PathList.SelectedItem;
+			object selected = PathList.SelectedItem;
+			if (!(selected is PathObject))
+				return;
+
+			var i = (PathObject)selected;
 			if (i != null)
 			{
 				Logger.InfoFormat("Selected Path : '{0}'.", i.Content);
@@ -772,13 +742,13 @@ namespace AutoKkutu
 
 		private void Submit_URL(object sender, RoutedEventArgs e)
 		{
-			browser.Load(CurrentURL.Text);
-			browser.FrameLoadEnd += Browser_FrameLoadEnd;
+			Browser.Load(CurrentURL.Text);
+			Browser.FrameLoadEnd += Browser_FrameLoadEnd;
 		}
 
 		private void Open_DevConsole(object sender, RoutedEventArgs e)
 		{
-			browser.ShowDevTools();
+			Browser.ShowDevTools();
 		}
 
 		private void OnClose(object sender, CancelEventArgs e)

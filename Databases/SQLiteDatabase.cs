@@ -95,7 +95,7 @@ namespace AutoKkutu.Databases
 
 		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.IsColumnExists((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListTableName, columnName);
 
-		public override bool IsTableExists(string tablename, IDisposable connection = null) => SQLiteDatabaseHelper.IsTableExists((SqliteConnection)(connection ?? DatabaseConnection), tablename);
+		protected override bool IsTableExists(string tablename, IDisposable connection = null) => SQLiteDatabaseHelper.IsTableExists((SqliteConnection)(connection ?? DatabaseConnection), tablename);
 
 		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.GetColumnType((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListTableName, columnName);
 

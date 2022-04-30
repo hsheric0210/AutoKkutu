@@ -25,7 +25,20 @@
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
-				<TextBox Name="Node_Input" Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Margin="5,0,5,0" TextWrapping="NoWrap" Text="노드 입력 (여러 개는 줄바꿈으로 구분)" AcceptsReturn="True" GotFocus="Node_Input_GotFocus" LostFocus="Node_Input_LostFocus" MinHeight="50" MinWidth="250" FontStyle="Italic" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0"/>
+				<TextBox Name="Node_Input" Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Margin="5,0,5,0" TextWrapping="NoWrap" Text="" AcceptsReturn="True" MinHeight="50" MinWidth="250" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0"/>
+				<TextBlock Text="노드 입력 (여러 개는 줄바꿈으로 구분)" IsHitTestVisible="False" Margin="10,2,0,0" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0">
+					<TextBlock.Style>
+						<Style TargetType="TextBlock">
+							<Setter Property="Visibility" Value="Hidden"/>
+							<Setter Property="Foreground" Value="Gray"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Text, ElementName=Node_Input}" Value="">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+				</TextBlock>
 				<Button Name="Node_Submit" Grid.Row="1" Grid.Column="1" Content="추가" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Submit_Click" Margin="5,5,5,5" MinHeight="20" />
 				<Button x:Name="Node_Remove" Grid.Row="1" Grid.Column="2" Content="제거" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Remove_Click" Margin="5,5,5,5" MinHeight="20" />
 				<CheckBox x:Name="Node_AttackWord" Grid.Row="2" Grid.Column="1" Content="끝말잇기 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,10,0,0" />
@@ -55,7 +68,20 @@
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
-				<TextBox Name="Batch_Input" Grid.Row="0" Grid.RowSpan="7" Grid.Column="0" TextWrapping="NoWrap" Text="단어 입력 (여러 줄은 줄바꿈으로 구분)" AcceptsReturn="True" GotFocus="Batch_Input_GotFocus" LostFocus="Batch_Input_LostFocus" MinWidth="300" MinHeight="65" FontStyle="Italic" Margin="5,0,5,0" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0"/>
+				<TextBox Name="Batch_Input" Grid.Row="0" Grid.RowSpan="7" Grid.Column="0" TextWrapping="NoWrap" Text="" AcceptsReturn="True" MinWidth="300" MinHeight="65" Margin="5,0,5,0" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0"/>
+				<TextBlock Text="단어 입력 (여러 줄은 줄바꿈으로 구분)" IsHitTestVisible="False" Margin="10,2,0,0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0" Foreground="Gray">
+					<TextBlock.Style>
+						<Style TargetType="TextBlock">
+							<Setter Property="Visibility" Value="Hidden"/>
+							<Setter Property="Foreground" Value="Gray"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Text, ElementName=Batch_Input}" Value="">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+				</TextBlock>
 				<CheckBox x:Name="Batch_Remove" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="제거" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" VerticalAlignment="Stretch" HorizontalAlignment="Left" Margin="10,0,0,0" />
 				<Button Name="Batch_Submit" Grid.Row="2" Grid.Column="1" Content="추가 / 제거" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_Click" MinWidth="100" MinHeight="20" Margin="0,5,5,5" />
 				<Button x:Name="Batch_Submit_File" Grid.Row="2" Grid.Column="2" Content="파일에서 읽어들이기" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_File_Click" MinWidth="140" MinHeight="20" Margin="5,5,0,5" />

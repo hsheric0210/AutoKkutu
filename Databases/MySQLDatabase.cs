@@ -116,7 +116,7 @@ END;
 			}
 		}
 
-		public override bool IsTableExists(string tableName, IDisposable connection = null)
+		protected override bool IsTableExists(string tableName, IDisposable connection = null)
 		{
 			try
 			{

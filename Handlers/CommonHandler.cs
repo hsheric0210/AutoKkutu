@@ -1,11 +1,11 @@
 ﻿using AutoKkutu.Handlers;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading;
 using log4net;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
@@ -14,6 +14,12 @@ namespace AutoKkutu
 		// Frequently-used function names
 		protected const string WriteInputFunc = "WriteInputFunc";
 		protected const string ClickSubmitFunc = "ClickSubmitFunc";
+
+		protected enum CheckType
+		{
+			GameStarted,
+			MyTurn
+		}
 
 		protected ILog GetLogger(int? watchdogID = null, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
 
@@ -60,12 +66,6 @@ namespace AutoKkutu
 		private static AutoKkutuConfiguration CurrentConfig;
 
 		private string _currentRoundIndexFuncName;
-
-		public enum CheckType
-		{
-			GameStarted,
-			MyTurn
-		}
 
 		private static CommonHandler[] HANDLERS;
 
@@ -235,6 +235,11 @@ namespace AutoKkutu
 			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 		}
 
+		/// <summary>
+		/// 현재 게임의 진행 상태를 모니터링합니다.
+		/// </summary>
+		/// <param name="type">검사 타입</param>
+		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void CheckGameState(CheckType type, int watchdogID)
 		{
 			if (type == CheckType.GameStarted ? IsGameNotInProgress() : IsGameNotInMyTurn())
@@ -262,7 +267,7 @@ namespace AutoKkutu
 					return;
 				if (_currentRoundIndexFuncName == null || EvaluateJSBool($"typeof {_currentRoundIndexFuncName} != 'function'"))
 				{
-					_currentRoundIndexFuncName = $"__{Utils.GenerateRandomString(64, true, new Random())}()";
+					_currentRoundIndexFuncName = $"__{RandomUtils.GenerateRandomString(64, true, new Random())}()";
 					Task.Run(() =>
 					{
 						// https://hjcode.tistory.com/94
@@ -294,6 +299,10 @@ function {_currentRoundIndexFuncName} {{
 			}
 		}
 
+		/// <summary>
+		/// 이전에 제시된 단어들의 목록을 읽어들입니다.
+		/// </summary>
+		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void GetPreviousWord(int watchdogID)
 		{
 			if (ConfigEnums.IsFreeMode(CurrentConfig.Mode))
@@ -324,6 +333,10 @@ function {_currentRoundIndexFuncName} {{
 			Array.Copy(tmpWordCache, _wordCache, 6);
 		}
 
+		/// <summary>
+		/// 현재 미션 단어를 읽어들입니다.
+		/// </summary>
+		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void GetCurrentMissionWord(int watchdogID)
 		{
 			string missionWord = GetMissionWord();
@@ -333,6 +346,10 @@ function {_currentRoundIndexFuncName} {{
 			_current_mission_word = missionWord;
 		}
 
+		/// <summary>
+		/// 현재 게임의 라운드를 읽어들이고, 만약 바뀌었으면 이벤트를 호출합니다.
+		/// </summary>
+		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void GetCurrentRound(int watchdogID)
 		{
 			int roundIndex = GetGameRoundIndex();
@@ -353,6 +370,10 @@ function {_currentRoundIndexFuncName} {{
 			PathFinder.PreviousPath = new List<string>();
 		}
 
+		/// <summary>
+		/// 현재 입력된 단어가 틀렸는지 검사하고, 이벤트를 호출합니다.
+		/// </summary>
+		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void CheckUnsupportedWord(int watchdogID)
 		{
 			string unsupportedWord = GetUnsupportedWord();
@@ -368,6 +389,10 @@ function {_currentRoundIndexFuncName} {{
 				onMyPathIsUnsupported(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
 		}
 
+		/// <summary>
+		/// 라운드가 끝났을 때, 회색으로 옅게 제시되는 예시 단어를 읽어들입니다.
+		/// </summary>
+		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void CheckExample(int watchdogID)
 		{
 			string example = GetExampleWord();
@@ -380,7 +405,9 @@ function {_currentRoundIndexFuncName} {{
 			PathFinder.NewPathList.Add(example);
 		}
 
-		// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
+		/// <summary>
+		/// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
+		/// </summary>
 		private void GetCurrentPresentedWord(int watchdogID)
 		{
 			string word = GetGamePresentedWord();
@@ -406,7 +433,6 @@ function {_currentRoundIndexFuncName} {{
 			if (onGameModeChange != null)
 				onGameModeChange(this, new GameModeChangeEventArgs(gameMode));
 		}
-
 
 		protected int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
 
@@ -446,7 +472,7 @@ function {_currentRoundIndexFuncName} {{
 		protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
 		{
 			if (!RegisteredFunctionNames.ContainsKey(funcName))
-				RegisteredFunctionNames[funcName] = $"__{Utils.GenerateRandomString(64, true)}";
+				RegisteredFunctionNames[funcName] = $"__{RandomUtils.GenerateRandomString(64, true)}";
 
 			var realFuncName = RegisteredFunctionNames[funcName];
 			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
@@ -464,90 +490,10 @@ function {_currentRoundIndexFuncName} {{
 			return RegisteredFunctionNames[funcName];
 		}
 
-		public class ResponsePresentedWord
-		{
-			public string Content;
-			public bool CanSubstitution;
-			public string Substitution;
-
-			public ResponsePresentedWord(string content, bool canSubsitution, string substituation = "")
-			{
-				Content = content;
-				CanSubstitution = canSubsitution;
-				if (!CanSubstitution)
-					return;
-				Substitution = substituation;
-			}
-
-			public override bool Equals(object obj)
-			{
-				if (!(obj is ResponsePresentedWord))
-					return false;
-				ResponsePresentedWord other = (ResponsePresentedWord)obj;
-				return string.Equals(Content, other.Content, StringComparison.InvariantCultureIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || CanSubstitution && string.Equals(Substitution, other.Substitution, StringComparison.InvariantCultureIgnoreCase));
-			}
-
-			public override int GetHashCode()
-			{
-				unchecked
-				{
-					int hash = 3049;
-					hash = hash * 5039 + Content.GetHashCode();
-					hash = hash * 883 + CanSubstitution.GetHashCode();
-					if (CanSubstitution)
-						hash = hash * 9719 + Substitution.GetHashCode();
-					return hash;
-				}
-			}
-		}
-
-		public class WordPresentEventArgs : EventArgs
-		{
-			public ResponsePresentedWord Word;
-			public string MissionChar;
-
-			public WordPresentEventArgs(ResponsePresentedWord word, string missionChar)
-			{
-				Word = word;
-				MissionChar = missionChar;
-			}
-		}
-
-		public class UnsupportedWordEventArgs : EventArgs
-		{
-			public string Word;
-			public bool IsExistingWord;
-
-			public UnsupportedWordEventArgs(string word, bool isExistingWord)
-			{
-				Word = word;
-				IsExistingWord = isExistingWord;
-			}
-		}
-
-		public class RoundChangeEventArgs : EventArgs
-		{
-			public int RoundIndex;
-			public string RoundWord;
-
-			public RoundChangeEventArgs(int roundIndex, string roundWord)
-			{
-				RoundIndex = roundIndex;
-				RoundWord = roundWord;
-			}
-		}
-
-		public class GameModeChangeEventArgs : EventArgs
-		{
-			public GameMode GameMode;
-
-			public GameModeChangeEventArgs(GameMode gameMode) => GameMode = gameMode;
-		}
-
 		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString())}";
 
-		// These methods should be overridded
 		public abstract string GetSiteURLPattern();
+
 		public abstract string GetHandlerName();
 
 		public virtual bool IsGameNotInProgress()
@@ -611,7 +557,7 @@ function {_currentRoundIndexFuncName} {{
 			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
 		}
 
-		public GameMode GetCurrentGameMode()
+		public virtual GameMode GetCurrentGameMode()
 		{
 			string roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent");
 			if (!string.IsNullOrWhiteSpace(roomMode))
@@ -640,7 +586,7 @@ function {_currentRoundIndexFuncName} {{
 			return GameMode.Last_and_First;
 		}
 
-		public string GetRoomInfo()
+		public virtual string GetRoomInfo()
 		{
 			string roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent");
 			string roomLimit = EvaluateJS("document.getElementsByClassName('room-head-limit')[0].textContent");
@@ -648,5 +594,85 @@ function {_currentRoundIndexFuncName} {{
 			string roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent");
 			return $"{roomMode} | {roomLimit} | {roomRounds} | {roomTime}";
 		}
+	}
+
+	public class ResponsePresentedWord
+	{
+		public string Content;
+		public bool CanSubstitution;
+		public string Substitution;
+
+		public ResponsePresentedWord(string content, bool canSubsitution, string substituation = "")
+		{
+			Content = content;
+			CanSubstitution = canSubsitution;
+			if (!CanSubstitution)
+				return;
+			Substitution = substituation;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is ResponsePresentedWord))
+				return false;
+			ResponsePresentedWord other = (ResponsePresentedWord)obj;
+			return string.Equals(Content, other.Content, StringComparison.InvariantCultureIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || CanSubstitution && string.Equals(Substitution, other.Substitution, StringComparison.InvariantCultureIgnoreCase));
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hash = 3049;
+				hash = hash * 5039 + Content.GetHashCode();
+				hash = hash * 883 + CanSubstitution.GetHashCode();
+				if (CanSubstitution)
+					hash = hash * 9719 + Substitution.GetHashCode();
+				return hash;
+			}
+		}
+	}
+
+	public class WordPresentEventArgs : EventArgs
+	{
+		public ResponsePresentedWord Word;
+		public string MissionChar;
+
+		public WordPresentEventArgs(ResponsePresentedWord word, string missionChar)
+		{
+			Word = word;
+			MissionChar = missionChar;
+		}
+	}
+
+	public class UnsupportedWordEventArgs : EventArgs
+	{
+		public string Word;
+		public bool IsExistingWord;
+
+		public UnsupportedWordEventArgs(string word, bool isExistingWord)
+		{
+			Word = word;
+			IsExistingWord = isExistingWord;
+		}
+	}
+
+	public class RoundChangeEventArgs : EventArgs
+	{
+		public int RoundIndex;
+		public string RoundWord;
+
+		public RoundChangeEventArgs(int roundIndex, string roundWord)
+		{
+			RoundIndex = roundIndex;
+			RoundWord = roundWord;
+		}
+	}
+
+	public class GameModeChangeEventArgs : EventArgs
+	{
+		public GameMode GameMode;
+
+		public GameModeChangeEventArgs(GameMode gameMode) => GameMode = gameMode;
 	}
 }

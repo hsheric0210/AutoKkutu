@@ -85,7 +85,20 @@
 					</Grid>
 					<Label Grid.Row="1" Content="수동 검색" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,170" VerticalAlignment="Bottom" />
 					<Button Name="SubmitSearch" Content="검색" Margin="15,0,0,150" Grid.Row="1" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="SubmitSearch_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="40" />
-					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,150" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" GotFocus="SearchField_GotFocus" LostFocus="SearchField_LostFocus" />
+					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,150" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" />
+					<TextBlock Text="검색할 키워드를 입력해주세요" Grid.Row="1" IsHitTestVisible="False" Margin="65,0,15,150" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock">
+								<Setter Property="Visibility" Value="Hidden"/>
+								<Setter Property="Foreground" Value="Gray"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Text, ElementName=SearchField}" Value="">
+										<Setter Property="Visibility" Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 					<Label Grid.Row="1" Content="기타 메뉴" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,90" VerticalAlignment="Bottom" />
 					<Grid Margin="15,15,15,15" Grid.Row="1" Background="#FF333337" VerticalAlignment="Bottom">
 						<Button Name="DBManager" Content="데이터베이스 관리" Grid.Column="0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="DBManager_Click" MinWidth="200" MaxHeight="30" VerticalAlignment="Bottom" />
@@ -97,7 +110,20 @@
 					<Button x:Name="SubmitChat" Content="전송" Grid.Column="0" Margin="40,10,0,10" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="65" MinHeight="30" Click="SubmitChat_Click" VerticalAlignment="Center" HorizontalAlignment="Left" />
 					<Button x:Name="SubmitClipboard" Grid.Column="0" Margin="10,10,0,10" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="ClipboardSubmit_Click" MinWidth="30" MinHeight="30" HorizontalAlignment="Left" VerticalAlignment="Center">
 					</Button>
-					<TextBox x:Name="ChatField" Margin="110,10,230,10" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="ChatField_KeyDown" GotFocus="ChatField_GotFocus" LostFocus="ChatField_LostFocus" VerticalAlignment="Center" MinHeight="30" />
+					<TextBox x:Name="ChatField" Margin="110,10,230,10" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="16" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="ChatField_KeyDown" VerticalAlignment="Center" MinHeight="30" />
+					<TextBlock Text="여기에 채팅을 입력해주세요" IsHitTestVisible="False" Margin="115,10,230,10" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0" VerticalAlignment="Center">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock">
+								<Setter Property="Visibility" Value="Hidden"/>
+								<Setter Property="Foreground" Value="Gray"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Text, ElementName=ChatField}" Value="">
+										<Setter Property="Visibility" Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 					<Label x:Name="VersionLabel" Content="VersionInfomation" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Margin="0,0,5,0" RenderOptions.ClearTypeHint="Enabled" RenderOptions.EdgeMode="Aliased" Height="24" VerticalAlignment="Top" HorizontalAlignment="Right" Width="235" HorizontalContentAlignment="Right" />
 					<Image x:Name="DBLogo" Source="Images\mysql.png" Margin="0,25,10,0" VerticalAlignment="Center" HorizontalAlignment="Right" Stretch="Uniform" MaxWidth="140" MaxHeight="60"/>
 				</Grid>
