@@ -627,7 +627,7 @@ namespace AutoKkutu
 					break;
 				case CurrentStatus.DB_Check_Done:
 					StatusColor = ColorDefinitions.NormalColor;
-					StatusContent = "데이터베이스 검증 작업 완료: {1}";
+					StatusContent = "데이터베이스 검증 작업 완료: {0}";
 					ImageName = "ok";
 					break;
 				case CurrentStatus.Adding_Words:

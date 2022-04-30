@@ -14,6 +14,7 @@ namespace AutoKkutu
 		// Frequently-used function names
 		protected const string WriteInputFunc = "WriteInputFunc";
 		protected const string ClickSubmitFunc = "ClickSubmitFunc";
+		private const string CurrentRoundIndexFunc = "CurrentRoundIndexFunc";
 
 		protected enum CheckType
 		{
@@ -262,7 +263,7 @@ namespace AutoKkutu
 				if (_isGameStarted)
 					return;
 
-				RegisterJSFunction("currentRoundIndexFunc", "", "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));");
+				RegisterJSFunction(CurrentRoundIndexFunc, "", "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));");
 				GetLogger(watchdogID).Debug("New game started; Previous word list flushed.");
 				if (onGameStarted != null)
 					onGameStarted(this, EventArgs.Empty);
@@ -514,7 +515,7 @@ namespace AutoKkutu
 
 		public virtual int GetGameRoundIndex()
 		{
-			return EvaluateJSInt(RegisteredJSFunctionName("currentRoundIndexFunc"), "GetGameRoundIndex");
+			return EvaluateJSInt($"{RegisteredJSFunctionName(CurrentRoundIndexFunc)}()", "GetGameRoundIndex");
 		}
 
 		public virtual string GetUnsupportedWord()

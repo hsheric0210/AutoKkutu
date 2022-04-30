@@ -72,7 +72,7 @@ namespace AutoKkutu
 				case GameMode.First_and_Last:
 					return "앞말잇기";
 				case GameMode.Middle_and_First:
-					return "중간말잇기";
+					return "가운뎃말잇기";
 				case GameMode.Kkutu:
 					return "끄투";
 				case GameMode.Kung_Kung_Tta:
