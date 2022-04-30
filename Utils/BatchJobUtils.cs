@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using AutoKkutu.Databases;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using static AutoKkutu.Constants;
 
-namespace AutoKkutu.Utils
+namespace AutoKkutu
 {
-	public class BatchJobUtils
+	public static class BatchJobUtils
 	{
 		private const string _namespace = nameof(BatchJobUtils);
 		private static ILog Logger = LogManager.GetLogger(_namespace);
-
-		public static EventHandler<BatchJobEventArgs> BatchJobStart;
-		public static EventHandler<BatchJobEventArgs> BatchJobDone;
 
 		/// <summary>
 		/// Check if the word is available in the current server using the official kkutu dictionary feature.
@@ -56,7 +54,7 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		public static void BatchAddWord(CommonDatabase database, string[] wordlist, BatchWordJobFlags mode, WordFlags flags)
+		public static void BatchAddWord(this CommonDatabase database, string[] wordlist, BatchWordJobFlags mode, WordFlags flags)
 		{
 			bool onlineVerify = mode.HasFlag(BatchWordJobFlags.VerifyBeforeAdd);
 			if (onlineVerify && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
@@ -65,10 +63,10 @@ namespace AutoKkutu.Utils
 				return;
 			}
 
-			if (BatchJobStart != null)
-				BatchJobStart(null, new BatchJobEventArgs("Add"));
+			if (CommonDatabase.ImportStart != null)
+				CommonDatabase.ImportStart(null, new DBImportEventArgs("Batch Add Word"));
 
-			Logger.Info($"{wordlist.Length} elements queued.");
+			Logger.InfoFormat("{0} elements queued.", wordlist.Length);
 
 			Task.Run(() =>
 			{
@@ -82,7 +80,7 @@ namespace AutoKkutu.Utils
 					// Check word length
 					if (word.Length <= 1)
 					{
-						Logger.Error($"'{word}' is too short to add!");
+						Logger.ErrorFormat("'{0}' is too short to add!", word);
 						FailedCount++;
 						continue;
 					}
@@ -93,16 +91,16 @@ namespace AutoKkutu.Utils
 						{
 							DatabaseUtils.CorrectFlags(word, ref flags, ref NewEndNode, ref NewAttackNode);
 
-							Logger.Info($"Adding'{word}' into database... (flags: {flags})");
+							Logger.InfoFormat("Adding'{0}' into database... (flags: {1})", word, flags);
 							if (database.AddWord(word, flags))
 							{
 								SuccessCount++;
-								Logger.Info($"Successfully Add '{word}' to database!");
+								Logger.InfoFormat("Successfully Add '{0}' to database!", word);
 							}
 							else
 							{
 								DuplicateCount++;
-								Logger.Warn($"'{word}' already exists on database");
+								Logger.WarnFormat("'{0}' already exists on database", word);
 							}
 						}
 						catch (Exception ex)
@@ -118,15 +116,15 @@ namespace AutoKkutu.Utils
 				string StatusMessage = $"{SuccessCount} 개 추가 성공 / {NewEndNode} 개의 새로운 한방 노드 / {NewAttackNode} 개의 새로운 공격 노드 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
 				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{StatusMessage}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
-				if (BatchJobDone != null)
-					BatchJobDone(null, new BatchJobEventArgs("Add"));
+				if (CommonDatabase.ImportDone != null)
+					CommonDatabase.ImportDone(null, new DBImportEventArgs("Batch Add Word"));
 			});
 		}
 
-		public static void BatchRemoveWord(CommonDatabase database, string[] wordlist)
+		public static void BatchRemoveWord(this CommonDatabase database, string[] wordlist)
 		{
-			if (BatchJobStart != null)
-				BatchJobStart(null, new BatchJobEventArgs("Remove"));
+			if (CommonDatabase.ImportStart != null)
+				CommonDatabase.ImportStart(null, new DBImportEventArgs("Batch Remove Word"));
 
 			Logger.Info($"{wordlist.Length} elements queued.");
 
@@ -156,18 +154,21 @@ namespace AutoKkutu.Utils
 				string StatusMessage = $"{SuccessCount} 개 제거 성공 / {FailedCount} 개 제거 실패";
 				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{StatusMessage}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
-				if (BatchJobDone != null)
-					BatchJobDone(null, new BatchJobEventArgs("Remove"));
+				if (CommonDatabase.ImportDone != null)
+					CommonDatabase.ImportDone(null, new DBImportEventArgs("Batch Remove Word"));
 			});
 		}
 
-		public static void BatchAddNode(CommonDatabase database, string content, bool remove, NodeFlags type)
+		public static void BatchAddNode(this CommonDatabase database, string content, bool remove, NodeFlags type)
 		{
 			var NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 			int SuccessCount = 0;
 			int DuplicateCount = 0;
 			int FailedCount = 0;
+
+			if (CommonDatabase.ImportStart != null)
+				CommonDatabase.ImportStart(null, new DBImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node"));
 
 			Logger.Info($"{NodeList.Length} elements queued.");
 			foreach (string node in NodeList)
@@ -199,8 +200,87 @@ namespace AutoKkutu.Utils
 			}
 
 			Logger.Info($"Database Operation Complete. {SuccessCount} Success / {DuplicateCount} Duplicated / {FailedCount} Failed.");
-			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			string message = $"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패";
+			MessageBox.Show(message, _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			
+			if (CommonDatabase.ImportDone != null)
+				CommonDatabase.ImportDone(null, new DBImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node", message));
 		}
+
+		/// <summary>
+		/// 데이터베이스에 노드를 추가합니다.
+		/// </summary>
+		/// <param name="node">추가할 노드</param>
+		/// <param name="types">추가할 노드의 속성들</param>
+		/// <returns>데이터베이스에 추가된 노드의 총 갯수</returns>
+		public static bool AddNode(this CommonDatabase database, string node, NodeFlags types)
+		{
+			bool result = false;
+
+			// 한방 단어
+			if (types.HasFlag(NodeFlags.EndWord))
+				result = database.AddNode(node, DatabaseConstants.EndWordListTableName) || result;
+
+			// 공격 단어
+			if (types.HasFlag(NodeFlags.AttackWord))
+				result = database.AddNode(node, DatabaseConstants.AttackWordListTableName) || result;
+
+			// 앞말잇기 한방 단어
+			if (types.HasFlag(NodeFlags.ReverseEndWord))
+				result = database.AddNode(node, DatabaseConstants.ReverseEndWordListTableName) || result;
+
+			// 앞말잇기 공격 단어
+			if (types.HasFlag(NodeFlags.ReverseAttackWord))
+				result = database.AddNode(node, DatabaseConstants.ReverseAttackWordListTableName) || result;
+
+			// 끄투 한방 단어
+			if (types.HasFlag(NodeFlags.KkutuEndWord))
+				result = database.AddNode(node, DatabaseConstants.KkutuEndWordListTableName) || result;
+
+			// 끄투 공격 단어
+			if (types.HasFlag(NodeFlags.KkutuAttackWord))
+				result = database.AddNode(node, DatabaseConstants.KkutuAttackWordListTableName) || result;
+
+			return result;
+		}
+
+		/// <summary>
+		/// 데이터베이스에서 노드를 삭제합니다.
+		/// </summary>
+		/// <param name="node">삭제할 노드</param>
+		/// <param name="types">삭제할 노드의 속성들</param>
+		/// <returns>데이터베이스에서 삭제된 노드의 총 갯수</returns>
+		public static int DeleteNode(this CommonDatabase database, string node, NodeFlags types)
+		{
+			int count = 0;
+
+			// 한방 단어
+			if (types.HasFlag(NodeFlags.EndWord))
+				count += database.DeleteNode(node, DatabaseConstants.EndWordListTableName);
+
+			// 공격 단어
+			if (types.HasFlag(NodeFlags.AttackWord))
+				count += database.DeleteNode(node, DatabaseConstants.AttackWordListTableName);
+
+			// 앞말잇기 한방 단어
+			if (types.HasFlag(NodeFlags.ReverseEndWord))
+				count += database.DeleteNode(node, DatabaseConstants.ReverseEndWordListTableName);
+
+			// 앞말잇기 공격 단어
+			if (types.HasFlag(NodeFlags.ReverseAttackWord))
+				count += database.DeleteNode(node, DatabaseConstants.ReverseAttackWordListTableName);
+
+			// 끄투 한방 단어
+			if (types.HasFlag(NodeFlags.KkutuEndWord))
+				count += database.DeleteNode(node, DatabaseConstants.KkutuEndWordListTableName);
+
+			// 끄투 공격 단어
+			if (types.HasFlag(NodeFlags.KkutuAttackWord))
+				count += database.DeleteNode(node, DatabaseConstants.KkutuAttackWordListTableName);
+
+			return count;
+		}
+
 	}
 
 	[Flags]

@@ -53,14 +53,14 @@ $$ LANGUAGE plpgsql
 
 		public override string GetDBType() => "PostgreSQL";
 
-		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
+		public override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			using (var command = new NpgsqlCommand(query, (NpgsqlConnection)(connection ?? DatabaseConnection)))
 				return command.ExecuteNonQuery();
 		}
 
-		protected override object ExecuteScalar(string query, IDisposable connection = null)
+		public override object ExecuteScalar(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			using (var command = new NpgsqlCommand(query, (NpgsqlConnection)(connection ?? DatabaseConnection)))
@@ -68,7 +68,7 @@ $$ LANGUAGE plpgsql
 
 		}
 
-		protected override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
+		public override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			using (var command = new NpgsqlCommand(query, (NpgsqlConnection)(connection ?? DatabaseConnection)))
@@ -81,7 +81,7 @@ $$ LANGUAGE plpgsql
 				throw new ArgumentException("Connection is not NpgsqlConnection");
 		}
 
-		protected override int DeduplicateDatabase(IDisposable connection)
+		public override int DeduplicateDatabase(IDisposable connection)
 		{
 			CheckConnectionType(connection);
 
@@ -89,7 +89,7 @@ $$ LANGUAGE plpgsql
 			return ExecuteNonQuery(DatabaseConstants.DeduplicationQuery, (NpgsqlConnection)connection);
 		}
 
-		protected override IDisposable OpenSecondaryConnection()
+		public override IDisposable OpenSecondaryConnection()
 		{
 			var connection = new NpgsqlConnection(ConnectionString);
 			connection.Open();
@@ -111,7 +111,7 @@ $$ LANGUAGE plpgsql
 			}
 		}
 
-		protected override bool IsTableExists(string tableName, IDisposable connection = null)
+		public override bool IsTableExists(string tableName, IDisposable connection = null)
 		{
 			try
 			{
@@ -146,7 +146,7 @@ $$ LANGUAGE plpgsql
 
 		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP COLUMN {columnName}");
 
-		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
+		public override void PerformVacuum() => ExecuteNonQuery("VACUUM");
 
 		public override void Dispose() => DatabaseConnection.Dispose();
 	}

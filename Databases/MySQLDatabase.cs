@@ -60,21 +60,21 @@ END;
 
 		public override string GetDBType() => "MySQL";
 
-		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
+		public override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
 				return command.ExecuteNonQuery();
 		}
 
-		protected override object ExecuteScalar(string query, IDisposable connection = null)
+		public override object ExecuteScalar(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
 				return command.ExecuteScalar();
 		}
 
-		protected override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
+		public override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			using (var command = new MySqlCommand(query, (MySqlConnection)(connection ?? DatabaseConnection)))
@@ -87,7 +87,7 @@ END;
 				throw new ArgumentException("Connection is not MySqlConnection");
 		}
 
-		protected override int DeduplicateDatabase(IDisposable connection)
+		public override int DeduplicateDatabase(IDisposable connection)
 		{
 			CheckConnectionType(connection);
 
@@ -95,7 +95,7 @@ END;
 			return ExecuteNonQuery(DatabaseConstants.DeduplicationQuery, (MySqlConnection)connection);
 		}
 
-		protected override IDisposable OpenSecondaryConnection()
+		public override IDisposable OpenSecondaryConnection()
 		{
 			var connection = new MySqlConnection(ConnectionString);
 			connection.Open();
@@ -116,7 +116,7 @@ END;
 			}
 		}
 
-		protected override bool IsTableExists(string tableName, IDisposable connection = null)
+		public override bool IsTableExists(string tableName, IDisposable connection = null)
 		{
 			try
 			{
@@ -151,7 +151,7 @@ END;
 
 		protected override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP {columnName}");
 
-		protected override void PerformVacuum()
+		public override void PerformVacuum()
 		{
 		}
 

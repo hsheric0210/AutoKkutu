@@ -1,5 +1,4 @@
 ﻿using AutoKkutu.Databases;
-using AutoKkutu.Utils;
 using CefSharp;
 using CefSharp.Wpf;
 using log4net;
@@ -16,9 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static AutoKkutu.CommonHandler;
 using static AutoKkutu.Constants;
-using static AutoKkutu.PathFinder;
 
 namespace AutoKkutu
 {
@@ -60,8 +57,8 @@ namespace AutoKkutu
 			Error,
 			EndWord,
 			Wait,
-			DB_Job,
-			DB_Job_Done,
+			DB_Check,
+			DB_Check_Done,
 			Adding_Words,
 			Adding_Words_Done,
 			Delaying
@@ -111,7 +108,7 @@ namespace AutoKkutu
 			CommonHandler.InitializeHandlers();
 			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
-			
+
 			ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
 
@@ -145,10 +142,10 @@ namespace AutoKkutu
 			Browser.FrameLoadEnd -= Browser_FrameLoadEnd_RunOnce;
 
 			PathFinder.onPathUpdated += PathFinder_UpdatedPath;
-			CommonDatabase.DBJobStart += DatabaseManager_DBJobStart;
-			CommonDatabase.DBJobDone += DatabaseManager_DBJobDone;
-			BatchJobUtils.BatchJobStart += DatabaseManagement_AddWordStart;
-			BatchJobUtils.BatchJobDone += DatabaseManagement_AddWordDone;
+			DatabaseCheckUtils.DBCheckStart += DatabaseCheckUtils_DBCheckStart;
+			DatabaseCheckUtils.DBCheckDone += DatabaseCheckUtils_DBCheckDone;
+			CommonDatabase.ImportStart += CommonDatabase_ImportStart;
+			CommonDatabase.ImportDone += CommonDatabase_ImportDone;
 		}
 
 		private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
@@ -209,25 +206,24 @@ namespace AutoKkutu
 				Logger.WarnFormat("Unsupported site: {0}", url);
 		}
 
-		private void DatabaseManager_DBJobStart(object sender, EventArgs e)
+		private void DatabaseCheckUtils_DBCheckStart(object sender, EventArgs e)
 		{
-			ChangeStatusBar(CurrentStatus.DB_Job, ((CommonDatabase.DBJobArgs)e).JobName);
+			ChangeStatusBar(CurrentStatus.DB_Check);
 		}
 
-		private void DatabaseManager_DBJobDone(object sender, EventArgs e)
+		private void DatabaseCheckUtils_DBCheckDone(object sender, CheckDBDoneArgs args)
 		{
-			var args = ((CommonDatabase.DBJobArgs)e);
-			ChangeStatusBar(CurrentStatus.DB_Job_Done, args.JobName, args.Result);
+			ChangeStatusBar(CurrentStatus.DB_Check_Done, args.Result);
 		}
 
-		private void DatabaseManagement_AddWordStart(object sender, EventArgs e)
+		private void CommonDatabase_ImportStart(object sender, DBImportEventArgs args)
 		{
-			ChangeStatusBar(CurrentStatus.Adding_Words);
+			ChangeStatusBar(CurrentStatus.Adding_Words, args.Name);
 		}
 
-		private void DatabaseManagement_AddWordDone(object sender, EventArgs e)
+		private void CommonDatabase_ImportDone(object sender, DBImportEventArgs args)
 		{
-			ChangeStatusBar(CurrentStatus.Adding_Words_Done);
+			ChangeStatusBar(CurrentStatus.Adding_Words_Done, args.Name, args.Result);
 		}
 
 		private void SetSearchState(UpdatedPathEventArgs arg, bool IsEnd = false)
@@ -282,7 +278,7 @@ namespace AutoKkutu
 			Task.Run(() => SetSearchState(args));
 
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
-			
+
 			if (autoEnter)
 			{
 				if (args.Result == PathFinderResult.None)
@@ -400,8 +396,9 @@ namespace AutoKkutu
 				}
 				else
 				{
-					var wordPreference = CurrentConfig.WordPreference;
 					ChangeStatusBar(CurrentStatus.Searching);
+
+					// Setup flag
 					if (CurrentConfig.UseEndWord && (flags.HasFlag(PathFinderFlags.MANUAL_SEARCH) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
 						flags |= PathFinderFlags.USING_END_WORD;
 					else
@@ -410,7 +407,16 @@ namespace AutoKkutu
 						flags |= PathFinderFlags.USING_ATTACK_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_ATTACK_WORD;
-					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", wordPreference, mode, flags);
+
+					// Enqueue search
+					PathFinder.FindPath(new FindWordInfo
+					{
+						Word = word,
+						MissionChar = CurrentConfig.MissionDetection ? missionChar : "",
+						WordPreference = CurrentConfig.WordPreference,
+						Mode = mode,
+						PathFinderFlags = flags
+					});
 				}
 			}
 			catch (Exception ex)
@@ -489,7 +495,7 @@ namespace AutoKkutu
 			ResetPathList();
 			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.GAME_END)
 			{
-				ChangeStatusBar(CurrentStatus.DB_Job, "자동 업데이트");
+				ChangeStatusBar(CurrentStatus.DB_Check, "자동 업데이트");
 				string result = PathFinder.AutoDBUpdate();
 				if (string.IsNullOrEmpty(result))
 					ChangeStatusBar(CurrentStatus.Wait);
@@ -505,7 +511,7 @@ namespace AutoKkutu
 							Logger.Warn("Failed to write game result", ex);
 						}
 
-					ChangeStatusBar(CurrentStatus.DB_Job_Done, "자동 업데이트", result);
+					ChangeStatusBar(CurrentStatus.DB_Check_Done, "자동 업데이트", result);
 				}
 			}
 			else
@@ -614,24 +620,24 @@ namespace AutoKkutu
 					StatusContent = "단어 자동 입력됨: {0}";
 					ImageName = "ok";
 					break;
-				case CurrentStatus.DB_Job:
+				case CurrentStatus.DB_Check:
 					StatusColor = ColorDefinitions.WarningColor;
-					StatusContent = "데이터베이스 작업 '{0}' 진행 중...";
+					StatusContent = "데이터베이스 검증 작업 진행 중...";
 					ImageName = "cleaning";
 					break;
-				case CurrentStatus.DB_Job_Done:
+				case CurrentStatus.DB_Check_Done:
 					StatusColor = ColorDefinitions.NormalColor;
-					StatusContent = "데이터베이스 작업 '{0}' 완료: {1}";
+					StatusContent = "데이터베이스 검증 작업 완료: {1}";
 					ImageName = "ok";
 					break;
 				case CurrentStatus.Adding_Words:
 					StatusColor = ColorDefinitions.WarningColor;
-					StatusContent = "단어 일괄 추가 작업 중...";
+					StatusContent = "단어 일괄 추가 작업 중 ({0})...";
 					ImageName = "cleaning";
 					break;
 				case CurrentStatus.Adding_Words_Done:
 					StatusColor = ColorDefinitions.NormalColor;
-					StatusContent = "단어 일괄 추가 작업 완료";
+					StatusContent = "단어 일괄 추가 작업 ({0}) 완료: {1}";
 					ImageName = "ok";
 					break;
 				case CurrentStatus.Delaying:

@@ -94,8 +94,8 @@ namespace AutoKkutu.Databases
 			if (!new FileInfo(externalSQLiteFilePath).Exists)
 				return;
 
-			if (CommonDatabase.DBJobStart != null)
-				CommonDatabase.DBJobStart(null, new DBJobArgs(DatabaseConstants.LoadFromLocalSQLite));
+			if (CommonDatabase.ImportStart != null)
+				CommonDatabase.ImportStart(null, new DBImportEventArgs(DatabaseConstants.LoadFromLocalSQLite));
 
 			Task.Run(() =>
 			{
@@ -116,8 +116,8 @@ namespace AutoKkutu.Databases
 					ImportNode(args, DatabaseConstants.KkutuEndWordListTableName, ref KkutuEndWordCount);
 
 					Logger.InfoFormat("DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount);
-					if (CommonDatabase.DBJobDone != null)
-						CommonDatabase.DBJobDone(null, new DBJobArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {AttackWordCount} 개의 공격 노드 / {EndWordCount} 개의 한방 노드 / {ReverseAttackWordCount} 개의 앞말잇기 공격 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuAttackWordCount} 개의 끄투 공격 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드"));
+					if (CommonDatabase.ImportDone != null)
+						CommonDatabase.ImportDone(null, new DBImportEventArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {AttackWordCount} 개의 공격 노드 / {EndWordCount} 개의 한방 노드 / {ReverseAttackWordCount} 개의 앞말잇기 공격 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuAttackWordCount} 개의 끄투 공격 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드"));
 				}
 				catch (Exception ex)
 				{

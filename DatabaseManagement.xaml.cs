@@ -9,7 +9,6 @@ using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using log4net;
 using static AutoKkutu.Constants;
-using AutoKkutu.Utils;
 
 namespace AutoKkutu
 {
@@ -38,9 +37,9 @@ namespace AutoKkutu
 			string[] wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 			if (mode.HasFlag(BatchWordJobFlags.Remove))
-				BatchJobUtils.BatchRemoveWord(database, wordlist);
+				database.BatchRemoveWord(wordlist);
 			else
-				BatchJobUtils.BatchAddWord(database, wordlist, mode, flags);
+				database.BatchAddWord(wordlist, mode, flags);
 		}
 
 		private void Node_Submit_Click(object sender, RoutedEventArgs e)
@@ -77,7 +76,7 @@ namespace AutoKkutu
 			if (string.IsNullOrWhiteSpace(content))
 				return;
 
-			BatchJobUtils.BatchAddNode(Database, content, remove, GetSelectedNodeTypes());
+			Database.BatchAddNode(content, remove, GetSelectedNodeTypes());
 		}
 
 		private BatchWordJobFlags GetBatchWordJobFlags()

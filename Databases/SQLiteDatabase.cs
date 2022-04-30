@@ -55,19 +55,19 @@ namespace AutoKkutu.Databases
 
 		public override string GetDBType() => "SQLite";
 
-		protected override int ExecuteNonQuery(string query, IDisposable connection = null)
+		public override int ExecuteNonQuery(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			return SQLiteDatabaseHelper.ExecuteNonQuery((SqliteConnection)(connection ?? DatabaseConnection), query);
 		}
 
-		protected override object ExecuteScalar(string query, IDisposable connection = null)
+		public override object ExecuteScalar(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			return SQLiteDatabaseHelper.ExecuteScalar((SqliteConnection)(connection ?? DatabaseConnection), query);
 		}
 
-		protected override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
+		public override CommonDatabaseReader ExecuteReader(string query, IDisposable connection = null)
 		{
 			CheckConnectionType(connection);
 			return new SQLiteDatabaseReader(SQLiteDatabaseHelper.ExecuteReader((SqliteConnection)(connection ?? DatabaseConnection), query));
@@ -79,7 +79,7 @@ namespace AutoKkutu.Databases
 				throw new ArgumentException("Connection is not SqliteConnection");
 		}
 
-		protected override int DeduplicateDatabase(IDisposable connection)
+		public override int DeduplicateDatabase(IDisposable connection)
 		{
 			CheckConnectionType(connection);
 
@@ -88,14 +88,14 @@ namespace AutoKkutu.Databases
 			return SQLiteDatabaseHelper.ExecuteNonQuery((SqliteConnection)connection, DatabaseConstants.DeduplicationQuery);
 		}
 
-		protected override IDisposable OpenSecondaryConnection()
+		public override IDisposable OpenSecondaryConnection()
 		{
 			return SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 		}
 
 		protected override bool IsColumnExists(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.IsColumnExists((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListTableName, columnName);
 
-		protected override bool IsTableExists(string tablename, IDisposable connection = null) => SQLiteDatabaseHelper.IsTableExists((SqliteConnection)(connection ?? DatabaseConnection), tablename);
+		public override bool IsTableExists(string tablename, IDisposable connection = null) => SQLiteDatabaseHelper.IsTableExists((SqliteConnection)(connection ?? DatabaseConnection), tablename);
 
 		protected override string GetColumnType(string columnName, string tableName = null, IDisposable connection = null) => SQLiteDatabaseHelper.GetColumnType((SqliteConnection)(connection ?? DatabaseConnection), tableName ?? DatabaseConstants.WordListTableName, columnName);
 
@@ -124,7 +124,7 @@ namespace AutoKkutu.Databases
 			ExecuteNonQuery($"DROP TABLE _{DatabaseConstants.WordListTableName};");
 		}
 
-		protected override void PerformVacuum() => ExecuteNonQuery("VACUUM");
+		public override void PerformVacuum() => ExecuteNonQuery("VACUUM");
 
 		public override void Dispose() => DatabaseConnection.Dispose();
 	}

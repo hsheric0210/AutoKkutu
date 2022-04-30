@@ -53,19 +53,15 @@ namespace AutoKkutu
 		public event EventHandler onGameEnded;
 		public event EventHandler<WordPresentEventArgs> onMyTurn;
 		public event EventHandler onMyTurnEnded;
-		//public event EventHandler onRoundEnded;
-		//public event EventHandler onPastDictionary;
 		public event EventHandler<UnsupportedWordEventArgs> onUnsupportedWordEntered;
 		public event EventHandler<UnsupportedWordEventArgs> onMyPathIsUnsupported;
 		public event EventHandler onRoundChange;
 		public event EventHandler<GameModeChangeEventArgs> onGameModeChange;
 
-		// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
+		// 참고: 이 이벤트는 '타자 대결' 모드에서만 사용됩니다
 		public event EventHandler<WordPresentEventArgs> onWordPresented;
 
 		private static AutoKkutuConfiguration CurrentConfig;
-
-		private string _currentRoundIndexFuncName;
 
 		private static CommonHandler[] HANDLERS;
 
@@ -265,21 +261,8 @@ namespace AutoKkutu
 			{
 				if (_isGameStarted)
 					return;
-				if (_currentRoundIndexFuncName == null || EvaluateJSBool($"typeof {_currentRoundIndexFuncName} != 'function'"))
-				{
-					_currentRoundIndexFuncName = $"__{RandomUtils.GenerateRandomString(64, true, new Random())}()";
-					Task.Run(() =>
-					{
-						// https://hjcode.tistory.com/94
-						if (EvaluateJSReturnError($@"
-function {_currentRoundIndexFuncName} {{
-    return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));
-}}", out string error))
-							GetLogger(watchdogID).Error("Failed to register currentRoundIndexFunc: " + error);
-						else
-							GetLogger(watchdogID).Info($"Register currentRoundIndexFunc: {_currentRoundIndexFuncName}");
-					});
-				}
+
+				RegisterJSFunction("currentRoundIndexFunc", "", "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));");
 				GetLogger(watchdogID).Debug("New game started; Previous word list flushed.");
 				if (onGameStarted != null)
 					onGameStarted(this, EventArgs.Empty);
@@ -531,7 +514,7 @@ function {_currentRoundIndexFuncName} {{
 
 		public virtual int GetGameRoundIndex()
 		{
-			return EvaluateJSInt(_currentRoundIndexFuncName, "GetGameRoundIndex");
+			return EvaluateJSInt(RegisteredJSFunctionName("currentRoundIndexFunc"), "GetGameRoundIndex");
 		}
 
 		public virtual string GetUnsupportedWord()
