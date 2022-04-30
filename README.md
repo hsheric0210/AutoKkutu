@@ -1,7 +1,10 @@
 # AutoKkutu - KKutu-Helper 기반 끄투 단어 추천 및 자동 입력기
 
-[![Build status](https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4/branch/main?svg=true)](https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main)
-![Issues](https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg)
+<p style="text-align: center;">
+<a href="https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main"><img src="https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4/branch/main?svg=true" /></a>
+<a href="https://github.com/hsheric0210/AutoKkutu/issues"><img src="https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg" /></a>
+<a href="https://codeclimate.com/github/hsheric0210/AutoKkutu/maintainability"><img src="https://api.codeclimate.com/v1/badges/7709ad79cf511830e0bf/maintainability" /></a>
+</p>
 
 AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌습니다
 (제작자가 리버싱 후 수정 허용함)
