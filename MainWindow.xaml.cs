@@ -283,8 +283,7 @@ namespace AutoKkutu
 			Task.Run(() => SetSearchState(args));
 
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
-
-			//_pathSelected = false;
+			
 			if (autoEnter)
 			{
 				if (args.Result == PathFinder.FindResult.None)
@@ -295,9 +294,9 @@ namespace AutoKkutu
 				else
 				{
 					string content = PathFinder.FinalList.First().Content;
-					if (CurrentConfig.Delay && !args.Flags.HasFlag(PathFinderFlags.RETRIAL))
+					if (CurrentConfig.DelayEnabled && !args.Flags.HasFlag(PathFinderFlags.RETRIAL))
 					{
-						int delay = CurrentConfig.nDelay;
+						int delay = CurrentConfig.Delay;
 						if (CurrentConfig.DelayPerWord)
 							delay *= content.Length;
 						ChangeStatusBar(CurrentStatus.Delaying, delay);
@@ -308,17 +307,17 @@ namespace AutoKkutu
 								while (inputStopwatch.ElapsedMilliseconds <= delay)
 									await Task.Delay(1);
 
-								performAutoEnter(args, content);
+								PerformAutoEnter(args, content);
 							});
 						else
 							Task.Run(async () =>
 							{
 								await Task.Delay(delay);
-								performAutoEnter(args, content);
+								PerformAutoEnter(args, content);
 							});
 					}
 					else
-						performAutoEnter(args, content);
+						PerformAutoEnter(args, content);
 				}
 			}
 		}
@@ -329,7 +328,7 @@ namespace AutoKkutu
 				return true;
 
 			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
-			bool differentMissionChar = !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
+			bool differentMissionChar = CurrentConfig.MissionDetection && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
@@ -339,14 +338,18 @@ namespace AutoKkutu
 			return true;
 		}
 
-		private void performAutoEnter(PathFinder.UpdatedPathEventArgs args, string content)
+		private void PerformAutoEnter(PathFinder.UpdatedPathEventArgs args, string content)
 		{
 			if (!Handler.IsGameStarted || !Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderFlags.RETRIAL))
 				return;
-			Logger.Info("Auto mode enabled. automatically use first path.");
+			PerformAutoEnter(content);
+		}
+
+		private void PerformAutoEnter(string content, string pathAttribute = "first")
+		{
+			Logger.InfoFormat("Auto mode enabled. automatically use {0} path.", pathAttribute);
 			Logger.InfoFormat("Execute Path : {0}", content);
 			LastUsedPath = content;
-			//_pathSelected = true;
 			SendMessage(content);
 			ChangeStatusBar(CurrentStatus.AutoEntered, content);
 		}
@@ -391,8 +394,10 @@ namespace AutoKkutu
 						flags |= PathFinderFlags.USING_END_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_END_WORD;
-					if (wordPreference == WordPreference.ATTACK_DAMAGE)
+					if (CurrentConfig.UseAttackWord)
 						flags |= PathFinderFlags.USING_ATTACK_WORD;
+					else
+						flags &= ~PathFinderFlags.USING_ATTACK_WORD;
 					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", wordPreference, CurrentConfig.Mode, flags);
 				}
 			}
@@ -413,6 +418,7 @@ namespace AutoKkutu
 			PathFinder.AddToUnsupportedWord(theWord, isInexistent);
 		}
 
+		// TODO: 오답 수정 딜레이
 		private void CommonHandler_MyPathIsUnsupported(object sender, CommonHandler.UnsupportedWordEventArgs args)
 		{
 			var word = args.Word;
@@ -429,18 +435,27 @@ namespace AutoKkutu
 				return;
 			}
 
-			//_pathSelected = false;
 			if (CurrentConfig.AutoEnter)
 			{
 				try
 				{
 					WordIndex++;
 					string path = localFinalList[WordIndex].Content;
-					Logger.InfoFormat("Auto mode enabled. automatically use next path (index {0}).", WordIndex);
-					Logger.InfoFormat("Execute Path: {0}", path);
-					LastUsedPath = path;
-					//_pathSelected = true;
-					SendMessage(path);
+					if (CurrentConfig.FixDelayEnabled)
+					{
+						int delay = CurrentConfig.FixDelay;
+						if (CurrentConfig.FixDelayPerWord)
+							delay *= path.Length;
+						ChangeStatusBar(CurrentStatus.Delaying, delay);
+						Logger.DebugFormat("Waiting {0}ms before entering next path.", delay);
+						Task.Run(async () =>
+						{
+							await Task.Delay(delay);
+							PerformAutoEnter(path, "next");
+						});
+					}
+					else
+						PerformAutoEnter(path, "next");
 				}
 				catch (Exception ex)
 				{
@@ -504,9 +519,9 @@ namespace AutoKkutu
 		private void CommonHandler_WordPresentedEvent(object sender, WordPresentEventArgs args)
 		{
 			string word = args.Word.Content;
-			if (CurrentConfig.Delay)
+			if (CurrentConfig.DelayEnabled)
 			{
-				int delay = CurrentConfig.nDelay;
+				int delay = CurrentConfig.Delay;
 				if (CurrentConfig.DelayPerWord)
 					delay *= word.Length;
 				ChangeStatusBar(CurrentStatus.Delaying, delay);

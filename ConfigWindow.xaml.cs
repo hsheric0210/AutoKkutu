@@ -33,26 +33,30 @@ namespace AutoKkutu
 			DBAutoUpdate.IsChecked = config.AutoDBUpdate;
 			DBAutoUpdateModeCB.SelectedIndex = (int)config.AutoDBUpdateMode;
 			WordPreference.SelectedIndex = (int)config.WordPreference;
+			AttackWord.IsChecked = config.UseAttackWord;
 			EndWord.IsChecked = config.UseEndWord;
 			ReturnMode.IsChecked = config.ReturnMode;
 			AutoFix.IsChecked = config.AutoFix;
 			MissionDetection.IsChecked = config.MissionDetection;
 			GameMode.SelectedIndex = (int)config.Mode;
-			Delay.IsChecked = config.Delay;
+			Delay.IsChecked = config.DelayEnabled;
 			DelayPerWord.IsChecked = config.DelayPerWord;
-			DelayNumber.Text = config.nDelay.ToString();
+			DelayNumber.Text = config.Delay.ToString();
 			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnter;
 			GameModeAutoDetect.IsChecked = config.GameModeAutoDetect;
 			MaxWordCount.Text = config.MaxWords.ToString();
+			FixDelay.IsChecked = config.FixDelayEnabled;
+			FixDelayPerWord.IsChecked = config.FixDelayPerWord;
+			FixDelayNumber.Text = config.FixDelay.ToString();
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
 		{
 			string delayNumber = DelayNumber.Text;
-			if (!int.TryParse(delayNumber, out int nDelay))
+			if (!int.TryParse(delayNumber, out int _delay))
 			{
-				nDelay = 10;
-				Logger.WarnFormat("Can't parse delay number '{0}'; reset to {1}", delayNumber, nDelay);
+				_delay = 10;
+				Logger.WarnFormat("Can't parse delay number '{0}'; reset to {1}", delayNumber, _delay);
 			}
 
 			string maxWordNumber = MaxWordCount.Text;
@@ -60,6 +64,13 @@ namespace AutoKkutu
 			{
 				MaxWords = 20;
 				Logger.WarnFormat("Can't parse maxWordCount number '{0}'; reset to {1}", maxWordNumber, MaxWords);
+			}
+
+			string fixDelayNumber = FixDelayNumber.Text;
+			if (!int.TryParse(fixDelayNumber, out int _fixdelay))
+			{
+				_fixdelay = 10;
+				Logger.WarnFormat("Can't parse fix delay number '{0}'; reset to {1}", fixDelayNumber, _fixdelay);
 			}
 
 			Dispatcher.Invoke(() =>
@@ -72,17 +83,21 @@ namespace AutoKkutu
 						AutoDBUpdate = DBAutoUpdate.IsChecked ?? false,
 						AutoDBUpdateMode = ConfigEnums.DBAutoUpdateModeValues[DBAutoUpdateModeCB.SelectedIndex],
 						WordPreference = ConfigEnums.WordPreferenceValues[WordPreference.SelectedIndex],
+						UseAttackWord = AttackWord.IsChecked ?? false,
 						UseEndWord = EndWord.IsChecked ?? false,
 						ReturnMode = ReturnMode.IsChecked ?? false,
 						AutoFix = AutoFix.IsChecked ?? false,
 						MissionDetection = MissionDetection.IsChecked ?? false,
 						Mode = ConfigEnums.GameModeValues[GameMode.SelectedIndex],
-						Delay = Delay.IsChecked ?? false,
+						DelayEnabled = Delay.IsChecked ?? false,
 						DelayPerWord = DelayPerWord.IsChecked ?? false,
-						nDelay = nDelay,
+						Delay = _delay,
 						DelayStartAfterWordEnter = DelayStartAfterWordEnter.IsChecked ?? false,
 						GameModeAutoDetect = GameModeAutoDetect.IsChecked ?? false,
-						MaxWords = MaxWords
+						MaxWords = MaxWords,
+						FixDelayEnabled = FixDelay.IsChecked ?? false,
+						FixDelayPerWord = FixDelayPerWord.IsChecked ?? false,
+						FixDelay = _fixdelay
 					});
 				}
 				catch (Exception ex)

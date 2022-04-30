@@ -15,22 +15,26 @@ namespace AutoKkutu
 		public DBAutoUpdateMode AutoDBUpdateMode = DBAutoUpdateMode.GAME_END;
 		public WordPreference WordPreference = WordPreference.ATTACK_DAMAGE;
 		public bool UseEndWord = false;
+		public bool UseAttackWord = true;
 		public bool ReturnMode = false;
 		public bool AutoFix = true;
 		public bool MissionDetection = true;
 		public GameMode Mode = GameMode.Last_and_First;
-		public bool Delay = false;
+		public bool DelayEnabled = false;
 		public bool DelayPerWord = true;
-		public int nDelay = 10;
+		public int Delay = 10;
 		public bool DelayStartAfterWordEnter = true;
 		public bool GameModeAutoDetect = true;
 		public int MaxWords = 20;
+		public bool FixDelayEnabled = false;
+		public bool FixDelayPerWord = true;
+		public int FixDelay = 10;
 
 		public AutoKkutuConfiguration()
 		{
 		}
 
-		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnter, AutoDBUpdate, AutoDBUpdateMode, WordPreference, UseEndWord, ReturnMode, AutoFix, MissionDetection), HashCode.Combine(Mode, Delay, DelayPerWord, nDelay, DelayStartAfterWordEnter, GameModeAutoDetect, MaxWords));
+		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnter, AutoDBUpdate, AutoDBUpdateMode, WordPreference, UseEndWord, ReturnMode, AutoFix, MissionDetection), HashCode.Combine(Mode, DelayEnabled, DelayPerWord, Delay, DelayStartAfterWordEnter, GameModeAutoDetect, MaxWords));
 	}
 
 	public static class ConfigEnums
