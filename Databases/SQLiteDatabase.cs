@@ -30,11 +30,8 @@ namespace AutoKkutu.Databases
 
 				DatabaseConnection.CreateFunction(GetCheckMissionCharFuncName(), (string word, string missionWord) =>
 				{
-					int occurrence = 0;
-					char target = char.ToLowerInvariant(missionWord.First());
-					foreach (char c in word.ToLowerInvariant().ToCharArray())
-						if (c == target)
-							occurrence++;
+					char target = char.ToUpperInvariant(missionWord.First());
+					int occurrence = (from char c in word.ToUpperInvariant() where c == target select c).Count();
 					return occurrence > 0 ? DatabaseConstants.MissionCharIndexPriority + occurrence : 0;
 				});
 
@@ -126,7 +123,12 @@ namespace AutoKkutu.Databases
 
 		public override void PerformVacuum() => ExecuteNonQuery("VACUUM");
 
-		public override void Dispose() => DatabaseConnection.Dispose();
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				DatabaseConnection.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 
 	public class SQLiteDatabaseReader : CommonDatabaseReader

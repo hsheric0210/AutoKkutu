@@ -95,7 +95,7 @@ namespace AutoKkutu
 
 		public static string AutoDBUpdate()
 		{
-			if (!CurrentConfig.AutoDBUpdate)
+			if (!CurrentConfig.AutoDBUpdateEnabled)
 				return null;
 
 			int NewPathCount = 0;
@@ -247,7 +247,7 @@ namespace AutoKkutu
 				// Filter out words
 				var QualifiedNormalList = (from word in WordList
 										   let wordContent = word.Content
-										   where (!UnsupportedPathList.Contains(wordContent) && (CurrentConfig.ReturnMode || !PreviousPath.Contains(wordContent)))
+										   where (!UnsupportedPathList.Contains(wordContent) && (CurrentConfig.ReturnModeEnabled || !PreviousPath.Contains(wordContent)))
 										   select word).ToList();
 
 				// If there's no word found (or all words was filtered out)
@@ -260,7 +260,7 @@ namespace AutoKkutu
 				}
 
 				// Limit the word list size
-				int maxCount = CurrentConfig.MaxWords;
+				int maxCount = CurrentConfig.MaxDisplayedWordCount;
 				if (QualifiedNormalList.Count > maxCount)
 					QualifiedNormalList = QualifiedNormalList.Take(maxCount).ToList();
 
@@ -281,7 +281,7 @@ namespace AutoKkutu
 
 		public static string ConvertToPresentedWord(string path)
 		{
-			switch (CurrentConfig.Mode)
+			switch (CurrentConfig.GameMode)
 			{
 				case GameMode.Last_and_First:
 				case GameMode.Kung_Kung_Tta:

@@ -4,31 +4,116 @@ namespace AutoKkutu
 {
 	public class AutoKkutuConfiguration
 	{
-		public bool AutoEnter = true;
-		public bool AutoDBUpdate = true;
-		public DBAutoUpdateMode AutoDBUpdateMode = DBAutoUpdateMode.GAME_END;
-		public WordPreference WordPreference = WordPreference.ATTACK_DAMAGE;
-		public bool UseEndWord = false;
-		public bool UseAttackWord = true;
-		public bool ReturnMode = false;
-		public bool AutoFix = true;
-		public bool MissionDetection = true;
-		public GameMode Mode = GameMode.Last_and_First;
-		public bool DelayEnabled = false;
-		public bool DelayPerWord = true;
-		public int Delay = 10;
-		public bool DelayStartAfterWordEnter = true;
-		public bool GameModeAutoDetect = true;
-		public int MaxWords = 20;
-		public bool FixDelayEnabled = false;
-		public bool FixDelayPerWord = true;
-		public int FixDelay = 10;
+		public bool AutoEnterEnabled
+		{
+			get; set;
+		} = true;
+		public bool AutoDBUpdateEnabled
+		{
+			get; set;
+		} = true;
+		public DBAutoUpdateMode AutoDBUpdateMode
+		{
+			get; set;
+		} = DBAutoUpdateMode.GAME_END;
+		public WordPreference WordPreference
+		{
+			get; set;
+		} = WordPreference.ATTACK_DAMAGE;
+		public bool EndWordEnabled
+		{
+			get; set;
+		}
+		public bool AttackWordAllowed
+		{
+			get; set;
+		} = true;
+		public bool ReturnModeEnabled
+		{
+			get; set;
+		}
+		public bool AutoFixEnabled
+		{
+			get; set;
+		} = true;
+		public bool MissionAutoDetectionEnabled
+		{
+			get; set;
+		} = true;
+		public GameMode GameMode
+		{
+			get; set;
+		} = GameMode.Last_and_First;
+		public bool DelayEnabled
+		{
+			get; set;
+		}
+		public bool DelayPerWordEnabled
+		{
+			get; set;
+		} = true;
+		public int DelayInMillis
+		{
+			get; set;
+		} = 10;
+		public bool DelayStartAfterWordEnterEnabled
+		{
+			get; set;
+		} = true;
+		public bool GameModeAutoDetectEnabled
+		{
+			get; set;
+		} = true;
+		public int MaxDisplayedWordCount
+		{
+			get; set;
+		} = 20;
+		public bool FixDelayEnabled
+		{
+			get; set;
+		}
+		public bool FixDelayPerWordEnabled
+		{
+			get; set;
+		} = true;
+		public int FixDelayInMillis
+		{
+			get; set;
+		} = 10;
 
 		public AutoKkutuConfiguration()
 		{
 		}
 
-		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnter, AutoDBUpdate, AutoDBUpdateMode, WordPreference, UseEndWord, ReturnMode, AutoFix, MissionDetection), HashCode.Combine(Mode, DelayEnabled, DelayPerWord, Delay, DelayStartAfterWordEnter, GameModeAutoDetect, MaxWords));
+		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnterEnabled, AutoDBUpdateEnabled, AutoDBUpdateMode, WordPreference, EndWordEnabled, ReturnModeEnabled, AutoFixEnabled, MissionAutoDetectionEnabled), HashCode.Combine(GameMode, DelayEnabled, DelayPerWordEnabled, DelayInMillis, DelayStartAfterWordEnterEnabled, GameModeAutoDetectEnabled, MaxDisplayedWordCount));
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is AutoKkutuConfiguration))
+				return false;
+			var other = obj as AutoKkutuConfiguration;
+
+			// 편-안
+			return GameMode == other.GameMode
+				&& DelayEnabled == other.DelayEnabled
+				&& DelayInMillis == other.DelayInMillis
+				&& AutoFixEnabled == other.AutoFixEnabled
+				&& WordPreference == other.WordPreference
+				&& EndWordEnabled == other.EndWordEnabled
+				&& FixDelayEnabled == other.FixDelayEnabled
+				&& AutoDBUpdateMode == other.AutoDBUpdateMode
+				&& AutoEnterEnabled == other.AutoEnterEnabled
+				&& FixDelayInMillis == other.FixDelayInMillis
+				&& AttackWordAllowed == other.AttackWordAllowed
+				&& ReturnModeEnabled == other.ReturnModeEnabled
+				&& AutoDBUpdateEnabled == other.AutoDBUpdateEnabled
+				&& DelayPerWordEnabled == other.DelayPerWordEnabled
+				&& MaxDisplayedWordCount == other.MaxDisplayedWordCount
+				&& FixDelayPerWordEnabled == other.FixDelayPerWordEnabled
+				&& GameModeAutoDetectEnabled == other.GameModeAutoDetectEnabled
+				&& MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled
+				&& DelayStartAfterWordEnterEnabled == other.DelayStartAfterWordEnterEnabled;
+		}
 	}
 
 	public static class ConfigEnums
@@ -149,7 +234,7 @@ namespace AutoKkutu
 		/// 자유
 		/// </summary>
 		Free,
-		
+
 		/// <summary>
 		/// 자유 끝말잇기
 		/// </summary>

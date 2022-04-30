@@ -210,7 +210,7 @@ namespace AutoKkutu
 					if (cancelToken.IsCancellationRequested)
 						cancelToken.ThrowIfCancellationRequested();
 
-					if (CurrentConfig.Mode == GameMode.Typing_Battle && _isGameStarted)
+					if (CurrentConfig.GameMode == GameMode.Typing_Battle && _isGameStarted)
 					{
 						if (_isMyTurn)
 							GetCurrentPresentedWord(mainWatchdogID);
@@ -289,7 +289,7 @@ namespace AutoKkutu
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void GetPreviousWord(int watchdogID)
 		{
-			if (ConfigEnums.IsFreeMode(CurrentConfig.Mode))
+			if (ConfigEnums.IsFreeMode(CurrentConfig.GameMode))
 				return;
 
 			string[] tmpWordCache = new string[6];
@@ -605,15 +605,7 @@ namespace AutoKkutu
 
 		public override int GetHashCode()
 		{
-			unchecked
-			{
-				int hash = 3049;
-				hash = hash * 5039 + Content.GetHashCode();
-				hash = hash * 883 + CanSubstitution.GetHashCode();
-				if (CanSubstitution)
-					hash = hash * 9719 + Substitution.GetHashCode();
-				return hash;
-			}
+			return HashCode.Combine(Content, CanSubstitution, Substitution);
 		}
 	}
 

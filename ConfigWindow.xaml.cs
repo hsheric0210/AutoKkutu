@@ -19,25 +19,25 @@ namespace AutoKkutu
 			WordPreference.ItemsSource = ConfigEnums.WordPreferenceValues.Select(ConfigEnums.GetWordPreferenceName);
 			GameMode.ItemsSource = ConfigEnums.GameModeValues.Select(ConfigEnums.GetGameModeName);
 
-			AutoEnter.IsChecked = config.AutoEnter;
-			DBAutoUpdate.IsChecked = config.AutoDBUpdate;
+			AutoEnter.IsChecked = config.AutoEnterEnabled;
+			DBAutoUpdate.IsChecked = config.AutoDBUpdateEnabled;
 			DBAutoUpdateModeCB.SelectedIndex = (int)config.AutoDBUpdateMode;
 			WordPreference.SelectedIndex = (int)config.WordPreference;
-			AttackWord.IsChecked = config.UseAttackWord;
-			EndWord.IsChecked = config.UseEndWord;
-			ReturnMode.IsChecked = config.ReturnMode;
-			AutoFix.IsChecked = config.AutoFix;
-			MissionDetection.IsChecked = config.MissionDetection;
-			GameMode.SelectedIndex = (int)config.Mode;
+			AttackWord.IsChecked = config.AttackWordAllowed;
+			EndWord.IsChecked = config.EndWordEnabled;
+			ReturnMode.IsChecked = config.ReturnModeEnabled;
+			AutoFix.IsChecked = config.AutoFixEnabled;
+			MissionDetection.IsChecked = config.MissionAutoDetectionEnabled;
+			GameMode.SelectedIndex = (int)config.GameMode;
 			Delay.IsChecked = config.DelayEnabled;
-			DelayPerWord.IsChecked = config.DelayPerWord;
-			DelayNumber.Text = config.Delay.ToString();
-			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnter;
-			GameModeAutoDetect.IsChecked = config.GameModeAutoDetect;
-			MaxWordCount.Text = config.MaxWords.ToString();
+			DelayPerWord.IsChecked = config.DelayPerWordEnabled;
+			DelayNumber.Text = config.DelayInMillis.ToString();
+			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnterEnabled;
+			GameModeAutoDetect.IsChecked = config.GameModeAutoDetectEnabled;
+			MaxWordCount.Text = config.MaxDisplayedWordCount.ToString();
 			FixDelay.IsChecked = config.FixDelayEnabled;
-			FixDelayPerWord.IsChecked = config.FixDelayPerWord;
-			FixDelayNumber.Text = config.FixDelay.ToString();
+			FixDelayPerWord.IsChecked = config.FixDelayPerWordEnabled;
+			FixDelayNumber.Text = config.FixDelayInMillis.ToString();
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
@@ -69,25 +69,25 @@ namespace AutoKkutu
 				{
 					MainWindow.UpdateConfig(new AutoKkutuConfiguration
 					{
-						AutoEnter = AutoEnter.IsChecked ?? false,
-						AutoDBUpdate = DBAutoUpdate.IsChecked ?? false,
+						AutoEnterEnabled = AutoEnter.IsChecked ?? false,
+						AutoDBUpdateEnabled = DBAutoUpdate.IsChecked ?? false,
 						AutoDBUpdateMode = ConfigEnums.DBAutoUpdateModeValues[DBAutoUpdateModeCB.SelectedIndex],
 						WordPreference = ConfigEnums.WordPreferenceValues[WordPreference.SelectedIndex],
-						UseAttackWord = AttackWord.IsChecked ?? false,
-						UseEndWord = EndWord.IsChecked ?? false,
-						ReturnMode = ReturnMode.IsChecked ?? false,
-						AutoFix = AutoFix.IsChecked ?? false,
-						MissionDetection = MissionDetection.IsChecked ?? false,
-						Mode = ConfigEnums.GameModeValues[GameMode.SelectedIndex],
+						AttackWordAllowed = AttackWord.IsChecked ?? false,
+						EndWordEnabled = EndWord.IsChecked ?? false,
+						ReturnModeEnabled = ReturnMode.IsChecked ?? false,
+						AutoFixEnabled = AutoFix.IsChecked ?? false,
+						MissionAutoDetectionEnabled = MissionDetection.IsChecked ?? false,
+						GameMode = ConfigEnums.GameModeValues[GameMode.SelectedIndex],
 						DelayEnabled = Delay.IsChecked ?? false,
-						DelayPerWord = DelayPerWord.IsChecked ?? false,
-						Delay = _delay,
-						DelayStartAfterWordEnter = DelayStartAfterWordEnter.IsChecked ?? false,
-						GameModeAutoDetect = GameModeAutoDetect.IsChecked ?? false,
-						MaxWords = MaxWords,
+						DelayPerWordEnabled = DelayPerWord.IsChecked ?? false,
+						DelayInMillis = _delay,
+						DelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
+						GameModeAutoDetectEnabled = GameModeAutoDetect.IsChecked ?? false,
+						MaxDisplayedWordCount = MaxWords,
 						FixDelayEnabled = FixDelay.IsChecked ?? false,
-						FixDelayPerWord = FixDelayPerWord.IsChecked ?? false,
-						FixDelay = _fixdelay
+						FixDelayPerWordEnabled = FixDelayPerWord.IsChecked ?? false,
+						FixDelayInMillis = _fixdelay
 					});
 				}
 				catch (Exception ex)

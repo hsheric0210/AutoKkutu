@@ -13,6 +13,15 @@ namespace AutoKkutu.Databases
 		public abstract string GetString(int index);
 		public abstract int GetInt32(int index);
 		public abstract int GetOrdinal(string name);
-		public abstract void Dispose();
+		protected virtual void Dispose(bool disposing)
+		{
+
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 	}
 }

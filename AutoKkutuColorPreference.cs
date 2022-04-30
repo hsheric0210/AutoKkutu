@@ -13,18 +13,28 @@ namespace AutoKkutu
 		public static readonly Color DefaultEndMissionWordColor = Color.FromRgb(0x20, 0xC0, 0xA8);
 		public static readonly Color DefaultAttackMissionWordColor = Color.FromRgb(0xFF, 0xFF, 0x40);
 
-		public Color EndWordColor = DefaultEndWordColor;
-		public Color AttackWordColor = DefaultAttackWordColor;
-		public Color MissionWordColor = DefaultMissionWordColor;
-		public Color EndMissionWordColor = DefaultEndMissionWordColor;
-		public Color AttackMissionWordColor = DefaultAttackMissionWordColor;
-
-		public AutoKkutuColorPreference()
+		public Color EndWordColor
 		{
-			// HTML color format: '#' + Convert.ToString(EndWordColor.ToArgb(), 16);
+			get; set;
+		}
+		public Color AttackWordColor
+		{
+			get; set;
+		}
+		public Color MissionWordColor
+		{
+			get; set;
+		}
+		public Color EndMissionWordColor
+		{
+			get; set;
+		}
+		public Color AttackMissionWordColor
+		{
+			get; set;
 		}
 
-		public void LoadFromConfig()
+		public AutoKkutuColorPreference()
 		{
 			EndWordColor = FromConfig(nameof(EndWordColor), DefaultEndWordColor);
 			AttackWordColor = FromConfig(nameof(AttackWordColor), DefaultAttackWordColor);
@@ -46,5 +56,17 @@ namespace AutoKkutu
 		}
 
 		public override int GetHashCode() => HashCode.Combine(EndWordColor, AttackWordColor, MissionWordColor, EndMissionWordColor, AttackMissionWordColor);
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is AutoKkutuColorPreference))
+				return false;
+			AutoKkutuColorPreference other = (AutoKkutuColorPreference)obj;
+			return EndWordColor == other.EndWordColor
+				&& AttackWordColor == other.AttackWordColor
+				&& MissionWordColor == other.MissionWordColor
+				&& EndMissionWordColor == other.EndMissionWordColor
+				&& AttackMissionWordColor == other.AttackMissionWordColor;
+		}
 	}
 }

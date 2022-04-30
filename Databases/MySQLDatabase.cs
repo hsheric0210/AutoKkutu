@@ -5,20 +5,23 @@ namespace AutoKkutu.Databases
 {
 	public partial class MySQLDatabase : CommonDatabase
 	{
-		private static MySqlConnection DatabaseConnection;
+		private readonly MySqlConnection DatabaseConnection;
 
-		private string ConnectionString;
+		private readonly string ConnectionString;
 
-		private string DatabaseName = "";
+		private readonly string DatabaseName = "";
 
 		public MySQLDatabase(string connectionString) : base()
 		{
+			if (connectionString == null)
+				throw new ArgumentNullException(nameof(connectionString));
+
 			ConnectionString = connectionString;
 
 			try
 			{
-				int databaseNameIndex = connectionString.ToLowerInvariant().IndexOf("database") + 9;
-				int databaseNameIndexEnd = connectionString.Substring(databaseNameIndex).IndexOf(';');
+				int databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;
+				int databaseNameIndexEnd = connectionString.IndexOf(';', databaseNameIndex) - databaseNameIndex;
 				DatabaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
 				Logger.InfoFormat("MySQL database name is '{0}'", DatabaseName);
 
@@ -51,8 +54,7 @@ END;
 			catch (Exception ex)
 			{
 				Logger.Error(DatabaseConstants.Error_Connect, ex);
-				if (DBError != null)
-					DBError(null, EventArgs.Empty);
+				TriggerDatabaseError();
 			}
 		}
 
@@ -155,7 +157,12 @@ END;
 		{
 		}
 
-		public override void Dispose() => DatabaseConnection.Dispose();
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				DatabaseConnection.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 
 	public class MySQLDatabaseReader : CommonDatabaseReader
@@ -168,6 +175,11 @@ END;
 		public override int GetOrdinal(string name) => Reader.GetOrdinal(name);
 		public override int GetInt32(int index) => Reader.GetInt32(index);
 		public override bool Read() => Reader.Read();
-		public override void Dispose() => Reader.Dispose();
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				Reader.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 }

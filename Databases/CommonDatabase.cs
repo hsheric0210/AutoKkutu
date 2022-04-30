@@ -17,12 +17,18 @@ namespace AutoKkutu
 
 		public static readonly ILog Logger = LogManager.GetLogger(nameof(CommonDatabase));
 		
-		public static EventHandler<DBImportEventArgs> ImportStart;
-		public static EventHandler<DBImportEventArgs> ImportDone;
-		public static EventHandler DBError;
+		public static event EventHandler<DBImportEventArgs> ImportStart;
+		public static event EventHandler<DBImportEventArgs> ImportDone;
+		public static event EventHandler DBError;
 
-		public CommonDatabase()
+		protected CommonDatabase()
 		{
+		}
+
+		protected static void TriggerDatabaseError()
+		{
+			if (DBError != null)
+				DBError(null, EventArgs.Empty);
 		}
 
 		public static CommonDatabase GetInstance(Configuration config)
@@ -472,7 +478,16 @@ namespace AutoKkutu
 
 		public abstract void PerformVacuum();
 
-		public abstract void Dispose();
+		protected virtual void Dispose(bool disposing)
+		{
+
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
 		private struct PreferenceInfo
 		{

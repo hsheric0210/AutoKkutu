@@ -301,7 +301,7 @@ namespace AutoKkutu
 			if (!CheckPathIsValid(args, PathFinderFlags.NONE))
 				return;
 
-			bool autoEnter = CurrentConfig.AutoEnter && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH);
+			bool autoEnter = CurrentConfig.AutoEnterEnabled && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH);
 
 			if (args.Result == PathFinderResult.None && !args.Flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				ChangeStatusBar(CurrentStatus.NotFound);
@@ -326,12 +326,12 @@ namespace AutoKkutu
 					string content = PathFinder.FinalList.First().Content;
 					if (CurrentConfig.DelayEnabled && !args.Flags.HasFlag(PathFinderFlags.RETRIAL))
 					{
-						int delay = CurrentConfig.Delay;
-						if (CurrentConfig.DelayPerWord)
+						int delay = CurrentConfig.DelayInMillis;
+						if (CurrentConfig.DelayPerWordEnabled)
 							delay *= content.Length;
 						ChangeStatusBar(CurrentStatus.Delaying, delay);
 						Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-						if (CurrentConfig.DelayStartAfterWordEnter)
+						if (CurrentConfig.DelayStartAfterWordEnterEnabled)
 							Task.Run(async () =>
 							{
 								while (inputStopwatch.ElapsedMilliseconds <= delay)
@@ -358,7 +358,7 @@ namespace AutoKkutu
 				return true;
 
 			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
-			bool differentMissionChar = CurrentConfig.MissionDetection && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
+			bool differentMissionChar = CurrentConfig.MissionAutoDetectionEnabled && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
@@ -416,7 +416,7 @@ namespace AutoKkutu
 
 		private void StartPathFinding(ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
 		{
-			GameMode mode = CurrentConfig.Mode;
+			GameMode mode = CurrentConfig.GameMode;
 			if (mode == GameMode.Typing_Battle && !flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				return;
 
@@ -434,11 +434,11 @@ namespace AutoKkutu
 					ChangeStatusBar(CurrentStatus.Searching);
 
 					// Setup flag
-					if (CurrentConfig.UseEndWord && (flags.HasFlag(PathFinderFlags.MANUAL_SEARCH) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
+					if (CurrentConfig.EndWordEnabled && (flags.HasFlag(PathFinderFlags.MANUAL_SEARCH) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
 						flags |= PathFinderFlags.USING_END_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_END_WORD;
-					if (CurrentConfig.UseAttackWord)
+					if (CurrentConfig.AttackWordAllowed)
 						flags |= PathFinderFlags.USING_ATTACK_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_ATTACK_WORD;
@@ -447,7 +447,7 @@ namespace AutoKkutu
 					PathFinder.FindPath(new FindWordInfo
 					{
 						Word = word,
-						MissionChar = CurrentConfig.MissionDetection ? missionChar : "",
+						MissionChar = CurrentConfig.MissionAutoDetectionEnabled ? missionChar : "",
 						WordPreference = CurrentConfig.WordPreference,
 						Mode = mode,
 						PathFinderFlags = flags
@@ -477,7 +477,7 @@ namespace AutoKkutu
 			var word = args.Word;
 			Logger.WarnFormat("My path '{0}' is wrong.", word);
 
-			if (!CurrentConfig.AutoFix)
+			if (!CurrentConfig.AutoFixEnabled)
 				return;
 
 			List<PathObject> localFinalList = PathFinder.FinalList;
@@ -488,7 +488,7 @@ namespace AutoKkutu
 				return;
 			}
 
-			if (CurrentConfig.AutoEnter)
+			if (CurrentConfig.AutoEnterEnabled)
 			{
 				try
 				{
@@ -496,8 +496,8 @@ namespace AutoKkutu
 					string path = localFinalList[WordIndex].Content;
 					if (CurrentConfig.FixDelayEnabled)
 					{
-						int delay = CurrentConfig.FixDelay;
-						if (CurrentConfig.FixDelayPerWord)
+						int delay = CurrentConfig.FixDelayInMillis;
+						if (CurrentConfig.FixDelayPerWordEnabled)
 							delay *= path.Length;
 						ChangeStatusBar(CurrentStatus.Delaying, delay);
 						Logger.DebugFormat("Waiting {0}ms before entering next path.", delay);
@@ -561,10 +561,10 @@ namespace AutoKkutu
 
 		private void CommonHandler_GameModeChangeEvent(object sender, GameModeChangeEventArgs args)
 		{
-			if (CurrentConfig.GameModeAutoDetect)
+			if (CurrentConfig.GameModeAutoDetectEnabled)
 			{
 				var newGameMode = args.GameMode;
-				CurrentConfig.Mode = newGameMode;
+				CurrentConfig.GameMode = newGameMode;
 				Logger.InfoFormat("Automatically updated game mode to '{0}'", ConfigEnums.GetGameModeName(newGameMode));
 				UpdateConfig(CurrentConfig);
 			}
@@ -574,12 +574,12 @@ namespace AutoKkutu
 			string word = args.Word.Content;
 			if (CurrentConfig.DelayEnabled)
 			{
-				int delay = CurrentConfig.Delay;
-				if (CurrentConfig.DelayPerWord)
+				int delay = CurrentConfig.DelayInMillis;
+				if (CurrentConfig.DelayPerWordEnabled)
 					delay *= word.Length;
 				ChangeStatusBar(CurrentStatus.Delaying, delay);
 				Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-				if (CurrentConfig.DelayStartAfterWordEnter)
+				if (CurrentConfig.DelayStartAfterWordEnterEnabled)
 					Task.Run(async () =>
 					{
 						while (inputStopwatch.ElapsedMilliseconds <= delay)
@@ -804,7 +804,7 @@ namespace AutoKkutu
 			var currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
-			((PathObject)currentSelected).MakeEnd(CurrentConfig.Mode, Database);
+			((PathObject)currentSelected).MakeEnd(CurrentConfig.GameMode, Database);
 		}
 
 		private void PathList_Click_MakeAttack(object sender, RoutedEventArgs e)
@@ -813,7 +813,7 @@ namespace AutoKkutu
 			var currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
-			((PathObject)currentSelected).MakeAttack(CurrentConfig.Mode, Database);
+			((PathObject)currentSelected).MakeAttack(CurrentConfig.GameMode, Database);
 		}
 
 		private void PathList_Click_MakeNormal(object sender, RoutedEventArgs e)
@@ -823,7 +823,7 @@ namespace AutoKkutu
 			var currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
-			((PathObject)currentSelected).MakeNormal(CurrentConfig.Mode, Database);
+			((PathObject)currentSelected).MakeNormal(CurrentConfig.GameMode, Database);
 		}
 
 		private void PathList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
