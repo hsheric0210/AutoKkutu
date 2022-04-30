@@ -205,10 +205,10 @@ namespace AutoKkutu
 			watch.Start();
 			FinalList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
-				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), PathObjectFlags.None));
+				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), PathObjectFlags.None, 256));
 			Random random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), PathObjectFlags.None));
+				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), PathObjectFlags.None, 256));
 			watch.Stop();
 			NotifyPathUpdate(new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 		}
@@ -385,7 +385,7 @@ namespace AutoKkutu
 				get; private set;
 			}
 
-			public PathObject(string _content, PathObjectFlags _flags)
+			public PathObject(string _content, PathObjectFlags _flags, int missionCharCount)
 			{
 				Content = _content;
 				Title = _content;
@@ -396,7 +396,7 @@ namespace AutoKkutu
 
 				bool isMissionWord = _flags.HasFlag(PathObjectFlags.MissionWord);
 				string tooltipPrefix = "";
-				string mission = isMissionWord ? "미션 " : "";
+				string mission = isMissionWord ? $"미션({missionCharCount}) " : "";
 				if (_flags.HasFlag(PathObjectFlags.EndWord))
 				{
 					tooltipPrefix = $"한방 {mission}단어: ";

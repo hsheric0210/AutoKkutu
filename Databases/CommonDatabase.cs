@@ -473,14 +473,16 @@ namespace AutoKkutu
 			attackWordFlag = (int)WordFlags.AttackWord;
 		}
 
-		public PathObjectFlags GetPathObjectFlags(string word, WordFlags wordFlags, int endWordFlag, int attackWordFlag, string missionChar)
+		public PathObjectFlags GetPathObjectFlags(string word, WordFlags wordFlags, int endWordFlag, int attackWordFlag, string missionChar, out int missionCharCount)
 		{
 			PathObjectFlags pathFlags = PathObjectFlags.None;
 			if (wordFlags.HasFlag((WordFlags)endWordFlag))
 				pathFlags |= PathObjectFlags.EndWord;
 			if (wordFlags.HasFlag((WordFlags)attackWordFlag))
 				pathFlags |= PathObjectFlags.AttackWord;
-			if (!string.IsNullOrWhiteSpace(missionChar) && word.Any(c => c == missionChar.First()))
+
+			missionCharCount = word.Count(c => c == missionChar.First());
+			if (!string.IsNullOrWhiteSpace(missionChar) && missionCharCount > 0)
 				pathFlags |= PathObjectFlags.MissionWord;
 			return pathFlags;
 		}
@@ -495,7 +497,7 @@ namespace AutoKkutu
 				while (reader.Read())
 				{
 					string word = reader.GetString(DatabaseConstants.WordColumnName).ToString().Trim();
-					result.Add(new PathFinder.PathObject(word, GetPathObjectFlags(word, (WordFlags)reader.GetInt32(DatabaseConstants.FlagsColumnName), endWordFlag, attackWordFlag, missionChar)));
+					result.Add(new PathFinder.PathObject(word, GetPathObjectFlags(word, (WordFlags)reader.GetInt32(DatabaseConstants.FlagsColumnName), endWordFlag, attackWordFlag, missionChar, out int missionCharCount), missionCharCount));
 				}
 			return result;
 		}
