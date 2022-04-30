@@ -371,14 +371,27 @@ namespace AutoKkutu
 			StartPathFinding(args.Word, args.MissionChar, PathFinderFlags.NONE);
 		}
 
+		private List<string> GetEndWordList(GameMode mode)
+		{
+			switch (mode)
+			{
+				case GameMode.First_and_Last:
+					return PathFinder.ReverseEndWordList;
+				case GameMode.Kkutu:
+					return PathFinder.KkutuEndWordList;
+			}
+			return PathFinder.EndWordList;
+		}
+
 		private void StartPathFinding(CommonHandler.ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
 		{
-			if (CurrentConfig.Mode == GameMode.Typing_Battle && !flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
+			GameMode mode = CurrentConfig.Mode;
+			if (mode == GameMode.Typing_Battle && !flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				return;
 
 			try
 			{
-				if (!ConfigEnums.IsFreeMode(CurrentConfig.Mode) && PathFinder.EndWordList.Contains(word.Content) && (!word.CanSubstitution || PathFinder.EndWordList.Contains(word.Substitution)))
+				if (!ConfigEnums.IsFreeMode(mode) && GetEndWordList(mode).Contains(word.Content) && (!word.CanSubstitution || GetEndWordList(mode).Contains(word.Substitution)))
 				{
 					Logger.Warn("Can't Find any path : Presented word is End word.");
 					ResetPathList();
@@ -397,7 +410,7 @@ namespace AutoKkutu
 						flags |= PathFinderFlags.USING_ATTACK_WORD;
 					else
 						flags &= ~PathFinderFlags.USING_ATTACK_WORD;
-					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", wordPreference, CurrentConfig.Mode, flags);
+					PathFinder.FindPath(word, CurrentConfig.MissionDetection ? missionChar : "", wordPreference, mode, flags);
 				}
 			}
 			catch (Exception ex)
