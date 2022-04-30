@@ -110,14 +110,49 @@ namespace AutoKkutu
 
 	public enum GameMode
 	{
+		/// <summary>
+		/// 끝말잇기
+		/// </summary>
 		Last_and_First,
+
+		/// <summary>
+		/// 앞말잇기
+		/// </summary>
 		First_and_Last,
+
+		/// <summary>
+		/// 가운뎃말잇기
+		/// </summary>
 		Middle_and_First,
+
+		/// <summary>
+		/// 끄투
+		/// </summary>
 		Kkutu,
+
+		/// <summary>
+		/// 쿵쿵따
+		/// </summary>
 		Kung_Kung_Tta,
+
+		/// <summary>
+		/// 타자 대결
+		/// </summary>
 		Typing_Battle,
+
+		/// <summary>
+		/// 전체
+		/// </summary>
 		All,
+
+		/// <summary>
+		/// 자유
+		/// </summary>
 		Free,
+		
+		/// <summary>
+		/// 자유 끝말잇기
+		/// </summary>
 		Free_Last_and_First
 	}
 }

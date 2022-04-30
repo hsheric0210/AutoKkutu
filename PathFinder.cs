@@ -412,7 +412,7 @@ namespace AutoKkutu
 				else
 				{
 					Color = isMissionWord ? CurrentColorPreference.MissionWordColor.ToString() : "#FFFFFFFF";
-					tooltipPrefix = isMissionWord ? "미션 단어: " : "";
+					tooltipPrefix = isMissionWord ? $"미션({missionCharCount}) 단어: " : "";
 				}
 				SecondaryImage = isMissionWord ? @"images\mission.png" : "";
 

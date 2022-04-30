@@ -383,7 +383,7 @@ namespace AutoKkutu
 		/// </summary>
 		/// <param name="content">검사할 단어</param>
 		/// <returns>단어가 유효할 시 false, 그렇지 않을 경우 true</returns>
-		private static bool IsInvalid(string content) => content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == ')' || content[0] == '-' || content[0] == '.' || content.Contains(" ") || content.Contains(":");
+		private static bool IsInvalid(string content) => content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == '<' || content[0] == ')' || content[0] == '-' || content[0] == '.' || content.Contains(" ") || content.Contains(":");
 
 		/// <summary>
 		/// 단어 노드 목록들(한방 단어 노드 목록, 공격 단어 노드 목록 등)을 데이터베이스로부터 다시 로드합니다.
@@ -459,15 +459,15 @@ namespace AutoKkutu
 				case GameMode.First_and_Last:
 					endWordFlag = (int)WordFlags.ReverseEndWord;
 					attackWordFlag = (int)WordFlags.ReverseAttackWord;
-					break;
+					return;
 				case GameMode.Middle_and_First:
 					endWordFlag = (int)WordFlags.MiddleEndWord;
 					attackWordFlag = (int)WordFlags.MiddleAttackWord;
-					break;
+					return;
 				case GameMode.Kkutu:
 					endWordFlag = (int)WordFlags.KkutuEndWord;
 					attackWordFlag = (int)WordFlags.KkutuAttackWord;
-					break;
+					return;
 			}
 			endWordFlag = (int)WordFlags.EndWord;
 			attackWordFlag = (int)WordFlags.AttackWord;
@@ -481,9 +481,14 @@ namespace AutoKkutu
 			if (wordFlags.HasFlag((WordFlags)attackWordFlag))
 				pathFlags |= PathObjectFlags.AttackWord;
 
-			missionCharCount = word.Count(c => c == missionChar.First());
-			if (!string.IsNullOrWhiteSpace(missionChar) && missionCharCount > 0)
-				pathFlags |= PathObjectFlags.MissionWord;
+			if (!string.IsNullOrWhiteSpace(missionChar))
+			{
+				missionCharCount = word.Count(c => c == missionChar.First());
+				if (missionCharCount > 0)
+					pathFlags |= PathObjectFlags.MissionWord;
+			}
+			else
+				missionCharCount = 0;
 			return pathFlags;
 		}
 

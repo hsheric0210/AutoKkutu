@@ -373,7 +373,7 @@ namespace AutoKkutu
 
 		private void StartPathFinding(CommonHandler.ResponsePresentedWord word, string missionChar, PathFinderFlags flags)
 		{
-			if (CurrentConfig.Mode == GameMode.Typing_Battle)
+			if (CurrentConfig.Mode == GameMode.Typing_Battle && !flags.HasFlag(PathFinderFlags.MANUAL_SEARCH))
 				return;
 
 			try
