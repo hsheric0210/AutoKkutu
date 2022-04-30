@@ -11,7 +11,6 @@ using AutoKkutu.Databases;
 
 namespace AutoKkutu
 {
-	// TODO: 미션 감지 및 단어 선호도 조정 기능 추가
 	[Flags]
 	public enum PathFinderFlags
 	{
@@ -121,48 +120,65 @@ namespace AutoKkutu
 			{
 				NewPathCount = NewPathList.Count;
 				Logger.DebugFormat("Get {0} elements from NewPathList.", NewPathCount);
-				foreach (string word in NewPathList)
-				{
-					WordFlags flags = Utils.GetFlags(word);
-
-					try
-					{
-						Logger.Debug($"Check and add '{word}' into database. (flags: {flags})");
-						if (Database.AddWord(word, flags))
-						{
-							Logger.Info($"Added '{word}' into database.");
-							AddedPathCount++;
-						}
-					}
-					catch (Exception ex)
-					{
-						Logger.Error($"Can't add '{word}' to database", ex);
-					}
-				}
-				NewPathList = new ConcurrentBag<string>();
+				AddedPathCount = AddNewPaths();
 
 				InexistentPathCount = InexistentPathList.Count;
 				Logger.InfoFormat("Get {0} elements from WrongPathList.", InexistentPathCount);
-				foreach (string word in InexistentPathList)
-				{
-					try
-					{
-						RemovedPathCount += Database.DeleteWord(word);
-					}
-					catch (Exception ex)
-					{
-						Logger.Error($"Can't delete '{word}' from database", ex);
-					}
-				}
-				InexistentPathList = new ConcurrentBag<string>();
+				RemovedPathCount = RemoveInexistentPaths();
 
 				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
 				Logger.Info($"Automatic DB Update complete ({result})");
-
 				return result;
 			}
 
 			return null;
+		}
+
+		private static int RemoveInexistentPaths()
+		{
+			int count = 0;
+			foreach (string word in InexistentPathList)
+			{
+				try
+				{
+					count += Database.DeleteWord(word);
+				}
+				catch (Exception ex)
+				{
+					Logger.Error($"Can't delete '{word}' from database", ex);
+				}
+			}
+
+			InexistentPathList = new ConcurrentBag<string>();
+
+			return count;
+		}
+
+		private static int AddNewPaths()
+		{
+			int count = 0;
+			foreach (string word in NewPathList)
+			{
+				WordFlags flags = Utils.GetFlags(word);
+
+				try
+				{
+					Logger.Debug($"Check and add '{word}' into database. (flags: {flags})");
+					if (Database.AddWord(word, flags))
+					{
+						Logger.Info($"Added '{word}' into database.");
+						count++;
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Error($"Can't add '{word}' to database", ex);
+				}
+			}
+
+			NewPathList = new ConcurrentBag<string>();
+
+			return count;
 		}
 
 		public static void AddPreviousPath(string word)
@@ -194,8 +210,7 @@ namespace AutoKkutu
 			for (int i = 0; i < 10; i++)
 				FinalList.Add(new PathObject(firstChar + Utils.GenerateRandomString(256, false, random), PathObjectFlags.None));
 			watch.Stop();
-			if (onPathUpdated != null)
-				onPathUpdated(null, new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+			NotifyPathUpdate(new UpdatedPathEventArgs(word, missionChar, FindResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 		}
 
 		public static void FindPath(CommonHandler.ResponsePresentedWord wordCondition, string missionChar, WordPreference wordPreference, GameMode mode, PathFinderFlags flags)
@@ -216,9 +231,12 @@ namespace AutoKkutu
 			{
 				var watch = new Stopwatch();
 				watch.Start();
+
+				// Flush previous search result
 				FinalList = new List<PathObject>();
+
+				// Search words from database
 				var WordList = new List<PathObject>();
-				var QualifiedNormalList = new List<PathObject>();
 				try
 				{
 					WordList = Database.FindWord(wordCondition, missionChar, flags, wordPreference, mode);
@@ -228,33 +246,42 @@ namespace AutoKkutu
 				{
 					watch.Stop();
 					Logger.Error("Failed to Find Path", e);
-					if (onPathUpdated != null)
-						onPathUpdated(null, new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.Error, 0, 0, 0, flags));
+					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.Error, 0, 0, 0, flags));
 				}
-				QualifiedNormalList = (from word in WordList
+
+				// Filter out words
+				var QualifiedNormalList = (from word in WordList
 									   let wordContent = word.Content
 									   where (!UnsupportedPathList.Contains(wordContent) && (CurrentConfig.ReturnMode || !PreviousPath.Contains(wordContent)))
 									   select word).ToList();
 
+				// If there's no word found (or all words was filtered out)
 				if (QualifiedNormalList.Count == 0)
 				{
 					watch.Stop();
 					Logger.Warn("Can't find any path.");
-					if (onPathUpdated != null)
-						onPathUpdated(null, new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 					return;
 				}
 
+				// Limit the word list size
 				int maxCount = CurrentConfig.MaxWords;
 				if (QualifiedNormalList.Count > maxCount)
 					QualifiedNormalList = QualifiedNormalList.Take(maxCount).ToList();
 
+				// Update final list
 				FinalList = QualifiedNormalList;
+
 				watch.Stop();
 				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds);
-				if (onPathUpdated != null)
-					onPathUpdated(null, new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+				NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, FindResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
+		}
+
+		private static void NotifyPathUpdate(UpdatedPathEventArgs eventArgs)
+		{
+			if (onPathUpdated != null)
+				onPathUpdated(null, eventArgs);
 		}
 
 		public static string ConvertToPresentedWord(string path)

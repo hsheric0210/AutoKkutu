@@ -1,6 +1,4 @@
 ﻿using AutoKkutu.Handlers;
-using CefSharp;
-using CefSharp.Wpf;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -13,7 +11,13 @@ namespace AutoKkutu
 {
 	public abstract class CommonHandler
 	{
+		// Frequently-used function names
+		protected const string WriteInputFunc = "WriteInputFunc";
+		protected const string ClickSubmitFunc = "ClickSubmitFunc";
+
 		protected ILog GetLogger(int? watchdogID = null, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
+
+		private Dictionary<string, string> RegisteredFunctionNames = new Dictionary<string, string>();
 
 		public bool IsWatchdogAlive;
 
@@ -25,7 +29,6 @@ namespace AutoKkutu
 		public bool IsMyTurn => _isMyTurn;
 
 		private Task _mainWatchdogTask;
-
 		private CancellationTokenSource cancelTokenSrc;
 		private readonly int _checkgame_interval = 3000;
 		private readonly int _ingame_interval = 1;
@@ -439,6 +442,27 @@ function {_currentRoundIndexFuncName} {{
 		protected int EvaluateJSInt(string javaScript, string moduleName = null, int defaultResult = -1) => JSEvaluator.EvaluateJSInt(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
 
 		protected bool EvaluateJSBool(string javaScript, string moduleName = null, bool defaultResult = false) => JSEvaluator.EvaluateJSBool(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
+
+		protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
+		{
+			if (!RegisteredFunctionNames.ContainsKey(funcName))
+				RegisteredFunctionNames[funcName] = $"__{Utils.GenerateRandomString(64, true)}";
+
+			var realFuncName = RegisteredFunctionNames[funcName];
+			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
+			{
+				if (EvaluateJSReturnError($@"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
+					GetLogger().ErrorFormat("Failed to register {0}: {1}", funcName, error);
+				else
+					GetLogger().InfoFormat("Register {0}: {1}()", funcName, realFuncName);
+			}
+
+		}
+
+		protected string RegisteredJSFunctionName(string funcName)
+		{
+			return RegisteredFunctionNames[funcName];
+		}
 
 		public class ResponsePresentedWord
 		{

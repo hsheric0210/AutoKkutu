@@ -1,6 +1,4 @@
-﻿using CefSharp.Wpf;
-
-namespace AutoKkutu.Handlers
+﻿namespace AutoKkutu.Handlers
 {
 	internal partial class MusicKkutuHandler : CommonHandler
 	{

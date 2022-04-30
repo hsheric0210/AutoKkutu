@@ -1,5 +1,4 @@
-﻿using CefSharp;
-using System;
+﻿using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,9 +30,8 @@ namespace AutoKkutu
 		private const string MANAGER_NAME = "데이터베이스 관리자";
 		private const string MANAGE_SUCCESSFUL = "성공적으로 작업을 수행했습니다.";
 		private const string MANAGE_UNSUCCESSFUL = "작업을 수행하는 도중 문제가 발생했습니다\n자세한 사항은 콘솔을 참조하십시오.";
-		private const string INPUT_KEYWORD_PLACEHOLDER = "단어를 입력하세요";
+		private const string INPUT_WORD_PLACEHOLDER = "단어 입력 (여러 줄은 줄바꿈으로 구분)";
 		private const string INPUT_NODE_PLACEHOLDER = "노드 입력 (여러 개는 줄바꿈으로 구분)";
-		private const string INPUT_AUTOMATIC_PLACEHOLDER = "단어 입력 (여러 줄은 줄바꿈으로 구분)";
 
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(DatabaseManagement));
 
@@ -77,7 +75,7 @@ namespace AutoKkutu
 
 		public void BatchAddWord(string content, BatchAddWordMode mode, WordFlags flags)
 		{
-			if (string.IsNullOrWhiteSpace(content))
+			if (string.IsNullOrWhiteSpace(content) || content.Equals(INPUT_WORD_PLACEHOLDER, StringComparison.InvariantCultureIgnoreCase))
 				return;
 
 			bool remove = mode == BatchAddWordMode.Remove;
@@ -173,7 +171,7 @@ namespace AutoKkutu
 
 		private void BatchAddNode(string content, bool remove, NodeFlags type)
 		{
-			if (string.IsNullOrWhiteSpace(content) || content == INPUT_NODE_PLACEHOLDER)
+			if (string.IsNullOrWhiteSpace(content) || content.Equals(INPUT_NODE_PLACEHOLDER, StringComparison.InvariantCultureIgnoreCase))
 				return;
 
 			var NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
@@ -378,7 +376,7 @@ namespace AutoKkutu
 
 		private void Batch_Input_GotFocus(object sender, RoutedEventArgs e)
 		{
-			if (Batch_Input.Text == INPUT_AUTOMATIC_PLACEHOLDER)
+			if (Batch_Input.Text == INPUT_WORD_PLACEHOLDER)
 			{
 				Batch_Input.Text = "";
 				Batch_Input.FontStyle = FontStyles.Normal;
@@ -389,7 +387,7 @@ namespace AutoKkutu
 		{
 			if (string.IsNullOrWhiteSpace(Batch_Input.Text))
 			{
-				Batch_Input.Text = INPUT_AUTOMATIC_PLACEHOLDER;
+				Batch_Input.Text = INPUT_WORD_PLACEHOLDER;
 				Batch_Input.FontStyle = FontStyles.Italic;
 			}
 		}
