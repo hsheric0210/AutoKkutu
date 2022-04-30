@@ -116,8 +116,6 @@ namespace AutoKkutu
 			return count;
 		}
 
-		public void LoadFromExternalSQLite(string fileName) => SQLiteDatabaseHelper.LoadFromExternalSQLite(this, fileName);
-
 		private static string GetIndexColumnName(FindWordInfo opts)
 		{
 			switch (opts.Mode)
@@ -251,6 +249,10 @@ namespace AutoKkutu
 
 		protected void CheckTable()
 		{
+			// Create node tables
+			foreach (var tableName in new string[] { DatabaseConstants.EndWordListTableName, DatabaseConstants.AttackWordListTableName, DatabaseConstants.ReverseEndWordListTableName, DatabaseConstants.ReverseAttackWordListTableName, DatabaseConstants.KkutuEndWordListTableName, DatabaseConstants.KkutuAttackWordListTableName })
+				MakeTableIfNotExists(tableName);
+
 			// Create word list table
 			if (!IsTableExists(DatabaseConstants.WordListTableName))
 				MakeTable(DatabaseConstants.WordListTableName);
@@ -272,25 +274,8 @@ namespace AutoKkutu
 			}
 
 			// Create indexes
-			foreach (var columnName in new string[]
-			{
-				DatabaseConstants.WordIndexColumnName,
-				DatabaseConstants.ReverseWordIndexColumnName,
-				DatabaseConstants.KkutuWordIndexColumnName
-			})
+			foreach (var columnName in new string[] { DatabaseConstants.WordIndexColumnName, DatabaseConstants.ReverseWordIndexColumnName, DatabaseConstants.KkutuWordIndexColumnName })
 				CreateIndex(DatabaseConstants.WordListTableName, columnName);
-
-			// Create node tables
-			foreach (var tableName in new string[]
-			{
-				DatabaseConstants.EndWordListTableName,
-				DatabaseConstants.AttackWordListTableName,
-				DatabaseConstants.ReverseEndWordListTableName,
-				DatabaseConstants.ReverseAttackWordListTableName,
-				DatabaseConstants.KkutuEndWordListTableName,
-				DatabaseConstants.KkutuAttackWordListTableName
-			})
-				MakeTableIfNotExists(tableName);
 		}
 
 		private bool UpdateKkutuIndexDataType()

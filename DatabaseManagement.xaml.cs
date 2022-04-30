@@ -9,6 +9,7 @@ using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using log4net;
 using static AutoKkutu.Constants;
+using AutoKkutu.Databases;
 
 namespace AutoKkutu
 {
@@ -146,7 +147,7 @@ namespace AutoKkutu
 			dialog.CheckPathExists = true;
 			dialog.CheckFileExists = true;
 			if (dialog.ShowDialog() ?? false)
-				Database.LoadFromExternalSQLite(dialog.FileName);
+				SQLiteDatabaseHelper.LoadFromExternalSQLite(Database, dialog.FileName);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
