@@ -4,6 +4,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/7709ad79cf511830e0bf/maintainability)](https://codeclimate.com/github/hsheric0210/AutoKkutu/maintainability)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/hsheric0210/AutoKkutu)
 ![GitHub repo size](https://img.shields.io/github/repo-size/hsheric0210/autokkutu)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=alert_status)](https://sonarcloud.io/dashboard?id=hsheric0210_AutoKkutu)
 
 AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌습니다
 (제작자가 리버싱 후 수정 허용함)

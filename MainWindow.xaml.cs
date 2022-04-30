@@ -67,29 +67,10 @@ namespace AutoKkutu
 		public MainWindow()
 		{
 			// Initialize CEF
-			Cef.Initialize(new CefSettings
-			{
-				CefCommandLineArgs =
-				{
-					{
-						"disable-direct-write",
-						"1"
-					},
-					"disable-gpu",
-					"enable-begin-frame-scheduling"
-				},
-				UserAgent = "Chrome",
-				CachePath = Environment.CurrentDirectory + "\\Cache"
-			}, true, (IApp)null);
+			InitializeCEF();
 
 			// Load default config
-			PathFinder.UpdateConfig(CurrentConfig = new AutoKkutuConfiguration());
-			CommonHandler.UpdateConfig(CurrentConfig);
-			CurrentColorPreference = new AutoKkutuColorPreference();
-			CurrentColorPreference.LoadFromConfig();
-			PathFinder.UpdateColorPreference(CurrentColorPreference);
-
-			var databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
+			InitializeConfiguration();
 
 			// Initialize Browser
 			Browser = new ChromiumWebBrowser
@@ -106,6 +87,7 @@ namespace AutoKkutu
 			VersionLabel.Content = "v1.0";
 
 			CommonHandler.InitializeHandlers();
+
 			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
 
@@ -114,10 +96,55 @@ namespace AutoKkutu
 
 			Browser.FrameLoadEnd += Browser_FrameLoadEnd;
 			Browser.FrameLoadEnd += Browser_FrameLoadEnd_RunOnce;
-			browserContainer.Content = Browser;
+			CommonDatabase.DBError += DatabaseManager_DBError;
+			BrowserContainer.Content = Browser;
 
-			MySQLDatabase.DBError += DatabaseManager_DBError;
-			PathFinder.Init(Database = CommonDatabase.GetInstance(databaseConfig));
+			try
+			{
+				var watch = new Stopwatch();
+				watch.Start();
+				var databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
+				PathFinder.Init(Database = CommonDatabase.GetInstance(databaseConfig));
+				watch.Stop();
+				Logger.InfoFormat("{0} initialization took {1}ms.", nameof(PathFinder), watch.ElapsedMilliseconds);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Error loading database.config", ex);
+				Environment.Exit(1);
+			}
+		}
+
+		private static void InitializeCEF() => Cef.Initialize(new CefSettings
+		{
+			CefCommandLineArgs =
+				{
+					{
+						"disable-direct-write",
+						"1"
+					},
+					"disable-gpu",
+					"enable-begin-frame-scheduling"
+				},
+			UserAgent = "Chrome",
+			CachePath = Environment.CurrentDirectory + "\\Cache"
+		}, true, (IApp)null);
+
+		private static void InitializeConfiguration()
+		{
+			PathFinder.UpdateConfig(CurrentConfig = new AutoKkutuConfiguration());
+			CommonHandler.UpdateConfig(CurrentConfig);
+			CurrentColorPreference = new AutoKkutuColorPreference();
+			try
+			{
+				CurrentColorPreference.LoadFromConfig();
+			}
+			catch (Exception ex)
+			{
+				// This log may only available in log file
+				Logger.Error(ex);
+			}
+			PathFinder.UpdateColorPreference(CurrentColorPreference);
 		}
 
 		public static void UpdateConfig(AutoKkutuConfiguration newConfig)
@@ -151,59 +178,67 @@ namespace AutoKkutu
 		private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
 		{
 			if (Handler != null)
-			{
-				Logger.InfoFormat("Unregistered previous handler: {0}", Handler.GetID());
-
-				// Unregister previous handler
-				Handler.onGameStarted -= CommonHandler_GameStart;
-				Handler.onGameEnded -= CommonHandler_GameEnd;
-				Handler.onMyTurn -= CommonHandler_MyTurnEvent;
-				Handler.onMyTurnEnded -= CommonHandler_MyTurnEndEvent;
-				Handler.onUnsupportedWordEntered -= CommonHandler_onUnsupportedWordEntered;
-				Handler.onMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
-				Handler.onRoundChange -= CommonHandler_RoundChangeEvent;
-				Handler.onGameModeChange -= CommonHandler_GameModeChangeEvent;
-				Handler.onWordPresented -= CommonHandler_WordPresentedEvent;
-				Handler.StopWatchdog();
-				Handler = null;
-			}
+				UnloadPreviousHandler(Handler);
 
 			// Initialize handler and Register event handlers
 			string url = e.Url;
 			Handler = CommonHandler.getHandler(url);
 			if (Handler != null)
-			{
-				Browser.FrameLoadEnd -= Browser_FrameLoadEnd;
-				Logger.Info("Browser frame-load end.");
-
-				Handler.onGameStarted += CommonHandler_GameStart;
-				Handler.onGameEnded += CommonHandler_GameEnd;
-				Handler.onMyTurn += CommonHandler_MyTurnEvent;
-				Handler.onMyTurnEnded += CommonHandler_MyTurnEndEvent;
-				Handler.onUnsupportedWordEntered += CommonHandler_onUnsupportedWordEntered;
-				Handler.onMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
-				Handler.onRoundChange += CommonHandler_RoundChangeEvent;
-				Handler.onGameModeChange += CommonHandler_GameModeChangeEvent;
-				Handler.onWordPresented += CommonHandler_WordPresentedEvent;
-				Handler.StartWatchdog();
-
-				Logger.InfoFormat("Using handler: {0}", Handler.GetID());
-				RemoveAd();
-				Dispatcher.Invoke(() =>
-				{
-					Logger.Info("Hide LoadOverlay.");
-
-					var img = new BitmapImage();
-					img.BeginInit();
-					img.UriSource = new Uri($@"Images\{Database.GetDBType()}.png", UriKind.Relative);
-					img.EndInit();
-					DBLogo.Source = img;
-
-					LoadOverlay.Visibility = Visibility.Hidden;
-				});
-			}
+				RegisterHandler(Handler);
 			else
 				Logger.WarnFormat("Unsupported site: {0}", url);
+		}
+
+		private void RegisterHandler(CommonHandler handler)
+		{
+			Browser.FrameLoadEnd -= Browser_FrameLoadEnd;
+			Logger.Info("Browser frame-load end.");
+
+			handler.onGameStarted += CommonHandler_GameStart;
+			handler.onGameEnded += CommonHandler_GameEnd;
+			handler.onMyTurn += CommonHandler_MyTurnEvent;
+			handler.onMyTurnEnded += CommonHandler_MyTurnEndEvent;
+			handler.onUnsupportedWordEntered += CommonHandler_onUnsupportedWordEntered;
+			handler.onMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
+			handler.onRoundChange += CommonHandler_RoundChangeEvent;
+			handler.onGameModeChange += CommonHandler_GameModeChangeEvent;
+			handler.onWordPresented += CommonHandler_WordPresentedEvent;
+			handler.StartWatchdog();
+
+			Logger.InfoFormat("Using handler: {0}", handler.GetID());
+			RemoveAd();
+			Dispatcher.Invoke(() => HideLoadOverlay());
+		}
+
+		private void HideLoadOverlay()
+		{
+			Logger.Info("Hide LoadOverlay.");
+
+			var img = new BitmapImage();
+			img.BeginInit();
+			img.UriSource = new Uri($@"Images\{Database.GetDBType()}.png", UriKind.Relative);
+			img.EndInit();
+			DBLogo.Source = img;
+
+			LoadOverlay.Visibility = Visibility.Hidden;
+		}
+
+		private void UnloadPreviousHandler(CommonHandler handler)
+		{
+			Logger.InfoFormat("Unregistered previous handler: {0}", handler.GetID());
+
+			// Unregister previous handler
+			handler.onGameStarted -= CommonHandler_GameStart;
+			handler.onGameEnded -= CommonHandler_GameEnd;
+			handler.onMyTurn -= CommonHandler_MyTurnEvent;
+			handler.onMyTurnEnded -= CommonHandler_MyTurnEndEvent;
+			handler.onUnsupportedWordEntered -= CommonHandler_onUnsupportedWordEntered;
+			handler.onMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
+			handler.onRoundChange -= CommonHandler_RoundChangeEvent;
+			handler.onGameModeChange -= CommonHandler_GameModeChangeEvent;
+			handler.onWordPresented -= CommonHandler_WordPresentedEvent;
+			handler.StopWatchdog();
+			handler = null;
 		}
 
 		private void DatabaseCheckUtils_DBCheckStart(object sender, EventArgs e)

@@ -7,6 +7,9 @@
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
+	<AnalysisLevel>latest</AnalysisLevel>
+	<AnalysisMode>All</AnalysisMode>
+	<CodeAnalysisRuleSet>.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include=".sonarlint\hsheric0210_autokkutu\CSharp\SonarLint.xml" />
     <Content Include="database.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -5,10 +5,11 @@ platform:
 - x86
 before_build:
 - cmd: nuget restore
-build:
-  project: AutoKkutu.sln
-  parallel: true
-  verbosity: normal
+build_script:
+- choco install "sonarscanner-msbuild-net46"
+- Sonarscanner.MSBuild.exe begin /o:"hsheric0210" /k:"hsheric0210_AutoKkutu" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f"
+- msbuild /verbosity:normal "AutoKkutu.sln"
+- Sonarscanner.MSBuild.exe end /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f
 after_build:
 - cmd: 7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- Windows.%PLATFORM%.%CONFIGURATION%.7z %APPVEYOR_BUILD_FOLDER%\bin\%PLATFORM%\%CONFIGURATION%\net48\
 artifacts:
