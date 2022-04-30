@@ -9,13 +9,9 @@ namespace AutoKkutu.Handlers
 
 	internal partial class KkutuIoHandler : CommonHandler
 	{
-		private string _parseExtraVisibleStyleTags;
+		private string _parseExtraVisibleStyleTagsFuncName;
 		private string _writeInputFuncName;
 		private string _clickSubmitFuncName;
-
-		public KkutuIoHandler(ChromiumWebBrowser browser) : base(browser)
-		{
-		}
 
 		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.io\\/\\?server=.*$";
 
@@ -23,13 +19,13 @@ namespace AutoKkutu.Handlers
 
 		public override void SendMessage(string input)
 		{
-			if (string.IsNullOrEmpty(_parseExtraVisibleStyleTags) || EvaluateJSBool($"typeof {_parseExtraVisibleStyleTags} != 'function'"))
+			if (string.IsNullOrEmpty(_parseExtraVisibleStyleTagsFuncName) || EvaluateJSBool($"typeof {_parseExtraVisibleStyleTagsFuncName} != 'function'"))
 			{
-				_parseExtraVisibleStyleTags = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
+				_parseExtraVisibleStyleTagsFuncName = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
 
 				// https://stackoverflow.com/a/14865690
-				Browser.EvaluateScriptAsync($@"
-function {_parseExtraVisibleStyleTags}() {{
+				if (EvaluateJSReturnError($@"
+function {_parseExtraVisibleStyleTagsFuncName}() {{
 	var styles = document.querySelectorAll('style');
 	var maxIndex = styles.length, index = 0;
 	var visibleStyles = [];
@@ -49,17 +45,20 @@ function {_parseExtraVisibleStyleTags}() {{
 	}}
 	return visibleStyles;
 }};
-");
+", out string error))
+					GetLogger().ErrorFormat("Failed to register parseExtraVisibleStyleTagsFunc: {0}", error);
+				else
+					GetLogger().Info($"Register parseExtraVisibleStyleTagsFunc: {_parseExtraVisibleStyleTagsFuncName}()");
 			}
 
 			if (string.IsNullOrEmpty(_writeInputFuncName) || EvaluateJSBool($"typeof {_writeInputFuncName} != 'function'"))
 			{
 				_writeInputFuncName = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
 
-				Browser.EvaluateScriptAsync($@"
+				if (EvaluateJSReturnError($@"
 function {_writeInputFuncName}(input) {{
 	var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
-	var visible = {_parseExtraVisibleStyleTags}(), nVisible = visible.length;
+	var visible = {_parseExtraVisibleStyleTagsFuncName}(), nVisible = visible.length;
 	for (let index=0;index<maxTalks;index++) {{
 		for (let index2=0;index2<nVisible;index2++) {{
 			if (talks[index].id == visible[index2]) {{
@@ -69,7 +68,10 @@ function {_writeInputFuncName}(input) {{
 		}}
     }}
 }};
-");
+", out string error))
+					GetLogger().ErrorFormat("Failed to register writeInputFunc: {0}", error);
+				else
+					GetLogger().Info($"Register writeInputFunc: {_writeInputFuncName}()");
 			}
 
 			if (string.IsNullOrEmpty(_clickSubmitFuncName) || EvaluateJSBool($"typeof {_clickSubmitFuncName} != 'function'"))
@@ -77,10 +79,10 @@ function {_writeInputFuncName}(input) {{
 				_clickSubmitFuncName = $"__{Utils.GenerateRandomString(64, true, new System.Random())}";
 				
 				// https://stackoverflow.com/questions/6338217/get-a-css-value-with-javascript
-				Browser.EvaluateScriptAsync($@"
+				if (EvaluateJSReturnError($@"
 function {_clickSubmitFuncName}() {{
 	var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
-	var visible = {_parseExtraVisibleStyleTags}(), nVisible = visible.length;
+	var visible = {_parseExtraVisibleStyleTagsFuncName}(), nVisible = visible.length;
 	for (let index=0;index<maxButtons;index++) {{
 		for (let index2=0;index2<nVisible;index2++) {{
 			if (buttons[index].id == visible[index2]) {{
@@ -90,7 +92,10 @@ function {_clickSubmitFuncName}() {{
 		}}
     }}
 }}
-");
+", out string error))
+					GetLogger().ErrorFormat("Failed to register clickSubmitFunc: {0}", error);
+				else
+					GetLogger().Info($"Register clickSubmitFunc: {_clickSubmitFuncName}()");
 			}
 
 			EvaluateJS($"{_writeInputFuncName}('{input}')");

@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Text;
 using static AutoKkutu.CommonDatabase;
 using static AutoKkutu.Constants;
 using AutoKkutu.Databases;
@@ -54,19 +52,9 @@ namespace AutoKkutu
 		public static void Init(CommonDatabase database)
 		{
 			UpdateDatabase(database);
-			UpdateNodeLists();
-		}
-
-		public static void UpdateNodeLists()
-		{
 			try
 			{
-				AttackWordList = Database.GetNodeList(DatabaseConstants.AttackWordListTableName);
-				EndWordList = Database.GetNodeList(DatabaseConstants.EndWordListTableName);
-				ReverseAttackWordList = Database.GetNodeList(DatabaseConstants.ReverseAttackWordListTableName);
-				ReverseEndWordList = Database.GetNodeList(DatabaseConstants.ReverseEndWordListTableName);
-				KkutuAttackWordList = Database.GetNodeList(DatabaseConstants.KkutuAttackWordListTableName);
-				KkutuEndWordList = Database.GetNodeList(DatabaseConstants.KkutuEndWordListTableName);
+				UpdateNodeLists();
 			}
 			catch (Exception ex)
 			{
@@ -74,6 +62,17 @@ namespace AutoKkutu
 				if (DBError != null)
 					DBError(null, EventArgs.Empty);
 			}
+		}
+
+		public static void UpdateNodeLists()
+		{
+
+			AttackWordList = Database.GetNodeList(DatabaseConstants.AttackWordListTableName);
+			EndWordList = Database.GetNodeList(DatabaseConstants.EndWordListTableName);
+			ReverseAttackWordList = Database.GetNodeList(DatabaseConstants.ReverseAttackWordListTableName);
+			ReverseEndWordList = Database.GetNodeList(DatabaseConstants.ReverseEndWordListTableName);
+			KkutuAttackWordList = Database.GetNodeList(DatabaseConstants.KkutuAttackWordListTableName);
+			KkutuEndWordList = Database.GetNodeList(DatabaseConstants.KkutuEndWordListTableName);
 		}
 
 		public static void UpdateConfig(AutoKkutuConfiguration newConfig)

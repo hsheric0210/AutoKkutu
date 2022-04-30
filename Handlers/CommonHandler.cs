@@ -15,7 +15,6 @@ namespace AutoKkutu
 	{
 		protected ILog GetLogger(int? watchdogID = null, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
 
-		public ChromiumWebBrowser Browser;
 		public bool IsWatchdogAlive;
 
 		public ResponsePresentedWord CurrentPresentedWord = null;
@@ -67,14 +66,14 @@ namespace AutoKkutu
 
 		private static CommonHandler[] HANDLERS;
 
-		public static void InitHandlers(ChromiumWebBrowser browser)
+		public static void InitializeHandlers()
 		{
 			HANDLERS = new CommonHandler[5];
-			HANDLERS[0] = new KkutuOrgHandler(browser);
-			HANDLERS[1] = new KkutuPinkHandler(browser);
-			HANDLERS[2] = new BFKkutuHandler(browser);
-			HANDLERS[3] = new KkutuCoKrHandler(browser);
-			HANDLERS[4] = new MusicKkutuHandler(browser);
+			HANDLERS[0] = new KkutuOrgHandler();
+			HANDLERS[1] = new KkutuPinkHandler();
+			HANDLERS[2] = new BFKkutuHandler();
+			HANDLERS[3] = new KkutuCoKrHandler();
+			HANDLERS[4] = new MusicKkutuHandler();
 		}
 
 		public static CommonHandler getHandler(string url)
@@ -87,8 +86,6 @@ namespace AutoKkutu
 		}
 
 		public static void UpdateConfig(AutoKkutuConfiguration newConfig) => CurrentConfig = newConfig;
-
-		public CommonHandler(ChromiumWebBrowser browser) => Browser = browser;
 
 		public void StartWatchdog()
 		{
@@ -235,59 +232,6 @@ namespace AutoKkutu
 			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 		}
 
-		protected string EvaluateJS(string javaScript, string moduleName = null)
-		{
-			try
-			{
-				return Browser.EvaluateScriptAsync(javaScript)?.Result?.Result?.ToString() ?? " ";
-			}
-			catch (NullReferenceException)
-			{
-				return " ";
-			}
-			catch (Exception ex)
-			{
-				GetLogger(CurrentMainWatchdogID, moduleName).Error("Failed to run script on site.", ex);
-				return " ";
-			}
-		}
-
-		protected int EvaluateJSInt(string javaScript, string watchdogName = null)
-		{
-			try
-			{
-				var result = Browser.EvaluateScriptAsync(javaScript)?.Result;
-				return Convert.ToInt32(result?.Result);
-			}
-			catch (NullReferenceException)
-			{
-				return -1;
-			}
-			catch (Exception ex)
-			{
-				GetLogger(CurrentMainWatchdogID, watchdogName).Error("Failed to run script on site.", ex);
-				return -2;
-			}
-		}
-
-		protected bool EvaluateJSBool(string javaScript, string watchdogName = null)
-		{
-			try
-			{
-				var result = Browser.EvaluateScriptAsync(javaScript)?.Result;
-				return Convert.ToBoolean(result?.Result);
-			}
-			catch (NullReferenceException)
-			{
-				return false;
-			}
-			catch (Exception ex)
-			{
-				GetLogger(CurrentMainWatchdogID, watchdogName).Error("Failed to run script on site.", ex);
-				return false;
-			}
-		}
-
 		private void CheckGameState(CheckType type, int watchdogID)
 		{
 			if (type == CheckType.GameStarted ? IsGameNotInProgress() : IsGameNotInMyTurn())
@@ -319,12 +263,11 @@ namespace AutoKkutu
 					Task.Run(() =>
 					{
 						// https://hjcode.tistory.com/94
-						var result = Browser.EvaluateScriptAsync($@"
+						if (EvaluateJSReturnError($@"
 function {_currentRoundIndexFuncName} {{
     return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));
-}}").Result;
-						if (!string.IsNullOrWhiteSpace(result?.Message ?? ""))
-							GetLogger(watchdogID).Error("Failed to register currentRoundIndexFunc: " + result.Message);
+}}", out string error))
+							GetLogger(watchdogID).Error("Failed to register currentRoundIndexFunc: " + error);
 						else
 							GetLogger(watchdogID).Info($"Register currentRoundIndexFunc: {_currentRoundIndexFuncName}");
 					});
@@ -488,6 +431,14 @@ function {_currentRoundIndexFuncName} {{
 
 			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}
+
+		protected bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
+
+		protected string EvaluateJS(string javaScript, string moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
+
+		protected int EvaluateJSInt(string javaScript, string moduleName = null, int defaultResult = -1) => JSEvaluator.EvaluateJSInt(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
+
+		protected bool EvaluateJSBool(string javaScript, string moduleName = null, bool defaultResult = false) => JSEvaluator.EvaluateJSBool(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
 
 		public class ResponsePresentedWord
 		{

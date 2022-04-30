@@ -1,7 +1,5 @@
 ﻿using AutoKkutu.Databases;
-using AutoKkutu.Handlers;
 using CefSharp;
-using CefSharp.Handler;
 using CefSharp.Wpf;
 using log4net;
 using System;
@@ -103,6 +101,7 @@ namespace AutoKkutu
 				Address = "https://kkutu.pink",
 				UseLayoutRounding = true
 			};
+			JSEvaluator.RegisterBrowser(browser);
 
 			// Visual components setup
 			InitializeComponent();
@@ -110,7 +109,7 @@ namespace AutoKkutu
 			Title = TITLE;
 			VersionLabel.Content = "v1.0";
 
-			CommonHandler.InitHandlers(browser);
+			CommonHandler.InitializeHandlers();
 			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
 			ChatField.Text = INPUT_TEXT_PLACEHOLDER;

@@ -1,25 +1,15 @@
 ﻿using CefSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using log4net;
-using static AutoKkutu.CommonDatabase;
 using static AutoKkutu.Constants;
-using AutoKkutu.Databases;
 
 namespace AutoKkutu
 {
@@ -53,10 +43,10 @@ namespace AutoKkutu
 		public static bool KkutuOnlineDictCheck(string word)
 		{
 			Logger.Info("Find '" + word + "' in kkutu dict...");
-			EvaluateJS("document.getElementById('dict-input').value ='" + word + "'");
-			EvaluateJS("document.getElementById('dict-search').click()");
+			JSEvaluator.EvaluateJS("document.getElementById('dict-input').value ='" + word + "'");
+			JSEvaluator.EvaluateJS("document.getElementById('dict-search').click()");
 			Thread.Sleep(1500);
-			string result = EvaluateJS("document.getElementById('dict-output').innerHTML");
+			string result = JSEvaluator.EvaluateJS("document.getElementById('dict-output').innerHTML");
 			Logger.Info("Server Response : " + result);
 			if (string.IsNullOrWhiteSpace(result) || result == "404: 유효하지 않은 단어입니다.")
 			{
@@ -92,7 +82,7 @@ namespace AutoKkutu
 
 			bool remove = mode == BatchAddWordMode.Remove;
 			bool onlineVerify = mode == BatchAddWordMode.VerifyAndAdd;
-			if (onlineVerify && string.IsNullOrWhiteSpace(EvaluateJS("document.getElementById('dict-output').style")))
+			if (onlineVerify && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
 			{
 				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
@@ -223,23 +213,6 @@ namespace AutoKkutu
 
 			Logger.Info($"Database Operation Complete. {SuccessCount} Success / {DuplicateCount} Duplicated / {FailedCount} Failed.");
 			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{SuccessCount} 개 성공 / {DuplicateCount} 개 중복 / {FailedCount} 개 실패", MANAGER_NAME, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-		}
-
-		public static string EvaluateJS(string script)
-		{
-			try
-			{
-				return MainWindow.browser.EvaluateScriptAsync(script)?.Result?.Result?.ToString() ?? " ";
-			}
-			catch (NullReferenceException)
-			{
-				return " ";
-			}
-			catch (Exception e2)
-			{
-				Logger.Error("Failed to run script on site.", e2);
-				return " ";
-			}
 		}
 
 		// Button Handlers

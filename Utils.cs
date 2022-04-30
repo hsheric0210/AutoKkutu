@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using static AutoKkutu.Constants;
@@ -80,11 +79,11 @@ namespace AutoKkutu
 
 		public static string GetLaFHeadNode(string word) => word.First().ToString();
 		public static string GetFaLHeadNode(string word) => word.Last().ToString();
-		public static string GetKkutuHeadNode(string word) => word.Length >= 4 ? word.Substring(0, 2) : word.First().ToString();
+		public static string GetKkutuHeadNode(string word) => word.Length >= 4 ? word.Substring(0, 2) : (word.Length >= 3 ? word.First().ToString() : "");
 
 		public static string GetLaFTailNode(string word) => word.Last().ToString();
 		public static string GetFaLTailNode(string word) => word.First().ToString();
-		public static string GetKkutuTailNode(string word) => word.Substring(word.Length - 3, 2);
+		public static string GetKkutuTailNode(string word) => word.Length >= 4 ? word.Substring(word.Length - 3, 2) : word.Last().ToString();
 		public static string GetMaFNode(string word) => word[(word.Length - 1) / 2].ToString();
 	}
 }

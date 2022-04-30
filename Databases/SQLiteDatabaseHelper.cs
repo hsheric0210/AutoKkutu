@@ -1,9 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using static AutoKkutu.CommonDatabase;
 using static AutoKkutu.Constants;
@@ -31,22 +28,68 @@ namespace AutoKkutu.Databases
 			return false;
 		}
 
-		private static void ImportNode(CommonDatabase database, SqliteConnection connection, string type, string tableName, ref int Count)
+		private struct SQLiteImportArgs
 		{
-			if (database.IsTableExists(tableName))
-				using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {tableName}", connection).ExecuteReader())
-					while (reader.Read())
-					{
-						string endword = reader["word_index"].ToString();
-						if (database.AddNode(endword))
-							Logger.InfoFormat("Added {0} '{1}'", type, endword);
-						else
-							Logger.WarnFormat("{0} '{1}' is already existing in database.", type, endword);
-						Count++;
-					}
+			public CommonDatabase targetDatabase;
+			public SqliteConnection externalSQLiteConnection;
 		}
 
-		public static void LoadFromExternalSQLite(CommonDatabase target, string externalSQLiteFilePath)
+		private static void ImportWords(SQLiteImportArgs args, ref int WordCount)
+		{
+			if (!SQLiteDatabaseHelper.IsTableExists(args.externalSQLiteConnection, DatabaseConstants.WordListTableName))
+			{
+				Logger.InfoFormat("External SQLite Database doesn't contain word list table '{0}'", DatabaseConstants.WordListTableName);
+				return;
+			}
+
+			bool hasIsEndwordColumn = IsColumnExists(args.externalSQLiteConnection, DatabaseConstants.WordListTableName, DatabaseConstants.IsEndwordColumnName);
+			using (SqliteDataReader reader = ExecuteReader(args.externalSQLiteConnection, $"SELECT * FROM {DatabaseConstants.WordListTableName}"))
+				while (reader.Read())
+				{
+					string word = reader[DatabaseConstants.WordColumnName].ToString().Trim();
+					if (hasIsEndwordColumn)
+					{
+						// Legacy support
+						bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName]));
+						if (args.targetDatabase.AddWord(word, isEndWord ? WordFlags.EndWord : WordFlags.None))
+							Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
+						else
+							Logger.WarnFormat("Word '{0}' is already existing in database.", word);
+					}
+					else
+					{
+						int flags = Convert.ToInt32(reader[DatabaseConstants.FlagsColumnName]);
+						if (args.targetDatabase.AddWord(word, (WordFlags)flags))
+							Logger.InfoFormat("Imported word '{0}' flags: {1}", word, flags);
+						else
+							Logger.WarnFormat("Word '{0}' is already existing in database.", word);
+					}
+
+					WordCount++;
+				}
+		}
+
+		private static void ImportNode(SQLiteImportArgs args, string tableName, ref int Count)
+		{
+			if (!args.targetDatabase.IsTableExists(tableName))
+			{
+				Logger.InfoFormat("External SQLite Database doesn't contain node list table '{0}'", tableName);
+				return;
+			}
+
+			using (SqliteDataReader reader = new SqliteCommand($"SELECT * FROM {tableName}", args.externalSQLiteConnection).ExecuteReader())
+				while (reader.Read())
+				{
+					string endword = reader[DatabaseConstants.WordIndexColumnName].ToString();
+					if (args.targetDatabase.AddNode(endword))
+						Logger.InfoFormat("Added {0} '{1}'", tableName, endword);
+					else
+						Logger.WarnFormat("{0} '{1}' is already existing in database.", tableName, endword);
+					Count++;
+				}
+		}
+
+		public static void LoadFromExternalSQLite(CommonDatabase targetDatabase, string externalSQLiteFilePath)
 		{
 			if (!new FileInfo(externalSQLiteFilePath).Exists)
 				return;
@@ -59,56 +102,18 @@ namespace AutoKkutu.Databases
 				try
 				{
 					Logger.InfoFormat("Loading external SQLite database: {0}", externalSQLiteFilePath);
-					var externalDBConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
-					externalDBConnection.Open();
+					var externalSQLiteConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
+					externalSQLiteConnection.Open();
 
-					if (!SQLiteDatabaseHelper.IsTableExists(externalDBConnection, DatabaseConstants.WordListTableName))
-					{
-						Logger.InfoFormat("Database doesn't contain table '{0}'", DatabaseConstants.WordListTableName);
-						return;
-					}
-
-					int WordCount = 0;
-					int AttackWordCount = 0;
-					int EndWordCount = 0;
-					int ReverseAttackWordCount = 0;
-					int ReverseEndWordCount = 0;
-					int KkutuAttackWordCount = 0;
-					int KkutuEndWordCount = 0;
-
-					bool hasIsEndwordColumn = IsColumnExists(externalDBConnection, DatabaseConstants.WordListTableName, "is_endword");
-
-					using (SqliteDataReader reader = ExecuteReader(externalDBConnection, $"SELECT * FROM {DatabaseConstants.WordListTableName}"))
-						while (reader.Read())
-						{
-							string word = reader["word"].ToString().Trim();
-							if (hasIsEndwordColumn)
-							{
-								// Legacy support
-								bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader["is_endword"]));
-								if (target.AddWord(word, isEndWord ? WordFlags.EndWord : WordFlags.None))
-									Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
-								else
-									Logger.WarnFormat("Word '{0}' is already existing in database.", word);
-							}
-							else
-							{
-								int flags = Convert.ToInt32(reader["flags"]);
-								if (target.AddWord(word, (WordFlags)flags))
-									Logger.InfoFormat("Imported word '{0}' flags: {1}", word, flags);
-								else
-									Logger.WarnFormat("Word '{0}' is already existing in database.", word);
-							}
-
-							WordCount++;
-						}
-
-					ImportNode(target, externalDBConnection, "Attack word", DatabaseConstants.AttackWordListTableName, ref AttackWordCount);
-					ImportNode(target, externalDBConnection, "End-word", DatabaseConstants.EndWordListTableName, ref EndWordCount);
-					ImportNode(target, externalDBConnection, "Reverse attack word", DatabaseConstants.ReverseAttackWordListTableName, ref ReverseAttackWordCount);
-					ImportNode(target, externalDBConnection, "Reverse end-word", DatabaseConstants.ReverseEndWordListTableName, ref ReverseEndWordCount);
-					ImportNode(target, externalDBConnection, "Kkutu attack word", DatabaseConstants.KkutuAttackWordListTableName, ref KkutuAttackWordCount);
-					ImportNode(target, externalDBConnection, "Kkutu end-word", DatabaseConstants.KkutuEndWordListTableName, ref KkutuEndWordCount);
+					var args = new SQLiteImportArgs { targetDatabase = targetDatabase, externalSQLiteConnection = externalSQLiteConnection };
+					int WordCount = 0, AttackWordCount = 0, EndWordCount = 0, ReverseAttackWordCount = 0, ReverseEndWordCount = 0, KkutuAttackWordCount = 0, KkutuEndWordCount = 0;
+					ImportWords(args, ref WordCount);
+					ImportNode(args, DatabaseConstants.AttackWordListTableName, ref AttackWordCount);
+					ImportNode(args, DatabaseConstants.EndWordListTableName, ref EndWordCount);
+					ImportNode(args, DatabaseConstants.ReverseAttackWordListTableName, ref ReverseAttackWordCount);
+					ImportNode(args, DatabaseConstants.ReverseEndWordListTableName, ref ReverseEndWordCount);
+					ImportNode(args, DatabaseConstants.KkutuAttackWordListTableName, ref KkutuAttackWordCount);
+					ImportNode(args, DatabaseConstants.KkutuEndWordListTableName, ref KkutuEndWordCount);
 
 					Logger.InfoFormat("DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount);
 					if (CommonDatabase.DBJobDone != null)
@@ -116,7 +121,7 @@ namespace AutoKkutu.Databases
 				}
 				catch (Exception ex)
 				{
-					Logger.Error("Failed to connect external DB", ex);
+					Logger.Error("Failed to import external DB", ex);
 				}
 			});
 		}

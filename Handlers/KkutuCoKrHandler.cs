@@ -7,11 +7,7 @@ namespace AutoKkutu.Handlers
 	{
 		private string _writeInputFuncName;
 		private string _clickSubmitFuncName;
-
-		public KkutuCoKrHandler(ChromiumWebBrowser browser) : base(browser)
-		{
-		}
-
+		
 		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.co\\.kr\\/.*\\/game.*$";
 
 		public override string GetHandlerName() => "Kkutu.co.kr Handler";
@@ -22,7 +18,7 @@ namespace AutoKkutu.Handlers
 			{
 				_writeInputFuncName = $"__{Utils.GenerateRandomString(64, true)}";
 
-				Browser.EvaluateScriptAsync($@"
+				if (EvaluateJSReturnError($@"
 function {_writeInputFuncName}(input) {{
 	var userMessages = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
     var maxIndex = userMessages.length, index = 0;
@@ -34,15 +30,18 @@ function {_writeInputFuncName}(input) {{
 		index++;
     }}
 }}
-");
+", out string error))
+					GetLogger().ErrorFormat("Failed to register writeInputFunc: {0}", error);
+				else
+					GetLogger().Info($"Register writeInputFunc: {_writeInputFuncName}()");
 			}
 
 			if (string.IsNullOrEmpty(_clickSubmitFuncName) || EvaluateJSBool($"typeof {_clickSubmitFuncName} != 'function'"))
 			{
 				_clickSubmitFuncName = $"__{Utils.GenerateRandomString(64, true)}";
-				
+
 				// https://stackoverflow.com/questions/6338217/get-a-css-value-with-javascript
-				Browser.EvaluateScriptAsync($@"
+				if (EvaluateJSReturnError($@"
 function {_clickSubmitFuncName}() {{
 	var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button')
     var maxIndex = buttons.length, index = 0;
@@ -54,7 +53,10 @@ function {_clickSubmitFuncName}() {{
 		index++;
     }}
 }}
-");
+", out string error))
+					GetLogger().ErrorFormat("Failed to register clickSubmitFunc: {0}", error);
+				else
+					GetLogger().Info($"Register clickSubmitFunc: {_clickSubmitFuncName}()");
 			}
 
 			EvaluateJS($"{_writeInputFuncName}('{input}')");

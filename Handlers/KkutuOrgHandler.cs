@@ -5,10 +5,6 @@ namespace AutoKkutu.Handlers
 	// TODO
 	internal partial class KkutuOrgHandler : CommonHandler
 	{
-		public KkutuOrgHandler(ChromiumWebBrowser browser) : base(browser)
-		{
-		}
-
 		public override void SendMessage(string input)
 		{
 			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");

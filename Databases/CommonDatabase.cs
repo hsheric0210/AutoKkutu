@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using AutoKkutu.Databases;
 using log4net;
-using Microsoft.Data.Sqlite;
 using static AutoKkutu.Constants;
 
 namespace AutoKkutu
@@ -49,6 +47,11 @@ namespace AutoKkutu
 			return new SQLiteDatabase(file);
 		}
 
+		/// <summary>
+		/// 데이터베이스로부터 노드 목록 데이터를 읽어들입니다.
+		/// </summary>
+		/// <param name="tableName">노드 목록 데이터를 읽어올 데이터베이스 테이블 이름</param>
+		/// <returns>읽어온 노드 목록</returns>
 		public List<string> GetNodeList(string tableName)
 		{
 			var result = new List<string>();
@@ -60,6 +63,11 @@ namespace AutoKkutu
 			return result;
 		}
 
+		/// <summary>
+		/// 데이터베이스에서 단어를 삭제합니다.
+		/// </summary>
+		/// <param name="word">삭제할 단어</param>
+		/// <returns>삭제된 단어의 총 갯수</returns>
 		public int DeleteWord(string word)
 		{
 			int count = ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '{word}'");
@@ -68,6 +76,12 @@ namespace AutoKkutu
 			return count;
 		}
 
+		/// <summary>
+		/// 데이터베이스에 노드를 추가합니다.
+		/// </summary>
+		/// <param name="node">추가할 노드</param>
+		/// <param name="tableName">노드를 추가할 데이터베이스 테이블의 이름</param>
+		/// <returns>데이터베이스에 추가된 노드의 총 갯수</returns>
 		public bool AddNode(string node, string tableName = null)
 		{
 			if (string.IsNullOrWhiteSpace(tableName))
@@ -83,24 +97,49 @@ namespace AutoKkutu
 			return true;
 		}
 
+		/// <summary>
+		/// 데이터베이스에 노드를 추가합니다.
+		/// </summary>
+		/// <param name="node">추가할 노드</param>
+		/// <param name="types">추가할 노드의 속성들</param>
+		/// <returns>데이터베이스에 추가된 노드의 총 갯수</returns>
 		public bool AddNode(string node, NodeFlags types)
 		{
 			bool result = false;
+
+			// 한방 단어
 			if (types.HasFlag(NodeFlags.EndWord))
 				result = AddNode(node, DatabaseConstants.EndWordListTableName) || result;
+
+			// 공격 단어
 			if (types.HasFlag(NodeFlags.AttackWord))
 				result = AddNode(node, DatabaseConstants.AttackWordListTableName) || result;
+
+			// 앞말잇기 한방 단어
 			if (types.HasFlag(NodeFlags.ReverseEndWord))
 				result = AddNode(node, DatabaseConstants.ReverseEndWordListTableName) || result;
+
+			// 앞말잇기 공격 단어
 			if (types.HasFlag(NodeFlags.ReverseAttackWord))
 				result = AddNode(node, DatabaseConstants.ReverseAttackWordListTableName) || result;
+
+			// 끄투 한방 단어
 			if (types.HasFlag(NodeFlags.KkutuEndWord))
 				result = AddNode(node, DatabaseConstants.KkutuEndWordListTableName) || result;
+
+			// 끄투 공격 단어
 			if (types.HasFlag(NodeFlags.KkutuAttackWord))
 				result = AddNode(node, DatabaseConstants.KkutuAttackWordListTableName) || result;
+
 			return result;
 		}
 
+		/// <summary>
+		/// 데이터베이스에서 노드를 삭제합니다.
+		/// </summary>
+		/// <param name="node">삭제할 노드</param>
+		/// <param name="tableName">노드를 삭제할 데이터베이스 테이블의 이름</param>
+		/// <returns>데이터베이스에서 삭제된 노드의 총 갯수</returns>
 		public int DeleteNode(string node, string tableName = null)
 		{
 			if (string.IsNullOrWhiteSpace(tableName))
@@ -112,27 +151,50 @@ namespace AutoKkutu
 			return count;
 		}
 
+		/// <summary>
+		/// 데이터베이스에서 노드를 삭제합니다.
+		/// </summary>
+		/// <param name="node">삭제할 노드</param>
+		/// <param name="types">삭제할 노드의 속성들</param>
+		/// <returns>데이터베이스에서 삭제된 노드의 총 갯수</returns>
 		public int DeleteNode(string node, NodeFlags types)
 		{
 			int count = 0;
+			
+			// 한방 단어
 			if (types.HasFlag(NodeFlags.EndWord))
 				count += DeleteNode(node, DatabaseConstants.EndWordListTableName);
+
+			// 공격 단어
 			if (types.HasFlag(NodeFlags.AttackWord))
 				count += DeleteNode(node, DatabaseConstants.AttackWordListTableName);
+
+			// 앞말잇기 한방 단어
 			if (types.HasFlag(NodeFlags.ReverseEndWord))
 				count += DeleteNode(node, DatabaseConstants.ReverseEndWordListTableName);
+
+			// 앞말잇기 공격 단어
 			if (types.HasFlag(NodeFlags.ReverseAttackWord))
 				count += DeleteNode(node, DatabaseConstants.ReverseAttackWordListTableName);
+			
+			// 끄투 한방 단어
 			if (types.HasFlag(NodeFlags.KkutuEndWord))
 				count += DeleteNode(node, DatabaseConstants.KkutuEndWordListTableName);
+			
+			// 끄투 공격 단어
 			if (types.HasFlag(NodeFlags.KkutuAttackWord))
 				count += DeleteNode(node, DatabaseConstants.KkutuAttackWordListTableName);
+
 			return count;
 		}
 
+		/// <summary>
+		/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
+		/// </summary>
+		/// <param name="UseOnlineDB">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
 		public void CheckDB(bool UseOnlineDB)
 		{
-			if (UseOnlineDB && string.IsNullOrWhiteSpace(DatabaseManagement.EvaluateJS("document.getElementById('dict-output').style")))
+			if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
 			{
 				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 여십시오.", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
@@ -141,63 +203,46 @@ namespace AutoKkutu
 			if (DBJobStart != null)
 				DBJobStart(null, new DBJobArgs("데이터베이스 무결성 검증"));
 
-
 			Task.Run(() =>
 			{
 				try
 				{
 					Logger.Info("Database Intergrity Check....\nIt will be very long task.");
 
+					var watch = new Stopwatch();
+
 					int dbTotalCount = Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName}"));
 					Logger.InfoFormat("Database has Total {0} elements.", dbTotalCount);
-					Logger.Info("Getting all elements from database..");
-					int elementCount = 0;
-					int DeduplicatedCount = 0;
-					int RemovedCount = 0;
-					int FixedCount = 0;
+
+					int CurrentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
+
 					var DeletionList = new List<string>();
-					var WordFixList = new Dictionary<string, string>();
-					var WordIndexCorrection = new Dictionary<string, string>();
-					var ReverseWordIndexCorrection = new Dictionary<string, string>();
-					var KkutuIndexCorrection = new Dictionary<string, string>();
+					Dictionary<string, string> WordFixList = new Dictionary<string, string>(), WordIndexCorrection = new Dictionary<string, string>(), ReverseWordIndexCorrection = new Dictionary<string, string>(), KkutuIndexCorrection = new Dictionary<string, string>();
 					var FlagCorrection = new Dictionary<string, (int, int)>();
 
 					Logger.Info("Opening auxiliary SQLite connection...");
 					using (var auxiliaryConnection = OpenSecondaryConnection())
 					{
-						var watch = new Stopwatch();
-						Logger.Info("Deduplicating entries...");
-						try
-						{
-							watch.Start();
-							DeduplicatedCount = DeduplicateDatabase(auxiliaryConnection);
-							watch.Stop();
-							Logger.InfoFormat("Removed {0} duplicate entries. Took {1}ms.", DeduplicatedCount, watch.ElapsedMilliseconds);
-						}
-						catch (Exception ex)
-						{
-							Logger.Error("Deduplication failed", ex);
-						}
+						// Deduplicate
+						DeduplicateDatabaseAndGetCount(auxiliaryConnection, ref DeduplicatedCount);
 
-						Logger.Info("Updating node lists...");
-						watch.Restart();
-						PathFinder.UpdateNodeLists();
-						watch.Stop();
-						Logger.InfoFormat("Done updating node lists. Took {0}ms.", watch.ElapsedMilliseconds);
+						// Refresh node lists
+						RefreshNodeLists();
 
 						// Check for errors
 						using (CommonDatabaseReader reader = ExecuteReader($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC", auxiliaryConnection))
 						{
 							Logger.Info("Searching problems...");
-							watch.Restart();
+
+							watch.Start();
 							while (reader.Read())
 							{
-								elementCount++;
+								CurrentElementIndex++;
 								string content = reader.GetString(DatabaseConstants.WordColumnName);
-								Logger.InfoFormat("Total {0} of {1} ('{2}')", dbTotalCount, elementCount, content);
+								Logger.InfoFormat("Total {0} of {1} ('{2}')", dbTotalCount, CurrentElementIndex, content);
 
 								// Check word validity
-								if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == ')' || content[0] == '-' || content[0] == '.' || content.Contains(" ") || content.Contains(":"))
+								if (IsInvalid(content))
 								{
 									Logger.Info("Not a valid word; Will be removed.");
 									DeletionList.Add(content);
@@ -212,40 +257,16 @@ namespace AutoKkutu
 								}
 
 								// Check WordIndex tag
-								string correctWordIndex = Utils.GetLaFHeadNode(content);
-								string currentWordIndex = reader.GetString(DatabaseConstants.WordIndexColumnName);
-								if (correctWordIndex != currentWordIndex)
-								{
-									Logger.InfoFormat("Invaild Word Index; Will be fixed to '{0}'.", correctWordIndex);
-									WordIndexCorrection.Add(content, currentWordIndex);
-								}
+								CheckIndexColumn(reader, DatabaseConstants.WordIndexColumnName, Utils.GetLaFHeadNode, WordIndexCorrection);
 
 								// Check ReverseWordIndex tag
-								string correctReverseWordIndex = Utils.GetFaLHeadNode(content);
-								string currentReverseWordIndex = reader.GetString(DatabaseConstants.ReverseWordIndexColumnName);
-								if (correctReverseWordIndex != currentReverseWordIndex)
-								{
-									Logger.InfoFormat("Invaild Reverse Word Index; Will be fixed to '{0}'.", correctReverseWordIndex);
-									ReverseWordIndexCorrection.Add(content, currentReverseWordIndex);
-								}
+								CheckIndexColumn(reader, DatabaseConstants.ReverseWordIndexColumnName, Utils.GetFaLHeadNode, ReverseWordIndexCorrection);
 
 								// Check KkutuIndex tag
-								string correctKkutuIndex = Utils.GetKkutuHeadNode(content);
-								string currentKkutuIndex = reader.GetString(DatabaseConstants.KkutuWordIndexColumnName);
-								if (correctKkutuIndex != currentKkutuIndex)
-								{
-									Logger.InfoFormat("Invaild Kkutu Index; Will be fixed to '{0}'.", correctKkutuIndex);
-									KkutuIndexCorrection.Add(content, currentKkutuIndex);
-								}
+								CheckIndexColumn(reader, DatabaseConstants.KkutuWordIndexColumnName, Utils.GetKkutuHeadNode, KkutuIndexCorrection);
 
-								WordFlags correctFlags = Utils.GetFlags(content);
-								int correctFlagsI = (int)correctFlags;
-								int currentFlags = reader.GetInt32(DatabaseConstants.FlagsColumnName);
-								if (correctFlagsI != currentFlags)
-								{
-									Logger.InfoFormat("Invaild flags; Will be fixed to '{0}'.", correctFlags);
-									FlagCorrection.Add(content, (currentFlags, correctFlagsI));
-								}
+								// Check Flags
+								CheckFlagsColumn(reader, FlagCorrection);
 							}
 							watch.Stop();
 							Logger.InfoFormat("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
@@ -254,64 +275,20 @@ namespace AutoKkutu
 						watch.Restart();
 
 						// Start fixing
-						foreach (string content in DeletionList)
-						{
-							Logger.InfoFormat("Removed '{0}' from database.", content);
-							ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '" + content + "'");
-							RemovedCount++;
-						}
-
-						foreach (var pair in WordFixList)
-						{
-							Logger.InfoFormat("Fixed {0} from '{1}' to '{2}'.", DatabaseConstants.WordColumnName, pair.Key, pair.Value);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.WordColumnName} = '{pair.Value}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
-							FixedCount++;
-						}
-
-						foreach (var pair in WordIndexCorrection)
-						{
-							string correctWordIndex = Utils.GetLaFHeadNode(pair.Key);
-							Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", DatabaseConstants.WordIndexColumnName, pair.Key, pair.Value, correctWordIndex);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.WordIndexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
-							FixedCount++;
-						}
-
-						foreach (var pair in ReverseWordIndexCorrection)
-						{
-							string correctReverseWordIndex = Utils.GetFaLHeadNode(pair.Value);
-							Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", DatabaseConstants.ReverseWordIndexColumnName, pair.Key, pair.Value, correctReverseWordIndex);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.ReverseWordIndexColumnName} = '{correctReverseWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
-							FixedCount++;
-						}
-
-						foreach (var pair in KkutuIndexCorrection)
-						{
-							string content = pair.Key;
-							string correctKkutuIndex = Utils.GetKkutuHeadNode(content);
-							Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", DatabaseConstants.KkutuWordIndexColumnName, content, pair.Value, correctKkutuIndex);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET kkutu_index = '{correctKkutuIndex}' WHERE {DatabaseConstants.WordColumnName} = '{content}';");
-							FixedCount++;
-						}
-
-						foreach (var pair in FlagCorrection)
-						{
-							Logger.InfoFormat("Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordFlags)pair.Value.Item1, (WordFlags)pair.Value.Item2);
-							ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
-							FixedCount++;
-						}
+						DeleteElements(DeletionList, ref RemovedCount);
+						FixIndex(WordFixList, DatabaseConstants.WordColumnName, null, ref FixedCount);
+						FixIndex(WordIndexCorrection, DatabaseConstants.WordIndexColumnName, Utils.GetLaFHeadNode, ref FixedCount);
+						FixIndex(ReverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName, Utils.GetFaLHeadNode, ref FixedCount);
+						FixIndex(KkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName, Utils.GetKkutuHeadNode, ref FixedCount);
+						FixFlag(FlagCorrection, ref FixedCount);
 
 						watch.Stop();
 						Logger.InfoFormat("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
-						Logger.Info("Executing vacuum...");
-						watch.Restart();
-						PerformVacuum();
-						watch.Stop();
-						Logger.InfoFormat("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
+						ExecuteVacuum();
 					}
 
-					Logger.InfoFormat("Total {0} / Removed {1} / Fixed {2}.", dbTotalCount, RemovedCount, FixedCount);
-					Logger.Info("Database Check Completed.");
+					Logger.InfoFormat("Database check completed: Total {0} / Removed {1} / Fixed {2}.", dbTotalCount, RemovedCount, FixedCount);
 
 					if (DBJobDone != null)
 						DBJobDone(null, new DBJobArgs("데이터베이스 무결성 검증", $"{RemovedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
@@ -323,13 +300,140 @@ namespace AutoKkutu
 			});
 		}
 
+		/// <summary>
+		/// (지원되는 DBMS에 한해) Vacuum 작업을 실행합니다.
+		/// </summary>
+		private void ExecuteVacuum()
+		{
+			var watch = new Stopwatch();
+			Logger.Info("Executing vacuum...");
+			watch.Restart();
+			PerformVacuum();
+			watch.Stop();
+			Logger.InfoFormat("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
+		}
+
+		private void FixFlag(Dictionary<string, (int, int)> FlagCorrection, ref int FixedCount)
+		{
+			foreach (var pair in FlagCorrection)
+			{
+				Logger.InfoFormat("Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordFlags)pair.Value.Item1, (WordFlags)pair.Value.Item2);
+				ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
+				FixedCount++;
+			}
+		}
+
+		private void FixIndex(Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string> correctIndexSupplier, ref int FixedCount)
+		{
+			foreach (var pair in WordIndexCorrection)
+			{
+				string correctWordIndex;
+				if (correctIndexSupplier == null)
+				{
+					correctWordIndex = pair.Value;
+					Logger.InfoFormat("Fixed {0}: from '{1}' to '{2}'.", indexColumnName, pair.Key, correctWordIndex);
+				}
+				else
+				{
+					correctWordIndex = correctIndexSupplier(pair.Key);
+					Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
+				}
+				ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
+				FixedCount++;
+			}
+		}
+
+		private void DeleteElements(IEnumerable<string> DeletionList, ref int RemovedCount)
+		{
+			foreach (string content in DeletionList)
+			{
+				Logger.InfoFormat("Removed '{0}' from database.", content);
+				ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '" + content + "'");
+				RemovedCount++;
+			}
+		}
+
+		private static void CheckFlagsColumn(CommonDatabaseReader reader, Dictionary<string, (int, int)> FlagCorrection)
+		{
+			string content = reader.GetString(DatabaseConstants.WordColumnName);
+			WordFlags correctFlags = Utils.GetFlags(content);
+			int _correctFlags = (int)correctFlags;
+			int currentFlags = reader.GetInt32(DatabaseConstants.FlagsColumnName);
+			if (_correctFlags != currentFlags)
+			{
+				Logger.InfoFormat("Invaild flags; Will be fixed to '{0}'.", correctFlags);
+				FlagCorrection.Add(content, (currentFlags, _correctFlags));
+			}
+		}
+
+		private static void CheckIndexColumn(CommonDatabaseReader reader, string indexColumnName, Func<string, string> correctIndexSupplier, Dictionary<string, string> toBeCorrectedTo)
+		{
+			string content = reader.GetString(DatabaseConstants.WordColumnName);
+			string correctWordIndex = correctIndexSupplier(content);
+			string currentWordIndex = reader.GetString(indexColumnName);
+			if (correctWordIndex != currentWordIndex)
+			{
+				Logger.InfoFormat("Invaild '{0}' column; Will be fixed to '{1}'.", indexColumnName, correctWordIndex);
+				toBeCorrectedTo.Add(content, currentWordIndex);
+			}
+		}
+
+		/// <summary>
+		/// 단어가 올바른 단어인지, 유효하지 않은 문자를 포함하고 있진 않은지 검사합니다.
+		/// </summary>
+		/// <param name="content">검사할 단어</param>
+		/// <returns>단어가 유효할 시 false, 그렇지 않을 경우 true</returns>
+		private static bool IsInvalid(string content) => content.Length == 1 || int.TryParse(content[0].ToString(), out int _) || content[0] == '[' || content[0] == ')' || content[0] == '-' || content[0] == '.' || content.Contains(" ") || content.Contains(":");
+
+		/// <summary>
+		/// 단어 노드 목록들(한방 단어 노드 목록, 공격 단어 노드 목록 등)을 데이터베이스로부터 다시 로드합니다.
+		/// </summary>
+		private static void RefreshNodeLists()
+		{
+			var watch = new Stopwatch();
+			watch.Start();
+			Logger.Info("Updating node lists...");
+			try
+			{
+				PathFinder.UpdateNodeLists();
+				watch.Stop();
+				Logger.InfoFormat("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error($"Failed to refresh node lists", ex);
+			}
+		}
+
+		private void DeduplicateDatabaseAndGetCount(IDisposable auxiliaryConnection, ref int DeduplicatedCount)
+		{
+			var watch = new Stopwatch();
+			watch.Start();
+			Logger.Info("Deduplicating entries...");
+			try
+			{
+				DeduplicatedCount = DeduplicateDatabase(auxiliaryConnection);
+				watch.Stop();
+				Logger.InfoFormat("Removed {0} duplicate entries. Took {1}ms.", DeduplicatedCount, watch.ElapsedMilliseconds);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Deduplication failed", ex);
+			}
+		}
+
 		public void LoadFromExternalSQLite(string fileName) => SQLiteDatabaseHelper.LoadFromExternalSQLite(this, fileName);
 
-		private bool CheckElementOnline(string i)
+		/// <summary>
+		/// 끄투 사전 기능을 이용하여 단어가 해당 서버의 데이터베이스에 존재하는지 검사합니다.
+		/// </summary>
+		/// <param name="word">검사할 단어</param>
+		/// <returns>해당 단어가 서버에서 사용할 수 있는지의 여부</returns>
+		private bool CheckElementOnline(string word)
 		{
-			bool result = DatabaseManagement.KkutuOnlineDictCheck(i.Trim());
+			bool result = DatabaseManagement.KkutuOnlineDictCheck(word.Trim());
 			if (!result)
-				ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '{i}'");
+				ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '{word}'");
 			return result;
 		}
 
@@ -340,7 +444,8 @@ namespace AutoKkutu
 				case GameMode.First_and_Last:
 					return DatabaseConstants.ReverseWordIndexColumnName;
 				case GameMode.Kkutu:
-					if (presentedWord.Content.Length > 1) // TODO: 세 글자용 인덱스도 만들기
+					// TODO: 세 글자용 인덱스도 만들기
+					if (presentedWord.Content.Length == 2 || presentedWord.CanSubstitution && presentedWord.Substitution.Length == 2)
 						return DatabaseConstants.KkutuWordIndexColumnName;
 					break;
 			}
@@ -404,32 +509,41 @@ namespace AutoKkutu
 			else
 				condition = $"WHERE {indexColumnName} = '{data.Content}'";
 
-			string auxiliaryCondition = "";
-			string auxiliaryOrderCondition = "";
+			var opt = new PreferenceOptimize { FinderFlags = flags, Preference = wordPreference, Condition = "", OrderCondition = "" };
 
 			// 한방 단어
-			if (!flags.HasFlag(PathFinderFlags.USING_END_WORD))
-				auxiliaryCondition += $"AND (flags & {endWordFlag} = 0)";
-			else if (wordPreference == WordPreference.ATTACK_DAMAGE)
-				auxiliaryOrderCondition += $"(CASE WHEN (flags & {endWordFlag} != 0) THEN {DatabaseConstants.EndWordIndexPriority} ELSE 0 END) +";
+			ApplyPreference(PathFinderFlags.USING_END_WORD, endWordFlag, DatabaseConstants.EndWordIndexPriority, ref opt);
 
 			// 공격 단어
-			if (!flags.HasFlag(PathFinderFlags.USING_ATTACK_WORD))
-				auxiliaryCondition += $"AND (flags & {attackWordFlag} = 0)";
-			else if (wordPreference == WordPreference.ATTACK_DAMAGE)
-				auxiliaryOrderCondition += $"(CASE WHEN (flags & {attackWordFlag} != 0) THEN {DatabaseConstants.AttackWordIndexPriority} ELSE 0 END) +";
+			ApplyPreference(PathFinderFlags.USING_ATTACK_WORD, attackWordFlag, DatabaseConstants.AttackWordIndexPriority, ref opt);
 
 			// 미션 단어
 			string orderCondition;
 			if (string.IsNullOrWhiteSpace(missionChar))
-				orderCondition = $"({auxiliaryOrderCondition} LENGTH({DatabaseConstants.WordColumnName}))";
+				orderCondition = $"({opt.OrderCondition} LENGTH({DatabaseConstants.WordColumnName}))";
 			else
-				orderCondition = $"({GetCheckMissionCharFuncName()}({DatabaseConstants.WordColumnName}, '{missionChar}') + {auxiliaryOrderCondition} LENGTH({DatabaseConstants.WordColumnName}))";
+				orderCondition = $"({GetCheckMissionCharFuncName()}({DatabaseConstants.WordColumnName}, '{missionChar}') + {opt.OrderCondition} LENGTH({DatabaseConstants.WordColumnName}))";
 
 			if (mode == GameMode.All)
-				condition = auxiliaryCondition = "";
+				condition = opt.Condition = "";
 
-			return $"SELECT * FROM {DatabaseConstants.WordListTableName} {condition} {auxiliaryCondition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}";
+			return $"SELECT * FROM {DatabaseConstants.WordListTableName} {condition} {opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}";
+		}
+
+		private struct PreferenceOptimize
+		{
+			public PathFinderFlags FinderFlags;
+			public WordPreference Preference;
+			public string Condition;
+			public string OrderCondition;
+		}
+
+		private static void ApplyPreference(PathFinderFlags targetFlag, int flag, int targetPriority, ref PreferenceOptimize opt)
+		{
+			if (!opt.FinderFlags.HasFlag(targetFlag))
+				opt.Condition += $"AND (flags & {flag} = 0)";
+			else if (opt.Preference == WordPreference.ATTACK_DAMAGE)
+				opt.OrderCondition += $"(CASE WHEN (flags & {flag} != 0) THEN {targetPriority} ELSE 0 END) +";
 		}
 
 		public bool AddWord(string word, WordFlags flags)
