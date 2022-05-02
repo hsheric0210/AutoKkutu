@@ -3,6 +3,7 @@ using AutoKkutu.Databases;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -54,15 +55,16 @@ namespace AutoKkutu.Utils
 						auxiliaryConnection.RefreshNodeLists();
 
 						// Check for errorsd
-						using (CommonDatabaseReader reader = auxiliaryConnection.ExecuteReader($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+						using (DbDataReader reader = auxiliaryConnection.ExecuteReader($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 						{
 							Logger.Info("Searching problems...");
 
+							int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
 							watch.Start();
 							while (reader.Read())
 							{
 								currentElementIndex++;
-								string content = reader.GetString(DatabaseConstants.WordColumnName);
+								string content = reader.GetString(wordOrdinal);
 								Logger.InfoFormat("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
 
 								// Check word validity
@@ -185,12 +187,12 @@ namespace AutoKkutu.Utils
 			return count;
 		}
 
-		private static void CheckFlagsColumn(CommonDatabaseReader reader, Dictionary<string, (int, int)> FlagCorrection)
+		private static void CheckFlagsColumn(DbDataReader reader, Dictionary<string, (int, int)> FlagCorrection)
 		{
-			string content = reader.GetString(DatabaseConstants.WordColumnName);
+			string content = reader.GetString(reader.GetOrdinal(DatabaseConstants.WordColumnName));
 			WordDatabaseAttributes correctFlags = DatabaseUtils.GetFlags(content);
 			int _correctFlags = (int)correctFlags;
-			int currentFlags = reader.GetInt32(DatabaseConstants.FlagsColumnName);
+			int currentFlags = reader.GetInt32(reader.GetOrdinal(DatabaseConstants.FlagsColumnName));
 			if (_correctFlags != currentFlags)
 			{
 				Logger.InfoFormat("Invaild flags; Will be fixed to '{0}'.", correctFlags);
@@ -198,11 +200,11 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		private static void CheckIndexColumn(CommonDatabaseReader reader, string indexColumnName, Func<string, string> correctIndexSupplier, Dictionary<string, string> toBeCorrectedTo)
+		private static void CheckIndexColumn(DbDataReader reader, string indexColumnName, Func<string, string> correctIndexSupplier, Dictionary<string, string> toBeCorrectedTo)
 		{
-			string content = reader.GetString(DatabaseConstants.WordColumnName);
+			string content = reader.GetString(reader.GetOrdinal(DatabaseConstants.WordColumnName));
 			string correctWordIndex = correctIndexSupplier(content);
-			string currentWordIndex = reader.GetString(indexColumnName);
+			string currentWordIndex = reader.GetString(reader.GetOrdinal(indexColumnName));
 			if (correctWordIndex != currentWordIndex)
 			{
 				Logger.InfoFormat("Invaild '{0}' column; Will be fixed to '{1}'.", indexColumnName, correctWordIndex);

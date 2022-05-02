@@ -409,9 +409,9 @@ namespace AutoKkutu
 		private void CheckExample(int watchdogID)
 		{
 			string example = GetExampleWord();
-			if (string.IsNullOrWhiteSpace(example) || example.StartsWith("게임 끝"))
+			if (string.IsNullOrWhiteSpace(example) || example.StartsWith("게임 끝", StringComparison.Ordinal))
 				return;
-			if (string.Equals(example, _exampleWordCache, StringComparison.InvariantCultureIgnoreCase))
+			if (string.Equals(example, _exampleWordCache, StringComparison.OrdinalIgnoreCase))
 				return;
 			_exampleWordCache = example;
 			GetLogger(watchdogID, "Example").InfoFormat("Path example detected : {0}", example);
@@ -474,7 +474,7 @@ namespace AutoKkutu
 			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}
 
-		protected bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
+		protected static bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
 
 		protected string EvaluateJS(string javaScript, string moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
 

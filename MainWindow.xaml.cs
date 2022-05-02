@@ -349,7 +349,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private ICollection<string> GetEndWordList(GameMode mode)
+		private static ICollection<string> GetEndWordList(GameMode mode)
 		{
 			switch (mode)
 			{

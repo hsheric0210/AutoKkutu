@@ -2,6 +2,7 @@
 using Npgsql;
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
-		public override CommonDatabaseReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
+		public override DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
@@ -55,7 +56,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 				if (parameters != null)
 					foreach (var parameter in TranslateParameter(parameters))
 						command.Parameters.Add(parameter);
-				return new PostgreSQLDatabaseReader(command.ExecuteReader());
+				return command.ExecuteReader();
 			}
 		}
 

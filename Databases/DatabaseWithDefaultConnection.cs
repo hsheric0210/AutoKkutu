@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 
 namespace AutoKkutu.Databases
 {
@@ -21,7 +22,7 @@ namespace AutoKkutu.Databases
 			return DefaultConnection.ExecuteNonQuery(query, parameters);
 		}
 
-		public CommonDatabaseReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
+		public DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
 		{
 			CheckDefaultConnectionEstablished();
 			return DefaultConnection.ExecuteReader(query, parameters);

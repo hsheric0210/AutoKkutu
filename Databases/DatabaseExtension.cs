@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using AutoKkutu.Constants;
 using log4net;
+using System.Data.Common;
 
 namespace AutoKkutu.Databases
 {
@@ -98,9 +99,13 @@ namespace AutoKkutu.Databases
 
 			var result = new List<string>();
 
-			using (CommonDatabaseReader reader = connection.ExecuteReader($"SELECT * FROM {tableName}"))
+			using (DbDataReader reader = connection.ExecuteReader($"SELECT * FROM {tableName}"))
+			{
+				int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
 				while (reader.Read())
-					result.Add(reader.GetString(DatabaseConstants.WordIndexColumnName));
+					result.Add(reader.GetString(wordIndexOrdinal));
+			}
+
 			Logger.InfoFormat("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}

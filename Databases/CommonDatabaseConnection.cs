@@ -1,6 +1,7 @@
 ﻿using log4net;
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace AutoKkutu.Databases
 {
@@ -34,7 +35,7 @@ namespace AutoKkutu.Databases
 
 		public abstract int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters);
 
-		public abstract CommonDatabaseReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters);
+		public abstract DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters);
 
 		public abstract object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters);
 
@@ -65,7 +66,8 @@ namespace AutoKkutu.Databases
 			return -1;
 		}
 
-		public CommonDatabaseReader TryExecuteReader(string action, string query, params CommonDatabaseParameter[] parameters)
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1168")]
+		public DbDataReader TryExecuteReader(string action, string query, params CommonDatabaseParameter[] parameters)
 		{
 			try
 			{

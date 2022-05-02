@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 
@@ -78,15 +79,17 @@ namespace AutoKkutu.Databases
 			var result = new List<PathObject>();
 			GetOptimalWordDatabaseAttributes(info.Mode, out int endWordFlag, out int attackWordFlag);
 			string query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
-			using (CommonDatabaseReader reader = connection.ExecuteReader(query))
+			using (DbDataReader reader = connection.ExecuteReader(query))
 			{
+				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
+				int flagsOrdinal = reader.GetOrdinal(DatabaseConstants.FlagsColumnName);
 				while (reader.Read())
 				{
-					string word = reader.GetString(DatabaseConstants.WordColumnName).ToString().Trim();
+					string word = reader.GetString(wordOrdinal).Trim();
 					result.Add(new PathObject(word, GetPathObjectFlags(new GetPathObjectFlagsInfo
 					{
 						Word = word,
-						WordDatabaseAttributes = (WordDatabaseAttributes)reader.GetInt32(DatabaseConstants.FlagsColumnName),
+						WordDatabaseAttributes = (WordDatabaseAttributes)reader.GetInt32(flagsOrdinal),
 						MissionChar = info.MissionChar,
 						EndWordFlag = (WordDatabaseAttributes)endWordFlag,
 						AttackWordFlag = (WordDatabaseAttributes)attackWordFlag

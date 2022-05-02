@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 
 namespace AutoKkutu.Databases.SQLite
@@ -26,7 +27,7 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteNonQuery(Connection, query, TranslateParameter(parameters));
 
-		public override CommonDatabaseReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters) => new SQLiteDatabaseReader(SQLiteDatabaseHelper.ExecuteReader(Connection, query, TranslateParameter(parameters)));
+		public override DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteReader(Connection, query, TranslateParameter(parameters));
 
 		public override object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteScalar(Connection, query, TranslateParameter(parameters));
 
