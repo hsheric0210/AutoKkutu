@@ -1,10 +1,12 @@
 # AutoKkutu - KKutu-Helper 기반 끄투 단어 추천 및 자동 입력기
 [![Build status](https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4/branch/main?svg=true)](https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main)
 [![Issues](https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg)](https://github.com/hsheric0210/AutoKkutu/issues)
-[![Maintainability](https://api.codeclimate.com/v1/badges/7709ad79cf511830e0bf/maintainability)](https://codeclimate.com/github/hsheric0210/AutoKkutu/maintainability)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/hsheric0210/AutoKkutu)
 ![GitHub repo size](https://img.shields.io/github/repo-size/hsheric0210/autokkutu)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=alert_status)](https://sonarcloud.io/dashboard?id=hsheric0210_AutoKkutu)
+[![Maintainability](https://api.codeclimate.com/v1/badges/7709ad79cf511830e0bf/maintainability)](https://codeclimate.com/github/hsheric0210/AutoKkutu/maintainability)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=hsheric0210_AutoKkutu)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=hsheric0210_AutoKkutu)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=hsheric0210_AutoKkutu)
 
 AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌습니다
 (제작자가 리버싱 후 수정 허용함)
