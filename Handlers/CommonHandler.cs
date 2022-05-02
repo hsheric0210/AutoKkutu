@@ -565,7 +565,7 @@ namespace AutoKkutu
 
 		public virtual void SendMessage(string input)
 		{
-			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input.Trim()}'", "SendMessage"); // "UserMessage"
+			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input?.Trim()}'", "SendMessage"); // "UserMessage"
 			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
 		}
 
@@ -632,11 +632,20 @@ namespace AutoKkutu
 
 	public class ResponsePresentedWord
 	{
-		public string Content;
+		public string Content
+		{
+			get;
+		}
 
-		public bool CanSubstitution;
+		public bool CanSubstitution
+		{
+			get;
+		}
 
-		public string Substitution;
+		public string Substitution
+		{
+			get;
+		}
 
 		public ResponsePresentedWord(string content, bool canSubsitution, string substituation = "")
 		{
@@ -652,7 +661,7 @@ namespace AutoKkutu
 			if (!(obj is ResponsePresentedWord))
 				return false;
 			ResponsePresentedWord other = (ResponsePresentedWord)obj;
-			return string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.InvariantCultureIgnoreCase));
+			return string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public override int GetHashCode()
@@ -663,9 +672,15 @@ namespace AutoKkutu
 
 	public class WordPresentEventArgs : EventArgs
 	{
-		public ResponsePresentedWord Word;
+		public ResponsePresentedWord Word
+		{
+			get;
+		}
 
-		public string MissionChar;
+		public string MissionChar
+		{
+			get;
+		}
 
 		public WordPresentEventArgs(ResponsePresentedWord word, string missionChar)
 		{
@@ -676,9 +691,15 @@ namespace AutoKkutu
 
 	public class UnsupportedWordEventArgs : EventArgs
 	{
-		public string Word;
+		public string Word
+		{
+			get;
+		}
 
-		public bool IsExistingWord;
+		public bool IsExistingWord
+		{
+			get;
+		}
 
 		public UnsupportedWordEventArgs(string word, bool isExistingWord)
 		{
@@ -689,9 +710,15 @@ namespace AutoKkutu
 
 	public class RoundChangeEventArgs : EventArgs
 	{
-		public int RoundIndex;
+		public int RoundIndex
+		{
+			get;
+		}
 
-		public string RoundWord;
+		public string RoundWord
+		{
+			get;
+		}
 
 		public RoundChangeEventArgs(int roundIndex, string roundWord)
 		{
@@ -702,7 +729,10 @@ namespace AutoKkutu
 
 	public class GameModeChangeEventArgs : EventArgs
 	{
-		public GameMode GameMode;
+		public GameMode GameMode
+		{
+			get;
+		}
 
 		public GameModeChangeEventArgs(GameMode gameMode) => GameMode = gameMode;
 	}
