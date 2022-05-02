@@ -2,6 +2,7 @@
 using MySqlConnector;
 using System;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
@@ -21,7 +22,7 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override void AddSequenceColumnToWordList() => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
 
-		public override void ChangeWordListColumnType(string columnName, string newType, string tableName = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} MODIFY {columnName} {newType}");
+		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => ExecuteNonQuery($"ALTER TABLE {tableName} MODIFY {columnName} {newType}");
 
 		public override CommonDatabaseParameter CreateParameter(string name, object value) => new MySQLDatabaseParameter(name, value);
 
@@ -33,6 +34,7 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP {columnName}");
 
+		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -41,12 +43,12 @@ namespace AutoKkutu.Databases.MySQL
 			using (var command = new MySqlCommand(query, Connection))
 			{
 				if (parameters != null)
-					foreach (var parameter in TranslateParameter(parameters))
-						command.Parameters.Add(parameter);
+					command.Parameters.AddRange(TranslateParameter(parameters));
 				return command.ExecuteNonQuery();
 			}
 		}
 
+		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override CommonDatabaseReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -55,12 +57,12 @@ namespace AutoKkutu.Databases.MySQL
 			using (var command = new MySqlCommand(query, Connection))
 			{
 				if (parameters != null)
-					foreach (var parameter in TranslateParameter(parameters))
-						command.Parameters.Add(parameter);
+					command.Parameters.AddRange(TranslateParameter(parameters));
 				return new MySQLDatabaseReader(command.ExecuteReader());
 			}
 		}
 
+		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -69,20 +71,19 @@ namespace AutoKkutu.Databases.MySQL
 			using (var command = new MySqlCommand(query, Connection))
 			{
 				if (parameters != null)
-					foreach (var parameter in TranslateParameter(parameters))
-						command.Parameters.Add(parameter);
+					command.Parameters.AddRange(TranslateParameter(parameters));
 				return command.ExecuteScalar();
 			}
 		}
 
-		public override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
+		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
+		public override string GetRearrangeMissionFuncName() => "__AutoKkutu_RearrangeMission";
 
-		public override string GetColumnType(string columnName, string tableName = null)
+		public override string GetColumnType(string tableName, string columnName)
 		{
-			tableName = tableName ?? DatabaseConstants.WordListTableName;
 			try
 			{
-				return ExecuteScalar($"SELECT data_type FROM Information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
+				return ExecuteScalar("SELECT data_type FROM Information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
 			}
 			catch (Exception ex)
 			{
@@ -93,12 +94,12 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override string GetWordListColumnOptions() => "seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
-		public override bool IsColumnExists(string columnName, string tableName = null)
+		public override bool IsColumnExists(string tableName, string columnName)
 		{
 			tableName = tableName ?? DatabaseConstants.WordListTableName;
 			try
 			{
-				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM Information_schema.columns WHERE table_schema=@dbName AND table_name=@tableName AND column_name=@columnName;", CreateParameter("@dbName", DatabaseName), CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)), CultureInfo.InvariantCulture) > 0;
+				return Convert.ToInt32(ExecuteScalar("SELECT COUNT(*) FROM Information_schema.columns WHERE table_schema=@dbName AND table_name=@tableName AND column_name=@columnName;", CreateParameter("@dbName", DatabaseName), CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)), CultureInfo.InvariantCulture) > 0;
 			}
 			catch (Exception ex)
 			{
@@ -111,7 +112,7 @@ namespace AutoKkutu.Databases.MySQL
 		{
 			try
 			{
-				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@tableName;", CreateParameter("@tableName", tablename)), CultureInfo.InvariantCulture) > 0;
+				return Convert.ToInt32(ExecuteScalar("SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@tableName;", CreateParameter("@tableName", tablename)), CultureInfo.InvariantCulture) > 0;
 			}
 			catch (Exception ex)
 			{

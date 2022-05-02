@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using static AutoKkutu.Constants;
+using AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
@@ -24,10 +24,10 @@ namespace AutoKkutu
 		{
 			Database = database;
 			InitializeComponent();
-			Title = $"Data-base Management";
+			Title = "Data-base Management";
 		}
 
-		public static void BatchWordJob(DatabaseWithDefaultConnection database, string content, BatchWordJobOptions mode, WordFlags flags)
+		public static void BatchWordJob(DatabaseWithDefaultConnection database, string content, BatchWordJobOptions mode, WordDatabaseAttributes flags)
 		{
 			if (string.IsNullOrWhiteSpace(content))
 				return;
@@ -42,7 +42,7 @@ namespace AutoKkutu
 
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
 		{
-			BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordFlags());
+			BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 		}
 
 		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
@@ -80,31 +80,31 @@ namespace AutoKkutu
 					}
 					catch (IOException ioe)
 					{
-						Logger.Error($"IOException occurred during reading word list files", ioe);
+						Logger.Error("IOException occurred during reading word list files", ioe);
 					}
 				}
 
-				BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordFlags());
+				BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 			}
 		}
 
 		private void BatchAddNode(bool remove)
 		{
-			NodeFlags GetSelectedNodeTypes()
+			NodeDatabaseAttributes GetSelectedNodeTypes()
 			{
-				NodeFlags type = (NodeFlags)0;
+				NodeDatabaseAttributes type = (NodeDatabaseAttributes)0;
 				if (Node_EndWord.IsChecked ?? false)
-					type |= NodeFlags.EndWord;
+					type |= NodeDatabaseAttributes.EndWord;
 				if (Node_AttackWord.IsChecked ?? false)
-					type |= NodeFlags.AttackWord;
+					type |= NodeDatabaseAttributes.AttackWord;
 				if (Node_Reverse_EndWord.IsChecked ?? false)
-					type |= NodeFlags.ReverseEndWord;
+					type |= NodeDatabaseAttributes.ReverseEndWord;
 				if (Node_Reverse_AttackWord.IsChecked ?? false)
-					type |= NodeFlags.ReverseAttackWord;
+					type |= NodeDatabaseAttributes.ReverseAttackWord;
 				if (Node_Kkutu_EndWord.IsChecked ?? false)
-					type |= NodeFlags.KkutuEndWord;
+					type |= NodeDatabaseAttributes.KkutuEndWord;
 				if (Node_Kkutu_AttackWord.IsChecked ?? false)
-					type |= NodeFlags.KkutuAttackWord;
+					type |= NodeDatabaseAttributes.KkutuAttackWord;
 				return type;
 			}
 
@@ -117,41 +117,41 @@ namespace AutoKkutu
 
 		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked.Value);
 
-		private WordFlags GetBatchAddWordFlags()
+		private WordDatabaseAttributes GetBatchAddWordDatabaseAttributes()
 		{
-			WordFlags flags = WordFlags.None;
+			WordDatabaseAttributes flags = WordDatabaseAttributes.None;
 
 			// 한방 단어
 			if (Batch_EndWord.IsChecked ?? false)
-				flags |= WordFlags.EndWord;
+				flags |= WordDatabaseAttributes.EndWord;
 
 			// 공격 단어
 			if (Batch_AttackWord.IsChecked ?? false)
-				flags |= WordFlags.AttackWord;
+				flags |= WordDatabaseAttributes.AttackWord;
 
 			// 앞말잇기 한방 단어
 			if (Batch_Reverse_EndWord.IsChecked ?? false)
-				flags |= WordFlags.ReverseEndWord;
+				flags |= WordDatabaseAttributes.ReverseEndWord;
 
 			// 앞말잇기 공격 단어
 			if (Batch_Reverse_AttackWord.IsChecked ?? false)
-				flags |= WordFlags.ReverseAttackWord;
+				flags |= WordDatabaseAttributes.ReverseAttackWord;
 
 			// 가운뎃말잇기 한방 단어
 			if (Batch_Middle_EndWord.IsChecked ?? false)
-				flags |= WordFlags.MiddleEndWord;
+				flags |= WordDatabaseAttributes.MiddleEndWord;
 
 			// 가운뎃말잇기 공격 단어
 			if (Batch_Middle_AttackWord.IsChecked ?? false)
-				flags |= WordFlags.MiddleAttackWord;
+				flags |= WordDatabaseAttributes.MiddleAttackWord;
 
 			// 끄투 한방 단어
 			if (Batch_Kkutu_EndWord.IsChecked ?? false)
-				flags |= WordFlags.KkutuEndWord;
+				flags |= WordDatabaseAttributes.KkutuEndWord;
 
 			// 끄투 공격 단어
 			if (Batch_Kkutu_AttackWord.IsChecked ?? false)
-				flags |= WordFlags.KkutuAttackWord;
+				flags |= WordDatabaseAttributes.KkutuAttackWord;
 
 			return flags;
 		}
@@ -215,7 +215,7 @@ namespace AutoKkutu
 						}
 						catch (IOException ioe)
 						{
-							Logger.Error($"IOException during reading word list files.", ioe);
+							Logger.Error("IOException during reading word list files.", ioe);
 						}
 				}
 				catch (IOException ioe)
@@ -224,7 +224,7 @@ namespace AutoKkutu
 				}
 			}
 
-			BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordFlags());
+			BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 		}
 	}
 }

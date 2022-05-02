@@ -21,16 +21,48 @@ namespace AutoKkutu.Databases.PostgreSQL
 				RegisterDefaultConnection(new PostgreSQLDatabaseConnection(connection));
 				DefaultConnection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
-				DefaultConnection.TryExecuteNonQuery("register checkMissionCharFunc", $@"CREATE OR REPLACE FUNCTION {DefaultConnection.GetCheckMissionCharFuncName()}(word VARCHAR, missionWord VARCHAR)
+				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
+				DefaultConnection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE OR REPLACE FUNCTION {DefaultConnection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
+RETURNS INTEGER AS $$
+BEGIN
+	IF ((flags & endWordFlag) != 0) THEN
+		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
+	END IF;
+	IF ((flags & attackWordFlag) != 0) THEN
+		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
+	END IF;
+	RETURN normalWordOrdinal * {DatabaseConstants.MaxWordLength};
+END;
+$$ LANGUAGE plpgsql
+");
+
+				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
+				DefaultConnection.TryExecuteNonQuery("register RearrangeMissionFunc", $@"CREATE OR REPLACE FUNCTION {DefaultConnection.GetRearrangeMissionFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 DECLARE
 	occurrence INTEGER;
 BEGIN
 	occurrence := ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
+	
+	IF ((flags & endWordFlag) != 0) THEN
+		IF (occurrence > 0) THEN
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+		ELSE
+			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+		END IF;
+	END IF;
+	IF ((flags & attackWordFlag) != 0) THEN
+		IF (occurrence > 0) THEN
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+		ELSE
+			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+		END IF;
+	END IF;
+
 	IF occurrence > 0 THEN
-		RETURN occurrence + {DatabaseConstants.MissionCharIndexPriority};
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
 	ELSE
-		RETURN 0;
+		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
 	END IF;
 END;
 $$ LANGUAGE plpgsql

@@ -28,29 +28,36 @@ namespace AutoKkutu.Databases.PostgreSQL
 			var parameter = new NpgsqlParameter();
 			parameter.ParameterName = Name;
 			parameter.Value = Value;
-			parameter.NpgsqlDbType = TranslateDataType();
 			parameter.Precision = Precision;
+
+			var datatype = TranslateDataType();
+			if (datatype != null)
+				parameter.NpgsqlDbType = (NpgsqlDbType)datatype;
+
 			return parameter;
 		}
 
-		public NpgsqlDbType TranslateDataType()
+		public NpgsqlDbType? TranslateDataType()
 		{
+			if (DataType == null)
+				return null;
+
 			switch (DataType)
 			{
-				case CommonDatabaseType.Int16:
+				case CommonDatabaseType.SmallInt:
 					return NpgsqlDbType.Smallint;
 
-				case CommonDatabaseType.Int32:
+				case CommonDatabaseType.MiddleInt:
 					return NpgsqlDbType.Integer;
 
-				case CommonDatabaseType.Char:
+				case CommonDatabaseType.Character:
 					return NpgsqlDbType.Char;
 
-				case CommonDatabaseType.VarChar:
+				case CommonDatabaseType.CharacterVarying:
 					return NpgsqlDbType.Varchar;
 			}
 
-			throw new NotSupportedException(DataType?.ToString());
+			throw new NotSupportedException(DataType.ToString());
 		}
 	}
 }

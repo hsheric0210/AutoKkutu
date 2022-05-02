@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace AutoKkutu
+namespace AutoKkutu.ConfigFile
 {
 	public class DatabaseTypeSection : ConfigurationSection
 	{

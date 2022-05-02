@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using static AutoKkutu.Constants;
+using AutoKkutu.Constants;
 
 namespace AutoKkutu.Utils
 {

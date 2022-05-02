@@ -8,9 +8,24 @@ namespace AutoKkutu.Databases
 {
 	public enum CommonDatabaseType
 	{
-		Int16,
-		Int32,
-		Char,
-		VarChar
+		/// <summary>
+		/// 16-bit integer
+		/// </summary>
+		SmallInt,
+
+		/// <summary>
+		/// 32-bit integer
+		/// </summary>
+		MiddleInt,
+
+		/// <summary>
+		/// Fixed-length string
+		/// </summary>
+		Character,
+
+		/// <summary>
+		/// Variable-length string
+		/// </summary>
+		CharacterVarying
 	}
 }

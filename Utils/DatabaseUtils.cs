@@ -1,4 +1,6 @@
-﻿using AutoKkutu.Databases;
+﻿using AutoKkutu.ConfigFile;
+using AutoKkutu.Constants;
+using AutoKkutu.Databases;
 using AutoKkutu.Databases.MySQL;
 using AutoKkutu.Databases.PostgreSQL;
 using AutoKkutu.Databases.SQLite;
@@ -6,7 +8,6 @@ using log4net;
 using System;
 using System.Configuration;
 using System.Linq;
-using static AutoKkutu.Constants;
 
 namespace AutoKkutu.Utils
 {
@@ -44,83 +45,83 @@ namespace AutoKkutu.Utils
 			return new SQLiteDatabase(file);
 		}
 
-		public static WordFlags GetFlags(string word)
+		public static WordDatabaseAttributes GetFlags(string word)
 		{
 			if (string.IsNullOrEmpty(word))
 				throw new ArgumentException(null, nameof(word));
 
-			WordFlags flags = WordFlags.None;
+			WordDatabaseAttributes flags = WordDatabaseAttributes.None;
 
 			// 한방 노드
-			PathFinder.CheckNodePresence(null, word.GetLaFTailNode(), PathFinder.EndWordList, WordFlags.EndWord, ref flags);
+			PathFinder.CheckNodePresence(null, word.GetLaFTailNode(), PathFinder.EndWordList, WordDatabaseAttributes.EndWord, ref flags);
 
 			// 공격 노드
-			PathFinder.CheckNodePresence(null, word.GetLaFTailNode(), PathFinder.AttackWordList, WordFlags.AttackWord, ref flags);
+			PathFinder.CheckNodePresence(null, word.GetLaFTailNode(), PathFinder.AttackWordList, WordDatabaseAttributes.AttackWord, ref flags);
 
 			// 앞말잇기 한방 노드
-			PathFinder.CheckNodePresence(null, word.GetFaLTailNode(), PathFinder.ReverseEndWordList, WordFlags.ReverseEndWord, ref flags);
+			PathFinder.CheckNodePresence(null, word.GetFaLTailNode(), PathFinder.ReverseEndWordList, WordDatabaseAttributes.ReverseEndWord, ref flags);
 
 			// 앞말잇기 공격 노드
-			PathFinder.CheckNodePresence(null, word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordFlags.ReverseAttackWord, ref flags);
+			PathFinder.CheckNodePresence(null, word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordDatabaseAttributes.ReverseAttackWord, ref flags);
 
 			if (word.Length > 2)
 			{
 				// 끄투 한방 노드
-				PathFinder.CheckNodePresence(null, word.GetKkutuTailNode(), PathFinder.KkutuEndWordList, WordFlags.KkutuEndWord, ref flags);
+				PathFinder.CheckNodePresence(null, word.GetKkutuTailNode(), PathFinder.KkutuEndWordList, WordDatabaseAttributes.KkutuEndWord, ref flags);
 
 				// 끄투 공격 노드
-				PathFinder.CheckNodePresence(null, word.GetKkutuTailNode(), PathFinder.KkutuAttackWordList, WordFlags.KkutuAttackWord, ref flags);
+				PathFinder.CheckNodePresence(null, word.GetKkutuTailNode(), PathFinder.KkutuAttackWordList, WordDatabaseAttributes.KkutuAttackWord, ref flags);
 
 				if (word.Length % 2 == 1)
 				{
 					// 가운뎃말잇기 한방 노드
-					PathFinder.CheckNodePresence(null, word.GetMaFNode(), PathFinder.EndWordList, WordFlags.MiddleEndWord, ref flags);
+					PathFinder.CheckNodePresence(null, word.GetMaFNode(), PathFinder.EndWordList, WordDatabaseAttributes.MiddleEndWord, ref flags);
 
 					// 가운뎃말잇기 공격 노드
-					PathFinder.CheckNodePresence(null, word.GetMaFNode(), PathFinder.AttackWordList, WordFlags.MiddleAttackWord, ref flags);
+					PathFinder.CheckNodePresence(null, word.GetMaFNode(), PathFinder.AttackWordList, WordDatabaseAttributes.MiddleAttackWord, ref flags);
 				}
 			}
 			return flags;
 		}
 
-		public static void CorrectFlags(string word, ref WordFlags flags, ref int NewEndNode, ref int NewAttackNode)
+		public static void CorrectFlags(string word, ref WordDatabaseAttributes flags, ref int NewEndNode, ref int NewAttackNode)
 		{
 			if (string.IsNullOrEmpty(word))
 				throw new ArgumentException(null, nameof(word));
 
 			// 한방 노드
-			if (PathFinder.CheckNodePresence("end", word.GetLaFTailNode(), PathFinder.EndWordList, WordFlags.EndWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("end", word.GetLaFTailNode(), PathFinder.EndWordList, WordDatabaseAttributes.EndWord, ref flags, true))
 				NewEndNode++;
 
 			// 공격 노드
-			if (PathFinder.CheckNodePresence("attack", word.GetLaFTailNode(), PathFinder.AttackWordList, WordFlags.AttackWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("attack", word.GetLaFTailNode(), PathFinder.AttackWordList, WordDatabaseAttributes.AttackWord, ref flags, true))
 				NewAttackNode++;
 
 			// 앞말잇기 한방 노드
-			if (PathFinder.CheckNodePresence("reverse end", word.GetFaLTailNode(), PathFinder.ReverseEndWordList, WordFlags.ReverseEndWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("reverse end", word.GetFaLTailNode(), PathFinder.ReverseEndWordList, WordDatabaseAttributes.ReverseEndWord, ref flags, true))
 				NewEndNode++;
 
 			// 앞말잇기 공격 노드
-			if (PathFinder.CheckNodePresence("reverse attack", word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordFlags.ReverseAttackWord, ref flags, true))
+			if (PathFinder.CheckNodePresence("reverse attack", word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordDatabaseAttributes.ReverseAttackWord, ref flags, true))
 				NewAttackNode++;
 			if (word.Length > 2)
 			{
 				// 끄투 한방 노드
-				if (PathFinder.CheckNodePresence("kkutu end", word.GetKkutuTailNode(), PathFinder.KkutuEndWordList, WordFlags.KkutuEndWord, ref flags, true))
+				if (PathFinder.CheckNodePresence("kkutu end", word.GetKkutuTailNode(), PathFinder.KkutuEndWordList, WordDatabaseAttributes.KkutuEndWord, ref flags, true))
 					NewEndNode++;
 
 				// 끄투 공격 노드
-				if (PathFinder.CheckNodePresence("kkutu attack", word.GetKkutuTailNode(), PathFinder.KkutuAttackWordList, WordFlags.KkutuAttackWord, ref flags, true))
+				if (PathFinder.CheckNodePresence("kkutu attack", word.GetKkutuTailNode(), PathFinder.KkutuAttackWordList, WordDatabaseAttributes.KkutuAttackWord, ref flags, true))
 					NewAttackNode++;
 
 				if (word.Length % 2 == 1)
 				{
 					// 가운뎃말잇기 한방 노드
-					if (PathFinder.CheckNodePresence("middle end", word.GetMaFNode(), PathFinder.EndWordList, WordFlags.MiddleEndWord, ref flags, true))
+					if (PathFinder.CheckNodePresence("middle end", word.GetMaFNode(), PathFinder.EndWordList, WordDatabaseAttributes.MiddleEndWord, ref flags, true))
 						NewEndNode++;
 
 					// 가운뎃말잇기 공격 노드
-					if (PathFinder.CheckNodePresence("middle attack", word.GetMaFNode(), PathFinder.AttackWordList, WordFlags.MiddleAttackWord, ref flags, true))
+					if (PathFinder.CheckNodePresence("middle attack", word.GetMaFNode(), PathFinder.AttackWordList, WordDatabaseAttributes.MiddleAttackWord, ref flags, true))
 						NewAttackNode++;
 				}
 			}

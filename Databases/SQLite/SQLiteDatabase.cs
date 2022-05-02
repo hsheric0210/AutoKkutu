@@ -28,11 +28,28 @@ namespace AutoKkutu.Databases.SQLite
 				var connection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 				RegisterDefaultConnection(new SQLiteDatabaseConnection(connection));
 
-				connection.CreateFunction(DefaultConnection.GetCheckMissionCharFuncName(), (string word, string missionWord) =>
+				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
+				connection.CreateFunction(DefaultConnection.GetRearrangeFuncName(), (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
 				{
-					char target = char.ToUpperInvariant(missionWord.First());
-					int occurrence = (from char c in word.ToUpperInvariant() where c == target select c).Count();
-					return occurrence > 0 ? DatabaseConstants.MissionCharIndexPriority + occurrence : 0;
+					if ((flags & endWordFlag) != 0)
+						return endWordOrdinal * DatabaseConstants.MaxWordLength;
+					if ((flags & attackWordFlag) != 0)
+						return attackWordOrdinal * DatabaseConstants.MaxWordLength;
+					return normalWordOrdinal * DatabaseConstants.MaxWordLength;
+				});
+
+				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
+				connection.CreateFunction(DefaultConnection.GetRearrangeMissionFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
+				{
+					char missionChar = char.ToUpperInvariant(missionWord.First());
+					int missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
+					bool hasMission = missionOccurrence > 0;
+
+					if ((flags & endWordFlag) != 0)
+						return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
+					if ((flags & attackWordFlag) != 0)
+						return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
+					return (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
 				});
 
 				// Check the database tables

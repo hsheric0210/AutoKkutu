@@ -27,25 +27,32 @@ namespace AutoKkutu.Databases.SQLite
 			var parameter = new SqliteParameter();
 			parameter.ParameterName = Name;
 			parameter.Value = Value;
-			parameter.SqliteType = TranslateDataType();
 			parameter.Precision = Precision;
+
+			var datatype = TranslateDataType();
+			if (datatype != null)
+				parameter.SqliteType = (SqliteType)datatype;
+
 			return parameter;
 		}
 
-		public SqliteType TranslateDataType()
+		public SqliteType? TranslateDataType()
 		{
+			if (DataType == null)
+				return null;
+
 			switch (DataType)
 			{
-				case CommonDatabaseType.Int16:
-				case CommonDatabaseType.Int32:
+				case CommonDatabaseType.SmallInt:
+				case CommonDatabaseType.MiddleInt:
 					return SqliteType.Integer;
 
-				case CommonDatabaseType.Char:
-				case CommonDatabaseType.VarChar:
+				case CommonDatabaseType.Character:
+				case CommonDatabaseType.CharacterVarying:
 					return SqliteType.Text;
 			}
 
-			throw new NotSupportedException(DataType?.ToString());
+			throw new NotSupportedException(DataType.ToString());
 		}
 	}
 }

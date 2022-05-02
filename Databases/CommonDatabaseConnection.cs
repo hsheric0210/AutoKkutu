@@ -14,7 +14,7 @@ namespace AutoKkutu.Databases
 
 		public abstract void AddSequenceColumnToWordList();
 
-		public abstract void ChangeWordListColumnType(string columnName, string newType, string tableName = null);
+		public abstract void ChangeWordListColumnType(string tableName, string columnName, string newType);
 
 		public abstract CommonDatabaseParameter CreateParameter(string name, object value);
 
@@ -38,13 +38,15 @@ namespace AutoKkutu.Databases
 
 		public abstract object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters);
 
-		public abstract string GetCheckMissionCharFuncName();
+		public abstract string GetRearrangeFuncName();
 
-		public abstract string GetColumnType(string columnName, string tableName = null);
+		public abstract string GetRearrangeMissionFuncName();
+
+		public abstract string GetColumnType(string tableName, string columnName);
 
 		public abstract string GetWordListColumnOptions();
 
-		public abstract bool IsColumnExists(string columnName, string tableName = null);
+		public abstract bool IsColumnExists(string tableName, string columnName);
 
 		public abstract bool IsTableExists(string tablename);
 

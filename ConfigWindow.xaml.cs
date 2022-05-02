@@ -1,7 +1,11 @@
-﻿using log4net;
+﻿using AutoKkutu.Config;
+using AutoKkutu.Constants;
+using log4net;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 
 namespace AutoKkutu
 {
@@ -11,18 +15,25 @@ namespace AutoKkutu
 	public partial class ConfigWindow : Window
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(ConfigWindow));
+		private readonly ReorderableList<PreferenceItem> PreferenceReorderList;
 
 		public ConfigWindow(AutoKkutuConfiguration config)
 		{
+			if (config == null)
+				throw new ArgumentNullException(nameof(config));
+
 			InitializeComponent();
-			DBAutoUpdateModeCB.ItemsSource = ConfigEnums.DBAutoUpdateModeValues.Select(ConfigEnums.GetDBAutoUpdateModeName);
-			WordPreference.ItemsSource = ConfigEnums.WordPreferenceValues.Select(ConfigEnums.GetWordPreferenceName);
-			GameMode.ItemsSource = ConfigEnums.GameModeValues.Select(ConfigEnums.GetGameModeName);
+
+			PreferenceReorderList = new ReorderableList<PreferenceItem>(Preference, "Name", new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x37)), new SolidColorBrush(Color.FromRgb(0x23, 0x23, 0x27)));
+			foreach (WordAttributes attr in config.WordPreference.GetAttributes())
+				PreferenceReorderList.Add(new PreferenceItem(attr, WordPreference.GetName(attr)));
+
+			DBAutoUpdateModeCB.ItemsSource = ConfigEnums.GetDBAutoUpdateModeValues().Select(ConfigEnums.GetDBAutoUpdateModeName);
+			GameMode.ItemsSource = ConfigEnums.GetGameModeValues().Select(ConfigEnums.GetGameModeName);
 
 			AutoEnter.IsChecked = config.AutoEnterEnabled;
 			DBAutoUpdate.IsChecked = config.AutoDBUpdateEnabled;
 			DBAutoUpdateModeCB.SelectedIndex = (int)config.AutoDBUpdateMode;
-			WordPreference.SelectedIndex = (int)config.WordPreference;
 			AttackWord.IsChecked = config.AttackWordAllowed;
 			EndWord.IsChecked = config.EndWordEnabled;
 			ReturnMode.IsChecked = config.ReturnModeEnabled;
@@ -31,13 +42,13 @@ namespace AutoKkutu
 			GameMode.SelectedIndex = (int)config.GameMode;
 			Delay.IsChecked = config.DelayEnabled;
 			DelayPerWord.IsChecked = config.DelayPerWordEnabled;
-			DelayNumber.Text = config.DelayInMillis.ToString();
+			DelayNumber.Text = config.DelayInMillis.ToString(CultureInfo.InvariantCulture);
 			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnterEnabled;
 			GameModeAutoDetect.IsChecked = config.GameModeAutoDetectEnabled;
-			MaxWordCount.Text = config.MaxDisplayedWordCount.ToString();
+			MaxWordCount.Text = config.MaxDisplayedWordCount.ToString(CultureInfo.InvariantCulture);
 			FixDelay.IsChecked = config.FixDelayEnabled;
 			FixDelayPerWord.IsChecked = config.FixDelayPerWordEnabled;
-			FixDelayNumber.Text = config.FixDelayInMillis.ToString();
+			FixDelayNumber.Text = config.FixDelayInMillis.ToString(CultureInfo.InvariantCulture);
 		}
 
 		private void Submit_Click(object sender, RoutedEventArgs e)
@@ -71,14 +82,14 @@ namespace AutoKkutu
 					{
 						AutoEnterEnabled = AutoEnter.IsChecked ?? false,
 						AutoDBUpdateEnabled = DBAutoUpdate.IsChecked ?? false,
-						AutoDBUpdateMode = ConfigEnums.DBAutoUpdateModeValues[DBAutoUpdateModeCB.SelectedIndex],
-						WordPreference = ConfigEnums.WordPreferenceValues[WordPreference.SelectedIndex],
+						AutoDBUpdateMode = ConfigEnums.GetDBAutoUpdateModeValues()[DBAutoUpdateModeCB.SelectedIndex],
+						WordPreference = new WordPreference(PreferenceReorderList.ToArray().Select(s => s.NodeType).ToArray()), // Ugly solution. Should be fixed
 						AttackWordAllowed = AttackWord.IsChecked ?? false,
 						EndWordEnabled = EndWord.IsChecked ?? false,
 						ReturnModeEnabled = ReturnMode.IsChecked ?? false,
 						AutoFixEnabled = AutoFix.IsChecked ?? false,
 						MissionAutoDetectionEnabled = MissionDetection.IsChecked ?? false,
-						GameMode = ConfigEnums.GameModeValues[GameMode.SelectedIndex],
+						GameMode = ConfigEnums.GetGameModeValues()[GameMode.SelectedIndex],
 						DelayEnabled = Delay.IsChecked ?? false,
 						DelayPerWordEnabled = DelayPerWord.IsChecked ?? false,
 						DelayInMillis = _delay,
@@ -98,9 +109,25 @@ namespace AutoKkutu
 			Close();
 		}
 
-		private void Cancel_Click(object sender, RoutedEventArgs e)
+		private void Cancel_Click(object sender, RoutedEventArgs e) => Close();
+	}
+	public class PreferenceItem
+	{
+		public string Name
 		{
-			Close();
+			get;
+		}
+
+		public WordAttributes NodeType
+		{
+			get;
+		}
+
+		public PreferenceItem(WordAttributes nodeType, string name)
+		{
+			NodeType = nodeType;
+			Name = name;
 		}
 	}
+
 }

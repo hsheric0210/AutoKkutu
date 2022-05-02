@@ -27,27 +27,34 @@ namespace AutoKkutu.Databases.MySQL
 			var parameter = new MySqlParameter();
 			parameter.ParameterName = Name;
 			parameter.Value = Value;
-			parameter.MySqlDbType = TranslateDataType();
 			parameter.Precision = Precision;
+
+			var datatype = TranslateDataType();
+			if (datatype != null)
+				parameter.MySqlDbType = (MySqlDbType)datatype;
+
 			return parameter;
 		}
 
-		public MySqlDbType TranslateDataType()
+		public MySqlDbType? TranslateDataType()
 		{
+			if (DataType == null)
+				return null;
+
 			switch (DataType)
 			{
-				case CommonDatabaseType.Int16:
+				case CommonDatabaseType.SmallInt:
 					return MySqlDbType.Int16;
 
-				case CommonDatabaseType.Int32:
+				case CommonDatabaseType.MiddleInt:
 					return MySqlDbType.Int32;
 
-				case CommonDatabaseType.Char:
-				case CommonDatabaseType.VarChar:
+				case CommonDatabaseType.Character:
+				case CommonDatabaseType.CharacterVarying:
 					return MySqlDbType.VarChar;
 			}
 
-			throw new NotSupportedException(DataType?.ToString());
+			throw new NotSupportedException(DataType.ToString());
 		}
 	}
 }

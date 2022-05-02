@@ -5,7 +5,7 @@ namespace AutoKkutu.Utils
 {
 	public static class RandomUtils
 	{
-		public static Random GLOBAL_RANDOM = new Random();
+		private static readonly Random GLOBAL_RANDOM = new Random();
 
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394", Justification = "Secure randomness is excessive on this logic")]

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using static AutoKkutu.Constants;
+using AutoKkutu.Constants;
 
 namespace AutoKkutu.Databases.SQLite
 {
@@ -29,18 +29,16 @@ namespace AutoKkutu.Databases.SQLite
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
+		[SuppressMessage("Reliability", "CA2000", Justification = "This shouldn't be handled")]
 		public static SqliteDataReader ExecuteReader(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new SqliteCommand(query, connection))
-			{
-				if (parameters != null)
-					foreach (var parameter in parameters)
-						command.Parameters.Add(parameter);
-				return command.ExecuteReader();
-			}
+			var command = new SqliteCommand(query, connection);
+			if (parameters != null)
+				command.Parameters.AddRange(parameters);
+			return command.ExecuteReader();
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
@@ -60,9 +58,12 @@ namespace AutoKkutu.Databases.SQLite
 
 		public static string GetColumnType(SqliteConnection databaseConnection, string tableName, string columnName)
 		{
+			if (tableName == null)
+				return DatabaseConstants.WordListTableName;
+
 			try
 			{
-				using (var command = new SqliteCommand($"PRAGMA table_info(@tableName)", databaseConnection))
+				using (var command = new SqliteCommand("SELECT * FROM pragma_table_info(@tableName);", databaseConnection))
 				{
 					command.Parameters.AddWithValue("@tableName", tableName);
 					using (SqliteDataReader reader = command.ExecuteReader())
@@ -85,9 +86,12 @@ namespace AutoKkutu.Databases.SQLite
 
 		public static bool IsColumnExists(SqliteConnection databaseConnection, string tableName, string columnName)
 		{
+			if (string.IsNullOrWhiteSpace(tableName))
+				tableName = DatabaseConstants.WordListTableName;
+
 			try
 			{
-				using (var command = new SqliteCommand($"PRAGMA table_info(@tableName)", databaseConnection))
+				using (var command = new SqliteCommand("SELECT * FROM pragma_table_info(@tableName);", databaseConnection))
 				{
 					command.Parameters.AddWithValue("@tableName", tableName);
 					using (SqliteDataReader reader = command.ExecuteReader())
@@ -111,7 +115,7 @@ namespace AutoKkutu.Databases.SQLite
 		{
 			try
 			{
-				return Convert.ToInt32(ExecuteScalar(connection, $"SELECT COUNT(*) FROM sqlite_master WHERE name=@tableName;", new SqliteParameter("@tableName", tableName)), CultureInfo.InvariantCulture) > 0;
+				return Convert.ToInt32(ExecuteScalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE name=@tableName;", new SqliteParameter("@tableName", tableName)), CultureInfo.InvariantCulture) > 0;
 			}
 			catch (Exception ex)
 			{
@@ -162,8 +166,6 @@ namespace AutoKkutu.Databases.SQLite
 			return connection;
 		}
 
-		internal static bool GetColumnType(object connection, object tableName, object columnName) => throw new NotImplementedException();
-
 		private static int ImportNode(SQLiteImportArgs args, string tableName)
 		{
 			if (!args.targetDatabaseConnection.IsTableExists(tableName))
@@ -173,7 +175,7 @@ namespace AutoKkutu.Databases.SQLite
 			}
 
 			int count = 0;
-			using (var command = new SqliteCommand($"SELECT * FROM @tableName", args.externalSQLiteConnection))
+			using (var command = new SqliteCommand("SELECT * FROM @tableName", args.externalSQLiteConnection))
 			{
 				command.Parameters.AddWithValue("@tableName", tableName);
 				using (var reader = command.ExecuteReader())
@@ -197,7 +199,7 @@ namespace AutoKkutu.Databases.SQLite
 		private static void ImportSingleWord(SQLiteImportArgs args, SqliteDataReader reader, string word)
 		{
 			int flags = Convert.ToInt32(reader[DatabaseConstants.FlagsColumnName], CultureInfo.InvariantCulture);
-			if (args.targetDatabaseConnection.AddWord(word, (WordFlags)flags))
+			if (args.targetDatabaseConnection.AddWord(word, (WordDatabaseAttributes)flags))
 				Logger.InfoFormat("Imported word '{0}' flags: {1}", word, flags);
 			else
 				Logger.WarnFormat("Word '{0}' is already existing in database.", word);
@@ -207,7 +209,7 @@ namespace AutoKkutu.Databases.SQLite
 		{
 			// Legacy support
 			bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName], CultureInfo.InvariantCulture));
-			if (args.targetDatabaseConnection.AddWord(word, isEndWord ? WordFlags.EndWord : WordFlags.None))
+			if (args.targetDatabaseConnection.AddWord(word, isEndWord ? WordDatabaseAttributes.EndWord : WordDatabaseAttributes.None))
 				Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
 			else
 				Logger.WarnFormat("Word '{0}' is already existing in database.", word);

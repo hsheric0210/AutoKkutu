@@ -12,7 +12,7 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override void AddSequenceColumnToWordList() => RebuildWordList();
 
-		public override void ChangeWordListColumnType(string columnName, string newType, string tableName = null) => RebuildWordList();
+		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => RebuildWordList();
 
 		public override CommonDatabaseParameter CreateParameter(string name, object value) => new SQLiteDatabaseParameter(name, value);
 
@@ -30,13 +30,15 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteScalar(Connection, query, TranslateParameter(parameters));
 
-		public override string GetCheckMissionCharFuncName() => "CheckMissionChar";
+		public override string GetRearrangeFuncName() => "Rearrange";
 
-		public override string GetColumnType(string columnName, string tableName = null) => SQLiteDatabaseHelper.GetColumnType(Connection, tableName ?? DatabaseConstants.WordListTableName, columnName);
+		public override string GetRearrangeMissionFuncName() => "Rearrange_Mission";
+
+		public override string GetColumnType(string tableName, string columnName) => SQLiteDatabaseHelper.GetColumnType(Connection, tableName ?? DatabaseConstants.WordListTableName, columnName);
 
 		public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
-		public override bool IsColumnExists(string columnName, string tableName = null) => SQLiteDatabaseHelper.IsColumnExists(Connection, tableName, columnName);
+		public override bool IsColumnExists(string tableName, string columnName) => SQLiteDatabaseHelper.IsColumnExists(Connection, tableName, columnName);
 
 		public override bool IsTableExists(string tablename) => SQLiteDatabaseHelper.IsTableExists(Connection, tablename);
 

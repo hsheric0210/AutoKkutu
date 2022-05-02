@@ -1,4 +1,5 @@
-﻿using AutoKkutu.Databases;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Databases;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using static AutoKkutu.Constants;
 
 namespace AutoKkutu.Utils
 {
@@ -118,7 +118,7 @@ namespace AutoKkutu.Utils
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Exception while checking database", ex);
+					Logger.Error("Exception while checking database", ex);
 				}
 			});
 		}
@@ -141,7 +141,7 @@ namespace AutoKkutu.Utils
 			int count = 0;
 			foreach (var pair in FlagCorrection)
 			{
-				Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordFlags)pair.Value.Item1, (WordFlags)pair.Value.Item2);
+				Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
 				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
 				count++;
 			}
@@ -163,7 +163,7 @@ namespace AutoKkutu.Utils
 				else
 				{
 					correctWordIndex = correctIndexSupplier(pair.Key);
-					Logger.InfoFormat("Fixed {0} of '{1}': from '{2}' to '{3}'.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
+					Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from '{2}' to '{3}'.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
 				}
 				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
 				count++;
@@ -188,7 +188,7 @@ namespace AutoKkutu.Utils
 		private static void CheckFlagsColumn(CommonDatabaseReader reader, Dictionary<string, (int, int)> FlagCorrection)
 		{
 			string content = reader.GetString(DatabaseConstants.WordColumnName);
-			WordFlags correctFlags = DatabaseUtils.GetFlags(content);
+			WordDatabaseAttributes correctFlags = DatabaseUtils.GetFlags(content);
 			int _correctFlags = (int)correctFlags;
 			int currentFlags = reader.GetInt32(DatabaseConstants.FlagsColumnName);
 			if (_correctFlags != currentFlags)
@@ -247,7 +247,7 @@ namespace AutoKkutu.Utils
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to refresh node lists", ex);
+				Logger.Error("Failed to refresh node lists", ex);
 			}
 		}
 

@@ -1,7 +1,8 @@
-﻿using System;
+﻿using AutoKkutu.Constants;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using static AutoKkutu.Constants;
 
 namespace AutoKkutu.Databases
 {
@@ -11,7 +12,7 @@ namespace AutoKkutu.Databases
 		{
 			switch (opts.Mode)
 			{
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					return DatabaseConstants.ReverseWordIndexColumnName;
 
 				case GameMode.Kkutu:
@@ -25,48 +26,48 @@ namespace AutoKkutu.Databases
 			return DatabaseConstants.WordIndexColumnName;
 		}
 
-		public static void GetOptimalWordFlags(GameMode mode, out int endWordFlag, out int attackWordFlag)
+		public static void GetOptimalWordDatabaseAttributes(GameMode mode, out int endWordFlag, out int attackWordFlag)
 		{
 			switch (mode)
 			{
-				case GameMode.First_and_Last:
-					endWordFlag = (int)WordFlags.ReverseEndWord;
-					attackWordFlag = (int)WordFlags.ReverseAttackWord;
+				case GameMode.FirstAndLast:
+					endWordFlag = (int)WordDatabaseAttributes.ReverseEndWord;
+					attackWordFlag = (int)WordDatabaseAttributes.ReverseAttackWord;
 					return;
 
-				case GameMode.Middle_and_First:
-					endWordFlag = (int)WordFlags.MiddleEndWord;
-					attackWordFlag = (int)WordFlags.MiddleAttackWord;
+				case GameMode.MiddleAddFirst:
+					endWordFlag = (int)WordDatabaseAttributes.MiddleEndWord;
+					attackWordFlag = (int)WordDatabaseAttributes.MiddleAttackWord;
 					return;
 
 				case GameMode.Kkutu:
-					endWordFlag = (int)WordFlags.KkutuEndWord;
-					attackWordFlag = (int)WordFlags.KkutuAttackWord;
+					endWordFlag = (int)WordDatabaseAttributes.KkutuEndWord;
+					attackWordFlag = (int)WordDatabaseAttributes.KkutuAttackWord;
 					return;
 			}
-			endWordFlag = (int)WordFlags.EndWord;
-			attackWordFlag = (int)WordFlags.AttackWord;
+			endWordFlag = (int)WordDatabaseAttributes.EndWord;
+			attackWordFlag = (int)WordDatabaseAttributes.AttackWord;
 		}
 
-		private static PathObjectOptions GetPathObjectFlags(GetPathObjectFlagsInfo info, out int missionCharCount)
+		private static WordAttributes GetPathObjectFlags(GetPathObjectFlagsInfo info, out int missionCharCount)
 		{
-			WordFlags wordFlags = info.WordFlags;
-			PathObjectOptions pathFlags = PathObjectOptions.None;
-			if (wordFlags.HasFlag(info.EndWordFlag))
-				pathFlags |= PathObjectOptions.EndWord;
-			if (wordFlags.HasFlag(info.AttackWordFlag))
-				pathFlags |= PathObjectOptions.AttackWord;
+			WordDatabaseAttributes WordDatabaseAttributes = info.WordDatabaseAttributes;
+			WordAttributes wordAttributes = WordAttributes.None;
+			if (WordDatabaseAttributes.HasFlag(info.EndWordFlag))
+				wordAttributes |= WordAttributes.EndWord;
+			if (WordDatabaseAttributes.HasFlag(info.AttackWordFlag))
+				wordAttributes |= WordAttributes.AttackWord;
 
-			var missionChar = info.MissionChar;
+			string missionChar = info.MissionChar;
 			if (!string.IsNullOrWhiteSpace(missionChar))
 			{
 				missionCharCount = info.Word.Count(c => c == missionChar.First());
 				if (missionCharCount > 0)
-					pathFlags |= PathObjectOptions.MissionWord;
+					wordAttributes |= WordAttributes.MissionWord;
 			}
 			else
 				missionCharCount = 0;
-			return pathFlags;
+			return wordAttributes;
 		}
 
 		public static ICollection<PathObject> FindWord(this CommonDatabaseConnection connection, FindWordInfo info)
@@ -75,50 +76,46 @@ namespace AutoKkutu.Databases
 				throw new ArgumentNullException(nameof(connection));
 
 			var result = new List<PathObject>();
-			GetOptimalWordFlags(info.Mode, out int endWordFlag, out int attackWordFlag);
+			GetOptimalWordDatabaseAttributes(info.Mode, out int endWordFlag, out int attackWordFlag);
 			string query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
-
-			//Logger.InfoFormat("Query: {0}", query);
 			using (CommonDatabaseReader reader = connection.ExecuteReader(query))
+			{
 				while (reader.Read())
 				{
 					string word = reader.GetString(DatabaseConstants.WordColumnName).ToString().Trim();
 					result.Add(new PathObject(word, GetPathObjectFlags(new GetPathObjectFlagsInfo
 					{
 						Word = word,
-						WordFlags = (WordFlags)reader.GetInt32(DatabaseConstants.FlagsColumnName),
+						WordDatabaseAttributes = (WordDatabaseAttributes)reader.GetInt32(DatabaseConstants.FlagsColumnName),
 						MissionChar = info.MissionChar,
-						EndWordFlag = (WordFlags)endWordFlag,
-						AttackWordFlag = (WordFlags)attackWordFlag
+						EndWordFlag = (WordDatabaseAttributes)endWordFlag,
+						AttackWordFlag = (WordDatabaseAttributes)attackWordFlag
 					}, out int missionCharCount), missionCharCount));
 				}
+			}
+
 			return result;
 		}
 
 		private static string CreateQuery(this CommonDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
 		{
 			string condition;
-			var data = info.Word;
+			ResponsePresentedWord data = info.Word;
 			string indexColumnName = GetIndexColumnName(info);
 			if (data.CanSubstitution)
 				condition = $"WHERE ({indexColumnName} = '{data.Content}' OR {indexColumnName} = '{data.Substitution}')";
 			else
 				condition = $"WHERE {indexColumnName} = '{data.Content}'";
 
-			var opt = new PreferenceInfo { PathFinderFlags = info.PathFinderFlags, WordPreference = info.WordPreference, Condition = "", OrderCondition = "" };
+			var opt = new PreferenceInfo { PathFinderFlags = info.PathFinderFlags, WordPreference = info.WordPreference, Condition = "" };
 
 			// 한방 단어
-			ApplyPreference(PathFinderInfo.UseEndWord, endWordFlag, DatabaseConstants.EndWordIndexPriority, ref opt);
+			ApplyFilter(PathFinderInfo.UseEndWord, endWordFlag, ref opt);
 
 			// 공격 단어
-			ApplyPreference(PathFinderInfo.UseAttackWord, attackWordFlag, DatabaseConstants.AttackWordIndexPriority, ref opt);
+			ApplyFilter(PathFinderInfo.UseAttackWord, attackWordFlag, ref opt);
 
-			// 미션 단어
-			string orderCondition;
-			if (string.IsNullOrWhiteSpace(info.MissionChar))
-				orderCondition = $"({opt.OrderCondition} LENGTH({DatabaseConstants.WordColumnName}))";
-			else
-				orderCondition = $"({connection.GetCheckMissionCharFuncName()}({DatabaseConstants.WordColumnName}, '{info.MissionChar}') + {opt.OrderCondition} LENGTH({DatabaseConstants.WordColumnName}))";
+			string orderCondition = $"({CreateRearrangeCondition(connection, info.MissionChar, info.WordPreference, endWordFlag, attackWordFlag)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
 			if (info.Mode == GameMode.All)
 				condition = opt.Condition = "";
@@ -126,12 +123,51 @@ namespace AutoKkutu.Databases
 			return $"SELECT * FROM {DatabaseConstants.WordListTableName} {condition} {opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}";
 		}
 
-		private static void ApplyPreference(PathFinderInfo targetFlag, int flag, int targetPriority, ref PreferenceInfo opt)
+		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag)
 		{
-			if (!opt.PathFinderFlags.HasFlag(targetFlag))
-				opt.Condition += $"AND (flags & {flag} = 0)";
-			else if (opt.WordPreference == WordPreference.ATTACK_DAMAGE)
-				opt.OrderCondition += $"(CASE WHEN (flags & {flag} != 0) THEN {targetPriority} ELSE 0 END) +";
+			if (string.IsNullOrWhiteSpace(missionChar))
+			{
+				return string.Format(
+					CultureInfo.InvariantCulture,
+					"{0}({1}, {2}, {3}, {4}, {5}, {6})",
+					connection.GetRearrangeFuncName(),
+					DatabaseConstants.FlagsColumnName,
+					endWordFlag,
+					attackWordFlag,
+					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.None));
+			}
+			else
+			{
+				return string.Format(
+					CultureInfo.InvariantCulture,
+					"{0}({1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})",
+					connection.GetRearrangeMissionFuncName(),
+					DatabaseConstants.WordColumnName,
+					DatabaseConstants.FlagsColumnName,
+					missionChar,
+					endWordFlag,
+					attackWordFlag,
+					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord | WordAttributes.MissionWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord | WordAttributes.MissionWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.MissionWord),
+					GetAttributeOrdinal(wordPreference, WordAttributes.None));
+			}
+		}
+
+		private static int GetAttributeOrdinal(WordPreference preference, WordAttributes attributes)
+		{
+			var fullAttribs = preference.GetAttributes();
+			return fullAttribs.Length - Array.IndexOf(fullAttribs, attributes) - 1;
+		}
+
+		private static void ApplyFilter(PathFinderInfo targetFlag, int flag, ref PreferenceInfo info)
+		{
+			if (!info.PathFinderFlags.HasFlag(targetFlag))
+				info.Condition += $"AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
 		}
 
 		private struct PreferenceInfo
@@ -141,8 +177,6 @@ namespace AutoKkutu.Databases
 			public WordPreference WordPreference;
 
 			public string Condition;
-
-			public string OrderCondition;
 		}
 
 		private struct GetPathObjectFlagsInfo
@@ -151,11 +185,11 @@ namespace AutoKkutu.Databases
 
 			public string MissionChar;
 
-			public WordFlags WordFlags;
+			public WordDatabaseAttributes WordDatabaseAttributes;
 
-			public WordFlags EndWordFlag;
+			public WordDatabaseAttributes EndWordFlag;
 
-			public WordFlags AttackWordFlag;
+			public WordDatabaseAttributes AttackWordFlag;
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using AutoKkutu.Databases;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Databases;
 using AutoKkutu.Utils;
 using CefSharp;
 using CefSharp.Wpf;
@@ -14,9 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
@@ -57,8 +56,8 @@ namespace AutoKkutu
 
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
-		private static ILog Logger = LogManager.GetLogger("MainThread");
-		private Stopwatch inputStopwatch = new Stopwatch();
+		private static readonly ILog Logger = LogManager.GetLogger("MainThread");
+		private readonly Stopwatch inputStopwatch = new Stopwatch();
 		private int WordIndex;
 		public MainWindow()
 		{
@@ -99,7 +98,7 @@ namespace AutoKkutu
 			{
 				var watch = new Stopwatch();
 				watch.Start();
-				var databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
+				Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
 				Database = DatabaseUtils.CreateDatabase(databaseConfig);
 				PathFinder.Init(Database.DefaultConnection);
 				watch.Stop();
@@ -203,7 +202,7 @@ namespace AutoKkutu
 		{
 			SetSearchState(null, false);
 			ResetPathList();
-			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.GAME_END)
+			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.OnGameEnd)
 			{
 				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, "자동 업데이트");
 				string result = PathFinder.AutoDBUpdate();
@@ -249,13 +248,13 @@ namespace AutoKkutu
 		// TODO: 오답 수정 딜레이
 		private void CommonHandler_MyPathIsUnsupported(object sender, UnsupportedWordEventArgs args)
 		{
-			var word = args.Word;
+			string word = args.Word;
 			Logger.WarnFormat("My path '{0}' is wrong.", word);
 
 			if (!CurrentConfig.AutoFixEnabled)
 				return;
 
-			List<PathObject> localFinalList = PathFinder.FinalList;
+			IList<PathObject> localFinalList = PathFinder.FinalList;
 			if (localFinalList.Count - 1 <= WordIndex)
 			{
 				Logger.Warn("Can't Find any other path.");
@@ -298,10 +297,7 @@ namespace AutoKkutu
 			WordIndex = 0;
 		}
 
-		private void CommonHandler_MyTurnEvent(object sender, WordPresentEventArgs args)
-		{
-			StartPathFinding(args.Word, args.MissionChar, PathFinderInfo.None);
-		}
+		private void CommonHandler_MyTurnEvent(object sender, WordPresentEventArgs args) => StartPathFinding(args.Word, args.MissionChar, PathFinderInfo.None);
 
 		private void CommonHandler_onUnsupportedWordEntered(object sender, UnsupportedWordEventArgs args)
 		{
@@ -316,7 +312,7 @@ namespace AutoKkutu
 
 		private void CommonHandler_RoundChangeEvent(object sender, EventArgs e)
 		{
-			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.ROUND_END)
+			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.OnRoundEnd)
 				PathFinder.AutoDBUpdate();
 		}
 
@@ -357,7 +353,7 @@ namespace AutoKkutu
 		{
 			switch (mode)
 			{
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					return PathFinder.ReverseEndWordList;
 
 				case GameMode.Kkutu:
@@ -407,39 +403,24 @@ namespace AutoKkutu
 			DatabaseEvents.DatabaseImportDone += onDatabaseImportDone;
 		}
 
-		private void onDatabaseCheckDone(object sender, DataBaseIntegrityCheckDoneEventArgs args)
-		{
-			this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, args.Result);
-		}
+		private void onDatabaseCheckDone(object sender, DataBaseIntegrityCheckDoneEventArgs args) => this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, args.Result);
 
-		private void onDatabaseCheckStart(object sender, EventArgs e)
-		{
-			this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck);
-		}
+		private void onDatabaseCheckStart(object sender, EventArgs e) => this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck);
 
 		private void onDataBaseError(object sender, EventArgs e) => this.ChangeStatusBar(CurrentStatus.Error);
-		private void onDatabaseImportDone(object sender, DatabaseImportEventArgs args)
-		{
-			this.ChangeStatusBar(CurrentStatus.BatchJobDone, args.Name, args.Result);
-		}
+		private void onDatabaseImportDone(object sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(CurrentStatus.BatchJobDone, args.Name, args.Result);
 
-		private void onDatabaseImportStart(object sender, DatabaseImportEventArgs args)
-		{
-			this.ChangeStatusBar(CurrentStatus.BatchJob, args.Name);
-		}
+		private void onDatabaseImportStart(object sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(CurrentStatus.BatchJob, args.Name);
 
 		private void OnDBManagementClick(object sender, RoutedEventArgs e) => new DatabaseManagement(Database).Show();
 
-		private void OnOpenDevConsoleClick(object sender, RoutedEventArgs e)
-		{
-			Browser.ShowDevTools();
-		}
+		private void OnOpenDevConsoleClick(object sender, RoutedEventArgs e) => Browser.ShowDevTools();
 
 		private void OnPathListContextMenuOpen(object sender, ContextMenuEventArgs e)
 		{
 			var source = (FrameworkElement)e.Source;
-			var contextMenu = source.ContextMenu;
-			var currentSelected = PathList.SelectedItem;
+			ContextMenu contextMenu = source.ContextMenu;
+			object currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
 			var current = ((PathObject)currentSelected);
@@ -467,7 +448,7 @@ namespace AutoKkutu
 		private void OnPathListMakeAttackClick(object sender, RoutedEventArgs e)
 		{
 			Logger.Info(nameof(OnPathListMakeAttackClick));
-			var currentSelected = PathList.SelectedItem;
+			object currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
 			((PathObject)currentSelected).MakeAttack(CurrentConfig.GameMode, Database.DefaultConnection);
@@ -476,7 +457,7 @@ namespace AutoKkutu
 		private void OnPathListMakeEndClick(object sender, RoutedEventArgs e)
 		{
 			Logger.Info(nameof(OnPathListMakeEndClick));
-			var currentSelected = PathList.SelectedItem;
+			object currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
 			((PathObject)currentSelected).MakeEnd(CurrentConfig.GameMode, Database.DefaultConnection);
@@ -485,7 +466,7 @@ namespace AutoKkutu
 		private void OnPathListMakeNormalClick(object sender, RoutedEventArgs e)
 		{
 			Logger.Info(nameof(OnPathListMakeNormalClick));
-			var currentSelected = PathList.SelectedItem;
+			object currentSelected = PathList.SelectedItem;
 			if (currentSelected == null || !(currentSelected is PathObject))
 				return;
 			((PathObject)currentSelected).MakeNormal(CurrentConfig.GameMode, Database.DefaultConnection);
@@ -505,10 +486,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private void OnSettingsClick(object sender, RoutedEventArgs e)
-		{
-			new ConfigWindow(CurrentConfig).Show();
-		}
+		private void OnSettingsClick(object sender, RoutedEventArgs e) => new ConfigWindow(CurrentConfig).Show();
 
 		private void OnSubmitURLClick(object sender, RoutedEventArgs e)
 		{
@@ -634,7 +612,7 @@ namespace AutoKkutu
 		private void ResetPathList()
 		{
 			Logger.Info("Reset Path list... ");
-			PathFinder.FinalList = new List<PathObject>();
+			PathFinder.ResetFinalList();
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 		}
 
@@ -686,7 +664,7 @@ namespace AutoKkutu
 		private void StartPathFinding(ResponsePresentedWord word, string missionChar, PathFinderInfo flags)
 		{
 			GameMode mode = CurrentConfig.GameMode;
-			if (mode == GameMode.Typing_Battle && !flags.HasFlag(PathFinderInfo.ManualSearch))
+			if (mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderInfo.ManualSearch))
 				return;
 
 			try

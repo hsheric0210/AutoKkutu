@@ -29,18 +29,48 @@ namespace AutoKkutu.Databases.MySQL
 				connection.Open();
 				RegisterDefaultConnection(new MySQLDatabaseConnection(connection, DatabaseName));
 
-				DefaultConnection.TryExecuteNonQuery("drop existing checkMissionCharFunc", $"DROP FUNCTION IF EXISTS {DefaultConnection.GetCheckMissionCharFuncName()};");
-				DefaultConnection.TryExecuteNonQuery("register checkMissionCharFunc", $@"CREATE FUNCTION {DefaultConnection.GetCheckMissionCharFuncName()}(word VARCHAR(256), missionWord VARCHAR(2)) RETURNS INT
+				DefaultConnection.TryExecuteNonQuery("drop existing RearrangeFunc", $"DROP FUNCTION IF EXISTS {DefaultConnection.GetRearrangeFuncName()};");
+				DefaultConnection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE FUNCTION {DefaultConnection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
+DETERMINISTIC
+NO SQL
+BEGIN
+	IF ((flags & endWordFlag) != 0) THEN
+		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
+	END IF;
+	IF ((flags & attackWordFlag) != 0) THEN
+		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
+	END IF;
+	RETURN normalWordOrdinal * {DatabaseConstants.MaxWordLength};
+END;
+");
+
+				DefaultConnection.TryExecuteNonQuery("drop existing RearrangeMissionFunc", $"DROP FUNCTION IF EXISTS {DefaultConnection.GetRearrangeMissionFuncName()};");
+				DefaultConnection.TryExecuteNonQuery("register RearrangeMissionFunc", $@"CREATE FUNCTION {DefaultConnection.GetRearrangeMissionFuncName()}(word VARCHAR(256), flags INT, missionword VARCHAR(2), endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
 DETERMINISTIC
 NO SQL
 BEGIN
 	DECLARE occurrence INT;
 
 	SET occurrence = ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
+	IF ((flags & endWordFlag) != 0) THEN
+		IF (occurrence > 0) THEN
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+		ELSE
+			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+		END IF;
+	END IF;
+	IF ((flags & attackWordFlag) != 0) THEN
+		IF (occurrence > 0) THEN
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+		ELSE
+			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+		END IF;
+	END IF;
+
 	IF occurrence > 0 THEN
-		RETURN occurrence + {DatabaseConstants.MissionCharIndexPriority};
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
 	ELSE
-		RETURN 0;
+		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
 	END IF;
 END;
 ");

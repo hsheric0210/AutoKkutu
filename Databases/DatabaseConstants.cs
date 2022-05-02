@@ -53,5 +53,8 @@
 		public const string ErrorIsColumnExists = "Failed to check the existence of column '{0}' in table '{1}'";
 
 		public const string ErrorGetColumnType = "Failed to get the data type of column '{0}' in table '{1}'";
+
+		public const int MaxWordLength = 256;
+		public const int MaxWordPlusMissionLength = 512;
 	}
 }

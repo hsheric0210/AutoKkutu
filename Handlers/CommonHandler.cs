@@ -1,8 +1,10 @@
-﻿using AutoKkutu.Handlers;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Handlers;
 using AutoKkutu.Utils;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
-	public abstract class CommonHandler
+	public abstract class CommonHandler : IDisposable
 	{
 		// Frequently-used function names
 		protected const string WriteInputFunc = "WriteInputFunc";
@@ -32,11 +34,13 @@ namespace AutoKkutu
 
 		public bool IsWatchdogAlive;
 
-		public ResponsePresentedWord CurrentPresentedWord = null;
+		public ResponsePresentedWord CurrentPresentedWord;
 
 		public string CurrentMissionChar => _current_mission_word;
 
 		public bool IsGameStarted => _isGameStarted;
+
+		
 
 		public bool IsMyTurn => _isMyTurn;
 
@@ -48,17 +52,17 @@ namespace AutoKkutu
 
 		private readonly int _ingame_interval = 1;
 
-		private bool _isGameStarted = false;
+		private bool _isGameStarted;
 
-		private bool _isMyTurn = false;
+		private bool _isMyTurn;
 
-		private bool _isWatchdogStarted = false;
+		private bool _isWatchdogStarted;
 
 		private string _current_mission_word = "";
 
 		private string[] _wordCache = new string[6];
 
-		private int _roundIndexCache = 0;
+		private int _roundIndexCache;
 
 		private string _unsupportedWordCache = "";
 
@@ -66,7 +70,7 @@ namespace AutoKkutu
 
 		private string _currentPresentedWordCache = "";
 
-		private GameMode _gameModeCache = GameMode.Last_and_First;
+		private GameMode _gameModeCache = GameMode.LastAndFirst;
 
 		public event EventHandler onGameStarted;
 
@@ -219,7 +223,7 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
-					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error($"GameMode watchdog task terminated", ex);
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error("GameMode watchdog task terminated", ex);
 			}
 		}
 
@@ -235,7 +239,7 @@ namespace AutoKkutu
 					if (cancelToken.IsCancellationRequested)
 						cancelToken.ThrowIfCancellationRequested();
 
-					if (CurrentConfig.GameMode == GameMode.Typing_Battle && _isGameStarted)
+					if (CurrentConfig.GameMode == GameMode.TypingBattle && _isGameStarted)
 					{
 						if (_isMyTurn)
 							GetCurrentPresentedWord(mainWatchdogID);
@@ -248,7 +252,7 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				if (!(ex is OperationCanceledException) && !(ex is TaskCanceledException))
-					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error($"Present word watchdog task terminated", ex);
+					GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error("Present word watchdog task terminated", ex);
 			}
 		}
 
@@ -376,7 +380,7 @@ namespace AutoKkutu
 			GetLogger(watchdogID, "Round").InfoFormat("Round Changed : Index {0} Word {1}", roundIndex, roundText);
 			if (onRoundChange != null)
 				onRoundChange(this, new RoundChangeEventArgs(roundIndex, roundText));
-			PathFinder.PreviousPath = new List<string>();
+			PathFinder.ResetPreviousPath();
 		}
 
 		/// <summary>
@@ -498,7 +502,7 @@ namespace AutoKkutu
 			return RegisteredFunctionNames[funcName];
 		}
 
-		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString())}";
+		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
 		public abstract string GetSiteURLPattern();
 
@@ -508,14 +512,14 @@ namespace AutoKkutu
 		{
 			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", "IsGameNotInProgress");
 			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", "IsGameNotInProgress");
-			return (string.IsNullOrWhiteSpace(height) || !string.IsNullOrWhiteSpace(display)) && (string.IsNullOrWhiteSpace(display) || display.Equals("none", StringComparison.InvariantCultureIgnoreCase));
+			return (string.IsNullOrWhiteSpace(height) || !string.IsNullOrWhiteSpace(display)) && (string.IsNullOrWhiteSpace(display) || display.Equals("none", StringComparison.OrdinalIgnoreCase));
 		}
 
 		public virtual bool IsGameNotInMyTurn()
 		{
 			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]", "IsGameNotInMyTurn");
 			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", "IsGameNotInMyTurn");
-			return string.Equals(element, "undefined", StringComparison.InvariantCultureIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.InvariantCultureIgnoreCase);
+			return string.Equals(element, "undefined", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.OrdinalIgnoreCase);
 		}
 
 		public virtual string GetGamePresentedWord()
@@ -527,7 +531,7 @@ namespace AutoKkutu
 		{
 			if (index < 0 || index >= 6)
 				throw new ArgumentOutOfRangeException($"index: {index}");
-			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]", "GetGamePreviousWord").Equals("undefined"))
+			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]", "GetGamePreviousWord").Equals("undefined", StringComparison.OrdinalIgnoreCase))
 				return "";
 			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", "GetGamePreviousWord");
 		}
@@ -574,13 +578,13 @@ namespace AutoKkutu
 				switch (trimmed.Substring(trimmed.IndexOf(' ') + 1))
 				{
 					case "앞말잇기":
-						return GameMode.First_and_Last;
+						return GameMode.FirstAndLast;
 
 					case "가운뎃말잇기":
-						return GameMode.Middle_and_First;
+						return GameMode.MiddleAddFirst;
 
 					case "쿵쿵따":
-						return GameMode.Kung_Kung_Tta;
+						return GameMode.KungKungTta;
 
 					case "끄투":
 						return GameMode.Kkutu;
@@ -592,13 +596,13 @@ namespace AutoKkutu
 						return GameMode.Free;
 
 					case "자유 끝말잇기":
-						return GameMode.Free_Last_and_First;
+						return GameMode.LastAndFirstFree;
 
 					case "타자 대결":
-						return GameMode.Typing_Battle;
+						return GameMode.TypingBattle;
 				}
 			}
-			return GameMode.Last_and_First;
+			return GameMode.LastAndFirst;
 		}
 
 		public virtual string GetRoomInfo()
@@ -608,6 +612,21 @@ namespace AutoKkutu
 			string roomRounds = EvaluateJS("document.getElementsByClassName('room-head-round')[0].textContent");
 			string roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent");
 			return $"{roomMode} | {roomLimit} | {roomRounds} | {roomTime}";
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				cancelTokenSrc.Dispose();
+				_mainWatchdogTask.Dispose();
+			}
 		}
 	}
 
@@ -633,7 +652,7 @@ namespace AutoKkutu
 			if (!(obj is ResponsePresentedWord))
 				return false;
 			ResponsePresentedWord other = (ResponsePresentedWord)obj;
-			return string.Equals(Content, other.Content, StringComparison.InvariantCultureIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || CanSubstitution && string.Equals(Substitution, other.Substitution, StringComparison.InvariantCultureIgnoreCase));
+			return string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.InvariantCultureIgnoreCase));
 		}
 
 		public override int GetHashCode()

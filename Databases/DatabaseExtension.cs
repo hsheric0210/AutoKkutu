@@ -1,14 +1,16 @@
 ﻿using AutoKkutu.Utils;
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using static AutoKkutu.Constants;
+using AutoKkutu.Constants;
+using log4net;
 
 namespace AutoKkutu.Databases
 {
 	public static class DatabaseExtension
 	{
+		private static readonly ILog Logger = LogManager.GetLogger("Database Exts");
+
 		public static bool AddNode(this CommonDatabaseConnection connection, string node, string tableName = null)
 		{
 			if (connection == null)
@@ -26,7 +28,7 @@ namespace AutoKkutu.Databases
 			return true;
 		}
 
-		public static bool AddWord(this CommonDatabaseConnection connection, string word, WordFlags flags)
+		public static bool AddWord(this CommonDatabaseConnection connection, string word, WordDatabaseAttributes flags)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -99,8 +101,10 @@ namespace AutoKkutu.Databases
 			using (CommonDatabaseReader reader = connection.ExecuteReader($"SELECT * FROM {tableName}"))
 				while (reader.Read())
 					result.Add(reader.GetString(DatabaseConstants.WordIndexColumnName));
+			Logger.InfoFormat("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}
+
 		public static void MakeTable(this CommonDatabaseConnection connection, string tablename)
 		{
 			string columnOptions;
@@ -134,17 +138,18 @@ namespace AutoKkutu.Databases
 		{
 			connection.ExecuteNonQuery($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
 		}
+
 		// TODO: Move to utils
 		private static bool GetWordIndexColumnName(GameMode gameMode, out string str)
 		{
 			switch (gameMode)
 			{
-				case GameMode.Last_and_First:
-				case GameMode.Middle_and_First:
+				case GameMode.LastAndFirst:
+				case GameMode.MiddleAddFirst:
 					str = DatabaseConstants.WordIndexColumnName;
 					break;
 
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					str = DatabaseConstants.ReverseWordIndexColumnName;
 					break;
 

@@ -1,4 +1,5 @@
-﻿using AutoKkutu.Databases;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Databases;
 using AutoKkutu.Utils;
 using log4net;
 using System;
@@ -8,33 +9,71 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using static AutoKkutu.Constants;
 
 namespace AutoKkutu
 {
-	public class PathFinder
+	public static class PathFinder
 	{
-		// Node lists
-		public static ICollection<string> AttackWordList;
-
-		public static CommonDatabaseConnection Connection;
-		public static AutoKkutuColorPreference CurrentColorPreference;
-		public static AutoKkutuConfiguration CurrentConfig;
-		public static ICollection<string> EndWordList;
-		public static List<PathObject> FinalList;
-		public static ConcurrentBag<string> InexistentPathList = new ConcurrentBag<string>();
-		public static ICollection<string> KkutuAttackWordList;
-		public static ICollection<string> KkutuEndWordList;
-		public static ConcurrentBag<string> NewPathList = new ConcurrentBag<string>();
-
-		// AutoDBUpdate
-		public static List<string> PreviousPath = new List<string>();
-
-		public static ICollection<string> ReverseAttackWordList;
-		public static ICollection<string> ReverseEndWordList;
-		public static List<string> UnsupportedPathList = new List<string>();
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));
-		// Events
+
+		public static ICollection<string> AttackWordList
+		{
+			get; private set;
+		}
+
+		public static ICollection<string> EndWordList
+		{
+			get; private set;
+		}
+
+		public static ICollection<string> KkutuAttackWordList
+		{
+			get; private set;
+		}
+
+		public static ICollection<string> KkutuEndWordList
+		{
+			get; private set;
+		}
+
+		public static ICollection<string> ReverseAttackWordList
+		{
+			get; private set;
+		}
+
+		public static ICollection<string> ReverseEndWordList
+		{
+			get; private set;
+		}
+
+		public static CommonDatabaseConnection Connection
+		{
+			get; private set;
+		}
+
+		public static AutoKkutuColorPreference CurrentColorPreference
+		{
+			get; private set;
+		}
+
+		public static AutoKkutuConfiguration CurrentConfig
+		{
+			get; private set;
+		}
+
+		public static IList<PathObject> FinalList
+		{
+			get; private set;
+		}
+
+		public static ConcurrentBag<string> InexistentPathList { get; private set; } = new ConcurrentBag<string>();
+
+		public static ConcurrentBag<string> NewPathList { get; private set; } = new ConcurrentBag<string>();
+
+		public static ICollection<string> PreviousPath { get; private set; } = new List<string>();
+
+		public static ICollection<string> UnsupportedPathList { get; private set; } = new List<string>();
+
 		public static event EventHandler<UpdatedPathEventArgs> onPathUpdated;
 
 		public static void AddPreviousPath(string word)
@@ -84,7 +123,7 @@ namespace AutoKkutu
 			return null;
 		}
 
-		public static bool CheckNodePresence(string nodeType, string item, ICollection<string> nodeList, WordFlags theFlag, ref WordFlags flags, bool add = false)
+		public static bool CheckNodePresence(string nodeType, string item, ICollection<string> nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool add = false)
 		{
 			if (string.IsNullOrEmpty(nodeType))
 				throw new ArgumentNullException(nameof(nodeType));
@@ -107,17 +146,20 @@ namespace AutoKkutu
 
 		public static string ConvertToPresentedWord(string path)
 		{
+			if (string.IsNullOrWhiteSpace(path))
+				throw new ArgumentException("Parameter is null or blank", nameof(path));
+
 			switch (CurrentConfig.GameMode)
 			{
-				case GameMode.Last_and_First:
-				case GameMode.Kung_Kung_Tta:
-				case GameMode.Free_Last_and_First:
+				case GameMode.LastAndFirst:
+				case GameMode.KungKungTta:
+				case GameMode.LastAndFirstFree:
 					return path.GetLaFTailNode();
 
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					return path.GetFaLHeadNode();
 
-				case GameMode.Middle_and_First:
+				case GameMode.MiddleAddFirst:
 					if (path.Length > 2 && path.Length % 2 == 1)
 						return path.GetMaFNode();
 					break;
@@ -125,7 +167,7 @@ namespace AutoKkutu
 				case GameMode.Kkutu:
 					return path.GetKkutuTailNode();
 
-				case GameMode.Typing_Battle:
+				case GameMode.TypingBattle:
 					break;
 
 				case GameMode.All:
@@ -146,9 +188,9 @@ namespace AutoKkutu
 				return;
 			}
 
-			var wordCondition = info.Word;
-			var missionChar = info.MissionChar;
-			var flags = info.PathFinderFlags;
+			ResponsePresentedWord wordCondition = info.Word;
+			string missionChar = info.MissionChar;
+			PathFinderInfo flags = info.PathFinderFlags;
 			if (wordCondition.CanSubstitution)
 				Logger.InfoFormat("Finding path for {0} ({1}).", wordCondition.Content, wordCondition.Substitution);
 			else
@@ -217,20 +259,14 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to update node lists", ex);
+				Logger.Error("Failed to update node lists", ex);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}
 
-		public static void UpdateColorPreference(AutoKkutuColorPreference newColorPref)
-		{
-			CurrentColorPreference = newColorPref;
-		}
+		public static void UpdateColorPreference(AutoKkutuColorPreference newColorPref) => CurrentColorPreference = newColorPref;
 
-		public static void UpdateConfig(AutoKkutuConfiguration newConfig)
-		{
-			CurrentConfig = newConfig;
-		}
+		public static void UpdateConfig(AutoKkutuConfiguration newConfig) => CurrentConfig = newConfig;
 
 		public static void UpdateNodeLists(CommonDatabaseConnection connection)
 		{
@@ -247,7 +283,7 @@ namespace AutoKkutu
 			int count = 0;
 			foreach (string word in NewPathList)
 			{
-				WordFlags flags = DatabaseUtils.GetFlags(word);
+				WordDatabaseAttributes flags = DatabaseUtils.GetFlags(word);
 
 				try
 				{
@@ -277,18 +313,18 @@ namespace AutoKkutu
 
 		private static void RandomPath(FindWordInfo info)
 		{
-			var word = info.Word;
-			var missionChar = info.MissionChar;
-			string firstChar = (info.Mode == GameMode.Free_Last_and_First) ? word.Content : "";
+			ResponsePresentedWord word = info.Word;
+			string missionChar = info.MissionChar;
+			string firstChar = (info.Mode == GameMode.LastAndFirstFree) ? word.Content : "";
 
 			var watch = new Stopwatch();
 			watch.Start();
 			FinalList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
-				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), PathObjectOptions.None, 256));
-			Random random = new Random();
+				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordAttributes.None, 256));
+			var random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), PathObjectOptions.None, 256));
+				FinalList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), WordAttributes.None, 256));
 			watch.Stop();
 			NotifyPathUpdate(new UpdatedPathEventArgs(word, missionChar, PathFinderResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), info.PathFinderFlags));
 		}
@@ -312,6 +348,9 @@ namespace AutoKkutu
 
 			return count;
 		}
+
+		public static void ResetPreviousPath() => PreviousPath = new List<string>();
+		public static void ResetFinalList() => FinalList = new List<PathObject>();
 	}
 
 	public class PathObject
@@ -363,27 +402,27 @@ namespace AutoKkutu
 
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));
 
-		public PathObject(string content, PathObjectOptions flags, int missionCharCount)
+		public PathObject(string content, WordAttributes flags, int missionCharCount)
 		{
-			var colorPref = PathFinder.CurrentColorPreference;
+			AutoKkutuColorPreference colorPref = PathFinder.CurrentColorPreference;
 
 			Content = content;
 			Title = content;
 
-			MakeEndAvailable = !flags.HasFlag(PathObjectOptions.EndWord);
-			MakeAttackAvailable = !flags.HasFlag(PathObjectOptions.AttackWord);
+			MakeEndAvailable = !flags.HasFlag(WordAttributes.EndWord);
+			MakeAttackAvailable = !flags.HasFlag(WordAttributes.AttackWord);
 			MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;
 
-			bool isMissionWord = flags.HasFlag(PathObjectOptions.MissionWord);
+			bool isMissionWord = flags.HasFlag(WordAttributes.MissionWord);
 			string tooltipPrefix = "";
 			string mission = isMissionWord ? $"미션({missionCharCount}) " : "";
-			if (flags.HasFlag(PathObjectOptions.EndWord))
+			if (flags.HasFlag(WordAttributes.EndWord))
 			{
 				tooltipPrefix = $"한방 {mission}단어: ";
 				Color = (isMissionWord ? colorPref.EndMissionWordColor : colorPref.EndWordColor).ToString(CultureInfo.InvariantCulture);
 				PrimaryImage = @"images\skull.png";
 			}
-			else if (flags.HasFlag(PathObjectOptions.AttackWord))
+			else if (flags.HasFlag(WordAttributes.AttackWord))
 			{
 				tooltipPrefix = $"공격 {mission}단어: ";
 				Color = (isMissionWord ? colorPref.AttackMissionWordColor : colorPref.AttackWordColor).ToString(CultureInfo.InvariantCulture);
@@ -422,8 +461,8 @@ namespace AutoKkutu
 		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
 		{
 			string node = ToNode(mode);
-			var a = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
-			var b = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
+			bool a = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
+			bool b = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
 			if (a || b)
 				Logger.InfoFormat("Successfully marked node '{0}' as NormalWord.", node);
 			else
@@ -434,7 +473,7 @@ namespace AutoKkutu
 		{
 			switch (mode)
 			{
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					return DatabaseConstants.ReverseAttackWordListTableName;
 
 				case GameMode.Kkutu:
@@ -448,7 +487,7 @@ namespace AutoKkutu
 		{
 			switch (mode)
 			{
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					return DatabaseConstants.ReverseEndWordListTableName;
 
 				case GameMode.Kkutu:
@@ -462,10 +501,10 @@ namespace AutoKkutu
 		{
 			switch (mode)
 			{
-				case GameMode.First_and_Last:
+				case GameMode.FirstAndLast:
 					return Content.GetFaLTailNode();
 
-				case GameMode.Middle_and_First:
+				case GameMode.MiddleAddFirst:
 					if (Content.Length % 2 == 1)
 						return Content.GetMaFNode();
 					break;
@@ -544,15 +583,6 @@ namespace AutoKkutu
 		Normal,
 		None,
 		Error
-	}
-
-	[Flags]
-	public enum PathObjectOptions
-	{
-		None = 0,
-		EndWord = 1 << 0,
-		AttackWord = 1 << 1,
-		MissionWord = 1 << 2
 	}
 
 	public struct FindWordInfo : IEquatable<FindWordInfo>

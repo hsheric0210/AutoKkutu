@@ -1,8 +1,8 @@
 ﻿using System.Configuration;
 
-namespace AutoKkutu
+namespace AutoKkutu.ConfigFile
 {
-	public class PostgreSQLSection : ConfigurationSection
+	public class MySQLSection : ConfigurationSection
 	{
 		[ConfigurationProperty("connectionString")]
 		public string ConnectionString

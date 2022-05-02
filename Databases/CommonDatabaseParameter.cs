@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 
 namespace AutoKkutu.Databases
 {
@@ -12,23 +11,24 @@ namespace AutoKkutu.Databases
 
 		public ParameterDirection Direction
 		{
-			get; private set;
+			get;
 		} = ParameterDirection.Input;
 
 		public string Name
 		{
-			get; private set;
+			get;
 		}
 
 		public byte Precision
 		{
-			get; private set;
+			get;
 		}
 
 		public object Value
 		{
-			get; private set;
+			get;
 		}
+
 		protected CommonDatabaseParameter(string name, object value)
 		{
 			Name = name;

@@ -17,7 +17,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public override void AddSequenceColumnToWordList() => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
 
-		public override void ChangeWordListColumnType(string columnName, string newType, string tableName = null) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ALTER COLUMN {columnName} TYPE {newType}");
+		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => ExecuteNonQuery($"ALTER TABLE {tableName} ALTER COLUMN {columnName} TYPE {newType}");
 
 		public override CommonDatabaseParameter CreateParameter(string name, object value) => new PostgreSQLDatabaseParameter(name, value);
 
@@ -74,14 +74,15 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 		}
 
-		public override string GetCheckMissionCharFuncName() => "__AutoKkutu_CheckMissionChar";
+		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
+		public override string GetRearrangeMissionFuncName() => "__AutoKkutu_RearrangeMission";
 
-		public override string GetColumnType(string columnName, string tableName = null)
+		public override string GetColumnType(string tableName, string columnName)
 		{
 			tableName = tableName ?? DatabaseConstants.WordListTableName;
 			try
 			{
-				return ExecuteScalar($"SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
+				return ExecuteScalar("SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
 			}
 			catch (Exception ex)
 			{
@@ -92,7 +93,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public override string GetWordListColumnOptions() => "seq SERIAL PRIMARY KEY, word CHAR VARYING(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
-		public override bool IsColumnExists(string columnName, string tableName = null)
+		public override bool IsColumnExists(string tableName, string columnName)
 		{
 			tableName = tableName ?? DatabaseConstants.WordListTableName;
 			try
@@ -110,7 +111,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 		{
 			try
 			{
-				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@tableName;", CreateParameter("@tableName", tablename)), CultureInfo.InvariantCulture) > 0;
+				return Convert.ToInt32(ExecuteScalar("SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@tableName;", CreateParameter("@tableName", tablename)), CultureInfo.InvariantCulture) > 0;
 			}
 			catch (Exception ex)
 			{
