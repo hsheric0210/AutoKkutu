@@ -1,4 +1,4 @@
-﻿namespace AutoKkutu.Databases
+﻿namespace AutoKkutu.Databases.MySQL
 {
 	public partial class MariaDBDatabase : MySQLDatabase
 	{

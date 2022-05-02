@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Handlers;
+using AutoKkutu.Utils;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -13,12 +14,15 @@ namespace AutoKkutu
 	{
 		// Frequently-used function names
 		protected const string WriteInputFunc = "WriteInputFunc";
+
 		protected const string ClickSubmitFunc = "ClickSubmitFunc";
+
 		private const string CurrentRoundIndexFunc = "CurrentRoundIndexFunc";
 
 		protected enum CheckType
 		{
 			GameStarted,
+
 			MyTurn
 		}
 
@@ -29,6 +33,7 @@ namespace AutoKkutu
 		public bool IsWatchdogAlive;
 
 		public ResponsePresentedWord CurrentPresentedWord = null;
+
 		public string CurrentMissionChar => _current_mission_word;
 
 		public bool IsGameStarted => _isGameStarted;
@@ -36,27 +41,47 @@ namespace AutoKkutu
 		public bool IsMyTurn => _isMyTurn;
 
 		private Task _mainWatchdogTask;
+
 		private CancellationTokenSource cancelTokenSrc;
+
 		private readonly int _checkgame_interval = 3000;
+
 		private readonly int _ingame_interval = 1;
+
 		private bool _isGameStarted = false;
+
 		private bool _isMyTurn = false;
+
 		private bool _isWatchdogStarted = false;
+
 		private string _current_mission_word = "";
+
 		private string[] _wordCache = new string[6];
+
 		private int _roundIndexCache = 0;
+
 		private string _unsupportedWordCache = "";
+
 		private string _exampleWordCache = "";
+
 		private string _currentPresentedWordCache = "";
+
 		private GameMode _gameModeCache = GameMode.Last_and_First;
 
 		public event EventHandler onGameStarted;
+
 		public event EventHandler onGameEnded;
+
 		public event EventHandler<WordPresentEventArgs> onMyTurn;
+
 		public event EventHandler onMyTurnEnded;
+
 		public event EventHandler<UnsupportedWordEventArgs> onUnsupportedWordEntered;
+
 		public event EventHandler<UnsupportedWordEventArgs> onMyPathIsUnsupported;
+
 		public event EventHandler onRoundChange;
+
 		public event EventHandler<GameModeChangeEventArgs> onGameModeChange;
 
 		// 참고: 이 이벤트는 '타자 대결' 모드에서만 사용됩니다
@@ -308,7 +333,7 @@ namespace AutoKkutu
 				{
 					GetLogger(watchdogID, "Previous word").InfoFormat("Found Previous Word : {0}", word);
 
-					if (word != MainWindow.LastUsedPath && !PathFinder.NewPathList.Contains(word))
+					if (!PathFinder.NewPathList.Contains(word))
 						PathFinder.NewPathList.Add(word);
 					PathFinder.AddPreviousPath(word);
 				}
@@ -466,7 +491,6 @@ namespace AutoKkutu
 				else
 					GetLogger().InfoFormat("Register {0}: {1}()", funcName, realFuncName);
 			}
-
 		}
 
 		protected string RegisteredJSFunctionName(string funcName)
@@ -551,18 +575,25 @@ namespace AutoKkutu
 				{
 					case "앞말잇기":
 						return GameMode.First_and_Last;
+
 					case "가운뎃말잇기":
 						return GameMode.Middle_and_First;
+
 					case "쿵쿵따":
 						return GameMode.Kung_Kung_Tta;
+
 					case "끄투":
 						return GameMode.Kkutu;
+
 					case "전체":
 						return GameMode.All;
+
 					case "자유":
 						return GameMode.Free;
+
 					case "자유 끝말잇기":
 						return GameMode.Free_Last_and_First;
+
 					case "타자 대결":
 						return GameMode.Typing_Battle;
 				}
@@ -583,7 +614,9 @@ namespace AutoKkutu
 	public class ResponsePresentedWord
 	{
 		public string Content;
+
 		public bool CanSubstitution;
+
 		public string Substitution;
 
 		public ResponsePresentedWord(string content, bool canSubsitution, string substituation = "")
@@ -612,6 +645,7 @@ namespace AutoKkutu
 	public class WordPresentEventArgs : EventArgs
 	{
 		public ResponsePresentedWord Word;
+
 		public string MissionChar;
 
 		public WordPresentEventArgs(ResponsePresentedWord word, string missionChar)
@@ -624,6 +658,7 @@ namespace AutoKkutu
 	public class UnsupportedWordEventArgs : EventArgs
 	{
 		public string Word;
+
 		public bool IsExistingWord;
 
 		public UnsupportedWordEventArgs(string word, bool isExistingWord)
@@ -636,6 +671,7 @@ namespace AutoKkutu
 	public class RoundChangeEventArgs : EventArgs
 	{
 		public int RoundIndex;
+
 		public string RoundWord;
 
 		public RoundChangeEventArgs(int roundIndex, string roundWord)

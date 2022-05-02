@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
-using static AutoKkutu.Constants;
 
-namespace AutoKkutu
+namespace AutoKkutu.Utils
 {
 	public static class RandomUtils
 	{
-
 		public static Random GLOBAL_RANDOM = new Random();
 
+
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394", Justification = "Secure randomness is excessive on this logic")]
 		public static string GenerateRandomString(int length, bool english, Random random = null)
 		{
 			if (random == null)
 				random = GLOBAL_RANDOM;
+
 			var builder = new StringBuilder(length);
 			char start = '가';
 			char end = '힣';

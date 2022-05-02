@@ -1,8 +1,6 @@
 ﻿using log4net;
 using System;
-using System.Configuration;
 using System.Windows;
-using System.Windows.Media;
 
 namespace AutoKkutu
 {
@@ -15,6 +13,9 @@ namespace AutoKkutu
 
 		public ColorManagement(AutoKkutuColorPreference config)
 		{
+			if (config == null)
+				throw new ArgumentNullException(nameof(config));
+
 			InitializeComponent();
 			EndWordColor.SelectedColor = config.EndWordColor;
 			AttackWordColor.SelectedColor = config.AttackWordColor;
@@ -23,15 +24,9 @@ namespace AutoKkutu
 			AttackMissionWordColor.SelectedColor = config.AttackMissionWordColor;
 		}
 
-		private static void UpdateConfigColor(KeyValueConfigurationCollection config, string key, Color color)
+		private void onSubmit(object sender, RoutedEventArgs e)
 		{
-			config.Remove(key);
-			config.Add(key, color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2"));
-		}
-
-		private void Submit_Click(object sender, RoutedEventArgs e)
-		{
-			var newPref = new AutoKkutuColorPreference
+			var newPreference = new AutoKkutuColorPreference
 			{
 				EndWordColor = EndWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultEndWordColor,
 				AttackWordColor = AttackWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultAttackWordColor,
@@ -42,15 +37,7 @@ namespace AutoKkutu
 
 			try
 			{
-				Configuration conf = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-				var collection = conf.AppSettings.Settings;
-				UpdateConfigColor(collection, nameof(EndWordColor), newPref.EndWordColor);
-				UpdateConfigColor(collection, nameof(AttackWordColor), newPref.AttackWordColor);
-				UpdateConfigColor(collection, nameof(MissionWordColor), newPref.MissionWordColor);
-				UpdateConfigColor(collection, nameof(EndMissionWordColor), newPref.EndMissionWordColor);
-				UpdateConfigColor(collection, nameof(AttackMissionWordColor), newPref.AttackMissionWordColor);
-				conf.Save(ConfigurationSaveMode.Modified);
-				ConfigurationManager.RefreshSection(conf.AppSettings.SectionInformation.Name);
+				newPreference.SaveToConfig();
 			}
 			catch (Exception ex)
 			{
@@ -61,7 +48,7 @@ namespace AutoKkutu
 			{
 				try
 				{
-					MainWindow.UpdateColorPreference(newPref);
+					MainWindow.UpdateColorPreference(newPreference);
 				}
 				catch (Exception ex)
 				{
@@ -72,7 +59,7 @@ namespace AutoKkutu
 			Close();
 		}
 
-		private void Cancel_Click(object sender, RoutedEventArgs e)
+		private void onCancel(object sender, RoutedEventArgs e)
 		{
 			Close();
 		}

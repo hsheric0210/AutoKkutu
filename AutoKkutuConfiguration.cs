@@ -8,74 +8,92 @@ namespace AutoKkutu
 		{
 			get; set;
 		} = true;
+
 		public bool AutoDBUpdateEnabled
 		{
 			get; set;
 		} = true;
+
 		public DBAutoUpdateMode AutoDBUpdateMode
 		{
 			get; set;
 		} = DBAutoUpdateMode.GAME_END;
+
 		public WordPreference WordPreference
 		{
 			get; set;
 		} = WordPreference.ATTACK_DAMAGE;
+
 		public bool EndWordEnabled
 		{
 			get; set;
 		}
+
 		public bool AttackWordAllowed
 		{
 			get; set;
 		} = true;
+
 		public bool ReturnModeEnabled
 		{
 			get; set;
 		}
+
 		public bool AutoFixEnabled
 		{
 			get; set;
 		} = true;
+
 		public bool MissionAutoDetectionEnabled
 		{
 			get; set;
 		} = true;
+
 		public GameMode GameMode
 		{
 			get; set;
 		} = GameMode.Last_and_First;
+
 		public bool DelayEnabled
 		{
 			get; set;
 		}
+
 		public bool DelayPerWordEnabled
 		{
 			get; set;
 		} = true;
+
 		public int DelayInMillis
 		{
 			get; set;
 		} = 10;
+
 		public bool DelayStartAfterWordEnterEnabled
 		{
 			get; set;
 		} = true;
+
 		public bool GameModeAutoDetectEnabled
 		{
 			get; set;
 		} = true;
+
 		public int MaxDisplayedWordCount
 		{
 			get; set;
 		} = 20;
+
 		public bool FixDelayEnabled
 		{
 			get; set;
 		}
+
 		public bool FixDelayPerWordEnabled
 		{
 			get; set;
 		} = true;
+
 		public int FixDelayInMillis
 		{
 			get; set;
@@ -119,7 +137,9 @@ namespace AutoKkutu
 	public static class ConfigEnums
 	{
 		public static DBAutoUpdateMode[] DBAutoUpdateModeValues => (DBAutoUpdateMode[])Enum.GetValues(typeof(DBAutoUpdateMode));
+
 		public static WordPreference[] WordPreferenceValues => (WordPreference[])Enum.GetValues(typeof(WordPreference));
+
 		public static GameMode[] GameModeValues => (GameMode[])Enum.GetValues(typeof(GameMode));
 
 		public static string GetDBAutoUpdateModeName(DBAutoUpdateMode key)
@@ -128,8 +148,10 @@ namespace AutoKkutu
 			{
 				case DBAutoUpdateMode.GAME_END:
 					return "게임이 끝났을 때";
+
 				case DBAutoUpdateMode.ROUND_END:
 					return "라운드가 끝났을 때";
+
 				default:
 					return null;
 			}
@@ -141,8 +163,10 @@ namespace AutoKkutu
 			{
 				case WordPreference.ATTACK_DAMAGE:
 					return "단어의 공격력 우선";
+
 				case WordPreference.WORD_LENGTH:
 					return "단어의 길이 우선";
+
 				default:
 					return null;
 			}
@@ -154,22 +178,31 @@ namespace AutoKkutu
 			{
 				case GameMode.Last_and_First:
 					return "끝말잇기";
+
 				case GameMode.First_and_Last:
 					return "앞말잇기";
+
 				case GameMode.Middle_and_First:
 					return "가운뎃말잇기";
+
 				case GameMode.Kkutu:
 					return "끄투";
+
 				case GameMode.Kung_Kung_Tta:
 					return "쿵쿵따";
+
 				case GameMode.Typing_Battle:
 					return "타자 대결";
+
 				case GameMode.All:
 					return "전체";
+
 				case GameMode.Free:
 					return "자유";
+
 				case GameMode.Free_Last_and_First:
 					return "자유 끝말잇기";
+
 				default:
 					return null;
 			}
