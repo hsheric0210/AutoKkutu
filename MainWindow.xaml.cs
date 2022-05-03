@@ -595,15 +595,15 @@ namespace AutoKkutu
 			Browser.FrameLoadEnd -= onBrowserFrameLoadEnd;
 			Logger.Info("Browser frame-load end.");
 
-			handler.onGameStarted += CommonHandler_GameStart;
-			handler.onGameEnded += CommonHandler_GameEnd;
-			handler.onMyTurn += CommonHandler_MyTurnEvent;
-			handler.onMyTurnEnded += CommonHandler_MyTurnEndEvent;
-			handler.onUnsupportedWordEntered += CommonHandler_onUnsupportedWordEntered;
-			handler.onMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
-			handler.onRoundChange += CommonHandler_RoundChangeEvent;
-			handler.onGameModeChange += CommonHandler_GameModeChangeEvent;
-			handler.onWordPresented += CommonHandler_WordPresentedEvent;
+			handler.OnGameStarted += CommonHandler_GameStart;
+			handler.OnGameEnded += CommonHandler_GameEnd;
+			handler.OnMyTurn += CommonHandler_MyTurnEvent;
+			handler.OnMyTurnEnded += CommonHandler_MyTurnEndEvent;
+			handler.OnUnsupportedWordEntered += CommonHandler_onUnsupportedWordEntered;
+			handler.OnMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
+			handler.OnRoundChange += CommonHandler_RoundChangeEvent;
+			handler.OnGameModeChange += CommonHandler_GameModeChangeEvent;
+			handler.OnWordPresented += CommonHandler_WordPresentedEvent;
 			handler.StartWatchdog();
 
 			Logger.InfoFormat("Using handler: {0}", handler.GetID());
@@ -750,15 +750,15 @@ namespace AutoKkutu
 			Logger.InfoFormat("Unregistered previous handler: {0}", handler.GetID());
 
 			// Unregister previous handler
-			handler.onGameStarted -= CommonHandler_GameStart;
-			handler.onGameEnded -= CommonHandler_GameEnd;
-			handler.onMyTurn -= CommonHandler_MyTurnEvent;
-			handler.onMyTurnEnded -= CommonHandler_MyTurnEndEvent;
-			handler.onUnsupportedWordEntered -= CommonHandler_onUnsupportedWordEntered;
-			handler.onMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
-			handler.onRoundChange -= CommonHandler_RoundChangeEvent;
-			handler.onGameModeChange -= CommonHandler_GameModeChangeEvent;
-			handler.onWordPresented -= CommonHandler_WordPresentedEvent;
+			handler.OnGameStarted -= CommonHandler_GameStart;
+			handler.OnGameEnded -= CommonHandler_GameEnd;
+			handler.OnMyTurn -= CommonHandler_MyTurnEvent;
+			handler.OnMyTurnEnded -= CommonHandler_MyTurnEndEvent;
+			handler.OnUnsupportedWordEntered -= CommonHandler_onUnsupportedWordEntered;
+			handler.OnMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
+			handler.OnRoundChange -= CommonHandler_RoundChangeEvent;
+			handler.OnGameModeChange -= CommonHandler_GameModeChangeEvent;
+			handler.OnWordPresented -= CommonHandler_WordPresentedEvent;
 			handler.StopWatchdog();
 		}
 	}

@@ -40,7 +40,7 @@
 				<xctk:ColorPicker Name="MissionWordColor" ColorMode="ColorPalette" SelectedColor="White" Margin="10,40,10,10" MinWidth="160" />
 			</Grid>
 		</Grid>
-		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="0" Margin="20,0,135,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="onCancel" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
-		<Button Name="Submit" Content="적용" Grid.Row="1" Grid.Column="0" Margin="20,0,20,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="onSubmit" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="0" Margin="20,0,135,20" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="OnCancel" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+		<Button Name="Submit" Content="적용" Grid.Row="1" Grid.Column="0" Margin="20,0,20,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="OnSubmit" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 	</Grid>
 </Window>

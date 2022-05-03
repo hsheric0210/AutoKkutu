@@ -167,7 +167,7 @@
 				<Label Content="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
 			</Grid>
 		</Grid>
-		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="20,0,135,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="Cancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="20,0,135,20" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="Cancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 		<Button Name="Submit" Content="적용" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="20,0,20,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="Submit_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 	</Grid>
 </Window>

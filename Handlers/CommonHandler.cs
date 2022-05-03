@@ -72,24 +72,24 @@ namespace AutoKkutu
 
 		private GameMode _gameModeCache = GameMode.LastAndFirst;
 
-		public event EventHandler onGameStarted;
+		public event EventHandler OnGameStarted;
 
-		public event EventHandler onGameEnded;
+		public event EventHandler OnGameEnded;
 
-		public event EventHandler<WordPresentEventArgs> onMyTurn;
+		public event EventHandler<WordPresentEventArgs> OnMyTurn;
 
-		public event EventHandler onMyTurnEnded;
+		public event EventHandler OnMyTurnEnded;
 
-		public event EventHandler<UnsupportedWordEventArgs> onUnsupportedWordEntered;
+		public event EventHandler<UnsupportedWordEventArgs> OnUnsupportedWordEntered;
 
-		public event EventHandler<UnsupportedWordEventArgs> onMyPathIsUnsupported;
+		public event EventHandler<UnsupportedWordEventArgs> OnMyPathIsUnsupported;
 
-		public event EventHandler onRoundChange;
+		public event EventHandler OnRoundChange;
 
-		public event EventHandler<GameModeChangeEventArgs> onGameModeChange;
+		public event EventHandler<GameModeChangeEventArgs> OnGameModeChange;
 
 		// 참고: 이 이벤트는 '타자 대결' 모드에서만 사용됩니다
-		public event EventHandler<WordPresentEventArgs> onWordPresented;
+		public event EventHandler<WordPresentEventArgs> OnWordPresented;
 
 		private static AutoKkutuConfiguration CurrentConfig;
 
@@ -279,13 +279,13 @@ namespace AutoKkutu
 					if (!IsGameStarted)
 						return;
 					GetLogger(watchdogID).Debug("Game ended.");
-					onGameEnded?.Invoke(this, EventArgs.Empty);
+					OnGameEnded?.Invoke(this, EventArgs.Empty);
 					_isGameStarted = false;
 				}
 				else if (IsMyTurn)
 				{
 					GetLogger(watchdogID, "Turn").Debug("My turn ended.");
-					onMyTurnEnded?.Invoke(this, EventArgs.Empty);
+					OnMyTurnEnded?.Invoke(this, EventArgs.Empty);
 					_isMyTurn = false;
 				}
 			}
@@ -296,7 +296,7 @@ namespace AutoKkutu
 
 				RegisterJSFunction(CurrentRoundIndexFunc, "", "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));");
 				GetLogger(watchdogID).Debug("New game started; Previous word list flushed.");
-				onGameStarted?.Invoke(this, EventArgs.Empty);
+				OnGameStarted?.Invoke(this, EventArgs.Empty);
 				_isGameStarted = true;
 			}
 			else if (!_isMyTurn)
@@ -307,7 +307,7 @@ namespace AutoKkutu
 				else
 					GetLogger(watchdogID, "Turn").InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
-				onMyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
+				OnMyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
 				_isMyTurn = true;
 			}
 		}
@@ -378,7 +378,7 @@ namespace AutoKkutu
 			if (roundIndex <= 0)
 				return;
 			GetLogger(watchdogID, "Round").InfoFormat("Round Changed : Index {0} Word {1}", roundIndex, roundText);
-			onRoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
+			OnRoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
 			PathFinder.ResetPreviousPath();
 		}
 
@@ -395,9 +395,9 @@ namespace AutoKkutu
 			bool isExistingWord = unsupportedWord.Contains(":"); // 첫 턴 한방 금지, 한방 단어(매너) 등등...
 			_unsupportedWordCache = unsupportedWord;
 
-			onUnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
-			if (IsMyTurn && onMyPathIsUnsupported != null)
-				onMyPathIsUnsupported(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+			OnUnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+			if (IsMyTurn && OnMyPathIsUnsupported != null)
+				OnMyPathIsUnsupported(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
 		}
 
 		/// <summary>
@@ -430,7 +430,7 @@ namespace AutoKkutu
 				return;
 			_currentPresentedWordCache = word;
 			GetLogger(watchdogID, "Presented word").InfoFormat("Word detected : {0}", word);
-			onWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
+			OnWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
 		}
 
 		private void CheckGameMode(int watchdogID)
@@ -440,7 +440,7 @@ namespace AutoKkutu
 				return;
 			_gameModeCache = gameMode;
 			GetLogger(watchdogID, "GameMode").InfoFormat("GameMode Changed : {0}", ConfigEnums.GetGameModeName(gameMode));
-			onGameModeChange?.Invoke(this, new GameModeChangeEventArgs(gameMode));
+			OnGameModeChange?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 		}
 
 		protected int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;

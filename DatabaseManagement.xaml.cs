@@ -232,5 +232,7 @@ namespace AutoKkutu
 
 			BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 		}
+
+		public void OnCloseRequested(object sender, EventArgs e) => Close();
 	}
 }

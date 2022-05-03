@@ -24,7 +24,7 @@ namespace AutoKkutu
 			AttackMissionWordColor.SelectedColor = config.AttackMissionWordColor;
 		}
 
-		private void onSubmit(object sender, RoutedEventArgs e)
+		private void OnSubmit(object sender, RoutedEventArgs e)
 		{
 			var newPreference = new AutoKkutuColorPreference
 			{
@@ -59,7 +59,7 @@ namespace AutoKkutu
 			Close();
 		}
 
-		private void onCancel(object sender, RoutedEventArgs e)
+		private void OnCancel(object sender, RoutedEventArgs e)
 		{
 			Close();
 		}
