@@ -14,10 +14,7 @@ build_script:
 - msbuild /verbosity:normal "AutoKkutu.sln"
 - Sonarscanner.MSBuild.exe end /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f
 after_build:
-- cmd: >-
-    PUSHD "%APPVEYOR_BUILD_FOLDER%\bin\%PLATFORM%\%CONFIGURATION%\net6.0-windows"
-
-    7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- Windows.%PLATFORM%.%CONFIGURATION%.7z **
+- cmd: 7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- "Windows.%PLATFORM%.%CONFIGURATION%.7z" "%APPVEYOR_BUILD_FOLDER%\bin\%PLATFORM%\%CONFIGURATION%\net6.0-windows"
 artifacts:
 - path: Windows.%PLATFORM%.%CONFIGURATION%.7z
   name: For Windows
