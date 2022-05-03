@@ -47,22 +47,26 @@ namespace AutoKkutu
 
 		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
 		{
-			var dialog = new OpenFileDialog();
-			dialog.Title = "단어 목록을 불러올 외부 SQLite 데이터베이스 파일을 선택하세요";
-			dialog.Multiselect = false;
-			dialog.CheckPathExists = true;
-			dialog.CheckFileExists = true;
+			var dialog = new OpenFileDialog
+			{
+				Title = "단어 목록을 불러올 외부 SQLite 데이터베이스 파일을 선택하세요",
+				Multiselect = false,
+				CheckPathExists = true,
+				CheckFileExists = true
+			};
 			if (dialog.ShowDialog() ?? false)
 				SQLiteDatabaseHelper.LoadFromExternalSQLite(Database.DefaultConnection, dialog.FileName);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
 		{
-			var dialog = new OpenFileDialog();
-			dialog.Title = "단어 목록을 불러올 파일들을 선택하세요";
-			dialog.Multiselect = true;
-			dialog.CheckPathExists = true;
-			dialog.CheckFileExists = true;
+			var dialog = new OpenFileDialog
+			{
+				Title = "단어 목록을 불러올 파일들을 선택하세요",
+				Multiselect = true,
+				CheckPathExists = true,
+				CheckFileExists = true
+			};
 			if (dialog.ShowDialog() ?? false)
 			{
 				var builder = new StringBuilder();
@@ -92,7 +96,7 @@ namespace AutoKkutu
 		{
 			NodeDatabaseAttributes GetSelectedNodeTypes()
 			{
-				NodeDatabaseAttributes type = (NodeDatabaseAttributes)0;
+				var type = (NodeDatabaseAttributes)0;
 				if (Node_EndWord.IsChecked ?? false)
 					type |= NodeDatabaseAttributes.EndWord;
 				if (Node_AttackWord.IsChecked ?? false)
@@ -108,7 +112,7 @@ namespace AutoKkutu
 				return type;
 			}
 
-			var content = Node_Input.Text;
+			string content = Node_Input.Text;
 			if (string.IsNullOrWhiteSpace(content))
 				return;
 
@@ -195,7 +199,7 @@ namespace AutoKkutu
 					folderNames = dialog.FileNames;
 			}
 
-			if (folderNames == null || !folderNames.Any())
+			if (folderNames?.Any() != true)
 				return;
 
 			foreach (string foldername in folderNames)
@@ -209,6 +213,7 @@ namespace AutoKkutu
 				try
 				{
 					foreach (string filename in Directory.EnumerateFiles(foldername, "*", SearchOption.AllDirectories))
+					{
 						try
 						{
 							builder.AppendLine(File.ReadAllText(filename, Encoding.UTF8));
@@ -217,6 +222,7 @@ namespace AutoKkutu
 						{
 							Logger.Error("IOException during reading word list files.", ioe);
 						}
+					}
 				}
 				catch (IOException ioe)
 				{

@@ -23,7 +23,7 @@ namespace AutoKkutu
 			if (!Browser.CanExecuteJavascriptInMainFrame)
 				return defaultResult;
 
-			using (var frame = Browser.GetMainFrame())
+			using (IFrame frame = Browser.GetMainFrame())
 			{
 				if (frame != null)
 					return frame.EvaluateScriptAsync(javaScript).Result.Result ?? defaultResult;
@@ -45,7 +45,7 @@ namespace AutoKkutu
 				return true;
 			}
 
-			using (var frame = Browser.GetMainFrame())
+			using (IFrame frame = Browser.GetMainFrame())
 			{
 				if (frame != null)
 				{

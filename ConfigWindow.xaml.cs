@@ -129,5 +129,4 @@ namespace AutoKkutu
 			Name = name;
 		}
 	}
-
 }

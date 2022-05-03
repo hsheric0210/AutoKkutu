@@ -19,13 +19,10 @@ namespace AutoKkutu.Databases.SQLite
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new SqliteCommand(query, connection))
-			{
-				if (parameters != null)
-					foreach (var parameter in parameters)
-						command.Parameters.Add(parameter);
-				return command.ExecuteNonQuery();
-			}
+			using var command = new SqliteCommand(query, connection);
+			if (parameters != null)
+				command.Parameters.AddRange(parameters);
+			return command.ExecuteNonQuery();
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
@@ -47,13 +44,10 @@ namespace AutoKkutu.Databases.SQLite
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new SqliteCommand(query, connection))
-			{
-				if (parameters != null)
-					foreach (var parameter in parameters)
-						command.Parameters.Add(parameter);
-				return command.ExecuteScalar();
-			}
+			using var command = new SqliteCommand(query, connection);
+			if (parameters != null)
+				command.Parameters.AddRange(parameters);
+			return command.ExecuteScalar();
 		}
 
 		public static string GetColumnType(SqliteConnection databaseConnection, string tableName, string columnName)
@@ -63,18 +57,14 @@ namespace AutoKkutu.Databases.SQLite
 
 			try
 			{
-				using (var command = new SqliteCommand("SELECT * FROM pragma_table_info(@tableName);", databaseConnection))
-				{
-					command.Parameters.AddWithValue("@tableName", tableName);
-					using (SqliteDataReader reader = command.ExecuteReader())
-					{
-						var nameOrdinal = reader.GetOrdinal("Name");
-						var typeOrdinal = reader.GetOrdinal("Type");
-						while (reader.Read())
-							if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
-								return reader.GetString(typeOrdinal);
-					}
-				}
+				using var command = new SqliteCommand("SELECT * FROM pragma_table_info(@tableName);", databaseConnection);
+				command.Parameters.AddWithValue("@tableName", tableName);
+				using SqliteDataReader reader = command.ExecuteReader();
+				int nameOrdinal = reader.GetOrdinal("Name");
+				int typeOrdinal = reader.GetOrdinal("Type");
+				while (reader.Read())
+					if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+						return reader.GetString(typeOrdinal);
 			}
 			catch (Exception ex)
 			{
@@ -91,17 +81,13 @@ namespace AutoKkutu.Databases.SQLite
 
 			try
 			{
-				using (var command = new SqliteCommand("SELECT * FROM pragma_table_info(@tableName);", databaseConnection))
-				{
-					command.Parameters.AddWithValue("@tableName", tableName);
-					using (SqliteDataReader reader = command.ExecuteReader())
-					{
-						int nameOrdinal = reader.GetOrdinal("Name");
-						while (reader.Read())
-							if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
-								return true;
-					}
-				}
+				using var command = new SqliteCommand("SELECT * FROM pragma_table_info(@tableName);", databaseConnection);
+				command.Parameters.AddWithValue("@tableName", tableName);
+				using SqliteDataReader reader = command.ExecuteReader();
+				int nameOrdinal = reader.GetOrdinal("Name");
+				while (reader.Read())
+					if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+						return true;
 			}
 			catch (Exception ex)
 			{
@@ -178,18 +164,16 @@ namespace AutoKkutu.Databases.SQLite
 			using (var command = new SqliteCommand("SELECT * FROM @tableName", args.externalSQLiteConnection))
 			{
 				command.Parameters.AddWithValue("@tableName", tableName);
-				using (var reader = command.ExecuteReader())
+				using SqliteDataReader reader = command.ExecuteReader();
+				int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
+				while (reader.Read())
 				{
-					int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
-					while (reader.Read())
-					{
-						string wordIndex = reader.GetString(wordIndexOrdinal);
-						if (args.targetDatabaseConnection.AddNode(wordIndex))
-							Logger.InfoFormat("Added {0} '{1}'", tableName, wordIndex);
-						else
-							Logger.WarnFormat("{0} '{1}' is already existing in database.", tableName, wordIndex);
-						count++;
-					}
+					string wordIndex = reader.GetString(wordIndexOrdinal);
+					if (args.targetDatabaseConnection.AddNode(wordIndex))
+						Logger.InfoFormat("Added {0} '{1}'", tableName, wordIndex);
+					else
+						Logger.WarnFormat("{0} '{1}' is already existing in database.", tableName, wordIndex);
+					count++;
 				}
 			}
 

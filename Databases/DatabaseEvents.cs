@@ -16,32 +16,27 @@ namespace AutoKkutu.Databases
 
 		public static void TriggerDatabaseImportStart(this DatabaseImportEventArgs args)
 		{
-			if (DatabaseImportStart != null)
-				DatabaseImportStart(null, args);
+			DatabaseImportStart?.Invoke(null, args);
 		}
 
 		public static void TriggerDatabaseImportDone(this DatabaseImportEventArgs args)
 		{
-			if (DatabaseImportDone != null)
-				DatabaseImportDone(null, args);
+			DatabaseImportDone?.Invoke(null, args);
 		}
 
 		public static void TriggerDatabaseIntegrityCheckStart()
 		{
-			if (DatabaseIntegrityCheckStart != null)
-				DatabaseIntegrityCheckStart(null, EventArgs.Empty);
+			DatabaseIntegrityCheckStart?.Invoke(null, EventArgs.Empty);
 		}
 
 		public static void TriggerDatabaseIntegrityCheckDone(this DataBaseIntegrityCheckDoneEventArgs args)
 		{
-			if (DatabaseIntegrityCheckDone != null)
-				DatabaseIntegrityCheckDone(null, args);
+			DatabaseIntegrityCheckDone?.Invoke(null, args);
 		}
 
 		public static void TriggerDatabaseError()
 		{
-			if (DatabaseError != null)
-				DatabaseError(null, EventArgs.Empty);
+			DatabaseError?.Invoke(null, EventArgs.Empty);
 		}
 	}
 
@@ -49,12 +44,12 @@ namespace AutoKkutu.Databases
 	{
 		public string Name
 		{
-			get; private set;
+			get;
 		}
 
 		public string Result
 		{
-			get; private set;
+			get;
 		}
 
 		public DatabaseImportEventArgs(string name) => Name = name;
@@ -70,7 +65,7 @@ namespace AutoKkutu.Databases
 	{
 		public string Result
 		{
-			get; private set;
+			get;
 		}
 
 		public DataBaseIntegrityCheckDoneEventArgs(string result)

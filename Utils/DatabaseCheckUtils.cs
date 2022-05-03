@@ -42,11 +42,11 @@ namespace AutoKkutu.Utils
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
 
 					var deletionList = new List<string>();
-					Dictionary<string, string> wordFixList = new Dictionary<string, string>(), wordIndexCorrection = new Dictionary<string, string>(), reverseWordIndexCorrection = new Dictionary<string, string>(), kkutuIndexCorrection = new Dictionary<string, string>();
+					Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
 					var flagCorrection = new Dictionary<string, (int, int)>();
 
 					Logger.Info("Opening auxiliary SQLite connection...");
-					using (var auxiliaryConnection = database.OpenSecondaryConnection())
+					using (CommonDatabaseConnection auxiliaryConnection = database.OpenSecondaryConnection())
 					{
 						// Deduplicate
 						DeduplicatedCount = auxiliaryConnection.DeduplicateDatabaseAndGetCount();
@@ -141,7 +141,7 @@ namespace AutoKkutu.Utils
 		private static int FixFlag(this CommonDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
 		{
 			int count = 0;
-			foreach (var pair in FlagCorrection)
+			foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
 			{
 				Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
 				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
@@ -154,7 +154,7 @@ namespace AutoKkutu.Utils
 		private static int FixIndex(this CommonDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string> correctIndexSupplier)
 		{
 			int count = 0;
-			foreach (var pair in WordIndexCorrection)
+			foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
 			{
 				string correctWordIndex;
 				if (correctIndexSupplier == null)
@@ -222,12 +222,12 @@ namespace AutoKkutu.Utils
 			if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _))
 				return true;
 
-			char first = content.First();
-			if (first == '(' || first == '{' || first == '[' || first == '-' || first == '.')
+			char first = content[0];
+			if (first is '(' or '{' or '[' or '-' or '.')
 				return true;
 
 			char last = content.Last();
-			if (last == ')' || last == '}' || last == ']')
+			if (last is ')' or '}' or ']')
 				return true;
 
 			return content.Contains(" ") || content.Contains(":");

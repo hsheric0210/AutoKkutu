@@ -108,7 +108,7 @@ namespace AutoKkutu
 
 		public override bool Equals(object obj)
 		{
-			if (!(obj is AutoKkutuConfiguration))
+			if (obj is not AutoKkutuConfiguration)
 				return false;
 			var other = obj as AutoKkutuConfiguration;
 
@@ -145,56 +145,32 @@ namespace AutoKkutu
 
 		public static string GetDBAutoUpdateModeName(DBAutoUpdateMode key)
 		{
-			switch (key)
+			return key switch
 			{
-				case DBAutoUpdateMode.OnGameEnd:
-					return "게임이 끝났을 때";
-
-				case DBAutoUpdateMode.OnRoundEnd:
-					return "라운드가 끝났을 때";
-
-				default:
-					return null;
-			}
+				DBAutoUpdateMode.OnGameEnd => "게임이 끝났을 때",
+				DBAutoUpdateMode.OnRoundEnd => "라운드가 끝났을 때",
+				_ => null,
+			};
 		}
 
 		public static string GetGameModeName(GameMode key)
 		{
-			switch (key)
+			return key switch
 			{
-				case GameMode.LastAndFirst:
-					return "끝말잇기";
-
-				case GameMode.FirstAndLast:
-					return "앞말잇기";
-
-				case GameMode.MiddleAddFirst:
-					return "가운뎃말잇기";
-
-				case GameMode.Kkutu:
-					return "끄투";
-
-				case GameMode.KungKungTta:
-					return "쿵쿵따";
-
-				case GameMode.TypingBattle:
-					return "타자 대결";
-
-				case GameMode.All:
-					return "전체";
-
-				case GameMode.Free:
-					return "자유";
-
-				case GameMode.LastAndFirstFree:
-					return "자유 끝말잇기";
-
-				default:
-					return null;
-			}
+				GameMode.LastAndFirst => "끝말잇기",
+				GameMode.FirstAndLast => "앞말잇기",
+				GameMode.MiddleAddFirst => "가운뎃말잇기",
+				GameMode.Kkutu => "끄투",
+				GameMode.KungKungTta => "쿵쿵따",
+				GameMode.TypingBattle => "타자 대결",
+				GameMode.All => "전체",
+				GameMode.Free => "자유",
+				GameMode.LastAndFirstFree => "자유 끝말잇기",
+				_ => null,
+			};
 		}
 
-		public static bool IsFreeMode(GameMode mode) => mode == GameMode.Free || mode == GameMode.LastAndFirstFree;
+		public static bool IsFreeMode(GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
 	}
 
 	public enum DBAutoUpdateMode

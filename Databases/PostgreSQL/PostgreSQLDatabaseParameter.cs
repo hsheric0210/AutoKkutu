@@ -25,12 +25,14 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public NpgsqlParameter Translate()
 		{
-			var parameter = new NpgsqlParameter();
-			parameter.ParameterName = Name;
-			parameter.Value = Value;
-			parameter.Precision = Precision;
+			var parameter = new NpgsqlParameter
+			{
+				ParameterName = Name,
+				Value = Value,
+				Precision = Precision
+			};
 
-			var datatype = TranslateDataType();
+			NpgsqlDbType? datatype = TranslateDataType();
 			if (datatype != null)
 				parameter.NpgsqlDbType = (NpgsqlDbType)datatype;
 
@@ -42,22 +44,14 @@ namespace AutoKkutu.Databases.PostgreSQL
 			if (DataType == null)
 				return null;
 
-			switch (DataType)
+			return DataType switch
 			{
-				case CommonDatabaseType.SmallInt:
-					return NpgsqlDbType.Smallint;
-
-				case CommonDatabaseType.MiddleInt:
-					return NpgsqlDbType.Integer;
-
-				case CommonDatabaseType.Character:
-					return NpgsqlDbType.Char;
-
-				case CommonDatabaseType.CharacterVarying:
-					return NpgsqlDbType.Varchar;
-			}
-
-			throw new NotSupportedException(DataType.ToString());
+				CommonDatabaseType.SmallInt => NpgsqlDbType.Smallint,
+				CommonDatabaseType.MiddleInt => NpgsqlDbType.Integer,
+				CommonDatabaseType.Character => NpgsqlDbType.Char,
+				CommonDatabaseType.CharacterVarying => NpgsqlDbType.Varchar,
+				_ => throw new NotSupportedException(DataType.ToString()),
+			};
 		}
 	}
 }

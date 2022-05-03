@@ -72,7 +72,7 @@ namespace AutoKkutu
 
 		public static ICollection<string> PreviousPath { get; private set; } = new List<string>();
 
-		public static ICollection<string> UnsupportedPathList { get; private set; } = new List<string>();
+		public static ICollection<string> UnsupportedPathList { get; } = new List<string>();
 
 		public static event EventHandler<UpdatedPathEventArgs> onPathUpdated;
 
@@ -97,25 +97,23 @@ namespace AutoKkutu
 			if (!CurrentConfig.AutoDBUpdateEnabled)
 				return null;
 
-			int NewPathCount = 0;
-			int AddedPathCount = 0;
-			int InexistentPathCount = 0;
-			int RemovedPathCount = 0;
-
 			Logger.Debug("Automatically update the DB based on last game.");
 			if (NewPathList.Count + UnsupportedPathList.Count == 0)
+			{
 				Logger.Warn("No such element in autoupdate list.");
+			}
 			else
 			{
-				NewPathCount = NewPathList.Count;
+				int NewPathCount = NewPathList.Count;
 				Logger.DebugFormat("Get {0} elements from NewPathList.", NewPathCount);
-				AddedPathCount = AddNewPaths();
+				int AddedPathCount = AddNewPaths();
 
-				InexistentPathCount = InexistentPathList.Count;
+				int InexistentPathCount = InexistentPathList.Count;
 				Logger.InfoFormat("Get {0} elements from WrongPathList.", InexistentPathCount);
-				RemovedPathCount = RemoveInexistentPaths();
 
+				int RemovedPathCount = RemoveInexistentPaths();
 				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
+
 				Logger.Info($"Automatic DB Update complete ({result})");
 				return result;
 			}
@@ -134,7 +132,9 @@ namespace AutoKkutu
 
 			bool exists = nodeList.Contains(item);
 			if (exists)
+			{
 				flags |= theFlag;
+			}
 			else if (add && flags.HasFlag(theFlag))
 			{
 				nodeList.Add(item);
@@ -307,8 +307,7 @@ namespace AutoKkutu
 
 		private static void NotifyPathUpdate(UpdatedPathEventArgs eventArgs)
 		{
-			if (onPathUpdated != null)
-				onPathUpdated(null, eventArgs);
+			onPathUpdated?.Invoke(null, eventArgs);
 		}
 
 		private static void RandomPath(FindWordInfo info)
@@ -357,47 +356,47 @@ namespace AutoKkutu
 	{
 		public string Color
 		{
-			get; private set;
+			get;
 		}
 
 		public string Content
 		{
-			get; private set;
+			get;
 		}
 
 		public bool MakeAttackAvailable
 		{
-			get; private set;
+			get;
 		}
 
 		public bool MakeEndAvailable
 		{
-			get; private set;
+			get;
 		}
 
 		public bool MakeNormalAvailable
 		{
-			get; private set;
+			get;
 		}
 
 		public string PrimaryImage
 		{
-			get; private set;
+			get;
 		}
 
 		public string SecondaryImage
 		{
-			get; private set;
+			get;
 		}
 
 		public string Title
 		{
-			get; private set;
+			get;
 		}
 
 		public string ToolTip
 		{
-			get; private set;
+			get;
 		}
 
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));
@@ -414,8 +413,8 @@ namespace AutoKkutu
 			MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;
 
 			bool isMissionWord = flags.HasFlag(WordAttributes.MissionWord);
-			string tooltipPrefix = "";
 			string mission = isMissionWord ? $"미션({missionCharCount}) " : "";
+			string tooltipPrefix;
 			if (flags.HasFlag(WordAttributes.EndWord))
 			{
 				tooltipPrefix = $"한방 {mission}단어: ";
@@ -471,30 +470,22 @@ namespace AutoKkutu
 
 		private static string GetAttackWordListTableName(GameMode mode)
 		{
-			switch (mode)
+			return mode switch
 			{
-				case GameMode.FirstAndLast:
-					return DatabaseConstants.ReverseAttackWordListTableName;
-
-				case GameMode.Kkutu:
-					return DatabaseConstants.KkutuAttackWordListTableName;
-			}
-
-			return DatabaseConstants.AttackWordListTableName;
+				GameMode.FirstAndLast => DatabaseConstants.ReverseAttackWordListTableName,
+				GameMode.Kkutu => DatabaseConstants.KkutuAttackWordListTableName,
+				_ => DatabaseConstants.AttackWordListTableName,
+			};
 		}
 
 		private static string GetEndWordListTableName(GameMode mode)
 		{
-			switch (mode)
+			return mode switch
 			{
-				case GameMode.FirstAndLast:
-					return DatabaseConstants.ReverseEndWordListTableName;
-
-				case GameMode.Kkutu:
-					return DatabaseConstants.KkutuEndWordListTableName;
-			}
-
-			return DatabaseConstants.EndWordListTableName;
+				GameMode.FirstAndLast => DatabaseConstants.ReverseEndWordListTableName,
+				GameMode.Kkutu => DatabaseConstants.KkutuEndWordListTableName,
+				_ => DatabaseConstants.EndWordListTableName,
+			};
 		}
 
 		private string ToNode(GameMode mode)
@@ -523,37 +514,37 @@ namespace AutoKkutu
 	{
 		public int CalcWordCount
 		{
-			get; private set;
+			get;
 		}
 
 		public PathFinderInfo Flags
 		{
-			get; private set;
+			get;
 		}
 
 		public string MissionChar
 		{
-			get; private set;
+			get;
 		}
 
 		public PathFinderResult Result
 		{
-			get; private set;
+			get;
 		}
 
 		public int Time
 		{
-			get; private set;
+			get;
 		}
 
 		public int TotalWordCount
 		{
-			get; private set;
+			get;
 		}
 
 		public ResponsePresentedWord Word
 		{
-			get; private set;
+			get;
 		}
 
 		public UpdatedPathEventArgs(ResponsePresentedWord word, string missionChar, PathFinderResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, PathFinderInfo flags = PathFinderInfo.None)
@@ -618,7 +609,7 @@ namespace AutoKkutu
 
 		public override bool Equals(object obj)
 		{
-			if (!(obj is FindWordInfo))
+			if (obj is not FindWordInfo)
 				return false;
 
 			return Equals((FindWordInfo)obj);

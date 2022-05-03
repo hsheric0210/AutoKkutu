@@ -84,7 +84,7 @@ $$ LANGUAGE plpgsql
 
 		public override void CheckConnectionType(CommonDatabaseConnection connection)
 		{
-			if (connection != null && connection.GetType() != typeof(NpgsqlConnection))
+			if (connection is not null and not PostgreSQLDatabaseConnection)
 				throw new NotSupportedException($"Connection is not {nameof(NpgsqlConnection)}");
 		}
 

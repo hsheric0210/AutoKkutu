@@ -24,12 +24,14 @@ namespace AutoKkutu.Databases.SQLite
 
 		public SqliteParameter Translate()
 		{
-			var parameter = new SqliteParameter();
-			parameter.ParameterName = Name;
-			parameter.Value = Value;
-			parameter.Precision = Precision;
+			var parameter = new SqliteParameter
+			{
+				ParameterName = Name,
+				Value = Value,
+				Precision = Precision
+			};
 
-			var datatype = TranslateDataType();
+			SqliteType? datatype = TranslateDataType();
 			if (datatype != null)
 				parameter.SqliteType = (SqliteType)datatype;
 
@@ -41,18 +43,12 @@ namespace AutoKkutu.Databases.SQLite
 			if (DataType == null)
 				return null;
 
-			switch (DataType)
+			return DataType switch
 			{
-				case CommonDatabaseType.SmallInt:
-				case CommonDatabaseType.MiddleInt:
-					return SqliteType.Integer;
-
-				case CommonDatabaseType.Character:
-				case CommonDatabaseType.CharacterVarying:
-					return SqliteType.Text;
-			}
-
-			throw new NotSupportedException(DataType.ToString());
+				CommonDatabaseType.SmallInt or CommonDatabaseType.MiddleInt => SqliteType.Integer,
+				CommonDatabaseType.Character or CommonDatabaseType.CharacterVarying => SqliteType.Text,
+				_ => throw new NotSupportedException(DataType.ToString()),
+			};
 		}
 	}
 }

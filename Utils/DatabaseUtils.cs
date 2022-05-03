@@ -127,7 +127,7 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		public static string GetLaFHeadNode(this string word) => word.First().ToString();
+		public static string GetLaFHeadNode(this string word) => word[0].ToString();
 
 		public static string GetFaLHeadNode(this string word) => word.Last().ToString();
 
@@ -137,13 +137,13 @@ namespace AutoKkutu.Utils
 				throw new ArgumentNullException(nameof(word));
 
 			if (word.Length >= 4)
-				return word.Substring(0, 2);
-			return (word.Length >= 3 ? word.First().ToString() : "");
+				return word[..2];
+			return (word.Length >= 3 ? word[0].ToString() : "");
 		}
 
 		public static string GetLaFTailNode(this string word) => word.Last().ToString();
 
-		public static string GetFaLTailNode(this string word) => word.First().ToString();
+		public static string GetFaLTailNode(this string word) => word[0].ToString();
 
 		public static string GetKkutuTailNode(this string word) => word.Length >= 4 ? word.Substring(word.Length - 3, 2) : word.Last().ToString();
 

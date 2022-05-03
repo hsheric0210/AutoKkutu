@@ -39,7 +39,7 @@ namespace AutoKkutu.Databases
 			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", word)), CultureInfo.InvariantCulture) > 0)
 				return false;
 
-			connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES('{word.GetLaFHeadNode()}', '{word.GetFaLHeadNode()}', '{word.GetKkutuHeadNode()}', '{word}', {((int)flags)})");
+			connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES('{word.GetLaFHeadNode()}', '{word.GetFaLHeadNode()}', '{word.GetKkutuHeadNode()}', '{word}', {(int)flags})");
 			return true;
 		}
 
@@ -49,7 +49,7 @@ namespace AutoKkutu.Databases
 				throw new ArgumentNullException(nameof(connection));
 
 			// Create node tables
-			foreach (var tableName in new string[] { DatabaseConstants.EndWordListTableName, DatabaseConstants.AttackWordListTableName, DatabaseConstants.ReverseEndWordListTableName, DatabaseConstants.ReverseAttackWordListTableName, DatabaseConstants.KkutuEndWordListTableName, DatabaseConstants.KkutuAttackWordListTableName })
+			foreach (string tableName in new string[] { DatabaseConstants.EndWordListTableName, DatabaseConstants.AttackWordListTableName, DatabaseConstants.ReverseEndWordListTableName, DatabaseConstants.ReverseAttackWordListTableName, DatabaseConstants.KkutuEndWordListTableName, DatabaseConstants.KkutuAttackWordListTableName })
 				connection.MakeTableIfNotExists(tableName);
 
 			// Create word list table
@@ -59,7 +59,7 @@ namespace AutoKkutu.Databases
 				connection.CheckBackwardCompatibility();
 
 			// Create indexes
-			foreach (var columnName in new string[] { DatabaseConstants.WordIndexColumnName, DatabaseConstants.ReverseWordIndexColumnName, DatabaseConstants.KkutuWordIndexColumnName })
+			foreach (string columnName in new string[] { DatabaseConstants.WordIndexColumnName, DatabaseConstants.ReverseWordIndexColumnName, DatabaseConstants.KkutuWordIndexColumnName })
 				connection.CreateIndex(DatabaseConstants.WordListTableName, columnName);
 		}
 
@@ -112,21 +112,12 @@ namespace AutoKkutu.Databases
 
 		public static void MakeTable(this CommonDatabaseConnection connection, string tablename)
 		{
-			string columnOptions;
-			switch (tablename)
+			string columnOptions = tablename switch
 			{
-				case DatabaseConstants.WordListTableName:
-					columnOptions = connection.GetWordListColumnOptions();
-					break;
-
-				case DatabaseConstants.KkutuEndWordListTableName:
-					columnOptions = $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL";
-					break;
-
-				default:
-					columnOptions = $"{DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL";
-					break;
-			}
+				DatabaseConstants.WordListTableName => connection.GetWordListColumnOptions(),
+				DatabaseConstants.KkutuEndWordListTableName => $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL",
+				_ => $"{DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL",
+			};
 			connection.ExecuteNonQuery($"CREATE TABLE {tablename} ({columnOptions});");
 		}
 
@@ -142,32 +133,6 @@ namespace AutoKkutu.Databases
 		private static void CreateIndex(this CommonDatabaseConnection connection, string tableName, string columnName)
 		{
 			connection.ExecuteNonQuery($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
-		}
-
-		// TODO: Move to utils
-		private static bool GetWordIndexColumnName(GameMode gameMode, out string str)
-		{
-			switch (gameMode)
-			{
-				case GameMode.LastAndFirst:
-				case GameMode.MiddleAddFirst:
-					str = DatabaseConstants.WordIndexColumnName;
-					break;
-
-				case GameMode.FirstAndLast:
-					str = DatabaseConstants.ReverseWordIndexColumnName;
-					break;
-
-				case GameMode.Kkutu:
-					str = DatabaseConstants.KkutuWordIndexColumnName;
-					break;
-
-				default:
-					str = null;
-					return false;
-			}
-
-			return true;
 		}
 	}
 }

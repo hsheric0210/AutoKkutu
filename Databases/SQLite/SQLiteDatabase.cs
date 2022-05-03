@@ -25,7 +25,7 @@ namespace AutoKkutu.Databases.SQLite
 
 				// Open the connection
 				Logger.Info("Opening database connection...");
-				var connection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
+				SqliteConnection connection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 				RegisterDefaultConnection(new SQLiteDatabaseConnection(connection));
 
 				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
@@ -41,7 +41,7 @@ namespace AutoKkutu.Databases.SQLite
 				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
 				connection.CreateFunction(DefaultConnection.GetRearrangeMissionFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
 				{
-					char missionChar = char.ToUpperInvariant(missionWord.First());
+					char missionChar = char.ToUpperInvariant(missionWord[0]);
 					int missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
 					bool hasMission = missionOccurrence > 0;
 

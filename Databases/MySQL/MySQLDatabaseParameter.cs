@@ -24,12 +24,14 @@ namespace AutoKkutu.Databases.MySQL
 
 		public MySqlParameter Translate()
 		{
-			var parameter = new MySqlParameter();
-			parameter.ParameterName = Name;
-			parameter.Value = Value;
-			parameter.Precision = Precision;
+			var parameter = new MySqlParameter
+			{
+				ParameterName = Name,
+				Value = Value,
+				Precision = Precision
+			};
 
-			var datatype = TranslateDataType();
+			MySqlDbType? datatype = TranslateDataType();
 			if (datatype != null)
 				parameter.MySqlDbType = (MySqlDbType)datatype;
 
@@ -41,20 +43,13 @@ namespace AutoKkutu.Databases.MySQL
 			if (DataType == null)
 				return null;
 
-			switch (DataType)
+			return DataType switch
 			{
-				case CommonDatabaseType.SmallInt:
-					return MySqlDbType.Int16;
-
-				case CommonDatabaseType.MiddleInt:
-					return MySqlDbType.Int32;
-
-				case CommonDatabaseType.Character:
-				case CommonDatabaseType.CharacterVarying:
-					return MySqlDbType.VarChar;
-			}
-
-			throw new NotSupportedException(DataType.ToString());
+				CommonDatabaseType.SmallInt => MySqlDbType.Int16,
+				CommonDatabaseType.MiddleInt => MySqlDbType.Int32,
+				CommonDatabaseType.Character or CommonDatabaseType.CharacterVarying => MySqlDbType.VarChar,
+				_ => throw new NotSupportedException(DataType.ToString()),
+			};
 		}
 	}
 }

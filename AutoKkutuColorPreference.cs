@@ -50,10 +50,10 @@ namespace AutoKkutu
 		private static Color LoadColorFromConfig(string key, Color defaultValue)
 		{
 			string value = ConfigurationManager.AppSettings[key];
-			if (value == null || value.Length != 6 || !int.TryParse(value, NumberStyles.HexNumber, NumberFormatInfo.CurrentInfo, out var _))
+			if (value == null || value.Length != 6 || !int.TryParse(value, NumberStyles.HexNumber, NumberFormatInfo.CurrentInfo, out int _))
 				return defaultValue;
 
-			byte red = Convert.ToByte(value.Substring(0, 2), 16);
+			byte red = Convert.ToByte(value[..2], 16);
 			byte green = Convert.ToByte(value.Substring(2, 2), 16);
 			byte blue = Convert.ToByte(value.Substring(4, 2), 16);
 			return Color.FromRgb(red, green, blue);
@@ -62,7 +62,7 @@ namespace AutoKkutu
 		public void SaveToConfig()
 		{
 			Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-			var settings = configuration.AppSettings.Settings;
+			KeyValueConfigurationCollection settings = configuration.AppSettings.Settings;
 			WriteColorToConfig(settings, nameof(EndWordColor), EndWordColor);
 			WriteColorToConfig(settings, nameof(AttackWordColor), AttackWordColor);
 			WriteColorToConfig(settings, nameof(MissionWordColor), MissionWordColor);
@@ -82,9 +82,10 @@ namespace AutoKkutu
 
 		public override bool Equals(object obj)
 		{
-			if (!(obj is AutoKkutuColorPreference))
+			if (obj is not AutoKkutuColorPreference)
 				return false;
-			AutoKkutuColorPreference other = (AutoKkutuColorPreference)obj;
+
+			var other = (AutoKkutuColorPreference)obj;
 			return EndWordColor == other.EndWordColor
 				&& AttackWordColor == other.AttackWordColor
 				&& MissionWordColor == other.MissionWordColor

@@ -65,12 +65,15 @@ namespace AutoKkutu.Databases
 			string missionChar = info.MissionChar;
 			if (!string.IsNullOrWhiteSpace(missionChar))
 			{
-				missionCharCount = info.Word.Count(c => c == missionChar.First());
+				missionCharCount = info.Word.Count(c => c == missionChar[0]);
 				if (missionCharCount > 0)
 					wordAttributes |= WordAttributes.MissionWord;
 			}
 			else
+			{
 				missionCharCount = 0;
+			}
+
 			return wordAttributes;
 		}
 
@@ -167,7 +170,7 @@ namespace AutoKkutu.Databases
 
 		private static int GetAttributeOrdinal(WordPreference preference, WordAttributes attributes)
 		{
-			var fullAttribs = preference.GetAttributes();
+			WordAttributes[] fullAttribs = preference.GetAttributes();
 			return fullAttribs.Length - Array.IndexOf(fullAttribs, attributes) - 1;
 		}
 

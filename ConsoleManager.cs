@@ -62,7 +62,6 @@ namespace AutoKkutu
 
 		private static void DrawErrorBox(string errorMessage) => MessageBox.Show(errorMessage, nameof(ConsoleManager), MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
-
 		public static void Hide()
 		{
 			if (HasConsole)

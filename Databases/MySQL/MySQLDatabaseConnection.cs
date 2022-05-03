@@ -41,12 +41,10 @@ namespace AutoKkutu.Databases.MySQL
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new MySqlCommand(query, Connection))
-			{
-				if (parameters != null)
-					command.Parameters.AddRange(TranslateParameter(parameters));
-				return command.ExecuteNonQuery();
-			}
+			using var command = new MySqlCommand(query, Connection);
+			if (parameters != null)
+				command.Parameters.AddRange(TranslateParameter(parameters));
+			return command.ExecuteNonQuery();
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
@@ -55,12 +53,10 @@ namespace AutoKkutu.Databases.MySQL
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new MySqlCommand(query, Connection))
-			{
-				if (parameters != null)
-					command.Parameters.AddRange(TranslateParameter(parameters));
-				return command.ExecuteReader();
-			}
+			using var command = new MySqlCommand(query, Connection);
+			if (parameters != null)
+				command.Parameters.AddRange(TranslateParameter(parameters));
+			return command.ExecuteReader();
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
@@ -69,12 +65,10 @@ namespace AutoKkutu.Databases.MySQL
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new MySqlCommand(query, Connection))
-			{
-				if (parameters != null)
-					command.Parameters.AddRange(TranslateParameter(parameters));
-				return command.ExecuteScalar();
-			}
+			using var command = new MySqlCommand(query, Connection);
+			if (parameters != null)
+				command.Parameters.AddRange(TranslateParameter(parameters));
+			return command.ExecuteScalar();
 		}
 
 		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
@@ -97,7 +91,7 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override bool IsColumnExists(string tableName, string columnName)
 		{
-			tableName = tableName ?? DatabaseConstants.WordListTableName;
+			tableName ??= DatabaseConstants.WordListTableName;
 			try
 			{
 				return Convert.ToInt32(ExecuteScalar("SELECT COUNT(*) FROM Information_schema.columns WHERE table_schema=@dbName AND table_name=@tableName AND column_name=@columnName;", CreateParameter("@dbName", DatabaseName), CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)), CultureInfo.InvariantCulture) > 0;

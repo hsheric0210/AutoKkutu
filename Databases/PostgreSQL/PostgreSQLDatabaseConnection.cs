@@ -36,13 +36,10 @@ namespace AutoKkutu.Databases.PostgreSQL
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new NpgsqlCommand(query, Connection))
-			{
-				if (parameters != null)
-					foreach (var parameter in TranslateParameter(parameters))
-						command.Parameters.Add(parameter);
-				return command.ExecuteNonQuery();
-			}
+			using var command = new NpgsqlCommand(query, Connection);
+			if (parameters != null)
+				command.Parameters.AddRange(TranslateParameter(parameters));
+			return command.ExecuteNonQuery();
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
@@ -51,13 +48,10 @@ namespace AutoKkutu.Databases.PostgreSQL
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new NpgsqlCommand(query, Connection))
-			{
-				if (parameters != null)
-					foreach (var parameter in TranslateParameter(parameters))
-						command.Parameters.Add(parameter);
-				return command.ExecuteReader();
-			}
+			using var command = new NpgsqlCommand(query, Connection);
+			if (parameters != null)
+				command.Parameters.AddRange(TranslateParameter(parameters));
+			return command.ExecuteReader();
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
@@ -66,13 +60,10 @@ namespace AutoKkutu.Databases.PostgreSQL
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
 
-			using (var command = new NpgsqlCommand(query, Connection))
-			{
-				if (parameters != null)
-					foreach (var parameter in TranslateParameter(parameters))
-						command.Parameters.Add(parameter);
-				return command.ExecuteScalar();
-			}
+			using var command = new NpgsqlCommand(query, Connection);
+			if (parameters != null)
+				command.Parameters.AddRange(TranslateParameter(parameters));
+			return command.ExecuteScalar();
 		}
 
 		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
@@ -80,7 +71,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public override string GetColumnType(string tableName, string columnName)
 		{
-			tableName = tableName ?? DatabaseConstants.WordListTableName;
+			tableName ??= DatabaseConstants.WordListTableName;
 			try
 			{
 				return ExecuteScalar("SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
@@ -96,7 +87,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public override bool IsColumnExists(string tableName, string columnName)
 		{
-			tableName = tableName ?? DatabaseConstants.WordListTableName;
+			tableName ??= DatabaseConstants.WordListTableName;
 			try
 			{
 				return Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='{tableName}' AND column_name='{columnName}';"), CultureInfo.InvariantCulture) > 0;

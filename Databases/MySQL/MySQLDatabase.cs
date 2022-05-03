@@ -11,10 +11,7 @@ namespace AutoKkutu.Databases.MySQL
 
 		public MySQLDatabase(string connectionString)
 		{
-			if (connectionString == null)
-				throw new ArgumentNullException(nameof(connectionString));
-
-			ConnectionString = connectionString;
+			ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
 
 			try
 			{
@@ -89,7 +86,7 @@ END;
 
 		public override void CheckConnectionType(CommonDatabaseConnection connection)
 		{
-			if (connection != null && connection.GetType() != typeof(MySqlConnection))
+			if (connection is not null and not MySQLDatabaseConnection)
 				throw new NotSupportedException($"Connection is not {nameof(MySqlConnection)}");
 		}
 

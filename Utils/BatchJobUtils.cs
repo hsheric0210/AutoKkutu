@@ -11,7 +11,7 @@ namespace AutoKkutu.Utils
 	public static class BatchJobUtils
 	{
 		private const string _namespace = nameof(BatchJobUtils);
-		private static ILog Logger = LogManager.GetLogger(_namespace);
+		private readonly static ILog Logger = LogManager.GetLogger(_namespace);
 
 		/// <summary>
 		/// Check if the word is available in the current server using the official kkutu dictionary feature.
@@ -76,7 +76,7 @@ namespace AutoKkutu.Utils
 
 			Logger.InfoFormat("{0} elements queued.", wordlist.Length);
 
-			AddWordInfo info = new AddWordInfo
+			var info = new AddWordInfo
 			{
 				WordDatabaseAttributes = WordDatabaseAttributes,
 				NewEndNodeCount = 0,
@@ -190,10 +190,12 @@ namespace AutoKkutu.Utils
 			{
 				int SuccessCount = 0, FailedCount = 0;
 				foreach (string word in wordlist)
+				{
 					if (connection.RemoveSingleWord(word))
 						SuccessCount++;
 					else
 						FailedCount++;
+				}
 
 				string message = $"{SuccessCount} deleted / {FailedCount} failed";
 				Logger.Info($"Batch remove operation complete: {message}");
@@ -224,7 +226,7 @@ namespace AutoKkutu.Utils
 			if (connection == null || string.IsNullOrWhiteSpace(content))
 				return;
 
-			var NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
+			string[] NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 			int SuccessCount = 0;
 			int DuplicateCount = 0;

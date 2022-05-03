@@ -57,7 +57,7 @@ namespace AutoKkutu
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
 		private static readonly ILog Logger = LogManager.GetLogger("MainThread");
-		private readonly Stopwatch inputStopwatch = new Stopwatch();
+		private readonly Stopwatch inputStopwatch = new();
 		private int WordIndex;
 		public MainWindow()
 		{
@@ -129,7 +129,7 @@ namespace AutoKkutu
 		private static void InitializeCEF()
 		{
 			// TODO: Configurable CEF settings
-			using (var settings = new CefSettings
+			using var settings = new CefSettings
 			{
 				CefCommandLineArgs =
 				{
@@ -142,8 +142,8 @@ namespace AutoKkutu
 				},
 				UserAgent = "Chrome",
 				CachePath = Environment.CurrentDirectory + "\\Cache"
-			})
-				Cef.Initialize(settings, true, (IApp)null);
+			};
+			Cef.Initialize(settings, true, (IApp)null);
 		}
 
 		private static void InitializeConfiguration()
@@ -163,7 +163,7 @@ namespace AutoKkutu
 		}
 		private void ChatField_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Enter || e.Key == Key.Return)
+			if (e.Key is Key.Enter or Key.Return)
 				SubmitChat_Click(sender, e);
 		}
 
@@ -207,7 +207,9 @@ namespace AutoKkutu
 				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, "자동 업데이트");
 				string result = PathFinder.AutoDBUpdate();
 				if (string.IsNullOrEmpty(result))
+				{
 					this.ChangeStatusBar(CurrentStatus.Wait);
+				}
 				else
 				{
 					if (new FileInfo("GameResult.txt").Exists)
@@ -224,14 +226,16 @@ namespace AutoKkutu
 				}
 			}
 			else
+			{
 				this.ChangeStatusBar(CurrentStatus.Wait);
+			}
 		}
 
 		private void CommonHandler_GameModeChangeEvent(object sender, GameModeChangeEventArgs args)
 		{
 			if (CurrentConfig.GameModeAutoDetectEnabled)
 			{
-				var newGameMode = args.GameMode;
+				GameMode newGameMode = args.GameMode;
 				CurrentConfig.GameMode = newGameMode;
 				Logger.InfoFormat("Automatically updated game mode to '{0}'", ConfigEnums.GetGameModeName(newGameMode));
 				UpdateConfig(CurrentConfig);
@@ -282,7 +286,9 @@ namespace AutoKkutu
 						});
 					}
 					else
+					{
 						PerformAutoEnter(path, "next");
+					}
 				}
 				catch (Exception ex)
 				{
@@ -331,6 +337,7 @@ namespace AutoKkutu
 				this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 				Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
 				if (CurrentConfig.DelayStartAfterWordEnterEnabled)
+				{
 					Task.Run(async () =>
 					{
 						while (inputStopwatch.ElapsedMilliseconds <= delay)
@@ -338,13 +345,16 @@ namespace AutoKkutu
 						SendMessage(word);
 						Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
 					});
+				}
 				else
+				{
 					Task.Run(async () =>
 					{
 						await Task.Delay(delay);
 						SendMessage(word);
 						Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
 					});
+				}
 			}
 			else
 			{
@@ -355,15 +365,12 @@ namespace AutoKkutu
 
 		private static ICollection<string> GetEndWordList(GameMode mode)
 		{
-			switch (mode)
+			return mode switch
 			{
-				case GameMode.FirstAndLast:
-					return PathFinder.ReverseEndWordList;
-
-				case GameMode.Kkutu:
-					return PathFinder.KkutuEndWordList;
-			}
-			return PathFinder.EndWordList;
+				GameMode.FirstAndLast => PathFinder.ReverseEndWordList,
+				GameMode.Kkutu => PathFinder.KkutuEndWordList,
+				_ => PathFinder.EndWordList,
+			};
 		}
 
 		private void HideLoadOverlay()
@@ -425,7 +432,7 @@ namespace AutoKkutu
 			var source = (FrameworkElement)e.Source;
 			ContextMenu contextMenu = source.ContextMenu;
 			object currentSelected = PathList.SelectedItem;
-			if (currentSelected == null || !(currentSelected is PathObject))
+			if (currentSelected is not PathObject)
 				return;
 			var current = ((PathObject)currentSelected);
 			foreach (MenuItem item in contextMenu.Items)
@@ -453,7 +460,7 @@ namespace AutoKkutu
 		{
 			Logger.Info(nameof(OnPathListMakeAttackClick));
 			object currentSelected = PathList.SelectedItem;
-			if (currentSelected == null || !(currentSelected is PathObject))
+			if (currentSelected is not PathObject)
 				return;
 			((PathObject)currentSelected).MakeAttack(CurrentConfig.GameMode, Database.DefaultConnection);
 		}
@@ -462,7 +469,7 @@ namespace AutoKkutu
 		{
 			Logger.Info(nameof(OnPathListMakeEndClick));
 			object currentSelected = PathList.SelectedItem;
-			if (currentSelected == null || !(currentSelected is PathObject))
+			if (currentSelected is not PathObject)
 				return;
 			((PathObject)currentSelected).MakeEnd(CurrentConfig.GameMode, Database.DefaultConnection);
 		}
@@ -471,7 +478,7 @@ namespace AutoKkutu
 		{
 			Logger.Info(nameof(OnPathListMakeNormalClick));
 			object currentSelected = PathList.SelectedItem;
-			if (currentSelected == null || !(currentSelected is PathObject))
+			if (currentSelected is not PathObject)
 				return;
 			((PathObject)currentSelected).MakeNormal(CurrentConfig.GameMode, Database.DefaultConnection);
 		}
@@ -479,7 +486,7 @@ namespace AutoKkutu
 		private void OnPathListMouseDoubleClick(object sender, MouseButtonEventArgs e)
 		{
 			object selected = PathList.SelectedItem;
-			if (!(selected is PathObject))
+			if (selected is not PathObject)
 				return;
 
 			var i = (PathObject)selected;
@@ -533,7 +540,7 @@ namespace AutoKkutu
 				}
 				else
 				{
-					string content = PathFinder.FinalList.First().Content;
+					string content = PathFinder.FinalList[0].Content;
 					if (CurrentConfig.DelayEnabled && !args.Flags.HasFlag(PathFinderInfo.Retrial))
 					{
 						int delay = CurrentConfig.DelayInMillis;
@@ -542,6 +549,7 @@ namespace AutoKkutu
 						this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 						Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
 						if (CurrentConfig.DelayStartAfterWordEnterEnabled)
+						{
 							Task.Run(async () =>
 							{
 								while (inputStopwatch.ElapsedMilliseconds <= delay)
@@ -549,15 +557,20 @@ namespace AutoKkutu
 
 								PerformAutoEnter(args, content);
 							});
+						}
 						else
+						{
 							Task.Run(async () =>
 							{
 								await Task.Delay(delay);
 								PerformAutoEnter(args, content);
 							});
+						}
 					}
 					else
+					{
 						PerformAutoEnter(args, content);
+					}
 				}
 			}
 		}
@@ -622,7 +635,7 @@ namespace AutoKkutu
 
 		private void SearchField_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Enter || e.Key == Key.Return)
+			if (e.Key is Key.Enter or Key.Return)
 				SubmitSearch_Click(sender, e);
 		}
 
@@ -659,7 +672,9 @@ namespace AutoKkutu
 							Result += " (한방 단어 사용)";
 					}
 					else
+					{
 						Result = PATHFINDER_ERROR;
+					}
 				}
 			}
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
