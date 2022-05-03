@@ -7,7 +7,7 @@ platform:
 before_build:
 - cmd: nuget restore
 build_script:
-- set JAVA_HOME=C:\Program Files\Java\jdk11
+- set JAVA_HOME=C:\Program Files\Java\jdk15
 - set PATH=%JAVA_HOME%\bin;%PATH%
 - choco install "sonarscanner-msbuild-net46"
 - Sonarscanner.MSBuild.exe begin /o:"hsheric0210" /k:"hsheric0210_AutoKkutu" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f"
