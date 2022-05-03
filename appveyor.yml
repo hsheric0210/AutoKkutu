@@ -3,18 +3,17 @@ image: Visual Studio 2022
 configuration: Release
 platform:
 - x64
-- x86
-before_build:
-- cmd: nuget restore
 build_script:
 - set JAVA_HOME=C:\Program Files\Java\jdk15
 - set PATH=%JAVA_HOME%\bin;%PATH%
-- choco install "sonarscanner-msbuild-net46"
-- Sonarscanner.MSBuild.exe begin /o:"hsheric0210" /k:"hsheric0210_AutoKkutu" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f"
-- msbuild /verbosity:normal "AutoKkutu.sln"
-- Sonarscanner.MSBuild.exe end /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f
-after_build:
-- cmd: 7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- "Windows.%PLATFORM%.%CONFIGURATION%.7z" "%APPVEYOR_BUILD_FOLDER%\bin\%PLATFORM%\%CONFIGURATION%\net6.0-windows"
+- set JAVA_HOME=C:\Program Files\Java\jdk15
+- set PATH=%JAVA_HOME%\bin;%PATH%
+- dotnet tool install --global dotnet-sonarscanner
+- dotnet sonarscanner begin /o:"hsheric0210" /k:"hsheric0210_AutoKkutu" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f"
+- nuget restore
+- dotnet restore
+- dotnet publish /verbosity:normal "AutoKkutu.sln" --no-self-contained -c %CONFIGURATION%  -a %PLATFORM% -o "publish/%CONFIGURATION%.%PLATFORM%"
+- dotnet sonarscanner end /d:sonar.login="66aedabd37817acb87a62cb8bb0f86b1f7cc002f
+- 7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- "Windows.%PLATFORM%.%CONFIGURATION%.7z" "%APPVEYOR_BUILD_FOLDER%\publish\%CONFIGURATION%.%PLATFORM%"
 artifacts:
 - path: Windows.%PLATFORM%.%CONFIGURATION%.7z
-  name: For Windows
