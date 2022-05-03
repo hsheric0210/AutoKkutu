@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Constants;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -9,6 +10,8 @@ namespace AutoKkutu.Databases
 {
 	public static class FindWordExtension
 	{
+		private static readonly ILog Logger = LogManager.GetLogger("Database Word Finder");
+
 		private static string GetIndexColumnName(FindWordInfo opts)
 		{
 			switch (opts.Mode)
@@ -79,6 +82,7 @@ namespace AutoKkutu.Databases
 			var result = new List<PathObject>();
 			GetOptimalWordDatabaseAttributes(info.Mode, out int endWordFlag, out int attackWordFlag);
 			string query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
+			Logger.DebugFormat("Execute query : {0}", query);
 			using (DbDataReader reader = connection.ExecuteReader(query))
 			{
 				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
@@ -108,7 +112,7 @@ namespace AutoKkutu.Databases
 			if (data.CanSubstitution)
 				condition = $"WHERE ({indexColumnName} = '{data.Content}' OR {indexColumnName} = '{data.Substitution}')";
 			else
-				condition = $"WHERE {indexColumnName} = '{data.Content}'";
+				condition = $"WHERE ({indexColumnName} = '{data.Content}')";
 
 			var opt = new PreferenceInfo { PathFinderFlags = info.PathFinderFlags, WordPreference = info.WordPreference, Condition = "" };
 
@@ -123,7 +127,7 @@ namespace AutoKkutu.Databases
 			if (info.Mode == GameMode.All)
 				condition = opt.Condition = "";
 
-			return $"SELECT * FROM {DatabaseConstants.WordListTableName} {condition} {opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}";
+			return $"SELECT * FROM {DatabaseConstants.WordListTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}";
 		}
 
 		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag)
@@ -145,7 +149,7 @@ namespace AutoKkutu.Databases
 			{
 				return string.Format(
 					CultureInfo.InvariantCulture,
-					"{0}({1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})",
+					"{0}({1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})",
 					connection.GetRearrangeMissionFuncName(),
 					DatabaseConstants.WordColumnName,
 					DatabaseConstants.FlagsColumnName,
@@ -170,7 +174,7 @@ namespace AutoKkutu.Databases
 		private static void ApplyFilter(PathFinderInfo targetFlag, int flag, ref PreferenceInfo info)
 		{
 			if (!info.PathFinderFlags.HasFlag(targetFlag))
-				info.Condition += $"AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
+				info.Condition += $" AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
 		}
 
 		private struct PreferenceInfo

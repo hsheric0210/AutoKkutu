@@ -125,10 +125,10 @@ namespace AutoKkutu
 
 		public static bool CheckNodePresence(string nodeType, string item, ICollection<string> nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool add = false)
 		{
-			if (string.IsNullOrEmpty(nodeType))
+			if (add && string.IsNullOrEmpty(nodeType))
 				throw new ArgumentNullException(nameof(nodeType));
 			if (string.IsNullOrWhiteSpace(item))
-				throw new ArgumentException("Argument is null or blank", nameof(nodeType));
+				throw new ArgumentException("Argument is null or blank", nameof(item));
 			if (nodeList == null)
 				throw new ArgumentNullException(nameof(nodeList));
 

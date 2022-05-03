@@ -37,7 +37,7 @@ return visibleStyles;
 
 			RegisterJSFunction(WriteInputFunc, "input", $@"
 var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
-var visible = {RegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
+var visible = {GetRegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (talks[index].id == visible[index2]) {{
@@ -50,7 +50,7 @@ for (let index=0;index<maxTalks;index++) {{
 
 			RegisterJSFunction(ClickSubmitFunc, "", $@"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
-var visible = {RegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
+var visible = {GetRegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (buttons[index].id == visible[index2]) {{
@@ -61,8 +61,8 @@ for (let index=0;index<maxButtons;index++) {{
 }}
 ");
 
-			EvaluateJS($"{RegisteredJSFunctionName(WriteInputFunc)}('{input}')");
-			EvaluateJS($"{RegisteredJSFunctionName(ClickSubmitFunc)}()");
+			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
+			EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
 		}
 	}
 }

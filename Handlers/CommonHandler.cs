@@ -30,7 +30,7 @@ namespace AutoKkutu
 
 		protected ILog GetLogger(int? watchdogID = null, string watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
 
-		private Dictionary<string, string> RegisteredFunctionNames = new Dictionary<string, string>();
+		private readonly Dictionary<string, string> RegisteredFunctionNames = new Dictionary<string, string>();
 
 		public bool IsWatchdogAlive;
 
@@ -490,14 +490,14 @@ namespace AutoKkutu
 			var realFuncName = RegisteredFunctionNames[funcName];
 			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
 			{
-				if (EvaluateJSReturnError($@"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
-					GetLogger().ErrorFormat("Failed to register {0}: {1}", funcName, error);
+				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
+					GetLogger().ErrorFormat("Failed to register JavaScript function '{0}' : {1}", funcName, error);
 				else
-					GetLogger().InfoFormat("Register {0}: {1}()", funcName, realFuncName);
+					GetLogger().InfoFormat("Registered JavaScript function '{0}' : {1}()", funcName, realFuncName);
 			}
 		}
 
-		protected string RegisteredJSFunctionName(string funcName)
+		protected string GetRegisteredJSFunctionName(string funcName)
 		{
 			return RegisteredFunctionNames[funcName];
 		}
@@ -543,7 +543,7 @@ namespace AutoKkutu
 
 		public virtual int GetGameRoundIndex()
 		{
-			return EvaluateJSInt($"{RegisteredJSFunctionName(CurrentRoundIndexFunc)}()", "GetGameRoundIndex");
+			return EvaluateJSInt($"{GetRegisteredJSFunctionName(CurrentRoundIndexFunc)}()", "GetGameRoundIndex");
 		}
 
 		public virtual string GetUnsupportedWord()

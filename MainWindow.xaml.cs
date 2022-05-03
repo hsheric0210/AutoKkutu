@@ -319,6 +319,10 @@ namespace AutoKkutu
 		private void CommonHandler_WordPresentedEvent(object sender, WordPresentEventArgs args)
 		{
 			string word = args.Word.Content;
+
+			if (!CurrentConfig.AutoEnterEnabled)
+				return;
+
 			if (CurrentConfig.DelayEnabled)
 			{
 				int delay = CurrentConfig.DelayInMillis;

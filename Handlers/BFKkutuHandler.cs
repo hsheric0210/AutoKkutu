@@ -32,8 +32,8 @@ while (index < maxIndex) {{
 }}
 ");
 
-			EvaluateJS($"{RegisteredJSFunctionName(WriteInputFunc)}('{input}')");
-			EvaluateJS($"{RegisteredJSFunctionName(ClickSubmitFunc)}()");
+			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
+			EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
 		}
 	}
 }
