@@ -50,7 +50,6 @@ namespace AutoKkutu
 			{
 				if (!AllocConsole())
 					DrawErrorBox("Failed to allocate the console.");
-				InvalidateOutAndError();
 				Console.InputEncoding = Encoding.UTF8;
 				Console.OutputEncoding = Encoding.UTF8;
 				if (DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND) == 0)
@@ -79,21 +78,6 @@ namespace AutoKkutu
 				Hide();
 			else
 				Show();
-		}
-
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011", Justification = "There is no way without reflection")]
-		private static void InvalidateOutAndError()
-		{
-			Type type = typeof(Console);
-			FieldInfo _out = type.GetField("_out", BindingFlags.Static | BindingFlags.NonPublic);
-			FieldInfo _error = type.GetField("_error", BindingFlags.Static | BindingFlags.NonPublic);
-			MethodInfo _InitializeStdOutError = type.GetMethod("InitializeStdOutError", BindingFlags.Static | BindingFlags.NonPublic);
-			Debug.Assert(_out != null);
-			Debug.Assert(_error != null);
-			Debug.Assert(_InitializeStdOutError != null);
-			_out.SetValue(null, null);
-			_error.SetValue(null, null);
-			_InitializeStdOutError.Invoke(null, new object[] { true });
 		}
 
 		private static void SetOutAndErrorNull()

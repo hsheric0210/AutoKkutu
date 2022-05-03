@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>AnyCPU;x64;x86</Platforms>
@@ -10,6 +10,7 @@
 	<AnalysisLevel>latest</AnalysisLevel>
 	<AnalysisMode>All</AnalysisMode>
 	<CodeAnalysisRuleSet>.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
+	<StartupObject>AutoKkutu.App</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,8 +29,6 @@
     <None Remove="Images\waiting.png" />
     <None Remove="Images\warning.png" />
     <None Remove="Properties\Logger.config" />
-    <None Remove="statusicon.png" />
-    <None Remove="warning_480.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,54 +43,52 @@
 
   <ItemGroup>
     <Resource Include="Images\attack.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\cleaning.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\error.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\MariaDB.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\mission.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\MySQL.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\ok.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\PostgreSQL.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\searching.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\skull.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\SQLite.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\waiting.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\warning.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="cef.redist.x64" Version="100.0.23" />
-    <PackageReference Include="cef.redist.x86" Version="100.0.23" />
-    <PackageReference Include="CefSharp.Common" Version="100.0.230" />
-    <PackageReference Include="CefSharp.Wpf" Version="100.0.230" />
-    <PackageReference Include="chromiumembeddedframework.runtime" Version="100.0.23" />
-    <PackageReference Include="chromiumembeddedframework.runtime.win-x64" Version="100.0.23" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0" />
+    <PackageReference Include="CefSharp.Common.NETCore" Version="100.0.230" />
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="100.0.230" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0">
+        <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.4" />

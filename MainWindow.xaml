@@ -87,7 +87,7 @@
 					</Grid>
 					<Label Grid.Row="1" Content="수동 검색" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,170" VerticalAlignment="Bottom" />
 					<Button Name="SubmitSearch" Content="검색" Margin="15,0,0,150" Grid.Row="1" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="SubmitSearch_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="40" />
-					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,150" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" />
+					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,150" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" />
 					<TextBlock Text="검색할 키워드를 입력해주세요" Grid.Row="1" IsHitTestVisible="False" Margin="65,0,15,150" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0">
 						<TextBlock.Style>
 							<Style TargetType="TextBlock">

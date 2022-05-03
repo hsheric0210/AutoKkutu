@@ -2,10 +2,11 @@
 using CefSharp.Wpf;
 using log4net;
 using System;
+using System.Globalization;
 
 namespace AutoKkutu
 {
-	public class JSEvaluator
+	public static class JSEvaluator
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(typeof(JSEvaluator));
 		private static ChromiumWebBrowser Browser;
@@ -13,7 +14,7 @@ namespace AutoKkutu
 		public static void RegisterBrowser(ChromiumWebBrowser browser)
 		{
 			if (Browser != null)
-				throw new AccessViolationException("Browser is already registered");
+				throw new InvalidOperationException("Browser is already registered");
 			Browser = browser;
 		}
 
@@ -77,7 +78,7 @@ namespace AutoKkutu
 		{
 			try
 			{
-				return Convert.ToInt32(EvaluateJSInternal(javaScript, defaultResult));
+				return Convert.ToInt32(EvaluateJSInternal(javaScript, defaultResult), CultureInfo.InvariantCulture);
 			}
 			catch (NullReferenceException)
 			{
@@ -94,7 +95,7 @@ namespace AutoKkutu
 		{
 			try
 			{
-				return Convert.ToBoolean(EvaluateJSInternal(javaScript, defaultResult));
+				return Convert.ToBoolean(EvaluateJSInternal(javaScript, defaultResult), CultureInfo.InvariantCulture);
 			}
 			catch (NullReferenceException)
 			{
