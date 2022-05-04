@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security;
 using System.Text;
 using System.Windows;
 
 namespace AutoKkutu
 {
-	[SuppressUnmanagedCodeSecurity]
-	internal class ConsoleManager
+	public static class ConsoleManager
 	{
-		private const string Kernel32_DllName = "kernel32.dll";
 		private const string User32_DllName = "user32.dll";
+		private const string Kernel32_DllName = "kernel32.dll";
+		private const string ProgramIntroduction = $"*** AutoKkutu v{MainWindow.VERSION}";
+		private const string ConsoleIntroduction = "- Verbose console enabled because debugger is not attached.";
 
 		private const int MF_BYCOMMAND = 0;
 
 		public const int SC_CLOSE = 61536;
+
 		public static bool HasConsole => GetConsoleWindow() != IntPtr.Zero;
 
 		[DllImport(Kernel32_DllName)]
@@ -54,8 +54,8 @@ namespace AutoKkutu
 				Console.OutputEncoding = Encoding.UTF8;
 				if (DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND) == 0)
 					DrawErrorBox("Failed to delete console menu items.");
-				Console.WriteLine("*** AutoKkutu v1.0 (Inspired from KKutu Helper)");
-				Console.WriteLine("- Verbose console enabled because debugger is not attached.");
+				Console.WriteLine(ProgramIntroduction);
+				Console.WriteLine(ConsoleIntroduction);
 				Console.WriteLine("");
 			}
 		}

@@ -260,10 +260,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private async Task WatchdogAssistant(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken)
-		{
-			await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
-		}
+		private async Task WatchdogAssistant(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken) => await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 
 		/// <summary>
 		/// 현재 게임의 진행 상태를 모니터링합니다.
@@ -497,10 +494,7 @@ namespace AutoKkutu
 			}
 		}
 
-		protected string GetRegisteredJSFunctionName(string funcName)
-		{
-			return RegisteredFunctionNames[funcName];
-		}
+		protected string GetRegisteredJSFunctionName(string funcName) => RegisteredFunctionNames[funcName];
 
 		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
@@ -522,10 +516,7 @@ namespace AutoKkutu
 			return string.Equals(element, "undefined", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.OrdinalIgnoreCase);
 		}
 
-		public virtual string GetGamePresentedWord()
-		{
-			return EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetGamePresentedWord");
-		}
+		public virtual string GetGamePresentedWord() => EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetGamePresentedWord");
 
 		public virtual string GetGamePreviousWord(int index)
 		{
@@ -536,20 +527,11 @@ namespace AutoKkutu
 			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", "GetGamePreviousWord");
 		}
 
-		public virtual string GetGameRoundText()
-		{
-			return EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", "GetGameRoundText");
-		}
+		public virtual string GetGameRoundText() => EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", "GetGameRoundText");
 
-		public virtual int GetGameRoundIndex()
-		{
-			return EvaluateJSInt($"{GetRegisteredJSFunctionName(CurrentRoundIndexFunc)}()", "GetGameRoundIndex");
-		}
+		public virtual int GetGameRoundIndex() => EvaluateJSInt($"{GetRegisteredJSFunctionName(CurrentRoundIndexFunc)}()", "GetGameRoundIndex");
 
-		public virtual string GetUnsupportedWord()
-		{
-			return EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", "GetUnsupportedWord") : "";
-		}
+		public virtual string GetUnsupportedWord() => EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", "GetUnsupportedWord") : "";
 
 		public virtual string GetExampleWord()
 		{
@@ -558,10 +540,7 @@ namespace AutoKkutu
 			return innerHTML.Contains("label") && innerHTML.Contains("color") && innerHTML.Contains("170,") && content.Length > 1 ? content : "";
 		}
 
-		public virtual string GetMissionWord()
-		{
-			return EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", "GetMissionWord") : "";
-		}
+		public virtual string GetMissionWord() => EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", "GetMissionWord") : "";
 
 		public virtual void SendMessage(string input)
 		{
@@ -664,10 +643,7 @@ namespace AutoKkutu
 			return string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase) && Substitution == other.Substitution && (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.OrdinalIgnoreCase));
 		}
 
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(Content, CanSubstitution, Substitution);
-		}
+		public override int GetHashCode() => HashCode.Combine(Content, CanSubstitution, Substitution);
 	}
 
 	public class WordPresentEventArgs : EventArgs

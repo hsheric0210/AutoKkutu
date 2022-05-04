@@ -130,9 +130,6 @@ namespace AutoKkutu.Databases
 				connection.MakeTable(tableName);
 		}
 
-		private static void CreateIndex(this CommonDatabaseConnection connection, string tableName, string columnName)
-		{
-			connection.ExecuteNonQuery($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
-		}
+		private static void CreateIndex(this CommonDatabaseConnection connection, string tableName, string columnName) => connection.ExecuteNonQuery($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
 	}
 }

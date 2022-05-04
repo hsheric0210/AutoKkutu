@@ -1,6 +1,7 @@
 ﻿using log4net;
 using System;
 using System.Windows;
+using AutoKkutu.Utils;
 
 namespace AutoKkutu
 {
@@ -26,7 +27,7 @@ namespace AutoKkutu
 
 		private void OnSubmit(object sender, RoutedEventArgs e)
 		{
-			var newPreference = new AutoKkutuColorPreference
+			var newPref = new AutoKkutuColorPreference
 			{
 				EndWordColor = EndWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultEndWordColor,
 				AttackWordColor = AttackWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultAttackWordColor,
@@ -37,18 +38,24 @@ namespace AutoKkutu
 
 			try
 			{
-				newPreference.SaveToConfig();
+				var config = Properties.Settings.Default;
+				config.EndWordColor = newPref.EndWordColor.ToDrawingColor();
+				config.AttackWordColor = newPref.AttackWordColor.ToDrawingColor();
+				config.MissionWordColor = newPref.MissionWordColor.ToDrawingColor();
+				config.EndMissionWordColor = newPref.EndMissionWordColor.ToDrawingColor();
+				config.AttackMissionWordColor = newPref.AttackMissionWordColor.ToDrawingColor();
+				Properties.Settings.Default.Save();
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Failed to save color preference", ex);
+				Logger.Error("Failed to save configuration", ex);
 			}
 
 			Dispatcher.Invoke(() =>
 			{
 				try
 				{
-					MainWindow.UpdateColorPreference(newPreference);
+					MainWindow.UpdateColorPreference(newPref);
 				}
 				catch (Exception ex)
 				{
@@ -59,9 +66,6 @@ namespace AutoKkutu
 			Close();
 		}
 
-		private void OnCancel(object sender, RoutedEventArgs e)
-		{
-			Close();
-		}
+		private void OnCancel(object sender, RoutedEventArgs e) => Close();
 	}
 }

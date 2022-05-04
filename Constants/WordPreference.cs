@@ -1,10 +1,14 @@
-﻿namespace AutoKkutu.Constants
+﻿using System;
+using System.ComponentModel;
+
+namespace AutoKkutu.Constants
 {
+	[TypeConverter(typeof(WordPreferenceTypeConverter))]
 	public class WordPreference
 	{
 		private readonly WordAttributes[] Attributes;
 
-		public WordPreference() : this(GetDefault())
+		public WordPreference() : this(Array.Empty<WordAttributes>())
 		{
 		}
 
@@ -33,9 +37,7 @@
 			return string.IsNullOrEmpty(name) ? "일반 단어" : $"{name} 단어";
 		}
 
-		private static WordAttributes[] GetDefault()
-		{
-			return new WordAttributes[]
+		public static WordAttributes[] GetDefault() => new WordAttributes[]
 			{
 				WordAttributes.EndWord | WordAttributes.MissionWord,
 				WordAttributes.EndWord,
@@ -44,6 +46,5 @@
 				WordAttributes.MissionWord,
 				WordAttributes.None
 			};
-		}
 	}
 }

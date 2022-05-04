@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,7 +55,7 @@ namespace AutoKkutu
 
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
-		private static readonly ILog Logger = LogManager.GetLogger("MainThread");
+		public static readonly ILog Logger = LogManager.GetLogger("MainThread");
 		private readonly Stopwatch inputStopwatch = new();
 		private int WordIndex;
 		public MainWindow()
@@ -148,18 +147,51 @@ namespace AutoKkutu
 
 		private static void InitializeConfiguration()
 		{
-			PathFinder.UpdateConfig(CurrentConfig = new AutoKkutuConfiguration());
-			CommonHandler.UpdateConfig(CurrentConfig);
 			try
 			{
-				CurrentColorPreference = new AutoKkutuColorPreference();
+				var config = Properties.Settings.Default;
+				config.Reload();
+				CurrentConfig = new AutoKkutuConfiguration
+				{
+					AutoEnterEnabled = config.AutoEnterEnabled,
+					AutoDBUpdateEnabled = config.AutoDBUpdateEnabled,
+					AutoDBUpdateMode = config.AutoDBUpdateMode,
+					ActiveWordPreference = config.ActiveWordPreference,
+					InactiveWordPreference = config.InactiveWordPreference,
+					AttackWordAllowed = config.AttackWordEnabled,
+					EndWordEnabled = config.EndWordEnabled,
+					ReturnModeEnabled = config.ReturnModeEnabled,
+					AutoFixEnabled = config.AutoFixEnabled,
+					MissionAutoDetectionEnabled = config.MissionAutoDetectionEnabled,
+					DelayEnabled = config.DelayEnabled,
+					DelayPerCharEnabled = config.DelayPerCharEnabled,
+					DelayInMillis = config.DelayInMillis,
+					DelayStartAfterCharEnterEnabled = config.DelayStartAfterWordEnterEnabled,
+					GameModeAutoDetectEnabled = config.GameModeAutoDetectionEnabled,
+					MaxDisplayedWordCount = config.MaxDisplayedWordCount,
+					FixDelayEnabled = config.FixDelayEnabled,
+					FixDelayPerCharEnabled = config.FixDelayPerCharEnabled,
+					FixDelayInMillis = config.FixDelayInMillis
+				};
+				PathFinder.UpdateConfig(CurrentConfig);
+				CommonHandler.UpdateConfig(CurrentConfig);
+
+				CurrentColorPreference = new AutoKkutuColorPreference
+				{
+					EndWordColor = config.EndWordColor.ToMediaColor(),
+					AttackWordColor = config.AttackWordColor.ToMediaColor(),
+					MissionWordColor = config.MissionWordColor.ToMediaColor(),
+					EndMissionWordColor = config.EndMissionWordColor.ToMediaColor(),
+					AttackMissionWordColor = config.AttackMissionWordColor.ToMediaColor()
+				};
+
+				PathFinder.UpdateColorPreference(CurrentColorPreference);
 			}
 			catch (Exception ex)
 			{
 				// This log may only available in log file
 				Logger.Error(ex);
 			}
-			PathFinder.UpdateColorPreference(CurrentColorPreference);
 		}
 		private void ChatField_KeyDown(object sender, KeyEventArgs e)
 		{
@@ -202,7 +234,7 @@ namespace AutoKkutu
 		{
 			SetSearchState(null, false);
 			ResetPathList();
-			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.OnGameEnd)
+			if (CurrentConfig.AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
 			{
 				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, "자동 업데이트");
 				string result = PathFinder.AutoDBUpdate();
@@ -275,7 +307,7 @@ namespace AutoKkutu
 					if (CurrentConfig.FixDelayEnabled)
 					{
 						int delay = CurrentConfig.FixDelayInMillis;
-						if (CurrentConfig.FixDelayPerWordEnabled)
+						if (CurrentConfig.FixDelayPerCharEnabled)
 							delay *= path.Length;
 						this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 						Logger.DebugFormat("Waiting {0}ms before entering next path.", delay);
@@ -318,7 +350,7 @@ namespace AutoKkutu
 
 		private void CommonHandler_RoundChangeEvent(object sender, EventArgs e)
 		{
-			if (CurrentConfig.AutoDBUpdateMode == DBAutoUpdateMode.OnRoundEnd)
+			if (CurrentConfig.AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
 				PathFinder.AutoDBUpdate();
 		}
 
@@ -332,11 +364,11 @@ namespace AutoKkutu
 			if (CurrentConfig.DelayEnabled)
 			{
 				int delay = CurrentConfig.DelayInMillis;
-				if (CurrentConfig.DelayPerWordEnabled)
+				if (CurrentConfig.DelayPerCharEnabled)
 					delay *= word.Length;
 				this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 				Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-				if (CurrentConfig.DelayStartAfterWordEnterEnabled)
+				if (CurrentConfig.DelayStartAfterCharEnterEnabled)
 				{
 					Task.Run(async () =>
 					{
@@ -363,15 +395,12 @@ namespace AutoKkutu
 			}
 		}
 
-		private static ICollection<string> GetEndWordList(GameMode mode)
+		private static ICollection<string> GetEndWordList(GameMode mode) => mode switch
 		{
-			return mode switch
-			{
-				GameMode.FirstAndLast => PathFinder.ReverseEndWordList,
-				GameMode.Kkutu => PathFinder.KkutuEndWordList,
-				_ => PathFinder.EndWordList,
-			};
-		}
+			GameMode.FirstAndLast => PathFinder.ReverseEndWordList,
+			GameMode.Kkutu => PathFinder.KkutuEndWordList,
+			_ => PathFinder.EndWordList,
+		};
 
 		private void HideLoadOverlay()
 		{
@@ -544,11 +573,11 @@ namespace AutoKkutu
 					if (CurrentConfig.DelayEnabled && !args.Flags.HasFlag(PathFinderInfo.Retrial))
 					{
 						int delay = CurrentConfig.DelayInMillis;
-						if (CurrentConfig.DelayPerWordEnabled)
+						if (CurrentConfig.DelayPerCharEnabled)
 							delay *= content.Length;
 						this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 						Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-						if (CurrentConfig.DelayStartAfterWordEnterEnabled)
+						if (CurrentConfig.DelayStartAfterCharEnterEnabled)
 						{
 							Task.Run(async () =>
 							{
@@ -714,7 +743,7 @@ namespace AutoKkutu
 					{
 						Word = word,
 						MissionChar = CurrentConfig.MissionAutoDetectionEnabled ? missionChar : "",
-						WordPreference = CurrentConfig.WordPreference,
+						WordPreference = CurrentConfig.ActiveWordPreference,
 						Mode = mode,
 						PathFinderFlags = flags
 					});

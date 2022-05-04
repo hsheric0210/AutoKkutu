@@ -14,30 +14,15 @@ namespace AutoKkutu.Databases
 
 		public static event EventHandler DatabaseError;
 
-		public static void TriggerDatabaseImportStart(this DatabaseImportEventArgs args)
-		{
-			DatabaseImportStart?.Invoke(null, args);
-		}
+		public static void TriggerDatabaseImportStart(this DatabaseImportEventArgs args) => DatabaseImportStart?.Invoke(null, args);
 
-		public static void TriggerDatabaseImportDone(this DatabaseImportEventArgs args)
-		{
-			DatabaseImportDone?.Invoke(null, args);
-		}
+		public static void TriggerDatabaseImportDone(this DatabaseImportEventArgs args) => DatabaseImportDone?.Invoke(null, args);
 
-		public static void TriggerDatabaseIntegrityCheckStart()
-		{
-			DatabaseIntegrityCheckStart?.Invoke(null, EventArgs.Empty);
-		}
+		public static void TriggerDatabaseIntegrityCheckStart() => DatabaseIntegrityCheckStart?.Invoke(null, EventArgs.Empty);
 
-		public static void TriggerDatabaseIntegrityCheckDone(this DataBaseIntegrityCheckDoneEventArgs args)
-		{
-			DatabaseIntegrityCheckDone?.Invoke(null, args);
-		}
+		public static void TriggerDatabaseIntegrityCheckDone(this DataBaseIntegrityCheckDoneEventArgs args) => DatabaseIntegrityCheckDone?.Invoke(null, args);
 
-		public static void TriggerDatabaseError()
-		{
-			DatabaseError?.Invoke(null, EventArgs.Empty);
-		}
+		public static void TriggerDatabaseError() => DatabaseError?.Invoke(null, EventArgs.Empty);
 	}
 
 	public class DatabaseImportEventArgs : EventArgs

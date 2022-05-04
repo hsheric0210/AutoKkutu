@@ -305,10 +305,7 @@ namespace AutoKkutu
 			return count;
 		}
 
-		private static void NotifyPathUpdate(UpdatedPathEventArgs eventArgs)
-		{
-			onPathUpdated?.Invoke(null, eventArgs);
-		}
+		private static void NotifyPathUpdate(UpdatedPathEventArgs eventArgs) => onPathUpdated?.Invoke(null, eventArgs);
 
 		private static void RandomPath(FindWordInfo info)
 		{
@@ -468,25 +465,19 @@ namespace AutoKkutu
 				Logger.WarnFormat("Node '{0}' is already marked as NormalWord.", node);
 		}
 
-		private static string GetAttackWordListTableName(GameMode mode)
+		private static string GetAttackWordListTableName(GameMode mode) => mode switch
 		{
-			return mode switch
-			{
-				GameMode.FirstAndLast => DatabaseConstants.ReverseAttackWordListTableName,
-				GameMode.Kkutu => DatabaseConstants.KkutuAttackWordListTableName,
-				_ => DatabaseConstants.AttackWordListTableName,
-			};
-		}
+			GameMode.FirstAndLast => DatabaseConstants.ReverseAttackWordListTableName,
+			GameMode.Kkutu => DatabaseConstants.KkutuAttackWordListTableName,
+			_ => DatabaseConstants.AttackWordListTableName,
+		};
 
-		private static string GetEndWordListTableName(GameMode mode)
+		private static string GetEndWordListTableName(GameMode mode) => mode switch
 		{
-			return mode switch
-			{
-				GameMode.FirstAndLast => DatabaseConstants.ReverseEndWordListTableName,
-				GameMode.Kkutu => DatabaseConstants.KkutuEndWordListTableName,
-				_ => DatabaseConstants.EndWordListTableName,
-			};
-		}
+			GameMode.FirstAndLast => DatabaseConstants.ReverseEndWordListTableName,
+			GameMode.Kkutu => DatabaseConstants.KkutuEndWordListTableName,
+			_ => DatabaseConstants.EndWordListTableName,
+		};
 
 		private string ToNode(GameMode mode)
 		{

@@ -40,10 +40,7 @@ namespace AutoKkutu
 				database.DefaultConnection.BatchAddWord(wordlist, mode, flags);
 		}
 
-		private void Batch_Submit_Click(object sender, RoutedEventArgs e)
-		{
-			BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
-		}
+		private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 
 		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
 		{
@@ -175,15 +172,9 @@ namespace AutoKkutu
 			return mode;
 		}
 
-		private void Node_Remove_Click(object sender, RoutedEventArgs e)
-		{
-			BatchAddNode(true);
-		}
+		private void Node_Remove_Click(object sender, RoutedEventArgs e) => BatchAddNode(true);
 
-		private void Node_Submit_Click(object sender, RoutedEventArgs e)
-		{
-			BatchAddNode(false);
-		}
+		private void Node_Submit_Click(object sender, RoutedEventArgs e) => BatchAddNode(false);
 
 		private void onWordFolderSubmit(object sender, RoutedEventArgs e)
 		{

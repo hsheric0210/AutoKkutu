@@ -8,8 +8,29 @@
 			<ColumnDefinition Width="Auto"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
-		<Grid Grid.Column="0" MinWidth="120" UseLayoutRounding="True" Background="#FF333337" Margin="15,15,15,15">
-			<ListBox x:Name="Preference" Background="#FF333337" Foreground="#FFFFFFFF" Margin="5,70,5,275" BorderThickness="1" BorderBrush="{x:Null}" FontFamily="NanumGothic" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+		<Grid Grid.Column="0" UseLayoutRounding="True" Background="#FF333337" Margin="15,15,15,15">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<Label Grid.Row="0" Grid.Column="0" Content="비활성화된 노드" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+			<ListBox Grid.Row="1" Grid.Column="0" MinWidth="120" x:Name="InactivePreferences" Background="#FF282828" Foreground="#FFFFFFFF" Margin="5,0,5,5" BorderThickness="1" BorderBrush="{x:Null}" FontFamily="NanumGothic" FontSize="14" VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
+			<StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
+				<Button Name="ActivatePreferenceButton" Content="활성화" Margin="5,5,5,5" Padding="10,0,10,0"/>
+				<Button Name="DeactivatePreferenceButton" Content="비활성화" Margin="5,5,5,5" Padding="10,0,10,0"/>
+			</StackPanel>
+			<Label Grid.Row="0" Grid.Column="2" Content="활성화된 노드" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+			<ListBox Grid.Row="1" Grid.Column="2" MinWidth="120" x:Name="ActivePreferences" Background="#FF282828" Foreground="#FFFFFFFF" BorderThickness="1" BorderBrush="{x:Null}" FontFamily="NanumGothic" FontSize="14" VerticalAlignment="Stretch" HorizontalAlignment="Center" Margin="5,0,5,5"/>
+			<StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Orientation="Vertical" VerticalAlignment="Top">
+				<Button Name="MoveUpPreferenceButton" Content="위로 이동" Margin="5,5,5,5" Padding="10,0,10,0"/>
+				<Button Name="MoveDownPreferenceButton" Content="아래로 이동" Margin="5,5,5,5" Padding="10,0,10,0"/>
+			</StackPanel>
 		</Grid>
 		<Grid Grid.Column="1" UseLayoutRounding="True" Background="#FF333337" Margin="15,15,15,15">
 			<Grid.RowDefinitions>
@@ -167,7 +188,8 @@
 				<Label Content="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." Grid.Row="0" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
 			</Grid>
 		</Grid>
-		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="20,0,135,20" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="Cancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
-		<Button Name="Submit" Content="적용" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="20,0,20,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="Submit_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+		<Label Grid.Row="1" Grid.Column="0" Content="설정을 초기화하시려면 '%LocalAppdata%\AutoKkutu' 폴더를 삭제해주세요" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+		<Button Name="Cancel" Content="취소" Grid.Row="1" Grid.Column="1" Margin="20,0,135,20" IsCancel="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="OnCancel" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+		<Button Name="Submit" Content="적용" Grid.Row="1" Grid.Column="1" Margin="20,0,20,20" IsDefault="True" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" MinWidth="100" MinHeight="20" Click="OnApply" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 	</Grid>
 </Window>

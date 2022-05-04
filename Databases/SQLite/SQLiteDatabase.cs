@@ -72,9 +72,6 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override string GetDBType() => "SQLite";
 
-		public override CommonDatabaseConnection OpenSecondaryConnection()
-		{
-			return new SQLiteDatabaseConnection(SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath));
-		}
+		public override CommonDatabaseConnection OpenSecondaryConnection() => new SQLiteDatabaseConnection(SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath));
 	}
 }

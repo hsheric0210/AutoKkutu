@@ -15,12 +15,17 @@ namespace AutoKkutu
 			get; set;
 		} = true;
 
-		public DBAutoUpdateMode AutoDBUpdateMode
+		public AutoDBUpdateMode AutoDBUpdateMode
 		{
 			get; set;
-		} = DBAutoUpdateMode.OnGameEnd;
+		} = AutoDBUpdateMode.OnGameEnd;
 
-		public WordPreference WordPreference
+		public WordPreference ActiveWordPreference
+		{
+			get; set;
+		} = new WordPreference(WordPreference.GetDefault());
+
+		public WordPreference InactiveWordPreference
 		{
 			get; set;
 		} = new WordPreference();
@@ -60,7 +65,7 @@ namespace AutoKkutu
 			get; set;
 		}
 
-		public bool DelayPerWordEnabled
+		public bool DelayPerCharEnabled
 		{
 			get; set;
 		} = true;
@@ -70,7 +75,7 @@ namespace AutoKkutu
 			get; set;
 		} = 10;
 
-		public bool DelayStartAfterWordEnterEnabled
+		public bool DelayStartAfterCharEnterEnabled
 		{
 			get; set;
 		} = true;
@@ -90,7 +95,7 @@ namespace AutoKkutu
 			get; set;
 		}
 
-		public bool FixDelayPerWordEnabled
+		public bool FixDelayPerCharEnabled
 		{
 			get; set;
 		} = true;
@@ -104,20 +109,18 @@ namespace AutoKkutu
 		{
 		}
 
-		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnterEnabled, AutoDBUpdateEnabled, AutoDBUpdateMode, WordPreference, EndWordEnabled, ReturnModeEnabled, AutoFixEnabled, MissionAutoDetectionEnabled), HashCode.Combine(GameMode, DelayEnabled, DelayPerWordEnabled, DelayInMillis, DelayStartAfterWordEnterEnabled, GameModeAutoDetectEnabled, MaxDisplayedWordCount));
+		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnterEnabled, AutoDBUpdateEnabled, AutoDBUpdateMode, ActiveWordPreference, EndWordEnabled, ReturnModeEnabled, AutoFixEnabled, MissionAutoDetectionEnabled), HashCode.Combine(GameMode, DelayEnabled, DelayPerCharEnabled, DelayInMillis, DelayStartAfterCharEnterEnabled, GameModeAutoDetectEnabled, MaxDisplayedWordCount));
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			if (obj is not AutoKkutuConfiguration)
+			if (obj is not AutoKkutuConfiguration other)
 				return false;
-			var other = obj as AutoKkutuConfiguration;
 
 			// 편-안
 			return GameMode == other.GameMode
 				&& DelayEnabled == other.DelayEnabled
 				&& DelayInMillis == other.DelayInMillis
 				&& AutoFixEnabled == other.AutoFixEnabled
-				&& WordPreference == other.WordPreference
 				&& EndWordEnabled == other.EndWordEnabled
 				&& FixDelayEnabled == other.FixDelayEnabled
 				&& AutoDBUpdateMode == other.AutoDBUpdateMode
@@ -126,56 +129,46 @@ namespace AutoKkutu
 				&& AttackWordAllowed == other.AttackWordAllowed
 				&& ReturnModeEnabled == other.ReturnModeEnabled
 				&& AutoDBUpdateEnabled == other.AutoDBUpdateEnabled
-				&& DelayPerWordEnabled == other.DelayPerWordEnabled
+				&& DelayPerCharEnabled == other.DelayPerCharEnabled
+				&& ActiveWordPreference == other.ActiveWordPreference
 				&& MaxDisplayedWordCount == other.MaxDisplayedWordCount
-				&& FixDelayPerWordEnabled == other.FixDelayPerWordEnabled
+				&& InactiveWordPreference == other.InactiveWordPreference
+				&& FixDelayPerCharEnabled == other.FixDelayPerCharEnabled
 				&& GameModeAutoDetectEnabled == other.GameModeAutoDetectEnabled
 				&& MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled
-				&& DelayStartAfterWordEnterEnabled == other.DelayStartAfterWordEnterEnabled;
+				&& DelayStartAfterCharEnterEnabled == other.DelayStartAfterCharEnterEnabled;
 		}
 	}
 
 	public static class ConfigEnums
 	{
-		public static DBAutoUpdateMode[] GetDBAutoUpdateModeValues() => (DBAutoUpdateMode[])Enum.GetValues(typeof(DBAutoUpdateMode));
+		public static AutoDBUpdateMode[] GetDBAutoUpdateModeValues() => (AutoDBUpdateMode[])Enum.GetValues(typeof(AutoDBUpdateMode));
 
 		public static WordAttributes[] GetWordPreferenceValues() => (WordAttributes[])Enum.GetValues(typeof(WordAttributes));
 
 		public static GameMode[] GetGameModeValues() => (GameMode[])Enum.GetValues(typeof(GameMode));
 
-		public static string GetDBAutoUpdateModeName(DBAutoUpdateMode key)
+		public static string? GetDBAutoUpdateModeName(AutoDBUpdateMode key) => key switch
 		{
-			return key switch
-			{
-				DBAutoUpdateMode.OnGameEnd => "게임이 끝났을 때",
-				DBAutoUpdateMode.OnRoundEnd => "라운드가 끝났을 때",
-				_ => null,
-			};
-		}
+			AutoDBUpdateMode.OnGameEnd => "게임이 끝났을 때",
+			AutoDBUpdateMode.OnRoundEnd => "라운드가 끝났을 때",
+			_ => null,
+		};
 
-		public static string GetGameModeName(GameMode key)
+		public static string? GetGameModeName(GameMode key) => key switch
 		{
-			return key switch
-			{
-				GameMode.LastAndFirst => "끝말잇기",
-				GameMode.FirstAndLast => "앞말잇기",
-				GameMode.MiddleAddFirst => "가운뎃말잇기",
-				GameMode.Kkutu => "끄투",
-				GameMode.KungKungTta => "쿵쿵따",
-				GameMode.TypingBattle => "타자 대결",
-				GameMode.All => "전체",
-				GameMode.Free => "자유",
-				GameMode.LastAndFirstFree => "자유 끝말잇기",
-				_ => null,
-			};
-		}
+			GameMode.LastAndFirst => "끝말잇기",
+			GameMode.FirstAndLast => "앞말잇기",
+			GameMode.MiddleAddFirst => "가운뎃말잇기",
+			GameMode.Kkutu => "끄투",
+			GameMode.KungKungTta => "쿵쿵따",
+			GameMode.TypingBattle => "타자 대결",
+			GameMode.All => "전체",
+			GameMode.Free => "자유",
+			GameMode.LastAndFirstFree => "자유 끝말잇기",
+			_ => null,
+		};
 
 		public static bool IsFreeMode(GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
-	}
-
-	public enum DBAutoUpdateMode
-	{
-		OnGameEnd,
-		OnRoundEnd
 	}
 }

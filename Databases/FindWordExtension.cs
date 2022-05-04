@@ -171,7 +171,8 @@ namespace AutoKkutu.Databases
 		private static int GetAttributeOrdinal(WordPreference preference, WordAttributes attributes)
 		{
 			WordAttributes[] fullAttribs = preference.GetAttributes();
-			return fullAttribs.Length - Array.IndexOf(fullAttribs, attributes) - 1;
+			int index = Array.IndexOf(fullAttribs, attributes);
+			return fullAttribs.Length - (index >= 0 ? index : fullAttribs.Length) - 1;
 		}
 
 		private static void ApplyFilter(PathFinderInfo targetFlag, int flag, ref PreferenceInfo info)

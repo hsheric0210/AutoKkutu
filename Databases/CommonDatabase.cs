@@ -1,9 +1,5 @@
-﻿using AutoKkutu.Databases.MySQL;
-using AutoKkutu.Databases.PostgreSQL;
-using AutoKkutu.Databases.SQLite;
-using log4net;
+﻿using log4net;
 using System;
-using System.Configuration;
 
 namespace AutoKkutu.Databases
 {

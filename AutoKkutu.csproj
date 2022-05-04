@@ -11,6 +11,10 @@
 	<AnalysisMode>All</AnalysisMode>
 	<CodeAnalysisRuleSet>.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
 	<StartupObject>AutoKkutu.App</StartupObject>
+	<ApplicationIcon>jjoriping.ico</ApplicationIcon>
+	<RepositoryUrl>https://github.com/hsheric0210/AutoKkutu</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/hsheric0210/AutoKkutu</PackageProjectUrl>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +40,7 @@
     <Content Include="database.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="jjoriping.ico" />
     <Content Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -100,6 +105,18 @@
     <Compile Update="ColorManagement.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
