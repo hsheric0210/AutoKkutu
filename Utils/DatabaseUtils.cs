@@ -148,21 +148,9 @@ namespace AutoKkutu.Utils
 			return word.Length >= 3 ? word[0].ToString() : "";
 		}
 
-		public static string GetLaFTailNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
+		public static string GetLaFTailNode(this string word) => GetFaLHeadNode(word);
 
-			return word.Last().ToString();
-		}
-
-		public static string GetFaLTailNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
-
-			return word[0].ToString();
-		}
+		public static string GetFaLTailNode(this string word) => GetLaFHeadNode(word);
 
 		public static string GetKkutuTailNode(this string word)
 		{

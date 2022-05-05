@@ -89,8 +89,7 @@ namespace AutoKkutu
 
 		public event EventHandler<GameModeChangeEventArgs>? OnGameModeChange;
 
-		// 참고: 이 이벤트는 '타자 대결' 모드에서만 사용됩니다
-		public event EventHandler<WordPresentEventArgs>? OnWordPresented;
+		public event EventHandler<WordPresentEventArgs>? OnTypingWordPresented;
 
 		private static AutoKkutuConfiguration? CurrentConfig;
 
@@ -223,7 +222,7 @@ namespace AutoKkutu
 				if (CurrentConfig?.GameMode == GameMode.TypingBattle && IsGameStarted)
 				{
 					if (_isMyTurn)
-						GetCurrentPresentedWord(mainWatchdogID);
+						GetCurrentTypingWord(mainWatchdogID);
 					await Task.Delay(_ingame_interval, cancelToken);
 				}
 				else
@@ -388,10 +387,7 @@ namespace AutoKkutu
 			PathFinder.NewPathList.Add(example);
 		}
 
-		/// <summary>
-		/// 참고: 이 메서드는 '타자 대결' 모드에서만 사용됩니다
-		/// </summary>
-		private void GetCurrentPresentedWord(int watchdogID)
+		private void GetCurrentTypingWord(int watchdogID)
 		{
 			string word = GetGamePresentedWord();
 			if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝", StringComparison.InvariantCultureIgnoreCase))
@@ -402,7 +398,7 @@ namespace AutoKkutu
 				return;
 			_currentPresentedWordCache = word;
 			GetLogger(watchdogID, "Presented word").InfoFormat("Word detected : {0}", word);
-			OnWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
+			OnTypingWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
 		}
 
 		private void CheckGameMode(int watchdogID)

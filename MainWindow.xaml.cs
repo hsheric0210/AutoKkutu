@@ -362,7 +362,7 @@ namespace AutoKkutu
 				PathFinder.AutoDBUpdate();
 		}
 
-		private void CommonHandler_WordPresentedEvent(object? sender, WordPresentEventArgs args)
+		private void CommonHandler_OnTypingWordPresentedEvent(object? sender, WordPresentEventArgs args)
 		{
 			string word = args.Word.Content;
 
@@ -558,49 +558,6 @@ namespace AutoKkutu
 			}
 		}
 
-		//private void DelayedTypingBattleEnter(string word)
-		//{
-		//	Handler.RequireNotNull();
-		//	if (CurrentConfig.RequireNotNull().DelayEnabled)
-		//	{
-		//		int delay = CurrentConfig.DelayInMillis;
-		//		if (CurrentConfig.DelayPerCharEnabled)
-		//			delay *= word.Length;
-		//		this.ChangeStatusBar(CurrentStatus.Delaying, delay);
-		//		Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-		//		if (CurrentConfig.DelayStartAfterCharEnterEnabled)
-		//		{
-		//			Task.Run(async () =>
-		//			{
-		//				while (inputStopwatch.ElapsedMilliseconds <= delay)
-		//					await Task.Delay(1);
-		//				if (Handler.IsMyTurn)
-		//				{
-		//					SendMessage(word);
-		//					Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
-		//				}
-		//			});
-		//		}
-		//		else
-		//		{
-		//			Task.Run(async () =>
-		//			{
-		//				await Task.Delay(delay);
-		//				if (Handler.IsMyTurn)
-		//				{
-		//					SendMessage(word);
-		//					Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
-		//				}
-		//			});
-		//		}
-		//	}
-		//	else
-		//	{
-		//		SendMessage(word);
-		//		Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
-		//	}
-		//}
-
 		private void DelayedEnter(string content, UpdatedPathEventArgs? args)
 		{
 			if (CurrentConfig.RequireNotNull().DelayEnabled && args?.Flags.HasFlag(PathFinderOptions.AutoFixed) != true)
@@ -647,7 +604,7 @@ namespace AutoKkutu
 
 		private void PerformAutoEnter(string content, string pathAttribute = "first")
 		{
-			Logger.InfoFormat("Auto mode enabled. automatically use path: '{0}'", pathAttribute);
+			Logger.InfoFormat("Auto mode enabled. automatically use {0} path: '{1}'", pathAttribute, content);
 			SendMessage(content);
 			this.ChangeStatusBar(CurrentStatus.AutoEntered, content);
 		}
@@ -665,7 +622,7 @@ namespace AutoKkutu
 			handler.OnMyPathIsUnsupported += CommonHandler_MyPathIsUnsupported;
 			handler.OnRoundChange += CommonHandler_RoundChangeEvent;
 			handler.OnGameModeChange += CommonHandler_GameModeChangeEvent;
-			handler.OnWordPresented += CommonHandler_WordPresentedEvent;
+			handler.OnTypingWordPresented += CommonHandler_OnTypingWordPresentedEvent;
 			handler.StartWatchdog();
 
 			Logger.InfoFormat("Using handler: {0}", handler.GetID());
@@ -833,7 +790,7 @@ namespace AutoKkutu
 			handler.OnMyPathIsUnsupported -= CommonHandler_MyPathIsUnsupported;
 			handler.OnRoundChange -= CommonHandler_RoundChangeEvent;
 			handler.OnGameModeChange -= CommonHandler_GameModeChangeEvent;
-			handler.OnWordPresented -= CommonHandler_WordPresentedEvent;
+			handler.OnTypingWordPresented -= CommonHandler_OnTypingWordPresentedEvent;
 			handler.StopWatchdog();
 		}
 	}
