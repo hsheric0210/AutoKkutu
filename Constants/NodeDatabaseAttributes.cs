@@ -5,6 +5,8 @@ namespace AutoKkutu.Constants
 	[Flags]
 	public enum NodeDatabaseAttributes
 	{
+		None = 0,
+
 		/// <summary>
 		/// 한방 단어
 		/// </summary>

@@ -60,7 +60,7 @@ namespace AutoKkutu.Databases.MySQL
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
-		public override object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
+		public override object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
@@ -74,11 +74,11 @@ namespace AutoKkutu.Databases.MySQL
 		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
 		public override string GetRearrangeMissionFuncName() => "__AutoKkutu_RearrangeMission";
 
-		public override string GetColumnType(string tableName, string columnName)
+		public override string? GetColumnType(string tableName, string columnName)
 		{
 			try
 			{
-				return ExecuteScalar("SELECT data_type FROM Information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
+				return ExecuteScalar("SELECT data_type FROM Information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName))?.ToString();
 			}
 			catch (Exception ex)
 			{

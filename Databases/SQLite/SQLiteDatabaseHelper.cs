@@ -39,7 +39,7 @@ namespace AutoKkutu.Databases.SQLite
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
-		public static object ExecuteScalar(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
+		public static object? ExecuteScalar(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
@@ -50,7 +50,7 @@ namespace AutoKkutu.Databases.SQLite
 			return command.ExecuteScalar();
 		}
 
-		public static string GetColumnType(SqliteConnection databaseConnection, string tableName, string columnName)
+		public static string? GetColumnType(SqliteConnection databaseConnection, string tableName, string columnName)
 		{
 			if (tableName == null)
 				return DatabaseConstants.WordListTableName;
@@ -63,8 +63,10 @@ namespace AutoKkutu.Databases.SQLite
 				int nameOrdinal = reader.GetOrdinal("Name");
 				int typeOrdinal = reader.GetOrdinal("Type");
 				while (reader.Read())
+				{
 					if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
 						return reader.GetString(typeOrdinal);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -86,8 +88,10 @@ namespace AutoKkutu.Databases.SQLite
 				using SqliteDataReader reader = command.ExecuteReader();
 				int nameOrdinal = reader.GetOrdinal("Name");
 				while (reader.Read())
+				{
 					if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
 						return true;
+				}
 			}
 			catch (Exception ex)
 			{
@@ -194,7 +198,7 @@ namespace AutoKkutu.Databases.SQLite
 			// Legacy support
 			bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName], CultureInfo.InvariantCulture));
 			if (args.targetDatabaseConnection.AddWord(word, isEndWord ? WordDatabaseAttributes.EndWord : WordDatabaseAttributes.None))
-				Logger.InfoFormat("Imported word '{0}' {1}", word, (isEndWord ? "(EndWord)" : ""));
+				Logger.InfoFormat("Imported word '{0}' {1}", word, isEndWord ? "(EndWord)" : "");
 			else
 				Logger.WarnFormat("Word '{0}' is already existing in database.", word);
 		}

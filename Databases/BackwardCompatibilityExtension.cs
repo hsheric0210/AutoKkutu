@@ -55,9 +55,9 @@ namespace AutoKkutu.Databases
 			bool needToCleanUp = false;
 
 			connection.AddInexistentColumns();
-			needToCleanUp = connection.DropIsEndWordColumn();
-			needToCleanUp = connection.AddSequenceColumn() || needToCleanUp;
-			needToCleanUp = connection.UpdateKkutuIndexDataType() || needToCleanUp;
+			needToCleanUp |= connection.DropIsEndWordColumn();
+			needToCleanUp |= connection.AddSequenceColumn();
+			needToCleanUp |= connection.UpdateKkutuIndexDataType();
 
 			if (needToCleanUp)
 			{
@@ -100,8 +100,8 @@ namespace AutoKkutu.Databases
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			string kkutuindextype = connection.GetColumnType(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName);
-			if (kkutuindextype.Equals("CHAR(2)", StringComparison.OrdinalIgnoreCase) || kkutuindextype.Equals("character", StringComparison.OrdinalIgnoreCase))
+			string? kkutuindextype = connection.GetColumnType(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName);
+			if (kkutuindextype != null && (kkutuindextype.Equals("CHAR(2)", StringComparison.OrdinalIgnoreCase) || kkutuindextype.Equals("character", StringComparison.OrdinalIgnoreCase)))
 			{
 				connection.ChangeWordListColumnType(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)");
 				Logger.WarnFormat("Changed type of '{0}' from CHAR(2) to VARCHAR(2)", DatabaseConstants.KkutuWordIndexColumnName);

@@ -4,15 +4,15 @@ namespace AutoKkutu.Databases
 {
 	public static class DatabaseEvents
 	{
-		public static event EventHandler<DatabaseImportEventArgs> DatabaseImportStart;
+		public static event EventHandler<DatabaseImportEventArgs>? DatabaseImportStart;
 
-		public static event EventHandler<DatabaseImportEventArgs> DatabaseImportDone;
+		public static event EventHandler<DatabaseImportEventArgs>? DatabaseImportDone;
 
-		public static event EventHandler DatabaseIntegrityCheckStart;
+		public static event EventHandler? DatabaseIntegrityCheckStart;
 
-		public static event EventHandler<DataBaseIntegrityCheckDoneEventArgs> DatabaseIntegrityCheckDone;
+		public static event EventHandler<DataBaseIntegrityCheckDoneEventArgs>? DatabaseIntegrityCheckDone;
 
-		public static event EventHandler DatabaseError;
+		public static event EventHandler? DatabaseError;
 
 		public static void TriggerDatabaseImportStart(this DatabaseImportEventArgs args) => DatabaseImportStart?.Invoke(null, args);
 
@@ -32,7 +32,7 @@ namespace AutoKkutu.Databases
 			get;
 		}
 
-		public string Result
+		public string? Result
 		{
 			get;
 		}

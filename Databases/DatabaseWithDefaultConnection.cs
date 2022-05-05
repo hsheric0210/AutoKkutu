@@ -5,10 +5,9 @@ namespace AutoKkutu.Databases
 {
 	public abstract class DatabaseWithDefaultConnection : CommonDatabase
 	{
-		public CommonDatabaseConnection DefaultConnection
-		{
-			get; private set;
-		}
+		private CommonDatabaseConnection? _defaultConnection;
+
+		public CommonDatabaseConnection DefaultConnection => _defaultConnection.RequireNotNull();
 
 		protected DatabaseWithDefaultConnection()
 		{
@@ -22,13 +21,13 @@ namespace AutoKkutu.Databases
 			return DefaultConnection.ExecuteNonQuery(query, parameters);
 		}
 
-		public DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
+		public DbDataReader? ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
 		{
 			CheckDefaultConnectionEstablished();
 			return DefaultConnection.ExecuteReader(query, parameters);
 		}
 
-		public object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
+		public object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
 		{
 			CheckDefaultConnectionEstablished();
 			return DefaultConnection.ExecuteScalar(query, parameters);
@@ -43,7 +42,7 @@ namespace AutoKkutu.Databases
 		{
 			if (DefaultConnection != null)
 				throw new InvalidOperationException($"{nameof(DefaultConnection)} is already initialized");
-			DefaultConnection = defaultConnection;
+			_defaultConnection = defaultConnection;
 		}
 
 		protected override void Dispose(bool disposing)

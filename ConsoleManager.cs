@@ -16,7 +16,7 @@ namespace AutoKkutu
 
 		private const int MF_BYCOMMAND = 0;
 
-		public const int SC_CLOSE = 61536;
+		private const int SC_CLOSE = 61536;
 
 		public static bool HasConsole => GetConsoleWindow() != IntPtr.Zero;
 
@@ -38,7 +38,7 @@ namespace AutoKkutu
 
 		[DllImport(User32_DllName)]
 		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-		public static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
+		private static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
 
 		[DllImport(User32_DllName)]
 		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

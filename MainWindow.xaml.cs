@@ -27,12 +27,12 @@ namespace AutoKkutu
 			get; set;
 		}
 
-		private static AutoKkutuColorPreference CurrentColorPreference
+		private static AutoKkutuColorPreference? CurrentColorPreference
 		{
 			get; set;
 		}
 
-		private static AutoKkutuConfiguration CurrentConfig
+		private static AutoKkutuConfiguration? CurrentConfig
 		{
 			get; set;
 		}
@@ -42,7 +42,7 @@ namespace AutoKkutu
 			get; private set;
 		}
 
-		public CommonHandler Handler
+		public CommonHandler? Handler
 		{
 			get; private set;
 		}
@@ -55,9 +55,11 @@ namespace AutoKkutu
 
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
+
 		public static readonly ILog Logger = LogManager.GetLogger("MainThread");
 		private readonly Stopwatch inputStopwatch = new();
 		private int WordIndex;
+
 		public MainWindow()
 		{
 			// Initialize CEF
@@ -80,17 +82,15 @@ namespace AutoKkutu
 			Title = TITLE;
 			VersionLabel.Content = "v1.0";
 
-			CommonHandler.InitializeHandlers();
-
 			Logger.Info("Starting Load Page...");
 			LoadOverlay.Visibility = Visibility.Visible;
 
 			this.ChangeStatusBar(CurrentStatus.Wait);
 			SetSearchState(null, false);
 
-			Browser.FrameLoadEnd += onBrowserFrameLoadEnd;
-			Browser.FrameLoadEnd += onBrowserFrameLoadEnd_RunOnce;
-			DatabaseEvents.DatabaseError += onDataBaseError;
+			Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
+			Browser.FrameLoadEnd += OnBrowserFrameLoadEnd_RunOnce;
+			DatabaseEvents.DatabaseError += OnDataBaseError;
 			BrowserContainer.Content = Browser;
 
 			try
@@ -142,7 +142,7 @@ namespace AutoKkutu
 				UserAgent = "Chrome",
 				CachePath = Environment.CurrentDirectory + "\\Cache"
 			};
-			Cef.Initialize(settings, true, (IApp)null);
+			Cef.Initialize(settings, true, (IApp?)null);
 		}
 
 		private static void InitializeConfiguration()
@@ -193,7 +193,8 @@ namespace AutoKkutu
 				Logger.Error(ex);
 			}
 		}
-		private void ChatField_KeyDown(object sender, KeyEventArgs e)
+
+		private void ChatField_KeyDown(object? sender, KeyEventArgs e)
 		{
 			if (e.Key is Key.Enter or Key.Return)
 				SubmitChat_Click(sender, e);
@@ -201,21 +202,22 @@ namespace AutoKkutu
 
 		private bool CheckPathIsValid(UpdatedPathEventArgs args, PathFinderInfo flags)
 		{
-			if (flags.HasFlag(PathFinderInfo.ManualSearch))
+			var handler = Handler;
+			if (handler == null || flags.HasFlag(PathFinderInfo.ManualSearch))
 				return true;
 
-			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
-			bool differentMissionChar = CurrentConfig.MissionAutoDetectionEnabled && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.InvariantCultureIgnoreCase);
-			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
+			bool differentWord = handler.CurrentPresentedWord != null && !args.Word.Equals(handler.CurrentPresentedWord);
+			bool differentMissionChar = CurrentConfig?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(handler.CurrentMissionChar) && !string.Equals(args.MissionChar, handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+			if (handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
-				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar, flags);
+				StartPathFinding(handler.CurrentPresentedWord, handler.CurrentMissionChar, flags);
 				return false;
 			}
 			return true;
 		}
 
-		private void ClipboardSubmit_Click(object sender, RoutedEventArgs e)
+		private void ClipboardSubmit_Click(object? sender, RoutedEventArgs e)
 		{
 			try
 			{
@@ -223,21 +225,26 @@ namespace AutoKkutu
 				if (!string.IsNullOrWhiteSpace(clipboard))
 					SendMessage(clipboard);
 			}
-			catch
+			catch (Exception ex)
 			{
+				Logger.Warn("Can't submit clipboard text", ex);
 			}
 		}
 
-		private void ColorManager_Click(object sender, RoutedEventArgs e) => new ColorManagement(CurrentColorPreference).Show();
+		private void ColorManager_Click(object? sender, RoutedEventArgs e)
+		{
+			if (CurrentColorPreference != null)
+				new ColorManagement(CurrentColorPreference).Show();
+		}
 
-		private void CommonHandler_GameEnd(object sender, EventArgs e)
+		private void CommonHandler_GameEnd(object? sender, EventArgs e)
 		{
 			SetSearchState(null, false);
 			ResetPathList();
-			if (CurrentConfig.AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
+			if (CurrentConfig.RequireNotNull().AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
 			{
 				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, "자동 업데이트");
-				string result = PathFinder.AutoDBUpdate();
+				string? result = PathFinder.AutoDBUpdate();
 				if (string.IsNullOrEmpty(result))
 				{
 					this.ChangeStatusBar(CurrentStatus.Wait);
@@ -245,14 +252,16 @@ namespace AutoKkutu
 				else
 				{
 					if (new FileInfo("GameResult.txt").Exists)
+					{
 						try
 						{
-							File.AppendAllText("GameResult.txt", $"[{Handler.GetRoomInfo()}] {result}{Environment.NewLine}");
+							File.AppendAllText("GameResult.txt", $"[{Handler.RequireNotNull().GetRoomInfo()}] {result}{Environment.NewLine}");
 						}
 						catch (Exception ex)
 						{
 							Logger.Warn("Failed to write game result", ex);
 						}
+					}
 
 					this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, "자동 업데이트", result);
 				}
@@ -263,9 +272,9 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CommonHandler_GameModeChangeEvent(object sender, GameModeChangeEventArgs args)
+		private void CommonHandler_GameModeChangeEvent(object? sender, GameModeChangeEventArgs args)
 		{
-			if (CurrentConfig.GameModeAutoDetectEnabled)
+			if (CurrentConfig.RequireNotNull().GameModeAutoDetectEnabled)
 			{
 				GameMode newGameMode = args.GameMode;
 				CurrentConfig.GameMode = newGameMode;
@@ -274,7 +283,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CommonHandler_GameStart(object sender, EventArgs e)
+		private void CommonHandler_GameStart(object? sender, EventArgs e)
 		{
 			this.ChangeStatusBar(CurrentStatus.Normal);
 			WordIndex = 0;
@@ -282,15 +291,15 @@ namespace AutoKkutu
 		}
 
 		// TODO: 오답 수정 딜레이
-		private void CommonHandler_MyPathIsUnsupported(object sender, UnsupportedWordEventArgs args)
+		private void CommonHandler_MyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 		{
 			string word = args.Word;
 			Logger.WarnFormat("My path '{0}' is wrong.", word);
 
-			if (!CurrentConfig.AutoFixEnabled)
+			if (!CurrentConfig.RequireNotNull().AutoFixEnabled)
 				return;
 
-			IList<PathObject> localFinalList = PathFinder.FinalList;
+			IList<PathObject> localFinalList = PathFinder.FinalList!;
 			if (localFinalList.Count - 1 <= WordIndex)
 			{
 				Logger.Warn("Can't Find any other path.");
@@ -329,15 +338,15 @@ namespace AutoKkutu
 			}
 		}
 
-		private void CommonHandler_MyTurnEndEvent(object sender, EventArgs e)
+		private void CommonHandler_MyTurnEndEvent(object? sender, EventArgs e)
 		{
 			Logger.Debug("Reset WordIndex to zero.");
 			WordIndex = 0;
 		}
 
-		private void CommonHandler_MyTurnEvent(object sender, WordPresentEventArgs args) => StartPathFinding(args.Word, args.MissionChar, PathFinderInfo.None);
+		private void CommonHandler_MyTurnEvent(object? sender, WordPresentEventArgs args) => StartPathFinding(args.Word, args.MissionChar, PathFinderInfo.None);
 
-		private void CommonHandler_onUnsupportedWordEntered(object sender, UnsupportedWordEventArgs args)
+		private void CommonHandler_onUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)
 		{
 			bool isInexistent = !args.IsExistingWord;
 			string theWord = args.Word;
@@ -348,17 +357,17 @@ namespace AutoKkutu
 			PathFinder.AddToUnsupportedWord(theWord, isInexistent);
 		}
 
-		private void CommonHandler_RoundChangeEvent(object sender, EventArgs e)
+		private void CommonHandler_RoundChangeEvent(object? sender, EventArgs e)
 		{
-			if (CurrentConfig.AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
+			if (CurrentConfig.RequireNotNull().AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
 				PathFinder.AutoDBUpdate();
 		}
 
-		private void CommonHandler_WordPresentedEvent(object sender, WordPresentEventArgs args)
+		private void CommonHandler_WordPresentedEvent(object? sender, WordPresentEventArgs args)
 		{
 			string word = args.Word.Content;
 
-			if (!CurrentConfig.AutoEnterEnabled)
+			if (!CurrentConfig.RequireNotNull().AutoEnterEnabled)
 				return;
 
 			if (CurrentConfig.DelayEnabled)
@@ -395,7 +404,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private static ICollection<string> GetEndWordList(GameMode mode) => mode switch
+		private static ICollection<string>? GetEndWordList(GameMode mode) => mode switch
 		{
 			GameMode.FirstAndLast => PathFinder.ReverseEndWordList,
 			GameMode.Kkutu => PathFinder.KkutuEndWordList,
@@ -415,7 +424,7 @@ namespace AutoKkutu
 			LoadOverlay.Visibility = Visibility.Hidden;
 		}
 
-		private void onBrowserFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
+		private void OnBrowserFrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
 		{
 			if (Handler != null)
 			{
@@ -425,38 +434,39 @@ namespace AutoKkutu
 
 			// Initialize handler and Register event handlers
 			string url = e.Url;
-			Handler = CommonHandler.getHandler(url);
+			Handler = CommonHandler.GetHandler(url);
 			if (Handler != null)
 				RegisterHandler(Handler);
 			else
 				Logger.WarnFormat("Unsupported site: {0}", url);
 		}
 
-		private void onBrowserFrameLoadEnd_RunOnce(object sender, FrameLoadEndEventArgs e)
+		private void OnBrowserFrameLoadEnd_RunOnce(object? sender, FrameLoadEndEventArgs e)
 		{
-			Browser.FrameLoadEnd -= onBrowserFrameLoadEnd_RunOnce;
+			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd_RunOnce;
 
-			PathFinder.onPathUpdated += PathFinder_UpdatedPath;
-			DatabaseEvents.DatabaseIntegrityCheckStart += onDatabaseCheckStart;
-			DatabaseEvents.DatabaseIntegrityCheckDone += onDatabaseCheckDone;
-			DatabaseEvents.DatabaseImportStart += onDatabaseImportStart;
-			DatabaseEvents.DatabaseImportDone += onDatabaseImportDone;
+			PathFinder.OnPathUpdated += OnPathUpdated;
+			DatabaseEvents.DatabaseIntegrityCheckStart += OnDatabaseCheckStart;
+			DatabaseEvents.DatabaseIntegrityCheckDone += OnDatabaseCheckDone;
+			DatabaseEvents.DatabaseImportStart += OnDatabaseImportStart;
+			DatabaseEvents.DatabaseImportDone += OnDatabaseImportDone;
 		}
 
-		private void onDatabaseCheckDone(object sender, DataBaseIntegrityCheckDoneEventArgs args) => this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, args.Result);
+		private void OnDatabaseCheckDone(object? sender, DataBaseIntegrityCheckDoneEventArgs args) => this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, args.Result);
 
-		private void onDatabaseCheckStart(object sender, EventArgs e) => this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck);
+		private void OnDatabaseCheckStart(object? sender, EventArgs e) => this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck);
 
-		private void onDataBaseError(object sender, EventArgs e) => this.ChangeStatusBar(CurrentStatus.Error);
-		private void onDatabaseImportDone(object sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(CurrentStatus.BatchJobDone, args.Name, args.Result);
+		private void OnDataBaseError(object? sender, EventArgs e) => this.ChangeStatusBar(CurrentStatus.Error);
 
-		private void onDatabaseImportStart(object sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(CurrentStatus.BatchJob, args.Name);
+		private void OnDatabaseImportDone(object? sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(CurrentStatus.BatchJobDone, args.Name, args.Result);
 
-		private void OnDBManagementClick(object sender, RoutedEventArgs e) => new DatabaseManagement(Database).Show();
+		private void OnDatabaseImportStart(object? sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(CurrentStatus.BatchJob, args.Name);
 
-		private void OnOpenDevConsoleClick(object sender, RoutedEventArgs e) => Browser.ShowDevTools();
+		private void OnDBManagementClick(object? sender, RoutedEventArgs e) => new DatabaseManagement(Database).Show();
 
-		private void OnPathListContextMenuOpen(object sender, ContextMenuEventArgs e)
+		private void OnOpenDevConsoleClick(object? sender, RoutedEventArgs e) => Browser.ShowDevTools();
+
+		private void OnPathListContextMenuOpen(object? sender, ContextMenuEventArgs e)
 		{
 			var source = (FrameworkElement)e.Source;
 			ContextMenu contextMenu = source.ContextMenu;
@@ -485,34 +495,34 @@ namespace AutoKkutu
 			}
 		}
 
-		private void OnPathListMakeAttackClick(object sender, RoutedEventArgs e)
+		private void OnPathListMakeAttackClick(object? sender, RoutedEventArgs e)
 		{
 			Logger.Info(nameof(OnPathListMakeAttackClick));
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeAttack(CurrentConfig.GameMode, Database.DefaultConnection);
+			((PathObject)currentSelected).MakeAttack(CurrentConfig.RequireNotNull().GameMode, Database.DefaultConnection);
 		}
 
-		private void OnPathListMakeEndClick(object sender, RoutedEventArgs e)
+		private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
 		{
 			Logger.Info(nameof(OnPathListMakeEndClick));
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeEnd(CurrentConfig.GameMode, Database.DefaultConnection);
+			((PathObject)currentSelected).MakeEnd(CurrentConfig.RequireNotNull().GameMode, Database.DefaultConnection);
 		}
 
-		private void OnPathListMakeNormalClick(object sender, RoutedEventArgs e)
+		private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
 		{
 			Logger.Info(nameof(OnPathListMakeNormalClick));
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeNormal(CurrentConfig.GameMode, Database.DefaultConnection);
+			((PathObject)currentSelected).MakeNormal(CurrentConfig.RequireNotNull().GameMode, Database.DefaultConnection);
 		}
 
-		private void OnPathListMouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void OnPathListMouseDoubleClick(object? sender, MouseButtonEventArgs e)
 		{
 			object selected = PathList.SelectedItem;
 			if (selected is not PathObject)
@@ -526,28 +536,32 @@ namespace AutoKkutu
 			}
 		}
 
-		private void OnSettingsClick(object sender, RoutedEventArgs e) => new ConfigWindow(CurrentConfig).Show();
-
-		private void OnSubmitURLClick(object sender, RoutedEventArgs e)
+		private void OnSettingsClick(object? sender, RoutedEventArgs e)
 		{
-			Browser.Load(CurrentURL.Text);
-			Browser.FrameLoadEnd += onBrowserFrameLoadEnd;
+			if (CurrentConfig != null)
+				new ConfigWindow(CurrentConfig).Show();
 		}
 
-		private void OnWindowClose(object sender, CancelEventArgs e)
+		private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
+		{
+			Browser.Load(CurrentURL.Text);
+			Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
+		}
+
+		private void OnWindowClose(object? sender, CancelEventArgs e)
 		{
 			Logger.Info("Closing database connection...");
 			Database.Dispose();
 		}
 
-		private void PathFinder_UpdatedPath(object sender, UpdatedPathEventArgs args)
+		private void OnPathUpdated(object? sender, UpdatedPathEventArgs args)
 		{
 			Logger.Info("Path update received.");
 
 			if (!CheckPathIsValid(args, PathFinderInfo.None))
 				return;
 
-			bool autoEnter = CurrentConfig.AutoEnterEnabled && !args.Flags.HasFlag(PathFinderInfo.ManualSearch);
+			bool autoEnter = CurrentConfig.RequireNotNull().AutoEnterEnabled && !args.Flags.HasFlag(PathFinderInfo.ManualSearch);
 
 			if (args.Result == PathFinderResult.None && !args.Flags.HasFlag(PathFinderInfo.ManualSearch))
 				this.ChangeStatusBar(CurrentStatus.NotFound);
@@ -569,44 +583,52 @@ namespace AutoKkutu
 				}
 				else
 				{
-					string content = PathFinder.FinalList[0].Content;
-					if (CurrentConfig.DelayEnabled && !args.Flags.HasFlag(PathFinderInfo.Retrial))
-					{
-						int delay = CurrentConfig.DelayInMillis;
-						if (CurrentConfig.DelayPerCharEnabled)
-							delay *= content.Length;
-						this.ChangeStatusBar(CurrentStatus.Delaying, delay);
-						Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-						if (CurrentConfig.DelayStartAfterCharEnterEnabled)
-						{
-							Task.Run(async () =>
-							{
-								while (inputStopwatch.ElapsedMilliseconds <= delay)
-									await Task.Delay(1);
-
-								PerformAutoEnter(args, content);
-							});
-						}
-						else
-						{
-							Task.Run(async () =>
-							{
-								await Task.Delay(delay);
-								PerformAutoEnter(args, content);
-							});
-						}
-					}
-					else
-					{
-						PerformAutoEnter(args, content);
-					}
+					string content = PathFinder.FinalList![0].Content;
+					DelayedEnter(args, content);
 				}
+			}
+		}
+
+		private void DelayedEnter(UpdatedPathEventArgs args, string content)
+		{
+			if (CurrentConfig.RequireNotNull().DelayEnabled && !args.Flags.HasFlag(PathFinderInfo.Retrial))
+			{
+				int delay = CurrentConfig.DelayInMillis;
+				if (CurrentConfig.DelayPerCharEnabled)
+					delay *= content.Length;
+				this.ChangeStatusBar(CurrentStatus.Delaying, delay);
+				Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
+				if (CurrentConfig.DelayStartAfterCharEnterEnabled)
+				{
+					// Delay-per-Char
+					Task.Run(async () =>
+					{
+						while (inputStopwatch.ElapsedMilliseconds <= delay)
+							await Task.Delay(1);
+
+						PerformAutoEnter(args, content);
+					});
+				}
+				else
+				{
+					// Delay
+					Task.Run(async () =>
+					{
+						await Task.Delay(delay);
+						PerformAutoEnter(args, content);
+					});
+				}
+			}
+			else
+			{
+				// Enter immediately
+				PerformAutoEnter(args, content);
 			}
 		}
 
 		private void PerformAutoEnter(UpdatedPathEventArgs args, string content)
 		{
-			if (!Handler.IsGameStarted || !Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderInfo.Retrial))
+			if (!Handler.RequireNotNull().IsGameStarted || !Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderInfo.Retrial))
 				return;
 			PerformAutoEnter(content);
 		}
@@ -621,7 +643,7 @@ namespace AutoKkutu
 
 		private void RegisterHandler(CommonHandler handler)
 		{
-			Browser.FrameLoadEnd -= onBrowserFrameLoadEnd;
+			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
 			Logger.Info("Browser frame-load end.");
 
 			handler.OnGameStarted += CommonHandler_GameStart;
@@ -639,6 +661,7 @@ namespace AutoKkutu
 			RemoveAd();
 			Dispatcher.Invoke(() => HideLoadOverlay());
 		}
+
 		private void RemoveAd()
 		{
 			// Kkutu.co.kr
@@ -662,7 +685,7 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
 		}
 
-		private void SearchField_KeyDown(object sender, KeyEventArgs e)
+		private void SearchField_KeyDown(object? sender, KeyEventArgs e)
 		{
 			if (e.Key is Key.Enter or Key.Return)
 				SubmitSearch_Click(sender, e);
@@ -670,11 +693,11 @@ namespace AutoKkutu
 
 		private void SendMessage(string message)
 		{
-			Handler.SendMessage(message);
+			Handler.RequireNotNull().SendMessage(message);
 			inputStopwatch.Restart();
 		}
 
-		private void SetSearchState(UpdatedPathEventArgs arg, bool IsEnd = false)
+		private void SetSearchState(UpdatedPathEventArgs? arg, bool IsEnd = false)
 		{
 			string Result;
 			if (arg == null)
@@ -686,38 +709,46 @@ namespace AutoKkutu
 			}
 			else
 			{
-				if (arg.Result == PathFinderResult.Normal)
-				{
-					Result = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.{Environment.NewLine}{arg.Time}ms 소요.";
-					if (arg.Flags.HasFlag(PathFinderInfo.UseEndWord))
-						Result += " (한방 단어 사용)";
-				}
-				else
-				{
-					if (arg.Result == PathFinderResult.None)
-					{
-						Result = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.{Environment.NewLine}{arg.Time}ms 소요.";
-						if (arg.Flags.HasFlag(PathFinderInfo.UseEndWord))
-							Result += " (한방 단어 사용)";
-					}
-					else
-					{
-						Result = PATHFINDER_ERROR;
-					}
-				}
+				Result = CreatePathResultExplain(arg);
 			}
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
-		private void StartPathFinding(ResponsePresentedWord word, string missionChar, PathFinderInfo flags)
+		private static string CreatePathResultExplain(UpdatedPathEventArgs arg)
 		{
-			GameMode mode = CurrentConfig.GameMode;
-			if (mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderInfo.ManualSearch))
+			string FilterText = $"'{arg.Word.Content}'{(arg.Word.CanSubstitution ? $" 또는 '{arg.Word.Substitution}'" : string.Empty)}{(string.IsNullOrWhiteSpace(arg.MissionChar) ? string.Empty : $", 미션 단어 '{arg.MissionChar}'")} 에 대한 검색 결과";
+			string SpecialFilterText = "";
+			string FindResult;
+			string ElapsedTimeText = $"{arg.Time}ms 소요.";
+			if (arg.Result == PathFinderResult.Normal)
+			{
+				FindResult = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.";
+			}
+			else
+			{
+				if (arg.Result == PathFinderResult.None)
+					FindResult = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.";
+				else
+					FindResult = PATHFINDER_ERROR;
+			}
+			if (arg.Flags.HasFlag(PathFinderInfo.UseEndWord))
+				SpecialFilterText += ", 한방";
+			if (arg.Flags.HasFlag(PathFinderInfo.UseAttackWord))
+				SpecialFilterText += ", 공격";
+
+			string newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : $"{SpecialFilterText[2..]} 단어 사용";
+			return FilterText + Environment.NewLine + newSpecialFilterText + Environment.NewLine + FindResult + Environment.NewLine + ElapsedTimeText;
+		}
+
+		private void StartPathFinding(ResponsePresentedWord? word, string? missionChar, PathFinderInfo flags)
+		{
+			GameMode mode = CurrentConfig.RequireNotNull().GameMode;
+			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderInfo.ManualSearch))
 				return;
 
 			try
 			{
-				if (!ConfigEnums.IsFreeMode(mode) && GetEndWordList(mode).Contains(word.Content) && (!word.CanSubstitution || GetEndWordList(mode).Contains(word.Substitution)))
+				if (!ConfigEnums.IsFreeMode(mode) && GetEndWordList(mode)?.Contains(word.Content) == true && (!word.CanSubstitution || GetEndWordList(mode)?.Contains(word.Substitution!) == true))
 				{
 					Logger.Warn("Can't Find any path : Presented word is End word.");
 					ResetPathList();
@@ -727,22 +758,13 @@ namespace AutoKkutu
 				else
 				{
 					this.ChangeStatusBar(CurrentStatus.Searching);
-
-					// Setup flag
-					if (CurrentConfig.EndWordEnabled && (flags.HasFlag(PathFinderInfo.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
-						flags |= PathFinderInfo.UseEndWord;
-					else
-						flags &= ~PathFinderInfo.UseEndWord;
-					if (CurrentConfig.AttackWordAllowed)
-						flags |= PathFinderInfo.UseAttackWord;
-					else
-						flags &= ~PathFinderInfo.UseAttackWord;
+					SetupPathFinderInfo(ref flags);
 
 					// Enqueue search
 					PathFinder.FindPath(new FindWordInfo
 					{
 						Word = word,
-						MissionChar = CurrentConfig.MissionAutoDetectionEnabled ? missionChar : "",
+						MissionChar = CurrentConfig.MissionAutoDetectionEnabled && missionChar != null ? missionChar : "",
 						WordPreference = CurrentConfig.ActiveWordPreference,
 						Mode = mode,
 						PathFinderFlags = flags
@@ -755,7 +777,20 @@ namespace AutoKkutu
 			}
 		}
 
-		private void SubmitChat_Click(object sender, RoutedEventArgs e)
+		private static void SetupPathFinderInfo(ref PathFinderInfo flags)
+		{
+			// Setup flag
+			if (CurrentConfig.RequireNotNull().EndWordEnabled && (flags.HasFlag(PathFinderInfo.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
+				flags |= PathFinderInfo.UseEndWord;
+			else
+				flags &= ~PathFinderInfo.UseEndWord;
+			if (CurrentConfig.AttackWordAllowed)
+				flags |= PathFinderInfo.UseAttackWord;
+			else
+				flags &= ~PathFinderInfo.UseAttackWord;
+		}
+
+		private void SubmitChat_Click(object? sender, RoutedEventArgs e)
 		{
 			if (!string.IsNullOrWhiteSpace(ChatField.Text))
 			{
@@ -765,11 +800,11 @@ namespace AutoKkutu
 		}
 
 		// TODO: 검색 결과 (추천 목록) 맨 윗쪽이나 아랫쪽(걸린 시간 표시되는 곳)에 '무엇에 대한 검색 결과인지'까지 나타내도록 개선
-		private void SubmitSearch_Click(object sender, RoutedEventArgs e)
+		private void SubmitSearch_Click(object? sender, RoutedEventArgs e)
 		{
 			if (!string.IsNullOrWhiteSpace(SearchField.Text))
 			{
-				StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), Handler.CurrentMissionChar, PathFinderInfo.ManualSearch);
+				StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), Handler?.CurrentMissionChar ?? string.Empty, PathFinderInfo.ManualSearch);
 				SearchField.Text = "";
 			}
 		}

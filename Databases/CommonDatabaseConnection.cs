@@ -37,13 +37,13 @@ namespace AutoKkutu.Databases
 
 		public abstract DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters);
 
-		public abstract object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters);
+		public abstract object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters);
 
 		public abstract string GetRearrangeFuncName();
 
 		public abstract string GetRearrangeMissionFuncName();
 
-		public abstract string GetColumnType(string tableName, string columnName);
+		public abstract string? GetColumnType(string tableName, string columnName);
 
 		public abstract string GetWordListColumnOptions();
 
@@ -67,7 +67,7 @@ namespace AutoKkutu.Databases
 		}
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1168")]
-		public DbDataReader TryExecuteReader(string action, string query, params CommonDatabaseParameter[] parameters)
+		public DbDataReader? TryExecuteReader(string action, string query, params CommonDatabaseParameter[] parameters)
 		{
 			try
 			{
@@ -80,7 +80,7 @@ namespace AutoKkutu.Databases
 			return null;
 		}
 
-		public object TryExecuteScalar(string action, string query, params CommonDatabaseParameter[] parameters)
+		public object? TryExecuteScalar(string action, string query, params CommonDatabaseParameter[] parameters)
 		{
 			try
 			{

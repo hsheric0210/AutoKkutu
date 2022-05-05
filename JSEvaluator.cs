@@ -9,7 +9,7 @@ namespace AutoKkutu
 	public static class JSEvaluator
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(typeof(JSEvaluator));
-		private static ChromiumWebBrowser Browser;
+		private static ChromiumWebBrowser? Browser;
 
 		public static void RegisterBrowser(ChromiumWebBrowser browser)
 		{
@@ -18,15 +18,15 @@ namespace AutoKkutu
 			Browser = browser;
 		}
 
-		private static object EvaluateJSInternal(string javaScript, object defaultResult)
+		private static object? EvaluateJSInternal(string javaScript, object? defaultResult)
 		{
-			if (!Browser.CanExecuteJavascriptInMainFrame)
+			if (Browser?.CanExecuteJavascriptInMainFrame != true)
 				return defaultResult;
 
 			using (IFrame frame = Browser.GetMainFrame())
 			{
 				if (frame != null)
-					return frame.EvaluateScriptAsync(javaScript).Result.Result ?? defaultResult;
+					return frame.EvaluateScriptAsync(javaScript)?.Result?.Result ?? defaultResult;
 			}
 			return defaultResult;
 		}
@@ -39,7 +39,7 @@ namespace AutoKkutu
 		/// <returns>true if error occurred, false otherwise.</returns>
 		public static bool EvaluateJSReturnError(string javaScript, out string error)
 		{
-			if (!Browser.CanExecuteJavascriptInMainFrame)
+			if (Browser?.CanExecuteJavascriptInMainFrame != true)
 			{
 				error = "Browser is not prepared";
 				return true;
@@ -57,11 +57,11 @@ namespace AutoKkutu
 			return true;
 		}
 
-		public static string EvaluateJS(string javaScript, string defaultResult = " ", ILog logger = null)
+		public static string EvaluateJS(string javaScript, string defaultResult = " ", ILog? logger = null)
 		{
 			try
 			{
-				return EvaluateJSInternal(javaScript, defaultResult).ToString();
+				return EvaluateJSInternal(javaScript, defaultResult)?.ToString() ?? defaultResult;
 			}
 			catch (NullReferenceException)
 			{
@@ -74,11 +74,14 @@ namespace AutoKkutu
 			}
 		}
 
-		public static int EvaluateJSInt(string javaScript, int defaultResult = -1, ILog logger = null)
+		public static int EvaluateJSInt(string javaScript, int defaultResult = -1, ILog? logger = null)
 		{
 			try
 			{
-				return Convert.ToInt32(EvaluateJSInternal(javaScript, defaultResult), CultureInfo.InvariantCulture);
+				object? internalResult = EvaluateJSInternal(javaScript, defaultResult);
+				if (internalResult == null)
+					return defaultResult;
+				return Convert.ToInt32(internalResult, CultureInfo.InvariantCulture);
 			}
 			catch (NullReferenceException)
 			{
@@ -91,7 +94,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, ILog logger = null)
+		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, ILog? logger = null)
 		{
 			try
 			{

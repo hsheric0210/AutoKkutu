@@ -8,6 +8,7 @@ using log4net;
 using System;
 using System.Configuration;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AutoKkutu.Utils
 {
@@ -127,9 +128,21 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		public static string GetLaFHeadNode(this string word) => word[0].ToString();
+		public static string GetLaFHeadNode(this string word)
+		{
+			if (word == null)
+				throw new ArgumentNullException(nameof(word));
 
-		public static string GetFaLHeadNode(this string word) => word.Last().ToString();
+			return word[0].ToString();
+		}
+
+		public static string GetFaLHeadNode(this string word)
+		{
+			if (word == null)
+				throw new ArgumentNullException(nameof(word));
+
+			return word.Last().ToString();
+		}
 
 		public static string GetKkutuHeadNode(this string word)
 		{
@@ -138,15 +151,39 @@ namespace AutoKkutu.Utils
 
 			if (word.Length >= 4)
 				return word[..2];
-			return (word.Length >= 3 ? word[0].ToString() : "");
+			return word.Length >= 3 ? word[0].ToString() : "";
 		}
 
-		public static string GetLaFTailNode(this string word) => word.Last().ToString();
+		public static string GetLaFTailNode(this string word)
+		{
+			if (word == null)
+				throw new ArgumentNullException(nameof(word));
 
-		public static string GetFaLTailNode(this string word) => word[0].ToString();
+			return word.Last().ToString();
+		}
 
-		public static string GetKkutuTailNode(this string word) => word.Length >= 4 ? word.Substring(word.Length - 3, 2) : word.Last().ToString();
+		public static string GetFaLTailNode(this string word)
+		{
+			if (word == null)
+				throw new ArgumentNullException(nameof(word));
 
-		public static string GetMaFNode(this string word) => word[(word.Length - 1) / 2].ToString();
+			return word[0].ToString();
+		}
+
+		public static string GetKkutuTailNode(this string word)
+		{
+			if (word == null)
+				throw new ArgumentNullException(nameof(word));
+
+			return word.Length >= 4 ? word.Substring(word.Length - 3, 2) : word.Last().ToString();
+		}
+
+		public static string GetMaFNode(this string word)
+		{
+			if (word == null)
+				throw new ArgumentNullException(nameof(word));
+
+			return word[(word.Length - 1) / 2].ToString();
+		}
 	}
 }

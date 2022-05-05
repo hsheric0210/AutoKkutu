@@ -12,7 +12,7 @@ namespace AutoKkutu.Databases
 	{
 		private static readonly ILog Logger = LogManager.GetLogger("Database Exts");
 
-		public static bool AddNode(this CommonDatabaseConnection connection, string node, string tableName = null)
+		public static bool AddNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -71,7 +71,7 @@ namespace AutoKkutu.Databases
 			return connection.ExecuteNonQuery(DatabaseConstants.DeduplicationQuery);
 		}
 
-		public static int DeleteNode(this CommonDatabaseConnection connection, string node, string tableName = null)
+		public static int DeleteNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -112,6 +112,9 @@ namespace AutoKkutu.Databases
 
 		public static void MakeTable(this CommonDatabaseConnection connection, string tablename)
 		{
+			if (connection == null)
+				throw new ArgumentNullException(nameof(connection));
+
 			string columnOptions = tablename switch
 			{
 				DatabaseConstants.WordListTableName => connection.GetWordListColumnOptions(),

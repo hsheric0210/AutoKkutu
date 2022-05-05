@@ -27,30 +27,8 @@ namespace AutoKkutu.Databases.SQLite
 				Logger.Info("Opening database connection...");
 				SqliteConnection connection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 				RegisterDefaultConnection(new SQLiteDatabaseConnection(connection));
-
-				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
-				connection.CreateFunction(DefaultConnection.GetRearrangeFuncName(), (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
-				{
-					if ((flags & endWordFlag) != 0)
-						return endWordOrdinal * DatabaseConstants.MaxWordLength;
-					if ((flags & attackWordFlag) != 0)
-						return attackWordOrdinal * DatabaseConstants.MaxWordLength;
-					return normalWordOrdinal * DatabaseConstants.MaxWordLength;
-				});
-
-				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
-				connection.CreateFunction(DefaultConnection.GetRearrangeMissionFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
-				{
-					char missionChar = char.ToUpperInvariant(missionWord[0]);
-					int missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
-					bool hasMission = missionOccurrence > 0;
-
-					if ((flags & endWordFlag) != 0)
-						return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
-					if ((flags & attackWordFlag) != 0)
-						return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
-					return (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
-				});
+				RegisterRearrangeFunc(connection);
+				RegisterRearrangeMissionFunc(connection);
 
 				// Check the database tables
 				DefaultConnection.CheckTable();
@@ -63,6 +41,32 @@ namespace AutoKkutu.Databases.SQLite
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}
+
+		// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
+		private void RegisterRearrangeMissionFunc(SqliteConnection connection) =>
+			connection.CreateFunction(DefaultConnection!.GetRearrangeMissionFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
+			{
+				char missionChar = char.ToUpperInvariant(missionWord[0]);
+				int missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
+				bool hasMission = missionOccurrence > 0;
+
+				if ((flags & endWordFlag) != 0)
+					return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
+				if ((flags & attackWordFlag) != 0)
+					return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
+				return (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPlusMissionLength + missionOccurrence;
+			});
+
+		// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
+		private void RegisterRearrangeFunc(SqliteConnection connection) =>
+			connection.CreateFunction(DefaultConnection.GetRearrangeFuncName(), (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
+			{
+				if ((flags & endWordFlag) != 0)
+					return endWordOrdinal * DatabaseConstants.MaxWordLength;
+				if ((flags & attackWordFlag) != 0)
+					return attackWordOrdinal * DatabaseConstants.MaxWordLength;
+				return normalWordOrdinal * DatabaseConstants.MaxWordLength;
+			});
 
 		public override void CheckConnectionType(CommonDatabaseConnection connection)
 		{

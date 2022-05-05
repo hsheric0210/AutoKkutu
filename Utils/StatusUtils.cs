@@ -8,7 +8,7 @@ namespace AutoKkutu.Utils
 {
 	public static class StatusUtils
 	{
-		public static void ChangeStatusBar(this MainWindow mainWindow, CurrentStatus status, params object[] formatterArgs)
+		public static void ChangeStatusBar(this MainWindow mainWindow, CurrentStatus status, params object?[] formatterArgs)
 		{
 			if (mainWindow == null)
 				throw new ArgumentNullException(nameof(mainWindow));

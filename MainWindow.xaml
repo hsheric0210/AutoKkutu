@@ -81,7 +81,7 @@
 					</ListBox>
 					<Grid Name="SearchStatus" Grid.Row="1" Margin="0,365,4,230" Background="#FF444444" VerticalAlignment="Bottom">
 						<Image Name="SearchIcon" Width="25" Height="25" Source="/images/warning.png" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" />
-						<Border Height="50" Margin="43,0,0,-3" HorizontalAlignment="Left" Width="197" BorderBrush="{x:Null}">
+						<Border MinHeight="80" Margin="43,0,0,-3" HorizontalAlignment="Left" MinWidth="200" BorderBrush="{x:Null}">
 							<TextBlock Name="SearchResult" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="11" Foreground="#FFFFFFFF" TextWrapping="Wrap" VerticalAlignment="Center">총 112개의 단어 중, 30개 고려 27ms 소요. (한방 단어 사용)</TextBlock>
 						</Border>
 					</Grid>

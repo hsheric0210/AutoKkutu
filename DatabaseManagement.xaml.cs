@@ -29,15 +29,16 @@ namespace AutoKkutu
 
 		public static void BatchWordJob(DatabaseWithDefaultConnection database, string content, BatchWordJobOptions mode, WordDatabaseAttributes flags)
 		{
-			if (string.IsNullOrWhiteSpace(content))
+			if (database == null || string.IsNullOrWhiteSpace(content))
 				return;
 
 			string[] wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
+			var connection = database.DefaultConnection;
 			if (mode.HasFlag(BatchWordJobOptions.Remove))
-				database.DefaultConnection.BatchRemoveWord(wordlist);
+				connection.BatchRemoveWord(wordlist);
 			else
-				database.DefaultConnection.BatchAddWord(wordlist, mode, flags);
+				connection.BatchAddWord(wordlist, mode, flags);
 		}
 
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
@@ -116,7 +117,7 @@ namespace AutoKkutu
 			Database.DefaultConnection.BatchAddNode(content, remove, GetSelectedNodeTypes());
 		}
 
-		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked.Value);
+		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked ?? false);
 
 		private WordDatabaseAttributes GetBatchAddWordDatabaseAttributes()
 		{
@@ -176,10 +177,10 @@ namespace AutoKkutu
 
 		private void Node_Submit_Click(object sender, RoutedEventArgs e) => BatchAddNode(false);
 
-		private void onWordFolderSubmit(object sender, RoutedEventArgs e)
+		private void OnWordFolderSubmit(object sender, RoutedEventArgs e)
 		{
 			var builder = new StringBuilder();
-			IEnumerable<string> folderNames = null;
+			IEnumerable<string>? folderNames = null;
 			using (var dialog = new CommonOpenFileDialog())
 			{
 				dialog.Title = "단어 목록을 불러올 파일들이 들어 있는 폴더들을 선택하세요 (주의: 하위 폴더에 있는 모든 파일까지 포함됩니다)";
@@ -224,6 +225,6 @@ namespace AutoKkutu
 			BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 		}
 
-		public void OnCloseRequested(object sender, EventArgs e) => Close();
+		private void OnCloseRequested(object sender, EventArgs e) => Close();
 	}
 }

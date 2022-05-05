@@ -55,7 +55,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 		}
 
 		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
-		public override object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
+		public override object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 				throw new ArgumentException(query, nameof(query));
@@ -69,18 +69,18 @@ namespace AutoKkutu.Databases.PostgreSQL
 		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
 		public override string GetRearrangeMissionFuncName() => "__AutoKkutu_RearrangeMission";
 
-		public override string GetColumnType(string tableName, string columnName)
+		public override string? GetColumnType(string tableName, string columnName)
 		{
 			tableName ??= DatabaseConstants.WordListTableName;
 			try
 			{
-				return ExecuteScalar("SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)).ToString();
+				return ExecuteScalar("SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName))?.ToString();
 			}
 			catch (Exception ex)
 			{
 				Logger.Error(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName), ex);
 			}
-			return "";
+			return null;
 		}
 
 		public override string GetWordListColumnOptions() => "seq SERIAL PRIMARY KEY, word CHAR VARYING(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";

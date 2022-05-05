@@ -151,7 +151,7 @@ namespace AutoKkutu.Utils
 			return count;
 		}
 
-		private static int FixIndex(this CommonDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string> correctIndexSupplier)
+		private static int FixIndex(this CommonDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string>? correctIndexSupplier)
 		{
 			int count = 0;
 			foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
@@ -230,7 +230,7 @@ namespace AutoKkutu.Utils
 			if (last is ')' or '}' or ']')
 				return true;
 
-			return content.Contains(" ") || content.Contains(":");
+			return content.Contains(' ', StringComparison.Ordinal) || content.Contains(':', StringComparison.Ordinal);
 		}
 
 		/// <summary>

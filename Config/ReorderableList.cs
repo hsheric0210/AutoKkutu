@@ -84,7 +84,7 @@ namespace AutoKkutu.Config
 
 		public TItem[] ToArray() => ItemList.ToArray();
 
-		private T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+		private T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
 		{
 			DependencyObject parentObject = VisualTreeHelper.GetParent(child);
 			if (parentObject == null)
@@ -178,7 +178,7 @@ namespace AutoKkutu.Config
 		{
 			if (sender is ListBoxItem item)
 			{
-				var source = e.Data.GetData(typeof(TItem)) as TItem;
+				var source = (TItem)e.Data.GetData(typeof(TItem));
 				var target = item.DataContext as TItem;
 
 				int sourceIndex = ItemListBox.Items.IndexOf(source);
@@ -199,7 +199,7 @@ namespace AutoKkutu.Config
 				&& (Math.Abs(cursorVector.X) > SystemParameters.MinimumHorizontalDragDistance
 				|| Math.Abs(cursorVector.Y) > SystemParameters.MinimumVerticalDragDistance))
 			{
-				ListBoxItem targetItem = FindVisualParent<ListBoxItem>(((DependencyObject)e.OriginalSource));
+				ListBoxItem? targetItem = FindVisualParent<ListBoxItem>((DependencyObject)e.OriginalSource);
 				if (targetItem != null)
 					DragDrop.DoDragDrop(targetItem, targetItem.DataContext, DragDropEffects.Move);
 			}

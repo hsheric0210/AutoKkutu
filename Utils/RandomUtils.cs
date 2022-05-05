@@ -8,10 +8,9 @@ namespace AutoKkutu.Utils
 		private static readonly Random GLOBAL_RANDOM = new();
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394", Justification = "Secure randomness is excessive on this logic")]
-		public static string GenerateRandomString(int length, bool english, Random random = null)
+		public static string GenerateRandomString(int length, bool english, Random? random = null)
 		{
-			if (random == null)
-				random = GLOBAL_RANDOM;
+			random ??= GLOBAL_RANDOM;
 
 			var builder = new StringBuilder(length);
 			char start = '가';
@@ -23,10 +22,13 @@ namespace AutoKkutu.Utils
 			}
 
 			for (int i = 0; i < length; i++)
+			{
 				if (random.NextDouble() > 0.7)
 					builder.Append(random.Next(10));
 				else
 					builder.Append((char)random.Next(start, end + 1));
+			}
+
 			return builder.ToString();
 		}
 	}

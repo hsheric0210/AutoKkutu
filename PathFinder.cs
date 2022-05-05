@@ -16,47 +16,47 @@ namespace AutoKkutu
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));
 
-		public static ICollection<string> AttackWordList
+		public static ICollection<string>? AttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string> EndWordList
+		public static ICollection<string>? EndWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string> KkutuAttackWordList
+		public static ICollection<string>? KkutuAttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string> KkutuEndWordList
+		public static ICollection<string>? KkutuEndWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string> ReverseAttackWordList
+		public static ICollection<string>? ReverseAttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string> ReverseEndWordList
+		public static ICollection<string>? ReverseEndWordList
 		{
 			get; private set;
 		}
 
-		public static CommonDatabaseConnection Connection
+		public static CommonDatabaseConnection? Connection
 		{
 			get; private set;
 		}
 
-		public static AutoKkutuColorPreference CurrentColorPreference
+		public static AutoKkutuColorPreference? CurrentColorPreference
 		{
 			get; private set;
 		}
 
-		public static AutoKkutuConfiguration CurrentConfig
+		public static AutoKkutuConfiguration? CurrentConfig
 		{
 			get; private set;
 		}
@@ -64,7 +64,7 @@ namespace AutoKkutu
 		public static IList<PathObject> FinalList
 		{
 			get; private set;
-		}
+		} = new List<PathObject>();
 
 		public static ConcurrentBag<string> InexistentPathList { get; private set; } = new ConcurrentBag<string>();
 
@@ -74,7 +74,7 @@ namespace AutoKkutu
 
 		public static ICollection<string> UnsupportedPathList { get; } = new List<string>();
 
-		public static event EventHandler<UpdatedPathEventArgs> onPathUpdated;
+		public static event EventHandler<UpdatedPathEventArgs>? OnPathUpdated;
 
 		public static void AddPreviousPath(string word)
 		{
@@ -92,9 +92,9 @@ namespace AutoKkutu
 			}
 		}
 
-		public static string AutoDBUpdate()
+		public static string? AutoDBUpdate()
 		{
-			if (!CurrentConfig.AutoDBUpdateEnabled)
+			if (!CurrentConfig.RequireNotNull().AutoDBUpdateEnabled)
 				return null;
 
 			Logger.Debug("Automatically update the DB based on last game.");
@@ -121,14 +121,10 @@ namespace AutoKkutu
 			return null;
 		}
 
-		public static bool CheckNodePresence(string nodeType, string item, ICollection<string> nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool add = false)
+		public static bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool add = false)
 		{
-			if (add && string.IsNullOrEmpty(nodeType))
-				throw new ArgumentNullException(nameof(nodeType));
-			if (string.IsNullOrWhiteSpace(item))
-				throw new ArgumentException("Argument is null or blank", nameof(item));
-			if (nodeList == null)
-				throw new ArgumentNullException(nameof(nodeList));
+			if (add && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(item) || nodeList == null)
+				return false;
 
 			bool exists = nodeList.Contains(item);
 			if (exists)
@@ -144,12 +140,12 @@ namespace AutoKkutu
 			return false;
 		}
 
-		public static string ConvertToPresentedWord(string path)
+		public static string? ConvertToPresentedWord(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
 				throw new ArgumentException("Parameter is null or blank", nameof(path));
 
-			switch (CurrentConfig.GameMode)
+			switch (CurrentConfig.RequireNotNull().GameMode)
 			{
 				case GameMode.LastAndFirst:
 				case GameMode.KungKungTta:
@@ -182,6 +178,8 @@ namespace AutoKkutu
 
 		public static void FindPath(FindWordInfo info)
 		{
+			CurrentConfig.RequireNotNull();
+
 			if (ConfigEnums.IsFreeMode(info.Mode))
 			{
 				RandomPath(info);
@@ -206,10 +204,10 @@ namespace AutoKkutu
 				FinalList = new List<PathObject>();
 
 				// Search words from database
-				ICollection<PathObject> WordList = null;
+				ICollection<PathObject>? WordList = null;
 				try
 				{
-					WordList = Connection.FindWord(info);
+					WordList = Connection.RequireNotNull().FindWord(info);
 					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderInfo.UseAttackWord), flags.HasFlag(PathFinderInfo.UseEndWord));
 				}
 				catch (Exception e)
@@ -288,7 +286,7 @@ namespace AutoKkutu
 				try
 				{
 					Logger.Debug($"Check and add '{word}' into database. (flags: {flags})");
-					if (Connection.AddWord(word, flags))
+					if (Connection.RequireNotNull().AddWord(word, flags))
 					{
 						Logger.Info($"Added '{word}' into database.");
 						count++;
@@ -305,7 +303,7 @@ namespace AutoKkutu
 			return count;
 		}
 
-		private static void NotifyPathUpdate(UpdatedPathEventArgs eventArgs) => onPathUpdated?.Invoke(null, eventArgs);
+		private static void NotifyPathUpdate(UpdatedPathEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);
 
 		private static void RandomPath(FindWordInfo info)
 		{
@@ -332,7 +330,7 @@ namespace AutoKkutu
 			{
 				try
 				{
-					count += Connection.DeleteWord(word);
+					count += Connection.RequireNotNull().DeleteWord(word);
 				}
 				catch (Exception ex)
 				{
@@ -400,7 +398,7 @@ namespace AutoKkutu
 
 		public PathObject(string content, WordAttributes flags, int missionCharCount)
 		{
-			AutoKkutuColorPreference colorPref = PathFinder.CurrentColorPreference;
+			AutoKkutuColorPreference colorPref = PathFinder.CurrentColorPreference.RequireNotNull();
 
 			Content = content;
 			Title = content;
@@ -410,7 +408,7 @@ namespace AutoKkutu
 			MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;
 
 			bool isMissionWord = flags.HasFlag(WordAttributes.MissionWord);
-			string mission = isMissionWord ? $"미션({missionCharCount}) " : "";
+			string mission = isMissionWord ? $"미션({missionCharCount}) " : string.Empty;
 			string tooltipPrefix;
 			if (flags.HasFlag(WordAttributes.EndWord))
 			{
@@ -427,9 +425,10 @@ namespace AutoKkutu
 			else
 			{
 				Color = isMissionWord ? colorPref.MissionWordColor.ToString(CultureInfo.InvariantCulture) : "#FFFFFFFF";
-				tooltipPrefix = isMissionWord ? $"미션({missionCharCount}) 단어: " : "";
+				tooltipPrefix = isMissionWord ? $"미션({missionCharCount}) 단어: " : string.Empty;
+				PrimaryImage = string.Empty;
 			}
-			SecondaryImage = isMissionWord ? @"images\mission.png" : "";
+			SecondaryImage = isMissionWord ? @"images\mission.png" : string.Empty;
 
 			ToolTip = tooltipPrefix + content;
 		}
@@ -598,13 +597,7 @@ namespace AutoKkutu
 
 		public static bool operator ==(FindWordInfo left, FindWordInfo right) => left.Equals(right);
 
-		public override bool Equals(object obj)
-		{
-			if (obj is not FindWordInfo)
-				return false;
-
-			return Equals((FindWordInfo)obj);
-		}
+		public override bool Equals(object? obj) => obj is FindWordInfo other && Equals(other);
 
 		public bool Equals(FindWordInfo other) =>
 				MissionChar.Equals(other.MissionChar, StringComparison.OrdinalIgnoreCase)

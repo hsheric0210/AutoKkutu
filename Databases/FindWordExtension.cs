@@ -23,7 +23,7 @@ namespace AutoKkutu.Databases
 
 					// TODO: 세 글자용 인덱스도 만들기
 					ResponsePresentedWord word = opts.Word;
-					if (word.Content.Length == 2 || word.CanSubstitution && word.Substitution.Length == 2)
+					if (word.Content.Length == 2 || word.CanSubstitution && word.Substitution!.Length == 2)
 						return DatabaseConstants.KkutuWordIndexColumnName;
 					break;
 			}

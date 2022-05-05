@@ -111,6 +111,7 @@ namespace AutoKkutu.Utils
 				}
 
 				if (!onlineVerify || CheckOnline(word))
+				{
 					switch (connection.AddSingleWord(word, ref info))
 					{
 						case AddWordResult.Success:
@@ -125,6 +126,7 @@ namespace AutoKkutu.Utils
 							result.FailedCount++;
 							break;
 					}
+				}
 
 				result.NewEndNode += info.NewEndNodeCount;
 				result.NewAttackNode += info.NewAttackNodeCount;

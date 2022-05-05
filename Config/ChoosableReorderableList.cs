@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -28,6 +29,9 @@ namespace AutoKkutu.Config
 
 		public ChoosableReorderableList(ChoosableReorderableListUIElements elements, string displayMemberPath)
 		{
+			if (elements == null)
+				throw new ArgumentNullException(nameof(elements));
+
 			DisplayMemberPath = displayMemberPath;
 			InactiveItemListBox = elements.InactiveItemListBox;
 			ActiveItemReorderableList = new ReorderableList<TItem>(elements.ActiveItemListBox, elements.MoveUpItemButton, elements.MoveDownItemButton, displayMemberPath);
@@ -65,8 +69,8 @@ namespace AutoKkutu.Config
 		}
 
 		public TItem[] GetActiveItemArray() => ActiveItemReorderableList.ToArray();
-		public TItem[] GetInactiveItemArray() => InactiveItemList.ToArray();
 
+		public TItem[] GetInactiveItemArray() => InactiveItemList.ToArray();
 
 		private void Initialize()
 		{

@@ -25,17 +25,17 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override void DropWordListColumn(string columnName) => RebuildWordList();
 
-		public override int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteNonQuery(Connection, query, TranslateParameter(parameters));
+		public override int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters) => Connection.ExecuteNonQuery(query, TranslateParameter(parameters));
 
-		public override DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteReader(Connection, query, TranslateParameter(parameters));
+		public override DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters) => Connection.ExecuteReader(query, TranslateParameter(parameters));
 
-		public override object ExecuteScalar(string query, params CommonDatabaseParameter[] parameters) => SQLiteDatabaseHelper.ExecuteScalar(Connection, query, TranslateParameter(parameters));
+		public override object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters) => Connection.ExecuteScalar(query, TranslateParameter(parameters));
 
 		public override string GetRearrangeFuncName() => "Rearrange";
 
 		public override string GetRearrangeMissionFuncName() => "Rearrange_Mission";
 
-		public override string GetColumnType(string tableName, string columnName) => SQLiteDatabaseHelper.GetColumnType(Connection, tableName ?? DatabaseConstants.WordListTableName, columnName);
+		public override string? GetColumnType(string tableName, string columnName) => SQLiteDatabaseHelper.GetColumnType(Connection, tableName ?? DatabaseConstants.WordListTableName, columnName);
 
 		public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
