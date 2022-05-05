@@ -13,7 +13,6 @@ namespace AutoKkutu.Databases.SQLite
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(typeof(SQLiteDatabaseHelper));
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public static int ExecuteNonQuery(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -25,8 +24,6 @@ namespace AutoKkutu.Databases.SQLite
 			return command.ExecuteNonQuery();
 		}
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
-		[SuppressMessage("Reliability", "CA2000", Justification = "This shouldn't be handled")]
 		public static SqliteDataReader ExecuteReader(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -38,7 +35,6 @@ namespace AutoKkutu.Databases.SQLite
 			return command.ExecuteReader();
 		}
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public static object? ExecuteScalar(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))

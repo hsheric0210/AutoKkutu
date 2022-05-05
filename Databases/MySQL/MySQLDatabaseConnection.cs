@@ -35,7 +35,6 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP {columnName}");
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -47,7 +46,6 @@ namespace AutoKkutu.Databases.MySQL
 			return command.ExecuteNonQuery();
 		}
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -59,7 +57,6 @@ namespace AutoKkutu.Databases.MySQL
 			return command.ExecuteReader();
 		}
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))

@@ -9,7 +9,6 @@ namespace AutoKkutu.Databases.SQLite
 	{
 		private readonly string DatabaseFilePath;
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000", Justification = "Implemented Dispose()")]
 		public SQLiteDatabase(string fileName) : base()
 		{
 			DatabaseFilePath = $"{Environment.CurrentDirectory}\\{fileName}";

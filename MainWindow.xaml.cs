@@ -200,13 +200,13 @@ namespace AutoKkutu
 				SubmitChat_Click(sender, e);
 		}
 
-		private bool CheckPathIsValid(UpdatedPathEventArgs args, PathFinderInfo flags)
+		private bool CheckPathIsValid(ResponsePresentedWord word, string missionChar, PathFinderOptions flags)
 		{
-			if (Handler == null || flags.HasFlag(PathFinderInfo.ManualSearch))
+			if (Handler == null || flags.HasFlag(PathFinderOptions.ManualSearch))
 				return true;
 
-			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
-			bool differentMissionChar = CurrentConfig?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+			bool differentWord = Handler.CurrentPresentedWord != null && !word.Equals(Handler.CurrentPresentedWord);
+			bool differentMissionChar = CurrentConfig?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(missionChar, Handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
@@ -343,7 +343,7 @@ namespace AutoKkutu
 			WordIndex = 0;
 		}
 
-		private void CommonHandler_MyTurnEvent(object? sender, WordPresentEventArgs args) => StartPathFinding(args.Word, args.MissionChar, PathFinderInfo.None);
+		private void CommonHandler_MyTurnEvent(object? sender, WordPresentEventArgs args) => StartPathFinding(args.Word, args.MissionChar, PathFinderOptions.None);
 
 		private void CommonHandler_onUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)
 		{
@@ -370,44 +370,7 @@ namespace AutoKkutu
 			if (!CurrentConfig.RequireNotNull().AutoEnterEnabled)
 				return;
 
-			if (CurrentConfig.DelayEnabled)
-			{
-				int delay = CurrentConfig.DelayInMillis;
-				if (CurrentConfig.DelayPerCharEnabled)
-					delay *= word.Length;
-				this.ChangeStatusBar(CurrentStatus.Delaying, delay);
-				Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
-				if (CurrentConfig.DelayStartAfterCharEnterEnabled)
-				{
-					Task.Run(async () =>
-					{
-						while (inputStopwatch.ElapsedMilliseconds <= delay)
-							await Task.Delay(1);
-						if (Handler.IsMyTurn)
-						{
-							SendMessage(word);
-							Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
-						}
-					});
-				}
-				else
-				{
-					Task.Run(async () =>
-					{
-						await Task.Delay(delay);
-						if (Handler.IsMyTurn)
-						{
-							SendMessage(word);
-							Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
-						}
-					});
-				}
-			}
-			else
-			{
-				SendMessage(word);
-				Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
-			}
+			DelayedEnter(word, null);
 		}
 
 		private static ICollection<string>? GetEndWordList(GameMode mode) => mode switch
@@ -564,12 +527,12 @@ namespace AutoKkutu
 		{
 			Logger.Info("Path update received.");
 
-			if (!CheckPathIsValid(args, PathFinderInfo.None))
+			if (!CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.None))
 				return;
 
-			bool autoEnter = CurrentConfig.RequireNotNull().AutoEnterEnabled && !args.Flags.HasFlag(PathFinderInfo.ManualSearch);
+			bool autoEnter = CurrentConfig.RequireNotNull().AutoEnterEnabled && !args.Flags.HasFlag(PathFinderOptions.ManualSearch);
 
-			if (args.Result == PathFinderResult.None && !args.Flags.HasFlag(PathFinderInfo.ManualSearch))
+			if (args.Result == PathFinderResult.None && !args.Flags.HasFlag(PathFinderOptions.ManualSearch))
 				this.ChangeStatusBar(CurrentStatus.NotFound);
 			else if (args.Result == PathFinderResult.Error)
 				this.ChangeStatusBar(CurrentStatus.Error);
@@ -590,14 +553,57 @@ namespace AutoKkutu
 				else
 				{
 					string content = PathFinder.FinalList![0].Content;
-					DelayedEnter(args, content);
+					DelayedEnter(content, args);
 				}
 			}
 		}
 
-		private void DelayedEnter(UpdatedPathEventArgs args, string content)
+		//private void DelayedTypingBattleEnter(string word)
+		//{
+		//	Handler.RequireNotNull();
+		//	if (CurrentConfig.RequireNotNull().DelayEnabled)
+		//	{
+		//		int delay = CurrentConfig.DelayInMillis;
+		//		if (CurrentConfig.DelayPerCharEnabled)
+		//			delay *= word.Length;
+		//		this.ChangeStatusBar(CurrentStatus.Delaying, delay);
+		//		Logger.DebugFormat("Waiting {0}ms before entering path.", delay);
+		//		if (CurrentConfig.DelayStartAfterCharEnterEnabled)
+		//		{
+		//			Task.Run(async () =>
+		//			{
+		//				while (inputStopwatch.ElapsedMilliseconds <= delay)
+		//					await Task.Delay(1);
+		//				if (Handler.IsMyTurn)
+		//				{
+		//					SendMessage(word);
+		//					Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+		//				}
+		//			});
+		//		}
+		//		else
+		//		{
+		//			Task.Run(async () =>
+		//			{
+		//				await Task.Delay(delay);
+		//				if (Handler.IsMyTurn)
+		//				{
+		//					SendMessage(word);
+		//					Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+		//				}
+		//			});
+		//		}
+		//	}
+		//	else
+		//	{
+		//		SendMessage(word);
+		//		Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+		//	}
+		//}
+
+		private void DelayedEnter(string content, UpdatedPathEventArgs? args)
 		{
-			if (CurrentConfig.RequireNotNull().DelayEnabled && !args.Flags.HasFlag(PathFinderInfo.Retrial))
+			if (CurrentConfig.RequireNotNull().DelayEnabled && args?.Flags.HasFlag(PathFinderOptions.AutoFixed) != true)
 			{
 				int delay = CurrentConfig.DelayInMillis;
 				if (CurrentConfig.DelayPerCharEnabled)
@@ -612,7 +618,7 @@ namespace AutoKkutu
 						while (inputStopwatch.ElapsedMilliseconds <= delay)
 							await Task.Delay(1);
 
-						PerformAutoEnter(args, content);
+						PerformAutoEnter(content, args);
 					});
 				}
 				else
@@ -621,28 +627,27 @@ namespace AutoKkutu
 					Task.Run(async () =>
 					{
 						await Task.Delay(delay);
-						PerformAutoEnter(args, content);
+						PerformAutoEnter(content, args);
 					});
 				}
 			}
 			else
 			{
 				// Enter immediately
-				PerformAutoEnter(args, content);
+				PerformAutoEnter(content, args);
 			}
 		}
 
-		private void PerformAutoEnter(UpdatedPathEventArgs args, string content)
+		private void PerformAutoEnter(string content, UpdatedPathEventArgs? args)
 		{
-			if (!Handler.RequireNotNull().IsGameStarted || !Handler.IsMyTurn || !CheckPathIsValid(args, PathFinderInfo.Retrial))
+			if (!Handler.RequireNotNull().IsGameStarted || !Handler.IsMyTurn || args != null && !CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed))
 				return;
 			PerformAutoEnter(content);
 		}
 
 		private void PerformAutoEnter(string content, string pathAttribute = "first")
 		{
-			Logger.InfoFormat("Auto mode enabled. automatically use {0} path.", pathAttribute);
-			Logger.InfoFormat("Execute Path : {0}", content);
+			Logger.InfoFormat("Auto mode enabled. automatically use path: '{0}'", pathAttribute);
 			SendMessage(content);
 			this.ChangeStatusBar(CurrentStatus.AutoEntered, content);
 		}
@@ -737,19 +742,19 @@ namespace AutoKkutu
 				else
 					FindResult = PATHFINDER_ERROR;
 			}
-			if (arg.Flags.HasFlag(PathFinderInfo.UseEndWord))
+			if (arg.Flags.HasFlag(PathFinderOptions.UseEndWord))
 				SpecialFilterText += ", 한방";
-			if (arg.Flags.HasFlag(PathFinderInfo.UseAttackWord))
+			if (arg.Flags.HasFlag(PathFinderOptions.UseAttackWord))
 				SpecialFilterText += ", 공격";
 
 			string newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : $"{SpecialFilterText[2..]} 단어 사용";
 			return FilterText + Environment.NewLine + newSpecialFilterText + Environment.NewLine + FindResult + Environment.NewLine + ElapsedTimeText;
 		}
 
-		private void StartPathFinding(ResponsePresentedWord? word, string? missionChar, PathFinderInfo flags)
+		private void StartPathFinding(ResponsePresentedWord? word, string? missionChar, PathFinderOptions flags)
 		{
 			GameMode mode = CurrentConfig.RequireNotNull().GameMode;
-			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderInfo.ManualSearch))
+			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderOptions.ManualSearch))
 				return;
 
 			try
@@ -783,17 +788,17 @@ namespace AutoKkutu
 			}
 		}
 
-		private static void SetupPathFinderInfo(ref PathFinderInfo flags)
+		private static void SetupPathFinderInfo(ref PathFinderOptions flags)
 		{
 			// Setup flag
-			if (CurrentConfig.RequireNotNull().EndWordEnabled && (flags.HasFlag(PathFinderInfo.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
-				flags |= PathFinderInfo.UseEndWord;
+			if (CurrentConfig.RequireNotNull().EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
+				flags |= PathFinderOptions.UseEndWord;
 			else
-				flags &= ~PathFinderInfo.UseEndWord;
+				flags &= ~PathFinderOptions.UseEndWord;
 			if (CurrentConfig.AttackWordAllowed)
-				flags |= PathFinderInfo.UseAttackWord;
+				flags |= PathFinderOptions.UseAttackWord;
 			else
-				flags &= ~PathFinderInfo.UseAttackWord;
+				flags &= ~PathFinderOptions.UseAttackWord;
 		}
 
 		private void SubmitChat_Click(object? sender, RoutedEventArgs e)
@@ -810,7 +815,7 @@ namespace AutoKkutu
 		{
 			if (!string.IsNullOrWhiteSpace(SearchField.Text))
 			{
-				StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), Handler?.CurrentMissionChar ?? string.Empty, PathFinderInfo.ManualSearch);
+				StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), Handler?.CurrentMissionChar ?? string.Empty, PathFinderOptions.ManualSearch);
 				SearchField.Text = "";
 			}
 		}

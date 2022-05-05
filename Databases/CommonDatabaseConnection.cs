@@ -66,7 +66,6 @@ namespace AutoKkutu.Databases
 			return -1;
 		}
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1168")]
 		public DbDataReader? TryExecuteReader(string action, string query, params CommonDatabaseParameter[] parameters)
 		{
 			try

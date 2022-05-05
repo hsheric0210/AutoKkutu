@@ -15,6 +15,7 @@
 	<RepositoryUrl>https://github.com/hsheric0210/AutoKkutu</RepositoryUrl>
 	<PackageProjectUrl>https://github.com/hsheric0210/AutoKkutu</PackageProjectUrl>
 	<Nullable>enable</Nullable>
+	<NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>

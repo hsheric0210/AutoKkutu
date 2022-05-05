@@ -30,7 +30,6 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public override void DropWordListColumn(string columnName) => ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP COLUMN {columnName}");
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -42,7 +41,6 @@ namespace AutoKkutu.Databases.PostgreSQL
 			return command.ExecuteNonQuery();
 		}
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override DbDataReader ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))
@@ -54,7 +52,6 @@ namespace AutoKkutu.Databases.PostgreSQL
 			return command.ExecuteReader();
 		}
 
-		[SuppressMessage("Security", "CA2100", Justification = "Already handled")]
 		public override object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
 		{
 			if (string.IsNullOrWhiteSpace(query))

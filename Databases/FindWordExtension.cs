@@ -120,10 +120,10 @@ namespace AutoKkutu.Databases
 			var opt = new PreferenceInfo { PathFinderFlags = info.PathFinderFlags, WordPreference = info.WordPreference, Condition = "" };
 
 			// 한방 단어
-			ApplyFilter(PathFinderInfo.UseEndWord, endWordFlag, ref opt);
+			ApplyFilter(PathFinderOptions.UseEndWord, endWordFlag, ref opt);
 
 			// 공격 단어
-			ApplyFilter(PathFinderInfo.UseAttackWord, attackWordFlag, ref opt);
+			ApplyFilter(PathFinderOptions.UseAttackWord, attackWordFlag, ref opt);
 
 			string orderCondition = $"({CreateRearrangeCondition(connection, info.MissionChar, info.WordPreference, endWordFlag, attackWordFlag)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
@@ -175,7 +175,7 @@ namespace AutoKkutu.Databases
 			return fullAttribs.Length - (index >= 0 ? index : fullAttribs.Length) - 1;
 		}
 
-		private static void ApplyFilter(PathFinderInfo targetFlag, int flag, ref PreferenceInfo info)
+		private static void ApplyFilter(PathFinderOptions targetFlag, int flag, ref PreferenceInfo info)
 		{
 			if (!info.PathFinderFlags.HasFlag(targetFlag))
 				info.Condition += $" AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
@@ -183,7 +183,7 @@ namespace AutoKkutu.Databases
 
 		private struct PreferenceInfo
 		{
-			public PathFinderInfo PathFinderFlags;
+			public PathFinderOptions PathFinderFlags;
 
 			public WordPreference WordPreference;
 

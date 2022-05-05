@@ -7,7 +7,6 @@ namespace AutoKkutu.Databases.PostgreSQL
 	{
 		private readonly string ConnectionString;
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000", Justification = "Implemented Dispose()")]
 		public PostgreSQLDatabase(string connectionString) : base()
 		{
 			ConnectionString = connectionString;

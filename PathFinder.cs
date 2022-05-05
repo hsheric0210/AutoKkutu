@@ -188,7 +188,7 @@ namespace AutoKkutu
 
 			ResponsePresentedWord wordCondition = info.Word;
 			string missionChar = info.MissionChar;
-			PathFinderInfo flags = info.PathFinderFlags;
+			PathFinderOptions flags = info.PathFinderFlags;
 			if (wordCondition.CanSubstitution)
 				Logger.InfoFormat("Finding path for {0} ({1}).", wordCondition.Content, wordCondition.Substitution);
 			else
@@ -208,7 +208,7 @@ namespace AutoKkutu
 				try
 				{
 					WordList = Connection.RequireNotNull().FindWord(info);
-					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderInfo.UseAttackWord), flags.HasFlag(PathFinderInfo.UseEndWord));
+					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
 				{
@@ -507,7 +507,7 @@ namespace AutoKkutu
 			get;
 		}
 
-		public PathFinderInfo Flags
+		public PathFinderOptions Flags
 		{
 			get;
 		}
@@ -537,7 +537,7 @@ namespace AutoKkutu
 			get;
 		}
 
-		public UpdatedPathEventArgs(ResponsePresentedWord word, string missionChar, PathFinderResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, PathFinderInfo flags = PathFinderInfo.None)
+		public UpdatedPathEventArgs(ResponsePresentedWord word, string missionChar, PathFinderResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, PathFinderOptions flags = PathFinderOptions.None)
 		{
 			Word = word;
 			MissionChar = missionChar;
@@ -550,12 +550,12 @@ namespace AutoKkutu
 	}
 
 	[Flags]
-	public enum PathFinderInfo
+	public enum PathFinderOptions
 	{
 		None = 0,
 		UseEndWord = 1 << 0,
 		UseAttackWord = 1 << 1,
-		Retrial = 1 << 2,
+		AutoFixed = 1 << 2,
 		ManualSearch = 1 << 3
 	}
 
@@ -578,7 +578,7 @@ namespace AutoKkutu
 			get; set;
 		}
 
-		public PathFinderInfo PathFinderFlags
+		public PathFinderOptions PathFinderFlags
 		{
 			get; set;
 		}
