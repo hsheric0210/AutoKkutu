@@ -114,7 +114,7 @@ namespace AutoKkutu.Utils
 						auxiliaryConnection.ExecuteVacuum();
 					}
 
-					Logger.InfoFormat(CultureInfo.CurrentCulture, "Database check completed: Total {0} / Removed {1} / Deduplicated{2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
+					Logger.InfoFormat(CultureInfo.CurrentCulture, "Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
 
 					DatabaseEvents.TriggerDatabaseIntegrityCheckDone(new DataBaseIntegrityCheckDoneEventArgs($"{RemovedCount + DeduplicatedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
 				}

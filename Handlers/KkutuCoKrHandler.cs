@@ -2,7 +2,7 @@
 {
 	internal partial class KkutuCoKrHandler : CommonHandler
 	{
-		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.co\\.kr\\/.*\\/game.*$";
+		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?kkutu\\.co\\.kr\\/.*\\/game.*$";
 
 		public override string GetHandlerName() => "Kkutu.co.kr Handler";
 

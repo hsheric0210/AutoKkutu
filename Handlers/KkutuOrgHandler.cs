@@ -9,7 +9,7 @@
 			EvaluateJS("document.getElementById('ChatBtn').click()");
 		}
 
-		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.org.*$";
+		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?kkutu\\.org.*$";
 
 		public override string GetHandlerName() => "Kkutu.org Handler";
 	}

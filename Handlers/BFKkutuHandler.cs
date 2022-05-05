@@ -2,7 +2,7 @@
 {
 	internal partial class BFKkutuHandler : CommonHandler
 	{
-		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?bfkkutu\\.kr\\/.*$";
+		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?bfkkutu\\.kr\\/.*$";
 
 		public override string GetHandlerName() => "BFKkutu.kr Handler";
 

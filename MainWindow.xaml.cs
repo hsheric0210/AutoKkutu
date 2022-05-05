@@ -149,7 +149,7 @@ namespace AutoKkutu
 		{
 			try
 			{
-				var config = Properties.Settings.Default;
+				Properties.Settings config = Properties.Settings.Default;
 				config.Reload();
 				CurrentConfig = new AutoKkutuConfiguration
 				{
@@ -202,16 +202,15 @@ namespace AutoKkutu
 
 		private bool CheckPathIsValid(UpdatedPathEventArgs args, PathFinderInfo flags)
 		{
-			var handler = Handler;
-			if (handler == null || flags.HasFlag(PathFinderInfo.ManualSearch))
+			if (Handler == null || flags.HasFlag(PathFinderInfo.ManualSearch))
 				return true;
 
-			bool differentWord = handler.CurrentPresentedWord != null && !args.Word.Equals(handler.CurrentPresentedWord);
-			bool differentMissionChar = CurrentConfig?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(handler.CurrentMissionChar) && !string.Equals(args.MissionChar, handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
-			if (handler.IsMyTurn && (differentWord || differentMissionChar))
+			bool differentWord = Handler.CurrentPresentedWord != null && !args.Word.Equals(Handler.CurrentPresentedWord);
+			bool differentMissionChar = CurrentConfig?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(args.MissionChar, Handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Logger.WarnFormat("Invalidated Incorrect Path Update Result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
-				StartPathFinding(handler.CurrentPresentedWord, handler.CurrentMissionChar, flags);
+				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar, flags);
 				return false;
 			}
 			return true;
@@ -398,7 +397,6 @@ namespace AutoKkutu
 						await Task.Delay(delay);
 						if (Handler.IsMyTurn)
 						{
-
 							SendMessage(word);
 							Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
 						}

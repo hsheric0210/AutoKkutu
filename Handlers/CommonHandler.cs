@@ -105,13 +105,13 @@ namespace AutoKkutu
 			return handlers;
 		}
 
-		public static CommonHandler? GetHandler(string? siteURL)
+		public static CommonHandler? GetHandler(string? site)
 		{
-			if (!string.IsNullOrEmpty(siteURL))
+			if (!string.IsNullOrEmpty(site))
 			{
 				foreach (CommonHandler handler in GetAvailableHandlers())
 				{
-					if (Regex.Match(siteURL, handler.GetSiteURLPattern()).Success)
+					if (Regex.Match(site, handler.GetSitePattern()).Success)
 						return handler;
 				}
 			}
@@ -476,7 +476,7 @@ namespace AutoKkutu
 
 		public string GetID() => $"{GetHandlerName()} - #{(_mainWatchdogTask == null ? "Global" : _mainWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
-		public abstract string GetSiteURLPattern();
+		public abstract string GetSitePattern();
 
 		public abstract string GetHandlerName();
 

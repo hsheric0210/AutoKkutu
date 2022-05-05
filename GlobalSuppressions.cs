@@ -7,3 +7,4 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Design", "CA1031")]
 [assembly: SuppressMessage("Reliability", "CA2007")]
+[assembly: SuppressMessage("Roslynator", "RCS1123")]

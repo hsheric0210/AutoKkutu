@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,8 +12,6 @@ namespace AutoKkutu
 	{
 		private const string User32_DllName = "user32.dll";
 		private const string Kernel32_DllName = "kernel32.dll";
-		private const string ProgramIntroduction = $"*** AutoKkutu v{MainWindow.VERSION}";
-		private const string ConsoleIntroduction = "- Verbose console enabled because debugger is not attached.";
 
 		private const int MF_BYCOMMAND = 0;
 
@@ -44,18 +43,22 @@ namespace AutoKkutu
 		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
 
+		[DllImport(Kernel32_DllName)]
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+		private static extern int GetLastError();
+
 		public static void Show()
 		{
 			if (!Debugger.IsAttached && !HasConsole)
 			{
 				if (!AllocConsole())
-					DrawErrorBox("Failed to allocate the console.");
+					DrawErrorBox(string.Format(CultureInfo.CurrentCulture, Properties.Resources.AllocConsoleFailed, GetLastError()));
 				Console.InputEncoding = Encoding.UTF8;
 				Console.OutputEncoding = Encoding.UTF8;
 				if (DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND) == 0)
-					DrawErrorBox("Failed to delete console menu items.");
-				Console.WriteLine(ProgramIntroduction);
-				Console.WriteLine(ConsoleIntroduction);
+					DrawErrorBox(string.Format(CultureInfo.CurrentCulture, Properties.Resources.DeleteConsoleMenuFailed, GetLastError()));
+				Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Properties.Resources.ProgramIntroduction, MainWindow.VERSION));
+				Console.WriteLine(Properties.Resources.ConsoleIntroduction);
 				Console.WriteLine("");
 			}
 		}

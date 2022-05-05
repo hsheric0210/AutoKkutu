@@ -105,6 +105,7 @@ namespace AutoKkutu.Utils
 			// 앞말잇기 공격 노드
 			if (PathFinder.CheckNodePresence("reverse attack", word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordDatabaseAttributes.ReverseAttackWord, ref flags, true))
 				NewAttackNode++;
+
 			if (word.Length > 2)
 			{
 				// 끄투 한방 노드

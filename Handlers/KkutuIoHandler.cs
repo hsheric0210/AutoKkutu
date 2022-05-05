@@ -8,7 +8,7 @@
 	{
 		private const string ParseExtraVisibilityStyleTagsFunc = "ParseExtraVisibilityStyleTagsFunc";
 
-		public override string GetSiteURLPattern() => "(http:|https:)?(\\/\\/)?kkutu\\.io\\/\\?server=.*$";
+		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?kkutu\\.io\\/\\?server=.*$";
 
 		public override string GetHandlerName() => "Kkutu.io Handler";
 
