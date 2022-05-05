@@ -40,7 +40,7 @@ namespace AutoKkutu.Databases
 		/// <exception cref="InvalidOperationException"></exception>
 		public void RegisterDefaultConnection(CommonDatabaseConnection defaultConnection)
 		{
-			if (DefaultConnection != null)
+			if (_defaultConnection != null)
 				throw new InvalidOperationException($"{nameof(DefaultConnection)} is already initialized");
 			_defaultConnection = defaultConnection;
 		}

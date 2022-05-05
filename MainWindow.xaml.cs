@@ -367,6 +367,7 @@ namespace AutoKkutu
 		{
 			string word = args.Word.Content;
 
+			Handler.RequireNotNull();
 			if (!CurrentConfig.RequireNotNull().AutoEnterEnabled)
 				return;
 
@@ -383,8 +384,11 @@ namespace AutoKkutu
 					{
 						while (inputStopwatch.ElapsedMilliseconds <= delay)
 							await Task.Delay(1);
-						SendMessage(word);
-						Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+						if (Handler.IsMyTurn)
+						{
+							SendMessage(word);
+							Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+						}
 					});
 				}
 				else
@@ -392,8 +396,12 @@ namespace AutoKkutu
 					Task.Run(async () =>
 					{
 						await Task.Delay(delay);
-						SendMessage(word);
-						Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+						if (Handler.IsMyTurn)
+						{
+
+							SendMessage(word);
+							Logger.InfoFormat("Entered word (typing battle): '{0}'", word);
+						}
 					});
 				}
 			}

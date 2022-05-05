@@ -261,12 +261,16 @@ namespace AutoKkutu
 			ILog logger = GetLogger(watchdogID, "Turn");
 			if (IsGameNotInMyTurn())
 			{
+				if (!IsMyTurn)
+					return;
+
+				_isMyTurn = false;
 				logger.Debug("My turn ended.");
 				OnMyTurnEnded?.Invoke(this, EventArgs.Empty);
-				_isMyTurn = false;
 			}
 			else if (!_isMyTurn)
 			{
+				_isMyTurn = true;
 				ResponsePresentedWord? presentedWord = GetPresentedWord();
 				if (presentedWord == null)
 					return;
@@ -277,7 +281,6 @@ namespace AutoKkutu
 					logger.InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
 				OnMyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
-				_isMyTurn = true;
 			}
 		}
 
@@ -479,27 +482,30 @@ namespace AutoKkutu
 
 		public virtual bool IsGameNotInProgress()
 		{
-			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", "IsGameNotInProgress");
-			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", "IsGameNotInProgress");
+			string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", nameof(IsGameNotInProgress));
+			string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", nameof(IsGameNotInProgress));
 			return (string.IsNullOrWhiteSpace(height) || !string.IsNullOrWhiteSpace(display)) && (string.IsNullOrWhiteSpace(display) || display.Equals("none", StringComparison.OrdinalIgnoreCase));
 		}
 
 		public virtual bool IsGameNotInMyTurn()
 		{
-			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]", "IsGameNotInMyTurn");
-			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", "IsGameNotInMyTurn");
-			return string.Equals(element, "undefined", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.OrdinalIgnoreCase);
+			string element = EvaluateJS("document.getElementsByClassName('game-input')[0]", nameof(IsGameNotInMyTurn));
+			if (string.Equals(element, "undefined", StringComparison.OrdinalIgnoreCase))
+				return true;
+
+			string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", nameof(IsGameNotInMyTurn));
+			return string.IsNullOrWhiteSpace(displayOpt) || displayOpt.Equals("none", StringComparison.OrdinalIgnoreCase);
 		}
 
-		public virtual string GetGamePresentedWord() => EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", "GetGamePresentedWord");
+		public virtual string GetGamePresentedWord() => EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(GetGamePresentedWord));
 
 		public virtual string GetGamePreviousWord(int index)
 		{
 			if (index is < 0 or >= 6)
 				throw new ArgumentOutOfRangeException($"index: {index}");
-			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]", "GetGamePreviousWord").Equals("undefined", StringComparison.OrdinalIgnoreCase))
+			if (EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]", nameof(GetGamePreviousWord)).Equals("undefined", StringComparison.OrdinalIgnoreCase))
 				return "";
-			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", "GetGamePreviousWord");
+			return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", nameof(GetGamePreviousWord));
 		}
 
 		public virtual string GetGameRoundText() => EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", "GetGameRoundText");
