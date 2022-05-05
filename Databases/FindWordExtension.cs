@@ -84,9 +84,9 @@ namespace AutoKkutu.Databases
 
 			var result = new List<PathObject>();
 			GetOptimalWordDatabaseAttributes(info.Mode, out int endWordFlag, out int attackWordFlag);
-			string query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
+			Query query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
 			Logger.DebugFormat("Execute query : {0}", query);
-			using (DbDataReader reader = connection.ExecuteReader(query))
+			using (DbDataReader reader = connection.ExecuteReader(query.Command, query.Parameters))
 			{
 				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
 				int flagsOrdinal = reader.GetOrdinal(DatabaseConstants.FlagsColumnName);
@@ -107,17 +107,30 @@ namespace AutoKkutu.Databases
 			return result;
 		}
 
-		private static string CreateQuery(this CommonDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
+		private static Query CreateQuery(this CommonDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
 		{
+			var paramList = new List<CommonDatabaseParameter>();
+
 			string condition;
 			ResponsePresentedWord data = info.Word;
 			string indexColumnName = GetIndexColumnName(info);
+			paramList.Add(connection.CreateParameter("@primaryWord", data.Content));
 			if (data.CanSubstitution)
-				condition = $"WHERE ({indexColumnName} = '{data.Content}' OR {indexColumnName} = '{data.Substitution}')";
+			{
+				condition = $"WHERE ({indexColumnName} = @primaryWord OR {indexColumnName} = @secondaryWord)";
+				paramList.Add(connection.CreateParameter("@secondaryWord", data.Substitution!));
+			}
 			else
-				condition = $"WHERE ({indexColumnName} = '{data.Content}')";
+			{
+				condition = $"WHERE ({indexColumnName} = @primaryWord)";
+			}
 
-			var opt = new PreferenceInfo { PathFinderFlags = info.PathFinderFlags, WordPreference = info.WordPreference, Condition = "" };
+			var opt = new PreferenceInfo
+			{
+				PathFinderFlags = info.PathFinderFlags,
+				WordPreference = info.WordPreference,
+				Condition = ""
+			};
 
 			// 한방 단어
 			ApplyFilter(PathFinderOptions.UseEndWord, endWordFlag, ref opt);
@@ -125,15 +138,15 @@ namespace AutoKkutu.Databases
 			// 공격 단어
 			ApplyFilter(PathFinderOptions.UseAttackWord, attackWordFlag, ref opt);
 
-			string orderCondition = $"({CreateRearrangeCondition(connection, info.MissionChar, info.WordPreference, endWordFlag, attackWordFlag)} + LENGTH({DatabaseConstants.WordColumnName}))";
+			string orderCondition = $"({CreateRearrangeCondition(connection, info.MissionChar, info.WordPreference, endWordFlag, attackWordFlag, paramList)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
 			if (info.Mode == GameMode.All)
 				condition = opt.Condition = "";
 
-			return $"SELECT * FROM {DatabaseConstants.WordListTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}";
+			return new Query($"SELECT * FROM {DatabaseConstants.WordListTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}", paramList.ToArray());
 		}
 
-		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag)
+		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag, ICollection<CommonDatabaseParameter> paramList)
 		{
 			if (string.IsNullOrWhiteSpace(missionChar))
 			{
@@ -150,13 +163,13 @@ namespace AutoKkutu.Databases
 			}
 			else
 			{
+				paramList.Add(connection.CreateParameter("@missionChar", missionChar));
 				return string.Format(
 					CultureInfo.InvariantCulture,
-					"{0}({1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})",
+					"{0}({1}, {2}, @missionChar, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})",
 					connection.GetRearrangeMissionFuncName(),
 					DatabaseConstants.WordColumnName,
 					DatabaseConstants.FlagsColumnName,
-					missionChar,
 					endWordFlag,
 					attackWordFlag,
 					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord | WordAttributes.MissionWord),
@@ -180,6 +193,8 @@ namespace AutoKkutu.Databases
 			if (!info.PathFinderFlags.HasFlag(targetFlag))
 				info.Condition += $" AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
 		}
+
+		private sealed record Query(string Command, params CommonDatabaseParameter[] Parameters);
 
 		private struct PreferenceInfo
 		{
