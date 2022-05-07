@@ -53,12 +53,11 @@ namespace AutoKkutu.Databases.Extension
 
 			var result = new List<string>();
 
-			using (DbDataReader reader = connection.ExecuteReader($"SELECT * FROM {tableName}"))
-			{
-				int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
-				while (reader.Read())
-					result.Add(reader.GetString(wordIndexOrdinal));
-			}
+			using CommonDatabaseCommand _command = connection.CreateCommand($"SELECT * FROM {tableName}");
+			using DbDataReader reader = _command.ExecuteReader();
+			int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
+			while (reader.Read())
+				result.Add(reader.GetString(wordIndexOrdinal));
 
 			Logger.InfoFormat("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;

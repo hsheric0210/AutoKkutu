@@ -37,7 +37,7 @@ namespace AutoKkutu.Utils
 				{
 					var watch = new Stopwatch();
 
-					int totalElementCount = Convert.ToInt32(database.ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName}"), CultureInfo.InvariantCulture);
+					int totalElementCount = Convert.ToInt32(database.DefaultConnection.RequireNotNull().ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName}"), CultureInfo.InvariantCulture);
 					Logger.InfoFormat("Database has Total {0} elements.", totalElementCount);
 
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
@@ -56,8 +56,9 @@ namespace AutoKkutu.Utils
 						auxiliaryConnection.RefreshNodeLists();
 
 						// Check for errorsd
-						using (DbDataReader reader = auxiliaryConnection.ExecuteReader($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+						using (CommonDatabaseCommand _command = auxiliaryConnection.CreateCommand($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 						{
+							using DbDataReader reader = _command.ExecuteReader();
 							Logger.Info("Searching problems...");
 
 							int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);

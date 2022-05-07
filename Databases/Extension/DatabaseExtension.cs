@@ -28,13 +28,6 @@ namespace AutoKkutu.Databases.Extension
 			return _command.ExecuteScalar();
 		}
 
-		public static DbDataReader ExecuteReader(this CommonDatabaseConnection connection, string command, params CommonDatabaseParameter[] parameters)
-		{
-			CommonDatabaseCommand _command = connection.CreateCommand(command, parameters);
-			DbDataReader reader = _command.ExecuteReader();
-			return new WrappedDbDataReader(_command, reader);
-		}
-
 		public static int TryExecuteNonQuery(this CommonDatabaseConnection connection, string action, string command, params CommonDatabaseParameter[] parameters)
 		{
 			using CommonDatabaseCommand _command = connection.CreateCommand(command, parameters);
@@ -45,13 +38,6 @@ namespace AutoKkutu.Databases.Extension
 		{
 			using CommonDatabaseCommand _command = connection.CreateCommand(command, parameters);
 			return _command.TryExecuteScalar(action);
-		}
-
-		public static DbDataReader? TryExecuteReader(this CommonDatabaseConnection connection, string action, string command, params CommonDatabaseParameter[] parameters)
-		{
-			CommonDatabaseCommand _command = connection.CreateCommand(command, parameters);
-			DbDataReader? reader = _command.TryExecuteReader(action);
-			return reader != null ? new WrappedDbDataReader(_command, reader) : null;
 		}
 
 		public static int DeduplicateDatabase(this CommonDatabaseConnection connection)

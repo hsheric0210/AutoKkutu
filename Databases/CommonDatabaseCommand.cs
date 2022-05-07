@@ -84,7 +84,6 @@ namespace AutoKkutu.Databases
 		public void UpdateParameter(string name, object? value) => Command.RequireNotNull().Parameters[name].Value = value;
 
 		protected void SetCommand(DbCommand command) => Command = command; protected virtual void Dispose(bool disposing)
-
 		{
 			if (disposing)
 				Command.RequireNotNull().Dispose();

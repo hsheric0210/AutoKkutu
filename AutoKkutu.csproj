@@ -90,8 +90,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Common.NETCore" Version="100.0.230" />
-    <PackageReference Include="CefSharp.Wpf.NETCore" Version="100.0.230" />
+    <PackageReference Include="CefSharp.Common.NETCore" Version="101.0.150" />
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="101.0.150" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0">
         <NoWarn>NU1701</NoWarn>
     </PackageReference>
@@ -140,6 +140,18 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="101.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="101.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="101.0.15" />
   </ItemGroup>
 
 </Project>

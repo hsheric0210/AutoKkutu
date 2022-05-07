@@ -16,24 +16,6 @@ namespace AutoKkutu.Databases
 
 		public abstract void CheckConnectionType(CommonDatabaseConnection connection);
 
-		public int ExecuteNonQuery(string query, params CommonDatabaseParameter[] parameters)
-		{
-			CheckDefaultConnectionEstablished();
-			return DefaultConnection.ExecuteNonQuery(query, parameters);
-		}
-
-		public DbDataReader? ExecuteReader(string query, params CommonDatabaseParameter[] parameters)
-		{
-			CheckDefaultConnectionEstablished();
-			return DefaultConnection.ExecuteReader(query, parameters);
-		}
-
-		public object? ExecuteScalar(string query, params CommonDatabaseParameter[] parameters)
-		{
-			CheckDefaultConnectionEstablished();
-			return DefaultConnection.ExecuteScalar(query, parameters);
-		}
-
 		/// <summary>
 		/// Register the default connection
 		/// </summary>
