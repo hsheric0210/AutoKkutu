@@ -9,10 +9,10 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="AutoDBUpdateMode" Type="AutoKkutu.Constants.AutoDBUpdateMode" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">OnGameEnd</Value>
     </Setting>
     <Setting Name="ActiveWordPreference" Type="AutoKkutu.Constants.WordPreference" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">5;6;4;1;2;0</Value>
     </Setting>
     <Setting Name="InactiveWordPreference" Type="AutoKkutu.Constants.WordPreference" Scope="User">
       <Value Profile="(Default)" />

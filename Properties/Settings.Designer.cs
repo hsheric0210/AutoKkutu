@@ -49,6 +49,7 @@ namespace AutoKkutu.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("OnGameEnd")]
         public global::AutoKkutu.Constants.AutoDBUpdateMode AutoDBUpdateMode {
             get {
                 return ((global::AutoKkutu.Constants.AutoDBUpdateMode)(this["AutoDBUpdateMode"]));
@@ -60,6 +61,7 @@ namespace AutoKkutu.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5;6;4;1;2;0")]
         public global::AutoKkutu.Constants.WordPreference ActiveWordPreference {
             get {
                 return ((global::AutoKkutu.Constants.WordPreference)(this["ActiveWordPreference"]));
