@@ -43,6 +43,7 @@ namespace AutoKkutu.Databases.MySQL
 			using var command = new MySqlCommand(query, Connection);
 			if (parameters != null)
 				command.Parameters.AddRange(TranslateParameter(parameters));
+			command.Prepare();
 			return command.ExecuteNonQuery();
 		}
 
@@ -54,6 +55,7 @@ namespace AutoKkutu.Databases.MySQL
 			using var command = new MySqlCommand(query, Connection);
 			if (parameters != null)
 				command.Parameters.AddRange(TranslateParameter(parameters));
+			command.Prepare();
 			return command.ExecuteReader();
 		}
 
@@ -65,6 +67,7 @@ namespace AutoKkutu.Databases.MySQL
 			using var command = new MySqlCommand(query, Connection);
 			if (parameters != null)
 				command.Parameters.AddRange(TranslateParameter(parameters));
+			command.Prepare();
 			return command.ExecuteScalar();
 		}
 

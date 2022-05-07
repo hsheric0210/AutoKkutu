@@ -37,12 +37,6 @@
 
 		public const int QueryResultLimit = 128;
 
-		public const int MissionCharIndexPriority = 256;
-
-		public const int AttackWordIndexPriority = 512;
-
-		public const int EndWordIndexPriority = 1280; // 공격 미션 단어보다 한방 단어를 우선하기 위함; (256 + 256) + (512 + 256)
-
 		// https://wiki.postgresql.org/wiki/Deleting_duplicates
 		public static readonly string DeduplicationQuery = $"DELETE FROM {WordListTableName} WHERE seq IN (SELECT seq FROM (SELECT seq, ROW_NUMBER() OVER w as rnum FROM {WordListTableName} WINDOW w AS (PARTITION BY word ORDER BY seq)) t WHERE t.rnum > 1);";
 
@@ -55,6 +49,6 @@
 		public const string ErrorGetColumnType = "Failed to get the data type of column '{0}' in table '{1}'";
 
 		public const int MaxWordLength = 256;
-		public const int MaxWordPlusMissionLength = 512;
+		public const int MaxWordPlusMissionLength = 65536; // 256(Max db word length) * 256(Max mission char count per word)
 	}
 }

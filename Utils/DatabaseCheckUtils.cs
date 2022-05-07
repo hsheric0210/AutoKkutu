@@ -144,7 +144,7 @@ namespace AutoKkutu.Utils
 			foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
 			{
 				Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
-				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
+				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", pair.Key));
 				count++;
 			}
 
@@ -167,7 +167,8 @@ namespace AutoKkutu.Utils
 					correctWordIndex = correctIndexSupplier(pair.Key);
 					Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from '{2}' to '{3}'.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
 				}
-				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = '{pair.Key}';");
+
+				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", pair.Key));
 				count++;
 			}
 
@@ -177,10 +178,10 @@ namespace AutoKkutu.Utils
 		private static int DeleteElements(this CommonDatabaseConnection connection, IEnumerable<string> DeletionList)
 		{
 			int count = 0;
-			foreach (string content in DeletionList)
+			foreach (string word in DeletionList)
 			{
-				Logger.InfoFormat("Removed '{0}' from database.", content);
-				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '" + content + "'");
+				Logger.InfoFormat("Removed '{0}' from database.", word);
+				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
 				count++;
 			}
 
@@ -281,7 +282,7 @@ namespace AutoKkutu.Utils
 		{
 			bool result = BatchJobUtils.CheckOnline(word.Trim());
 			if (!result)
-				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '{word}'");
+				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
 			return result;
 		}
 	}

@@ -25,7 +25,13 @@ namespace AutoKkutu.Databases
 			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @node;", connection.CreateParameter("@node", node[0])), CultureInfo.InvariantCulture) > 0)
 				return false;
 
-			connection.ExecuteNonQuery($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES('{node[0]}')");
+			CommonDatabaseParameter parameter;
+			if (tableName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.Ordinal))
+				parameter = connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@index", node[..2]);
+			else
+				parameter = connection.CreateParameter(CommonDatabaseType.Character, 1, "@index", node[0]);
+
+			connection.ExecuteNonQuery($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@index)", parameter);
 			return true;
 		}
 
@@ -39,7 +45,12 @@ namespace AutoKkutu.Databases
 			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", word)), CultureInfo.InvariantCulture) > 0)
 				return false;
 
-			connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES('{word.GetLaFHeadNode()}', '{word.GetFaLHeadNode()}', '{word.GetKkutuHeadNode()}', '{word}', {(int)flags})");
+			connection.ExecuteNonQuery(
+				$"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES(@lafHead, @falHead, @kkutuHead, @word, {(int)flags})",
+				connection.CreateParameter(CommonDatabaseType.Character, 1, "@lafHead", word.GetLaFHeadNode()),
+				connection.CreateParameter(CommonDatabaseType.Character, 1, "@falHead", word.GetFaLHeadNode()),
+				connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@kkutuHead", word.GetKkutuHeadNode()),
+				connection.CreateParameter("@word", word));
 			return true;
 		}
 
@@ -81,7 +92,7 @@ namespace AutoKkutu.Databases
 			if (string.IsNullOrWhiteSpace(tableName))
 				tableName = DatabaseConstants.EndWordListTableName;
 
-			return connection.ExecuteNonQuery($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = '{node}'");
+			return connection.ExecuteNonQuery($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @index", connection.CreateParameter("@index", node));
 		}
 
 		public static int DeleteWord(this CommonDatabaseConnection connection, string word)
@@ -89,7 +100,7 @@ namespace AutoKkutu.Databases
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			return connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = '{word}'");
+			return connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
 		}
 
 		public static ICollection<string> GetNodeList(this CommonDatabaseConnection connection, string tableName)

@@ -45,21 +45,21 @@ BEGIN
 	
 	IF ((flags & endWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
-			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
 		ELSE
 			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
 		END IF;
 	END IF;
 	IF ((flags & attackWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
-			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
 		ELSE
 			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
 		END IF;
 	END IF;
 
 	IF occurrence > 0 THEN
-		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence;
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
 	ELSE
 		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
 	END IF;

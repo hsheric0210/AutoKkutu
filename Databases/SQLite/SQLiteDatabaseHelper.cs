@@ -21,6 +21,7 @@ namespace AutoKkutu.Databases.SQLite
 			using var command = new SqliteCommand(query, connection);
 			if (parameters != null)
 				command.Parameters.AddRange(parameters);
+			command.Prepare();
 			return command.ExecuteNonQuery();
 		}
 
@@ -32,6 +33,7 @@ namespace AutoKkutu.Databases.SQLite
 			var command = new SqliteCommand(query, connection);
 			if (parameters != null)
 				command.Parameters.AddRange(parameters);
+			command.Prepare();
 			return command.ExecuteReader();
 		}
 
@@ -43,6 +45,7 @@ namespace AutoKkutu.Databases.SQLite
 			using var command = new SqliteCommand(query, connection);
 			if (parameters != null)
 				command.Parameters.AddRange(parameters);
+			command.Prepare();
 			return command.ExecuteScalar();
 		}
 
