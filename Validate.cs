@@ -1,11 +1,7 @@
 ﻿using AutoKkutu.Databases;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
@@ -44,6 +40,13 @@ namespace AutoKkutu
 			if (reader == null)
 				throw new InvalidOperationException("Reader not open");
 			return reader;
+		}
+
+		public static DbCommand RequireNotNull([NotNull] this DbCommand? command)
+		{
+			if (command == null)
+				throw new InvalidOperationException("Command not initialized");
+			return command;
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using AutoKkutu.Databases.Extension;
+using Npgsql;
 using System;
 
 namespace AutoKkutu.Databases.PostgreSQL
@@ -42,7 +43,7 @@ DECLARE
 	occurrence INTEGER;
 BEGIN
 	occurrence := ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
-	
+
 	IF ((flags & endWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
 			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;

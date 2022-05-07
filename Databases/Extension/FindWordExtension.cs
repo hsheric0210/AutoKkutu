@@ -6,11 +6,14 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 
-namespace AutoKkutu.Databases
+namespace AutoKkutu.Databases.Extension
 {
 	public static class FindWordExtension
 	{
 		private static readonly ILog Logger = LogManager.GetLogger("Database Word Finder");
+
+		private static CommonDatabaseCommand? CachedCommand;
+		private static string? PreviousQuery;
 
 		private static string GetIndexColumnName(FindWordInfo opts)
 		{
@@ -85,8 +88,33 @@ namespace AutoKkutu.Databases
 			var result = new List<PathObject>();
 			GetOptimalWordDatabaseAttributes(info.Mode, out int endWordFlag, out int attackWordFlag);
 			Query query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
+
+			if (CachedCommand == null || PreviousQuery?.Equals(query.Command, StringComparison.Ordinal) != true)
+			{
+				CachedCommand = connection.CreateCommand(query.Command);
+
+				int paramCount = query.Parameters.Length;
+				var paramArray = new CommonDatabaseParameter[paramCount];
+				for (int i = 0; i < paramCount; i++)
+				{
+					(string name, object? value) = query.Parameters[i];
+					paramArray[i] = connection.CreateParameter(name, value);
+				}
+
+				CachedCommand.AddParameters(paramArray);
+				CachedCommand.TryPrepare();
+				PreviousQuery = query.Command;
+				Logger.Info("Initialized new command");
+			}
+			else
+			{
+				foreach ((string name, object? value) in query.Parameters)
+					CachedCommand.UpdateParameter(name, value);
+				Logger.Info("Using cached command; only updating parameters");
+			}
+
 			Logger.DebugFormat("Execute query : {0}", query);
-			using (DbDataReader reader = connection.ExecuteReader(query.Command, query.Parameters))
+			using (DbDataReader reader = CachedCommand.ExecuteReader())
 			{
 				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
 				int flagsOrdinal = reader.GetOrdinal(DatabaseConstants.FlagsColumnName);
@@ -109,16 +137,16 @@ namespace AutoKkutu.Databases
 
 		private static Query CreateQuery(this CommonDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
 		{
-			var paramList = new List<CommonDatabaseParameter>();
+			var paramList = new List<(string, object?)>();
 
 			string condition;
 			ResponsePresentedWord data = info.Word;
 			string indexColumnName = GetIndexColumnName(info);
-			paramList.Add(connection.CreateParameter("@primaryWord", data.Content));
+			paramList.Add(("@primaryWord", data.Content));
 			if (data.CanSubstitution)
 			{
 				condition = $"WHERE ({indexColumnName} = @primaryWord OR {indexColumnName} = @secondaryWord)";
-				paramList.Add(connection.CreateParameter("@secondaryWord", data.Substitution!));
+				paramList.Add(("@secondaryWord", data.Substitution!));
 			}
 			else
 			{
@@ -146,7 +174,7 @@ namespace AutoKkutu.Databases
 			return new Query($"SELECT * FROM {DatabaseConstants.WordListTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}", paramList.ToArray());
 		}
 
-		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag, ICollection<CommonDatabaseParameter> paramList)
+		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag, ICollection<(string, object?)> paramList)
 		{
 			if (string.IsNullOrWhiteSpace(missionChar))
 			{
@@ -163,7 +191,7 @@ namespace AutoKkutu.Databases
 			}
 			else
 			{
-				paramList.Add(connection.CreateParameter("@missionChar", missionChar));
+				paramList.Add(("@missionChar", missionChar));
 				return string.Format(
 					CultureInfo.InvariantCulture,
 					"{0}({1}, {2}, @missionChar, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})",
@@ -194,7 +222,7 @@ namespace AutoKkutu.Databases
 				info.Condition += $" AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
 		}
 
-		private sealed record Query(string Command, params CommonDatabaseParameter[] Parameters);
+		private sealed record Query(string Command, params (string, object?)[] Parameters);
 
 		private struct PreferenceInfo
 		{

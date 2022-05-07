@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
+using AutoKkutu.Databases.Extension;
 using AutoKkutu.Utils;
 using log4net;
 using System;
@@ -344,6 +345,7 @@ namespace AutoKkutu
 		}
 
 		public static void ResetPreviousPath() => PreviousPath = new List<string>();
+
 		public static void ResetFinalList() => FinalList = new List<PathObject>();
 	}
 

@@ -1,28 +1,24 @@
 ﻿using System;
-using System.Data;
+using System.Data.Common;
 using MySqlConnector;
 
 namespace AutoKkutu.Databases.MySQL
 {
 	public class MySQLDatabaseParameter : CommonDatabaseParameter
 	{
-		public MySQLDatabaseParameter(string name, object value) : base(name, value)
+		public MySQLDatabaseParameter(string name, object? value) : base(name, value)
 		{
 		}
 
-		public MySQLDatabaseParameter(CommonDatabaseType dataType, string name, object value) : base(dataType, name, value)
+		public MySQLDatabaseParameter(CommonDatabaseType dataType, string name, object? value) : base(dataType, name, value)
 		{
 		}
 
-		public MySQLDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object value) : base(dataType, precision, name, value)
+		public MySQLDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object? value) : base(dataType, precision, name, value)
 		{
 		}
 
-		public MySQLDatabaseParameter(ParameterDirection direction, CommonDatabaseType dataType, byte precision, string name, object value) : base(direction, dataType, precision, name, value)
-		{
-		}
-
-		public MySqlParameter Translate()
+		public override DbParameter Translate()
 		{
 			var parameter = new MySqlParameter
 			{

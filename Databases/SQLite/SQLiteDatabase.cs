@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using AutoKkutu.Databases.Extension;
+using Microsoft.Data.Sqlite;
 using System;
 using System.IO;
 using System.Linq;
@@ -45,7 +46,6 @@ namespace AutoKkutu.Databases.SQLite
 		private void RegisterRearrangeMissionFunc(SqliteConnection connection) =>
 			connection.CreateFunction(DefaultConnection!.GetRearrangeMissionFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
 			{
-				int length = word.Length;
 				char missionChar = char.ToUpperInvariant(missionWord[0]);
 				int missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
 				bool hasMission = missionOccurrence > 0;

@@ -1,4 +1,5 @@
-﻿using MySqlConnector;
+﻿using AutoKkutu.Databases.Extension;
+using MySqlConnector;
 using System;
 
 namespace AutoKkutu.Databases.MySQL
@@ -31,10 +32,10 @@ namespace AutoKkutu.Databases.MySQL
 DETERMINISTIC
 NO SQL
 BEGIN
-	IF ((flags & endWordFlag) != 0) THEN
+	IF (flags & endWordFlag) != 0 THEN
 		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
 	END IF;
-	IF ((flags & attackWordFlag) != 0) THEN
+	IF (flags & attackWordFlag) != 0 THEN
 		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
 	END IF;
 	RETURN normalWordOrdinal * {DatabaseConstants.MaxWordLength};
@@ -49,15 +50,15 @@ BEGIN
 	DECLARE occurrence INT;
 
 	SET occurrence = ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
-	IF ((flags & endWordFlag) != 0) THEN
-		IF (occurrence > 0) THEN
+	IF (flags & endWordFlag) != 0 THEN
+		IF occurrence > 0 THEN
 			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
 		ELSE
 			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
 		END IF;
 	END IF;
-	IF ((flags & attackWordFlag) != 0) THEN
-		IF (occurrence > 0) THEN
+	IF (flags & attackWordFlag) != 0 THEN
+		IF occurrence > 0 THEN
 			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
 		ELSE
 			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};

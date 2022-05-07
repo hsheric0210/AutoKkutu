@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Configuration;
-using System.Globalization;
 using System.Windows.Media;
 
 namespace AutoKkutu

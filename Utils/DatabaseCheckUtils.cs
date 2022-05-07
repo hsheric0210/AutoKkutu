@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
+using AutoKkutu.Databases.Extension;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -141,11 +142,23 @@ namespace AutoKkutu.Utils
 		private static int FixFlag(this CommonDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
 		{
 			int count = 0;
-			foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
+			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))
 			{
-				Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
-				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET flags = {pair.Value.Item2} WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", pair.Key));
-				count++;
+				command.TryPrepare();
+				command.AddParameters(connection.CreateParameter("@word", "_"));
+				command.AddParameters(connection.CreateParameter(CommonDatabaseType.SmallInt, "@flags", 0));
+
+				foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
+				{
+					command.UpdateParameter("@word", pair.Key);
+					command.UpdateParameter("@flags", pair.Value.Item2);
+
+					if (command.ExecuteNonQuery() > 0)
+					{
+						Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from {2} to {3}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
+						count++;
+					}
+				}
 			}
 
 			return count;
@@ -154,22 +167,36 @@ namespace AutoKkutu.Utils
 		private static int FixIndex(this CommonDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string>? correctIndexSupplier)
 		{
 			int count = 0;
-			foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
+			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = @correctIndex WHERE {DatabaseConstants.WordColumnName} = @word;"))
 			{
-				string correctWordIndex;
-				if (correctIndexSupplier == null)
-				{
-					correctWordIndex = pair.Value;
-					Logger.InfoFormat("Fixed {0}: from '{1}' to '{2}'.", indexColumnName, pair.Key, correctWordIndex);
-				}
-				else
-				{
-					correctWordIndex = correctIndexSupplier(pair.Key);
-					Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from '{2}' to '{3}'.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
-				}
+				command.TryPrepare();
+				var parameters = new CommonDatabaseParameter[2] {
+					connection.CreateParameter("@word", "_"), connection.CreateParameter(CommonDatabaseType.Character, 1, "@correctIndex", 0)
+				};
+				if (indexColumnName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.OrdinalIgnoreCase))
+					parameters[1] = connection.CreateParameter(CommonDatabaseType.CharacterVarying, "@correctIndex", 0);
+				command.AddParameters(parameters);
 
-				connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = '{correctWordIndex}' WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", pair.Key));
-				count++;
+				foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
+				{
+					string correctWordIndex;
+					if (correctIndexSupplier == null)
+						correctWordIndex = pair.Value;
+					else
+						correctWordIndex = correctIndexSupplier(pair.Key);
+
+					command.UpdateParameter("@word", pair.Key);
+					command.UpdateParameter("@correctIndex", correctWordIndex);
+					if (command.ExecuteNonQuery() > 0)
+					{
+						if (correctIndexSupplier == null)
+							Logger.InfoFormat("Fixed {0}: from '{1}' to '{2}'.", indexColumnName, pair.Key, correctWordIndex);
+						else
+							Logger.InfoFormat(CultureInfo.CurrentCulture, "Fixed {0} of '{1}': from '{2}' to '{3}'.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
+
+						count++;
+					}
+				}
 			}
 
 			return count;
@@ -178,11 +205,20 @@ namespace AutoKkutu.Utils
 		private static int DeleteElements(this CommonDatabaseConnection connection, IEnumerable<string> DeletionList)
 		{
 			int count = 0;
-			foreach (string word in DeletionList)
+			using (CommonDatabaseCommand command = connection.CreateCommand($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word"))
 			{
-				Logger.InfoFormat("Removed '{0}' from database.", word);
-				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
-				count++;
+				command.TryPrepare();
+				command.AddParameters(connection.CreateParameter("@word", "_"));
+
+				foreach (string word in DeletionList)
+				{
+					command.UpdateParameter("@word", word);
+					if (command.ExecuteNonQuery() > 0)
+					{
+						Logger.InfoFormat("Removed '{0}' from database.", word);
+						count++;
+					}
+				}
 			}
 
 			return count;
@@ -283,6 +319,7 @@ namespace AutoKkutu.Utils
 			bool result = BatchJobUtils.CheckOnline(word.Trim());
 			if (!result)
 				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
+
 			return result;
 		}
 	}

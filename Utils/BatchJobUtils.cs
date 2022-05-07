@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
+using AutoKkutu.Databases.Extension;
 using log4net;
 using System;
 using System.Threading;
@@ -11,7 +12,7 @@ namespace AutoKkutu.Utils
 	public static class BatchJobUtils
 	{
 		private const string _namespace = nameof(BatchJobUtils);
-		private readonly static ILog Logger = LogManager.GetLogger(_namespace);
+		private static readonly ILog Logger = LogManager.GetLogger(_namespace);
 
 		/// <summary>
 		/// Check if the word is available in the current server using the official kkutu dictionary feature.

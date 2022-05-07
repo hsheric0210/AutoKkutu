@@ -1,5 +1,4 @@
 using log4net.Config;
-using System;
 using System.Windows;
 
 [assembly: ThemeInfo(

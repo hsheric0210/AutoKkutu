@@ -1,29 +1,25 @@
 ﻿using Npgsql;
 using NpgsqlTypes;
 using System;
-using System.Data;
+using System.Data.Common;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
 	public class PostgreSQLDatabaseParameter : CommonDatabaseParameter
 	{
-		public PostgreSQLDatabaseParameter(string name, object value) : base(name, value)
+		public PostgreSQLDatabaseParameter(string name, object? value) : base(name, value)
 		{
 		}
 
-		public PostgreSQLDatabaseParameter(CommonDatabaseType dataType, string name, object value) : base(dataType, name, value)
+		public PostgreSQLDatabaseParameter(CommonDatabaseType dataType, string name, object? value) : base(dataType, name, value)
 		{
 		}
 
-		public PostgreSQLDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object value) : base(dataType, precision, name, value)
+		public PostgreSQLDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object? value) : base(dataType, precision, name, value)
 		{
 		}
 
-		public PostgreSQLDatabaseParameter(ParameterDirection direction, CommonDatabaseType dataType, byte precision, string name, object value) : base(direction, dataType, precision, name, value)
-		{
-		}
-
-		public NpgsqlParameter Translate()
+		public override DbParameter Translate()
 		{
 			var parameter = new NpgsqlParameter
 			{

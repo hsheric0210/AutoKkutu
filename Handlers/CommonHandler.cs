@@ -189,48 +189,39 @@ namespace AutoKkutu
 			}, ex => GetLogger(mainWatchdogID).Error("Main watchdog task terminated", ex), cancelToken);
 		}
 
-		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken, int mainWatchdogID = -1)
-		{
-			await Watchdog(async () =>
-			{
-				if (IsGameStarted)
-				{
-					action();
-					await Task.Delay(_ingame_interval, cancelToken);
-				}
-				else
-				{
-					await Task.Delay(_checkgame_interval, cancelToken);
-				}
-			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, watchdogName).Error($"{watchdogName} watchdog task terminated", ex), cancelToken);
-		}
+		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
+																																			{
+																																				if (IsGameStarted)
+																																				{
+																																					action();
+																																					await Task.Delay(_ingame_interval, cancelToken);
+																																				}
+																																				else
+																																				{
+																																					await Task.Delay(_checkgame_interval, cancelToken);
+																																				}
+																																			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, watchdogName).Error($"{watchdogName} watchdog task terminated", ex), cancelToken);
 
-		private async Task WatchdogGameMode(CancellationToken cancelToken, int mainWatchdogID = -1)
-		{
-			await Watchdog(async () =>
-			{
-				CheckGameMode(mainWatchdogID);
-				await Task.Delay(_checkgame_interval, cancelToken);
-			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error("GameMode watchdog task terminated", ex), cancelToken);
-		}
+		private async Task WatchdogGameMode(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
+																									   {
+																										   CheckGameMode(mainWatchdogID);
+																										   await Task.Delay(_checkgame_interval, cancelToken);
+																									   }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error("GameMode watchdog task terminated", ex), cancelToken);
 
 		// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
-		private async Task WatchdogPresentWord(CancellationToken cancelToken, int mainWatchdogID = -1)
-		{
-			await Watchdog(async () =>
-			{
-				if (CurrentConfig?.GameMode == GameMode.TypingBattle && IsGameStarted)
-				{
-					if (_isMyTurn)
-						GetCurrentTypingWord(mainWatchdogID);
-					await Task.Delay(_ingame_interval, cancelToken);
-				}
-				else
-				{
-					await Task.Delay(_checkgame_interval, cancelToken);
-				}
-			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error("Present word watchdog task terminated", ex), cancelToken);
-		}
+		private async Task WatchdogPresentWord(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
+																										  {
+																											  if (CurrentConfig?.GameMode == GameMode.TypingBattle && IsGameStarted)
+																											  {
+																												  if (_isMyTurn)
+																													  GetCurrentTypingWord(mainWatchdogID);
+																												  await Task.Delay(_ingame_interval, cancelToken);
+																											  }
+																											  else
+																											  {
+																												  await Task.Delay(_checkgame_interval, cancelToken);
+																											  }
+																										  }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error("Present word watchdog task terminated", ex), cancelToken);
 
 		private async Task WatchdogAssistant(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken) => await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 

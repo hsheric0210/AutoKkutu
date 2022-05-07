@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 
 namespace AutoKkutu.Databases
 {
@@ -8,11 +8,6 @@ namespace AutoKkutu.Databases
 		{
 			get; private set;
 		}
-
-		public ParameterDirection Direction
-		{
-			get;
-		} = ParameterDirection.Input;
 
 		public string Name
 		{
@@ -24,23 +19,23 @@ namespace AutoKkutu.Databases
 			get;
 		}
 
-		public object Value
+		public object? Value
 		{
 			get;
 		}
 
-		protected CommonDatabaseParameter(string name, object value)
+		protected CommonDatabaseParameter(string name, object? value)
 		{
 			Name = name;
 			Value = value;
 		}
 
-		protected CommonDatabaseParameter(CommonDatabaseType dataType, string name, object value) : this(name, value)
+		protected CommonDatabaseParameter(CommonDatabaseType dataType, string name, object? value) : this(name, value)
 		{
 			DataType = dataType;
 		}
 
-		protected CommonDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object value) : this(dataType, name, value)
+		protected CommonDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object? value) : this(dataType, name, value)
 		{
 			DataType = dataType;
 			Precision = precision;
@@ -48,9 +43,6 @@ namespace AutoKkutu.Databases
 			Value = value;
 		}
 
-		protected CommonDatabaseParameter(ParameterDirection direction, CommonDatabaseType dataType, byte precision, string name, object value) : this(dataType, precision, name, value)
-		{
-			Direction = direction;
-		}
+		public abstract DbParameter Translate();
 	}
 }

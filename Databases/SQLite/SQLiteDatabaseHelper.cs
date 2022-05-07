@@ -1,11 +1,11 @@
-﻿using log4net;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Databases.Extension;
+using log4net;
 using Microsoft.Data.Sqlite;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using AutoKkutu.Constants;
 
 namespace AutoKkutu.Databases.SQLite
 {
@@ -19,7 +19,7 @@ namespace AutoKkutu.Databases.SQLite
 				throw new ArgumentException(query, nameof(query));
 
 			using var command = new SqliteCommand(query, connection);
-			if (parameters != null)
+			if (parameters?.Length > 0)
 				command.Parameters.AddRange(parameters);
 			command.Prepare();
 			return command.ExecuteNonQuery();
@@ -31,7 +31,7 @@ namespace AutoKkutu.Databases.SQLite
 				throw new ArgumentException(query, nameof(query));
 
 			var command = new SqliteCommand(query, connection);
-			if (parameters != null)
+			if (parameters?.Length > 0)
 				command.Parameters.AddRange(parameters);
 			command.Prepare();
 			return command.ExecuteReader();
@@ -43,7 +43,7 @@ namespace AutoKkutu.Databases.SQLite
 				throw new ArgumentException(query, nameof(query));
 
 			using var command = new SqliteCommand(query, connection);
-			if (parameters != null)
+			if (parameters?.Length > 0)
 				command.Parameters.AddRange(parameters);
 			command.Prepare();
 			return command.ExecuteScalar();

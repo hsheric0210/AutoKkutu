@@ -1,28 +1,24 @@
 ﻿using Microsoft.Data.Sqlite;
-using System.Data;
 using System;
+using System.Data.Common;
 
 namespace AutoKkutu.Databases.SQLite
 {
 	public class SQLiteDatabaseParameter : CommonDatabaseParameter
 	{
-		public SQLiteDatabaseParameter(string name, object value) : base(name, value)
+		public SQLiteDatabaseParameter(string name, object? value) : base(name, value)
 		{
 		}
 
-		public SQLiteDatabaseParameter(CommonDatabaseType dataType, string name, object value) : base(dataType, name, value)
+		public SQLiteDatabaseParameter(CommonDatabaseType dataType, string name, object? value) : base(dataType, name, value)
 		{
 		}
 
-		public SQLiteDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object value) : base(dataType, precision, name, value)
+		public SQLiteDatabaseParameter(CommonDatabaseType dataType, byte precision, string name, object? value) : base(dataType, precision, name, value)
 		{
 		}
 
-		public SQLiteDatabaseParameter(ParameterDirection direction, CommonDatabaseType dataType, byte precision, string name, object value) : base(direction, dataType, precision, name, value)
-		{
-		}
-
-		public SqliteParameter Translate()
+		public override DbParameter Translate()
 		{
 			var parameter = new SqliteParameter
 			{
@@ -38,7 +34,7 @@ namespace AutoKkutu.Databases.SQLite
 			return parameter;
 		}
 
-		public SqliteType? TranslateDataType()
+		private SqliteType? TranslateDataType()
 		{
 			if (DataType == null)
 				return null;

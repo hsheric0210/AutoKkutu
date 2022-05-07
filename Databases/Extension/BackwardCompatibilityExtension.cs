@@ -1,7 +1,7 @@
 ﻿using log4net;
 using System;
 
-namespace AutoKkutu.Databases
+namespace AutoKkutu.Databases.Extension
 {
 	public static class BackwardCompatibilityExtension
 	{
@@ -14,13 +14,15 @@ namespace AutoKkutu.Databases
 
 			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.ReverseWordIndexColumnName))
 			{
-				connection.TryExecuteNonQuery($"add {DatabaseConstants.ReverseWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
+				using (CommonDatabaseCommand command = connection.CreateCommand($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '"))
+					command.TryExecuteNonQuery($"add {DatabaseConstants.ReverseWordIndexColumnName}");
 				Logger.Warn($"Added {DatabaseConstants.ReverseWordIndexColumnName} column");
 			}
 
 			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName))
 			{
-				connection.TryExecuteNonQuery($"add {DatabaseConstants.KkutuWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
+				using (CommonDatabaseCommand command = connection.CreateCommand($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '"))
+					command.TryExecuteNonQuery($"add {DatabaseConstants.KkutuWordIndexColumnName}");
 				Logger.Warn($"Added {DatabaseConstants.KkutuWordIndexColumnName} column");
 			}
 		}
@@ -77,8 +79,10 @@ namespace AutoKkutu.Databases
 				{
 					if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.FlagsColumnName))
 					{
-						connection.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
-						connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
+						using (CommonDatabaseCommand command = connection.CreateCommand($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0"))
+							command.ExecuteNonQuery();
+						using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)"))
+							command.ExecuteNonQuery();
 						Logger.Warn($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
 					}
 

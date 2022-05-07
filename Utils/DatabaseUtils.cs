@@ -8,11 +8,9 @@ using log4net;
 using System;
 using System.Configuration;
 using System.Linq;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AutoKkutu.Utils
 {
-	// TODO: Split into FlagExtension and NodeExtension
 	public static class DatabaseUtils
 	{
 		private static readonly ILog Logger = LogManager.GetLogger("Database Exts");
