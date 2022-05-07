@@ -49,6 +49,6 @@
 		public const string ErrorGetColumnType = "Failed to get the data type of column '{0}' in table '{1}'";
 
 		public const int MaxWordLength = 256;
-		public const int MaxWordPlusMissionLength = 65536; // 256(Max db word length) * 256(Max mission char count per word)
+		public const int MaxWordPlusMissionLength = 131072; // 256(Max db word length) * 256(Max mission char count per word)
 	}
 }
