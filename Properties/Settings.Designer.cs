@@ -84,7 +84,7 @@ namespace AutoKkutu.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool EndWordEnabled {
             get {
                 return ((bool)(this["EndWordEnabled"]));
@@ -96,7 +96,7 @@ namespace AutoKkutu.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool AttackWordEnabled {
             get {
                 return ((bool)(this["AttackWordEnabled"]));
@@ -120,7 +120,7 @@ namespace AutoKkutu.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool AutoFixEnabled {
             get {
                 return ((bool)(this["AutoFixEnabled"]));
@@ -132,7 +132,7 @@ namespace AutoKkutu.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool MissionAutoDetectionEnabled {
             get {
                 return ((bool)(this["MissionAutoDetectionEnabled"]));
