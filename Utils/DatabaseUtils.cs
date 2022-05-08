@@ -63,7 +63,12 @@ namespace AutoKkutu.Utils
 			// 앞말잇기 공격 노드
 			PathFinder.CheckNodePresence(null, word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordDatabaseAttributes.ReverseAttackWord, ref flags);
 
-			if (word.Length > 2)
+			int wordLength = word.Length;
+			if (wordLength == 2)
+			{
+				flags |= WordDatabaseAttributes.KKT2;
+			}
+			if (wordLength > 2)
 			{
 				// 끄투 한방 노드
 				PathFinder.CheckNodePresence(null, word.GetKkutuTailNode(), PathFinder.KkutuEndWordList, WordDatabaseAttributes.KkutuEndWord, ref flags);
@@ -71,7 +76,18 @@ namespace AutoKkutu.Utils
 				// 끄투 공격 노드
 				PathFinder.CheckNodePresence(null, word.GetKkutuTailNode(), PathFinder.KkutuAttackWordList, WordDatabaseAttributes.KkutuAttackWord, ref flags);
 
-				if (word.Length % 2 == 1)
+				if (wordLength == 3)
+				{
+					flags |= WordDatabaseAttributes.KKT3;
+
+					// 쿵쿵따 한방 노드
+					PathFinder.CheckNodePresence(null, word.GetLaFTailNode(), PathFinder.KKTEndWordList, WordDatabaseAttributes.KKTEndWord, ref flags);
+
+					// 쿵쿵따 공격 노드
+					PathFinder.CheckNodePresence(null, word.GetLaFTailNode(), PathFinder.KKTAttackWordList, WordDatabaseAttributes.KKTAttackWord, ref flags);
+				}
+
+				if (wordLength % 2 == 1)
 				{
 					// 가운뎃말잇기 한방 노드
 					PathFinder.CheckNodePresence(null, word.GetMaFNode(), PathFinder.EndWordList, WordDatabaseAttributes.MiddleEndWord, ref flags);
@@ -100,16 +116,32 @@ namespace AutoKkutu.Utils
 			// 앞말잇기 공격 노드
 			NewAttackNode += Convert.ToInt32(PathFinder.CheckNodePresence("reverse attack", word.GetFaLTailNode(), PathFinder.ReverseAttackWordList, WordDatabaseAttributes.ReverseAttackWord, ref flags, true));
 
-			if (word.Length > 2)
+			int wordLength = word.Length;
+			if (word.Length == 2)
+			{
+				flags |= WordDatabaseAttributes.KKT2;
+			}
+			else if (wordLength > 2)
 			{
 				// 끄투 한방 노드
 				NewEndNode += Convert.ToInt32(PathFinder.CheckNodePresence("kkutu end", word.GetKkutuTailNode(), PathFinder.KkutuEndWordList, WordDatabaseAttributes.KkutuEndWord, ref flags, true));
-					NewEndNode++;
+				NewEndNode++;
 
 				// 끄투 공격 노드
 				NewAttackNode += Convert.ToInt32(PathFinder.CheckNodePresence("kkutu attack", word.GetKkutuTailNode(), PathFinder.KkutuAttackWordList, WordDatabaseAttributes.KkutuAttackWord, ref flags, true));
 
-				if (word.Length % 2 == 1)
+				if (wordLength == 3)
+				{
+					flags |= WordDatabaseAttributes.KKT3;
+
+					// 쿵쿵따 한방 노드
+					NewEndNode += Convert.ToInt32(PathFinder.CheckNodePresence("kungkungtta end", word.GetLaFTailNode(), PathFinder.KKTEndWordList, WordDatabaseAttributes.EndWord, ref flags, true));
+
+					// 쿵쿵따 공격 노드
+					NewAttackNode += Convert.ToInt32(PathFinder.CheckNodePresence("kungkungtta attack", word.GetLaFTailNode(), PathFinder.KKTAttackWordList, WordDatabaseAttributes.AttackWord, ref flags, true));
+				}
+
+				if (wordLength % 2 == 1)
 				{
 					// 가운뎃말잇기 한방 노드
 					NewEndNode += Convert.ToInt32(PathFinder.CheckNodePresence("middle end", word.GetMaFNode(), PathFinder.EndWordList, WordDatabaseAttributes.MiddleEndWord, ref flags, true));

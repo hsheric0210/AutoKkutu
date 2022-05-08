@@ -13,6 +13,9 @@ namespace AutoKkutu.Databases.Extension
 			foreach (string tableName in new string[] { DatabaseConstants.EndWordListTableName, DatabaseConstants.AttackWordListTableName, DatabaseConstants.ReverseEndWordListTableName, DatabaseConstants.ReverseAttackWordListTableName, DatabaseConstants.KkutuEndWordListTableName, DatabaseConstants.KkutuAttackWordListTableName })
 				connection.MakeTableIfNotExists(tableName);
 
+			connection.MakeTableIfNotExists(DatabaseConstants.KKTEndWordListTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTEndWordListTableName} SELECT * FROM {DatabaseConstants.EndWordListTableName}"));
+			connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackWordListTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTAttackWordListTableName} SELECT * FROM {DatabaseConstants.AttackWordListTableName}"));
+
 			// Create word list table
 			if (!connection.IsTableExists(DatabaseConstants.WordListTableName))
 				connection.MakeTable(DatabaseConstants.WordListTableName);
@@ -38,13 +41,16 @@ namespace AutoKkutu.Databases.Extension
 			connection.ExecuteNonQuery($"CREATE TABLE {tablename} ({columnOptions});");
 		}
 
-		public static void MakeTableIfNotExists(this CommonDatabaseConnection connection, string tableName)
+		public static void MakeTableIfNotExists(this CommonDatabaseConnection connection, string tableName, Action? callback = null)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			if (!connection.IsTableExists(tableName))
+			{
 				connection.MakeTable(tableName);
+				callback?.Invoke();
+			}
 		}
 	}
 }

@@ -10,8 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Roslynator", "RCS1123")]
 [assembly: SuppressMessage("Minor Code Smell", "S101")]
 
-[assembly: SuppressMessage("Design", "CA1010", Scope = "type", Target = "~T:AutoKkutu.Databases.WrappedDbDataReader")]
-
 [assembly: SuppressMessage("Major Code Smell", "S107", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SQLiteDatabase.RegisterRearrangeMissionFunc(Microsoft.Data.Sqlite.SqliteConnection)")]
 [assembly: SuppressMessage("Major Code Smell", "S1168", Scope = "member", Target = "~M:AutoKkutu.Databases.CommonDatabaseCommand.TryExecuteReader(System.String)~System.Data.Common.DbDataReader")]
 
@@ -25,7 +23,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Reliability", "CA2000", Scope = "member", Target = "~M:AutoKkutu.Databases.PostgreSQL.PostgreSQLDatabase.#ctor(System.String)")]
 [assembly: SuppressMessage("Reliability", "CA2000", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SQLiteDatabase.#ctor(System.String)")]
 [assembly: SuppressMessage("Reliability", "CA2000", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SQLiteDatabaseHelper.ExecuteReader(Microsoft.Data.Sqlite.SqliteConnection,System.String,Microsoft.Data.Sqlite.SqliteParameter[])~Microsoft.Data.Sqlite.SqliteDataReader")]
-[assembly: SuppressMessage("Reliability", "CA2000", Scope = "member", Target = "~M:AutoKkutu.Databases.Extension.DatabaseExtension.TryExecuteReader(AutoKkutu.Databases.CommonDatabaseConnection,System.String,System.String,AutoKkutu.Databases.CommonDatabaseParameter[])~System.Data.Common.DbDataReader")]
 [assembly: SuppressMessage("Security", "CA2100", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SQLiteDatabaseHelper.ExecuteNonQuery(Microsoft.Data.Sqlite.SqliteConnection,System.String,Microsoft.Data.Sqlite.SqliteParameter[])~System.Int32")]
 [assembly: SuppressMessage("Security", "CA2100", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SQLiteDatabaseHelper.ExecuteReader(Microsoft.Data.Sqlite.SqliteConnection,System.String,Microsoft.Data.Sqlite.SqliteParameter[])~Microsoft.Data.Sqlite.SqliteDataReader")]
 [assembly: SuppressMessage("Security", "CA2100", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SQLiteDatabaseHelper.ExecuteScalar(Microsoft.Data.Sqlite.SqliteConnection,System.String,Microsoft.Data.Sqlite.SqliteParameter[])~System.Object")]

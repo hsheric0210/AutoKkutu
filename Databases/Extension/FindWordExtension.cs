@@ -51,6 +51,11 @@ namespace AutoKkutu.Databases.Extension
 					endWordFlag = (int)WordDatabaseAttributes.KkutuEndWord;
 					attackWordFlag = (int)WordDatabaseAttributes.KkutuAttackWord;
 					return;
+
+				case GameMode.KungKungTta:
+					endWordFlag = (int)WordDatabaseAttributes.KKTEndWord;
+					attackWordFlag = (int)WordDatabaseAttributes.KKTAttackWord;
+					return;
 			}
 			endWordFlag = (int)WordDatabaseAttributes.EndWord;
 			attackWordFlag = (int)WordDatabaseAttributes.AttackWord;
@@ -92,6 +97,7 @@ namespace AutoKkutu.Databases.Extension
 			if (CachedCommand == null || PreviousQuery?.Equals(query.Command, StringComparison.Ordinal) != true)
 			{
 				CachedCommand = connection.CreateCommand(query.Command);
+				Logger.DebugFormat("Query command : {0}", query.Command);
 
 				int paramCount = query.Parameters.Length;
 				var paramArray = new CommonDatabaseParameter[paramCount];
@@ -99,21 +105,22 @@ namespace AutoKkutu.Databases.Extension
 				{
 					(string name, object? value) = query.Parameters[i];
 					paramArray[i] = connection.CreateParameter(name, value);
+					Logger.DebugFormat("Query parameter : {0} = {1}", name, value);
 				}
 
 				CachedCommand.AddParameters(paramArray);
 				CachedCommand.TryPrepare();
 				PreviousQuery = query.Command;
-				Logger.Info("Initialized new command");
 			}
 			else
 			{
 				foreach ((string name, object? value) in query.Parameters)
+				{
 					CachedCommand.UpdateParameter(name, value);
-				Logger.Info("Using cached command; only updating parameters");
+					Logger.DebugFormat("Cached query with parameter : {0} = {1}", name, value);
+				}
 			}
 
-			Logger.DebugFormat("Execute query : {0}", query);
 			using (DbDataReader reader = CachedCommand.ExecuteReader())
 			{
 				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
@@ -165,6 +172,10 @@ namespace AutoKkutu.Databases.Extension
 
 			// 공격 단어
 			ApplyFilter(PathFinderOptions.UseAttackWord, attackWordFlag, ref opt);
+
+			// 쿵쿵따 모드에서는 쿵쿵따 전용 단어들만 추천
+			if (info.Mode == GameMode.KungKungTta)
+				condition += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordDatabaseAttributes.KKT3} != 0)";
 
 			string orderCondition = $"({CreateRearrangeCondition(connection, info.MissionChar, info.WordPreference, endWordFlag, attackWordFlag, paramList)} + LENGTH({DatabaseConstants.WordColumnName}))";
 

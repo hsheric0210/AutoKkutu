@@ -28,6 +28,7 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
@@ -56,6 +57,8 @@
 				<CheckBox x:Name="Node_Reverse_EndWord" Grid.Row="3" Grid.Column="2" Content="앞말잇기 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
 				<CheckBox x:Name="Node_Kkutu_AttackWord" Grid.Row="4" Grid.Column="1" Content="끄투 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
 				<CheckBox x:Name="Node_Kkutu_EndWord" Grid.Row="4" Grid.Column="2" Content="끄투 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
+				<CheckBox x:Name="Node_KKT_AttackWord" Grid.Row="5" Grid.Column="1" Content="쿵쿵따 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
+				<CheckBox x:Name="Node_KKT_EndWord" Grid.Row="5" Grid.Column="2" Content="쿵쿵따 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
 			</Grid>
 		</Grid>
 		<Grid Background="#2d2d30" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="15,70,5,15">
@@ -71,13 +74,14 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
-				<TextBox Name="Batch_Input" Grid.Row="0" Grid.RowSpan="7" Grid.Column="0" TextWrapping="NoWrap" Text="" AcceptsReturn="True" MinWidth="300" MinHeight="65" Margin="5,0,5,0" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0" />
+				<TextBox Name="Batch_Input" Grid.Row="0" Grid.RowSpan="9" Grid.Column="0" TextWrapping="NoWrap" Text="" AcceptsReturn="True" MinWidth="300" MinHeight="65" Margin="5,0,5,0" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0" />
 				<TextBlock Text="단어 입력 (여러 줄은 줄바꿈으로 구분)" IsHitTestVisible="False" Margin="10,2,0,0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0" Foreground="Gray">
 					<TextBlock.Style>
 						<Style TargetType="TextBlock">
@@ -104,6 +108,8 @@
 				<CheckBox x:Name="Batch_Middle_EndWord" Grid.Row="6" Grid.Column="2" Content="가운뎃말잇기 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
 				<CheckBox x:Name="Batch_Kkutu_AttackWord" Grid.Row="7" Grid.Column="1" Content="끄투 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
 				<CheckBox x:Name="Batch_Kkutu_EndWord" Grid.Row="7" Grid.Column="2" Content="끄투 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
+				<CheckBox x:Name="Batch_KKT_AttackWord" Grid.Row="8" Grid.Column="1" Content="쿵쿵따 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
+				<CheckBox x:Name="Batch_KKT_EndWord" Grid.Row="8" Grid.Column="2" Content="쿵쿵따 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
 			</Grid>
 			<CheckBox Name="Batch_Verify" Content="사전 검증" HorizontalAlignment="Left" Margin="10,0,0,35" VerticalAlignment="Bottom" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
 			<Label Content="데이터베이스는 기본적으로 path.sqlite에 저장됩니다.&#xD;&#xA;한글과 영어 데이터베이스를 따로 분리해 두는 것을 추천합니다." HorizontalAlignment="Right" Margin="250,135,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="8" Foreground="#FFFFFFFF" />

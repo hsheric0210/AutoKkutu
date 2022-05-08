@@ -289,7 +289,6 @@ namespace AutoKkutu
 			inputStopwatch.Restart();
 		}
 
-		// TODO: 오답 수정 딜레이
 		private void CommonHandler_MyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 		{
 			string word = args.Word;

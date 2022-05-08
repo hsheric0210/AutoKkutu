@@ -27,6 +27,16 @@ namespace AutoKkutu
 			get; private set;
 		}
 
+		public static ICollection<string>? KKTAttackWordList
+		{
+			get; private set;
+		}
+
+		public static ICollection<string>? KKTEndWordList
+		{
+			get; private set;
+		}
+
 		public static ICollection<string>? KkutuAttackWordList
 		{
 			get; private set;
@@ -275,6 +285,8 @@ namespace AutoKkutu
 			ReverseEndWordList = connection.GetNodeList(DatabaseConstants.ReverseEndWordListTableName);
 			KkutuAttackWordList = connection.GetNodeList(DatabaseConstants.KkutuAttackWordListTableName);
 			KkutuEndWordList = connection.GetNodeList(DatabaseConstants.KkutuEndWordListTableName);
+			KKTAttackWordList = connection.GetNodeList(DatabaseConstants.KKTAttackWordListTableName);
+			KKTEndWordList = connection.GetNodeList(DatabaseConstants.KKTEndWordListTableName);
 		}
 
 		private static int AddNewPaths()

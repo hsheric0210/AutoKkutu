@@ -303,6 +303,12 @@ namespace AutoKkutu.Utils
 			// 끄투 공격 단어
 			result |= types.HasFlag(NodeDatabaseAttributes.KkutuAttackWord) && connection.AddNode(node, DatabaseConstants.KkutuAttackWordListTableName);
 
+			// 쿵쿵따 한방 단어
+			result |= types.HasFlag(NodeDatabaseAttributes.KKTEndWord) && connection.AddNode(node, DatabaseConstants.KKTEndWordListTableName);
+
+			// 쿵쿵따 공격 단어
+			result |= types.HasFlag(NodeDatabaseAttributes.KKTAttackWord) && connection.AddNode(node, DatabaseConstants.KKTAttackWordListTableName);
+
 			return result;
 		}
 
@@ -342,6 +348,14 @@ namespace AutoKkutu.Utils
 			// 끄투 공격 단어
 			if (types.HasFlag(NodeDatabaseAttributes.KkutuAttackWord))
 				count += connection.DeleteNode(node, DatabaseConstants.KkutuAttackWordListTableName);
+
+			// 쿵쿵따 한방 단어
+			if (types.HasFlag(NodeDatabaseAttributes.KKTEndWord))
+				count += connection.DeleteNode(node, DatabaseConstants.KKTEndWordListTableName);
+
+			// 쿵쿵따 공격 단어
+			if (types.HasFlag(NodeDatabaseAttributes.KKTAttackWord))
+				count += connection.DeleteNode(node, DatabaseConstants.KKTAttackWordListTableName);
 
 			return count;
 		}

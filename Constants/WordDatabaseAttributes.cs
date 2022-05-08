@@ -46,5 +46,25 @@ namespace AutoKkutu.Constants
 		/// 끄투 공격 단어
 		/// </summary>
 		KkutuAttackWord = 1 << 7,
+
+		/// <summary>
+		/// 쿵쿵따에서 사용 가능한 단어인지 여부
+		/// </summary>
+		KKT3 = 1 << 8,
+
+		/// <summary>
+		/// 쿵쿵따-2323에서 사용 가능한 단어인지 여부
+		/// </summary>
+		KKT2 = 1 << 9,
+
+		/// <summary>
+		/// 쿵쿵따 한방 단어
+		/// </summary>
+		KKTEndWord = 1 << 10,
+
+		/// <summary>
+		/// 쿵쿵따 공격 단어
+		/// </summary>
+		KKTAttackWord = 1 << 11
 	}
 }

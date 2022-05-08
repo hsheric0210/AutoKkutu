@@ -90,32 +90,29 @@ namespace AutoKkutu
 			}
 		}
 
-		private void BatchAddNode(bool remove)
+		private NodeDatabaseAttributes GetSelectedNodeTypes()
 		{
-			NodeDatabaseAttributes GetSelectedNodeTypes()
-			{
-				var type = (NodeDatabaseAttributes)0;
-				if (Node_EndWord.IsChecked ?? false)
-					type |= NodeDatabaseAttributes.EndWord;
-				if (Node_AttackWord.IsChecked ?? false)
-					type |= NodeDatabaseAttributes.AttackWord;
-				if (Node_Reverse_EndWord.IsChecked ?? false)
-					type |= NodeDatabaseAttributes.ReverseEndWord;
-				if (Node_Reverse_AttackWord.IsChecked ?? false)
-					type |= NodeDatabaseAttributes.ReverseAttackWord;
-				if (Node_Kkutu_EndWord.IsChecked ?? false)
-					type |= NodeDatabaseAttributes.KkutuEndWord;
-				if (Node_Kkutu_AttackWord.IsChecked ?? false)
-					type |= NodeDatabaseAttributes.KkutuAttackWord;
-				return type;
-			}
-
-			string content = Node_Input.Text;
-			if (string.IsNullOrWhiteSpace(content))
-				return;
-
-			Database.DefaultConnection.BatchAddNode(content, remove, GetSelectedNodeTypes());
+			var type = (NodeDatabaseAttributes)0;
+			if (Node_EndWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.EndWord;
+			if (Node_AttackWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.AttackWord;
+			if (Node_Reverse_EndWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.ReverseEndWord;
+			if (Node_Reverse_AttackWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.ReverseAttackWord;
+			if (Node_Kkutu_EndWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.KkutuEndWord;
+			if (Node_Kkutu_AttackWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.KkutuAttackWord;
+			if (Node_KKT_EndWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.KKTEndWord;
+			if (Node_KKT_AttackWord.IsChecked ?? false)
+				type |= NodeDatabaseAttributes.KKTAttackWord;
+			return type;
 		}
+
+		private void BatchAddNode(bool remove) => Database.DefaultConnection.BatchAddNode(Node_Input.Text, remove, GetSelectedNodeTypes());
 
 		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked ?? false);
 
@@ -154,6 +151,14 @@ namespace AutoKkutu
 			// 끄투 공격 단어
 			if (Batch_Kkutu_AttackWord.IsChecked ?? false)
 				flags |= WordDatabaseAttributes.KkutuAttackWord;
+
+			// 쿵쿵따 한방 단어
+			if (Batch_KKT_EndWord.IsChecked ?? false)
+				flags |= WordDatabaseAttributes.KKTEndWord;
+
+			// 쿵쿵따 공격 단어
+			if (Batch_KKT_AttackWord.IsChecked ?? false)
+				flags |= WordDatabaseAttributes.KKTAttackWord;
 
 			return flags;
 		}

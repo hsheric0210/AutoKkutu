@@ -34,11 +34,5 @@ namespace AutoKkutu.Databases
 				DefaultConnection.Dispose();
 			base.Dispose(disposing);
 		}
-
-		private void CheckDefaultConnectionEstablished()
-		{
-			if (DefaultConnection == null)
-				throw new InvalidOperationException("Connection is not established yet");
-		}
 	}
 }
