@@ -145,9 +145,9 @@ namespace AutoKkutu.Utils
 			int count = 0;
 			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))
 			{
-				command.TryPrepare();
-				command.AddParameters(connection.CreateParameter("@word", "_"));
+				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
 				command.AddParameters(connection.CreateParameter(CommonDatabaseType.SmallInt, "@flags", 0));
+				command.TryPrepare();
 
 				foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
 				{
@@ -170,13 +170,13 @@ namespace AutoKkutu.Utils
 			int count = 0;
 			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = @correctIndex WHERE {DatabaseConstants.WordColumnName} = @word;"))
 			{
-				command.TryPrepare();
 				var parameters = new CommonDatabaseParameter[2] {
-					connection.CreateParameter("@word", "_"), connection.CreateParameter(CommonDatabaseType.Character, 1, "@correctIndex", 0)
+					connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"), connection.CreateParameter(CommonDatabaseType.Character, 1, "@correctIndex", 0)
 				};
 				if (indexColumnName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.OrdinalIgnoreCase))
-					parameters[1] = connection.CreateParameter(CommonDatabaseType.CharacterVarying, "@correctIndex", 0);
+					parameters[1] = connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@correctIndex", 0);
 				command.AddParameters(parameters);
+				command.TryPrepare();
 
 				foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
 				{
@@ -208,8 +208,8 @@ namespace AutoKkutu.Utils
 			int count = 0;
 			using (CommonDatabaseCommand command = connection.CreateCommand($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word"))
 			{
+				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
 				command.TryPrepare();
-				command.AddParameters(connection.CreateParameter("@word", "_"));
 
 				foreach (string word in DeletionList)
 				{
