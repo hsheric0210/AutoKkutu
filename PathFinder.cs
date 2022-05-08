@@ -440,9 +440,9 @@ namespace AutoKkutu
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetEndWordListTableName(mode));
 			if (connection.AddNode(node, GetAttackWordListTableName(mode)))
-				Logger.InfoFormat("Successfully marked node '{0}' as AttackWord.", node);
+				Logger.InfoFormat("Successfully marked node '{0}' as AttackWord. [Mode: {1}]", node, mode);
 			else
-				Logger.WarnFormat("Node '{0}' is already marked as AttackWord.", node);
+				Logger.WarnFormat("Node '{0}' is already marked as AttackWord. [Mode: {1}]", node, mode);
 		}
 
 		public void MakeEnd(GameMode mode, CommonDatabaseConnection connection)
@@ -450,9 +450,9 @@ namespace AutoKkutu
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetAttackWordListTableName(mode));
 			if (connection.AddNode(node, GetEndWordListTableName(mode)))
-				Logger.InfoFormat("Successfully marked node '{0}' as EndWord.", node);
+				Logger.InfoFormat("Successfully marked node '{0}' as EndWord. [Mode: {1}]", node, mode);
 			else
-				Logger.WarnFormat("Node '{0}' is already marked as EndWord.", node);
+				Logger.WarnFormat("Node '{0}' is already marked as EndWord. [Mode: {1}]", node, mode);
 		}
 
 		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
@@ -461,9 +461,9 @@ namespace AutoKkutu
 			bool a = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
 			bool b = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
 			if (a || b)
-				Logger.InfoFormat("Successfully marked node '{0}' as NormalWord.", node);
+				Logger.InfoFormat("Successfully marked node '{0}' as NormalWord. [Mode: {1}]", node, mode);
 			else
-				Logger.WarnFormat("Node '{0}' is already marked as NormalWord.", node);
+				Logger.WarnFormat("Node '{0}' is already marked as NormalWord. [Mode: {1}]", node, mode);
 		}
 
 		private static string GetAttackWordListTableName(GameMode mode) => mode switch

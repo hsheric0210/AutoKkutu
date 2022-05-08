@@ -90,8 +90,8 @@ namespace AutoKkutu.Utils
 
 				string message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
 				Logger.InfoFormat("Database Operation Complete: {0}", message);
-				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Add Word", message));
+				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			});
 		}
 
@@ -202,9 +202,8 @@ namespace AutoKkutu.Utils
 
 				string message = $"{SuccessCount} deleted / {FailedCount} failed";
 				Logger.Info($"Batch remove operation complete: {message}");
-				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
 				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Remove Word", message));
+				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			});
 		}
 
@@ -269,9 +268,8 @@ namespace AutoKkutu.Utils
 
 			string message = $"{SuccessCount} succeed / {DuplicateCount} duplicated / {FailedCount} failed";
 			Logger.InfoFormat("Database Operation Complete: {0}", message);
-			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
 			DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node", message));
+			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 
 		/// <summary>

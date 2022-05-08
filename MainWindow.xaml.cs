@@ -466,7 +466,6 @@ namespace AutoKkutu
 
 		private void OnPathListMakeAttackClick(object? sender, RoutedEventArgs e)
 		{
-			Logger.Info(nameof(OnPathListMakeAttackClick));
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
@@ -475,7 +474,6 @@ namespace AutoKkutu
 
 		private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
 		{
-			Logger.Info(nameof(OnPathListMakeEndClick));
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
@@ -484,7 +482,6 @@ namespace AutoKkutu
 
 		private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
 		{
-			Logger.Info(nameof(OnPathListMakeNormalClick));
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
@@ -767,7 +764,6 @@ namespace AutoKkutu
 			}
 		}
 
-		// TODO: 검색 결과 (추천 목록) 맨 윗쪽이나 아랫쪽(걸린 시간 표시되는 곳)에 '무엇에 대한 검색 결과인지'까지 나타내도록 개선
 		private void SubmitSearch_Click(object? sender, RoutedEventArgs e)
 		{
 			if (!string.IsNullOrWhiteSpace(SearchField.Text))
