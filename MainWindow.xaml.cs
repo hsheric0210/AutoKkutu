@@ -322,12 +322,12 @@ namespace AutoKkutu
 						Task.Run(async () =>
 						{
 							await Task.Delay(delay);
-							PerformAutoEnter(path, "next");
+							PerformAutoEnter(path, null, "next");
 						});
 					}
 					else
 					{
-						PerformAutoEnter(path, "next");
+						PerformAutoEnter(path, null, "next");
 					}
 				}
 				catch (Exception ex)
@@ -370,7 +370,7 @@ namespace AutoKkutu
 			if (!CurrentConfig.RequireNotNull().AutoEnterEnabled)
 				return;
 
-			DelayedEnter(word, null);
+			DelayedEnter(word, null, "presented");
 		}
 
 		private static ICollection<string>? GetEndWordList(GameMode mode) => mode switch
@@ -555,7 +555,7 @@ namespace AutoKkutu
 			}
 		}
 
-		private void DelayedEnter(string content, UpdatedPathEventArgs? args)
+		private void DelayedEnter(string content, UpdatedPathEventArgs? args, string pathAttribute = "first")
 		{
 			if (CurrentConfig.RequireNotNull().DelayEnabled && args?.Flags.HasFlag(PathFinderOptions.AutoFixed) != true)
 			{
@@ -572,7 +572,7 @@ namespace AutoKkutu
 						while (inputStopwatch.ElapsedMilliseconds <= delay)
 							await Task.Delay(1);
 
-						PerformAutoEnter(content, args);
+						PerformAutoEnter(content, args, pathAttribute);
 					});
 				}
 				else
@@ -581,7 +581,7 @@ namespace AutoKkutu
 					Task.Run(async () =>
 					{
 						await Task.Delay(delay);
-						PerformAutoEnter(content, args);
+						PerformAutoEnter(content, args, pathAttribute);
 					});
 				}
 			}
@@ -592,11 +592,11 @@ namespace AutoKkutu
 			}
 		}
 
-		private void PerformAutoEnter(string content, UpdatedPathEventArgs? args)
+		private void PerformAutoEnter(string content, UpdatedPathEventArgs? args, string pathAttribute = "first")
 		{
 			if (!Handler.RequireNotNull().IsGameStarted || !Handler.IsMyTurn || args != null && !CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed))
 				return;
-			PerformAutoEnter(content);
+			PerformAutoEnter(content, pathAttribute);
 		}
 
 		private void PerformAutoEnter(string content, string pathAttribute = "first")
