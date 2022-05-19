@@ -90,15 +90,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Common.NETCore" Version="101.0.150" />
-    <PackageReference Include="CefSharp.Wpf.NETCore" Version="101.0.150" />
+    <PackageReference Include="CefSharp.Common.NETCore" Version="101.0.180" />
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="101.0.180" />
+    <PackageReference Include="Enyim.Memcached2" Version="0.6.8" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0">
         <NoWarn>NU1701</NoWarn>
     </PackageReference>
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.4" />
-    <PackageReference Include="MySqlConnector" Version="2.1.8" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.5" />
+    <PackageReference Include="MySqlConnector" Version="2.1.9" />
     <PackageReference Include="Npgsql" Version="6.0.4" />
   </ItemGroup>
 
@@ -143,15 +144,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="101.0.15" />
+    <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="101.0.18" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="101.0.15" />
+    <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="101.0.18" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="101.0.15" />
+    <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="101.0.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Memcached\" />
   </ItemGroup>
 
 </Project>

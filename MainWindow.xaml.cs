@@ -18,6 +18,11 @@ using System.Windows.Media.Imaging;
 
 namespace AutoKkutu
 {
+	/* TODO: Memcached 지원 추가
+	 * - word list 내의 'word', (게임 모드에 맞는)'word index', 'flags' 행을 그대로 Memcached로 캐싱
+	 * - 게임 모드 변경, 데이터베이스 업데이트가 감지되면 이를 통째로 업데이트하는 식으로
+	*/
+
 	public partial class MainWindow : Window
 	{
 		public const string VERSION = "1.0.0000";
