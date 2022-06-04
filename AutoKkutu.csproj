@@ -19,6 +19,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Memcached\**" />
+    <EmbeddedResource Remove="Memcached\**" />
+    <None Remove="Memcached\**" />
+    <Page Remove="Memcached\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="database.config" />
     <None Remove="Images\attack.png" />
     <None Remove="Images\cleaning.png" />
@@ -153,10 +160,6 @@
 
   <ItemGroup>
     <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="101.0.18" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Memcached\" />
   </ItemGroup>
 
 </Project>

@@ -58,7 +58,7 @@
 									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,0,5" Source="{Binding PrimaryImage}" />
 									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,10,5" Source="{Binding SecondaryImage}" />
 									<Border Height="40" Width="Auto" VerticalAlignment="Center" BorderBrush="{x:Null}">
-										<TextBlock Foreground="{Binding Color}" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" />
+										<TextBlock Foreground="{Binding Color}" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" TextDecorations="{Binding Decorations}" />
 									</Border>
 								</StackPanel>
 							</DataTemplate>

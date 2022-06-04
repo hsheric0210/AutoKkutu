@@ -72,7 +72,12 @@ namespace AutoKkutu
 			get; private set;
 		}
 
-		public static IList<PathObject> FinalList
+		public static IList<PathObject> DisplayList
+		{
+			get; private set;
+		} = new List<PathObject>();
+
+		public static IList<PathObject> QualifiedList
 		{
 			get; private set;
 		} = new List<PathObject>();
@@ -212,14 +217,15 @@ namespace AutoKkutu
 				watch.Start();
 
 				// Flush previous search result
-				FinalList = new List<PathObject>();
+				DisplayList = new List<PathObject>();
+				QualifiedList = new List<PathObject>();
 
 				// Search words from database
-				ICollection<PathObject>? WordList = null;
+				IList<PathObject>? totalWordList = null;
 				try
 				{
-					WordList = Connection.RequireNotNull().FindWord(info);
-					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", WordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
+					totalWordList = Connection.RequireNotNull().FindWord(info);
+					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
 				{
@@ -229,33 +235,47 @@ namespace AutoKkutu
 					return;
 				}
 
-				// Filter out words
-				var QualifiedNormalList = (from word in WordList
-										   let wordContent = word.Content
-										   where (!UnsupportedPathList.Contains(wordContent) && (CurrentConfig.ReturnModeEnabled || !PreviousPath.Contains(wordContent)))
-										   select word).ToList();
-
-				// If there's no word found (or all words was filtered out)
-				if (QualifiedNormalList.Count == 0)
-				{
-					watch.Stop();
-					Logger.Warn("Can't find any path.");
-					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.None, WordList.Count, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
-					return;
-				}
+				int totalWordCount = totalWordList.Count;
 
 				// Limit the word list size
 				int maxCount = CurrentConfig.MaxDisplayedWordCount;
-				if (QualifiedNormalList.Count > maxCount)
-					QualifiedNormalList = QualifiedNormalList.Take(maxCount).ToList();
+				if (totalWordList.Count > maxCount)
+					totalWordList = totalWordList.Take(maxCount).ToList();
 
-				// Update final list
-				FinalList = QualifiedNormalList;
+				DisplayList = totalWordList;
+				IList<PathObject> qualifiedWordList = CreateQualifiedWordList(totalWordList);
+
+				// If there's no word found (or all words was filtered out)
+				if (qualifiedWordList.Count == 0)
+				{
+					watch.Stop();
+					Logger.Warn("Can't find any path.");
+					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.None, totalWordCount, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+					return;
+				}
+
+				// Update final lists
+				QualifiedList = qualifiedWordList;
 
 				watch.Stop();
-				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", FinalList.Count, watch.ElapsedMilliseconds);
-				NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.Normal, WordList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", DisplayList.Count, watch.ElapsedMilliseconds);
+				NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.Normal, totalWordCount, QualifiedList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
+		}
+
+		private static IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList)
+		{
+			var qualifiedList = new List<PathObject>();
+			foreach (PathObject word in wordList)
+			{
+				if (UnsupportedPathList.Contains(word.Content))
+					word.Unsupported = true;
+				else if (CurrentConfig?.ReturnModeEnabled != true && PreviousPath.Contains(word.Content))
+					word.AlreadyUsed = true;
+				else
+					qualifiedList.Add(word);
+			}
+			return qualifiedList;
 		}
 
 		public static void Init(CommonDatabaseConnection connection)
@@ -326,14 +346,14 @@ namespace AutoKkutu
 
 			var watch = new Stopwatch();
 			watch.Start();
-			FinalList = new List<PathObject>();
+			DisplayList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
-				FinalList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordAttributes.None, 256));
+				DisplayList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordAttributes.None, 256));
 			var random = new Random();
 			for (int i = 0; i < 10; i++)
-				FinalList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), WordAttributes.None, 256));
+				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), WordAttributes.None, 256));
 			watch.Stop();
-			NotifyPathUpdate(new UpdatedPathEventArgs(word, missionChar, PathFinderResult.Normal, FinalList.Count, FinalList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), info.PathFinderFlags));
+			NotifyPathUpdate(new UpdatedPathEventArgs(word, missionChar, PathFinderResult.Normal, DisplayList.Count, DisplayList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), info.PathFinderFlags));
 		}
 
 		private static int RemoveInexistentPaths()
@@ -358,7 +378,7 @@ namespace AutoKkutu
 
 		public static void ResetPreviousPath() => PreviousPath = new List<string>();
 
-		public static void ResetFinalList() => FinalList = new List<PathObject>();
+		public static void ResetFinalList() => DisplayList = new List<PathObject>();
 	}
 
 	public class PathObject
@@ -406,6 +426,18 @@ namespace AutoKkutu
 		public string ToolTip
 		{
 			get;
+		}
+
+		public string Decorations => Unsupported ? "Underline,Strikethrough,Overline" : AlreadyUsed ? "Strikethrough" : "None";
+
+		public bool AlreadyUsed
+		{
+			get; set;
+		}
+
+		public bool Unsupported
+		{
+			get; set;
 		}
 
 		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));

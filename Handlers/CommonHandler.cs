@@ -47,6 +47,11 @@ namespace AutoKkutu
 			get; private set;
 		}
 
+		public int TurnTimeMillis
+		{
+			get; private set;
+		}
+
 		public bool IsMyTurn => _isMyTurn;
 
 		private Task? _mainWatchdogTask;
@@ -70,6 +75,8 @@ namespace AutoKkutu
 		private string _exampleWordCache = "";
 
 		private string _currentPresentedWordCache = "";
+
+		private string _turnTimeCache = "";
 
 		private GameMode _gameModeCache = GameMode.LastAndFirst;
 
@@ -143,6 +150,7 @@ namespace AutoKkutu
 				Task.Run(async () => await WatchdogGameMode(token, mainWatchdogID));
 				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameTurn(mainWatchdogID), token, mainWatchdogID));
 				Task.Run(async () => await WatchdogPresentWord(token, mainWatchdogID));
+				Task.Run(async () => await WatchdogAssistant("Turn time", CheckTurnTime, mainWatchdogID, token));
 
 				GetLogger(mainWatchdogID).Info("Watchdog threads are started.");
 			}
@@ -436,6 +444,19 @@ namespace AutoKkutu
 			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}
 
+		private void CheckTurnTime(int watchdogID)
+		{
+			string turnTimeString = GetTurnTime();
+			if (string.IsNullOrWhiteSpace(turnTimeString))
+				return;
+			if (string.Equals(turnTimeString, _turnTimeCache, StringComparison.OrdinalIgnoreCase))
+				return;
+			_turnTimeCache = turnTimeString;
+			if (!float.TryParse(turnTimeString.TrimEnd('초'), out float parsed))
+				return;
+			TurnTimeMillis = (int)(parsed * 1000);
+		}
+
 		protected static bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
 
 		protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
@@ -515,7 +536,7 @@ namespace AutoKkutu
 
 		public virtual void SendMessage(string input)
 		{
-			EvaluateJS($"document.querySelectorAll('[id=\"Talk\"]')[0].value='{input?.Trim()}'", "SendMessage");
+			EvaluateJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", "SendMessage");
 			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
 		}
 
@@ -562,6 +583,11 @@ namespace AutoKkutu
 			string roomRounds = EvaluateJS("document.getElementsByClassName('room-head-round')[0].textContent");
 			string roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent");
 			return $"{roomMode} | {roomLimit} | {roomRounds} | {roomTime}";
+		}
+
+		public virtual string GetTurnTime()
+		{
+			return EvaluateJS("document.querySelector('[class=\"graph jjo-turn-time\"] > [class=\"graph-bar\"]').textContent", "GetTurnTime");
 		}
 
 		public void Dispose()

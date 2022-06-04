@@ -85,7 +85,7 @@ namespace AutoKkutu.Databases.Extension
 			return wordAttributes;
 		}
 
-		public static ICollection<PathObject> FindWord(this CommonDatabaseConnection connection, FindWordInfo info)
+		public static IList<PathObject> FindWord(this CommonDatabaseConnection connection, FindWordInfo info)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));

@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 namespace AutoKkutu
 {
@@ -26,6 +27,8 @@ namespace AutoKkutu
 	public partial class MainWindow : Window
 	{
 		public const string VERSION = "1.0.0000";
+
+		private const int WORD_TURNTIME_DELAY_SPARE_TIME_MILLIS = 20;
 
 		private ChromiumWebBrowser Browser
 		{
@@ -302,20 +305,20 @@ namespace AutoKkutu
 			if (!CurrentConfig.RequireNotNull().AutoFixEnabled)
 				return;
 
-			IList<PathObject> localFinalList = PathFinder.FinalList!;
-			if (localFinalList.Count - 1 <= WordIndex)
-			{
-				Logger.Warn("Can't Find any other path.");
-				this.ChangeStatusBar(CurrentStatus.NotFound);
-				return;
-			}
+			
 
 			if (CurrentConfig.AutoEnterEnabled)
 			{
 				try
 				{
-					WordIndex++;
-					string path = localFinalList[WordIndex].Content;
+					string? path = TimeFilterQualifiedWordListIndexed(PathFinder.QualifiedList, ++WordIndex);
+					if (path == null)
+					{
+						Logger.Warn("Can't Find any other available path.");
+						this.ChangeStatusBar(CurrentStatus.NotFound);
+						return;
+					}
+
 					if (CurrentConfig.FixDelayEnabled)
 					{
 						int delay = CurrentConfig.FixDelayInMillis;
@@ -542,21 +545,64 @@ namespace AutoKkutu
 
 			Task.Run(() => SetSearchState(args));
 
-			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
+			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.DisplayList);
 
 			if (autoEnter)
 			{
 				if (args.Result == PathFinderResult.None)
 				{
-					Logger.Warn("Auto mode enabled. but can't find any path.");
+					Logger.Warn("Auto mode enabled, but can't find any path.");
 					this.ChangeStatusBar(CurrentStatus.NotFound);
 				}
 				else
 				{
-					string content = PathFinder.FinalList![0].Content;
-					DelayedEnter(content, args);
+					string? content = TimeFilterQualifiedWordList(PathFinder.QualifiedList);
+					if (content == null)
+					{
+						Logger.Warn("Auto mode enabled, found path, but there's no word submittable in time.");
+						this.ChangeStatusBar(CurrentStatus.NotFound);
+					}
+					else
+					{
+						DelayedEnter(content, args);
+					}
 				}
 			}
+		}
+
+		private string? TimeFilterQualifiedWordList(IList<PathObject> qualifiedWordList)
+		{
+			if (CurrentConfig!.DelayPerCharEnabled)
+			{
+				int remain = Handler!.TurnTimeMillis;
+				int delay = CurrentConfig.DelayInMillis;
+				string? word = qualifiedWordList.FirstOrDefault(po => po!.Content.Length * delay + WORD_TURNTIME_DELAY_SPARE_TIME_MILLIS <= remain, null)?.Content;
+				if (word == null)
+					Logger.DebugFormat("There's no word submittable in time! (Turn Time {0}ms)", remain);
+				else
+					Logger.DebugFormat("Turn Time {0}ms > Word Delay {1}ms", remain, word.Length * delay);
+				return word;
+			}
+
+			return qualifiedWordList[0].Content;
+		}
+
+		private string? TimeFilterQualifiedWordListIndexed(IList<PathObject> qualifiedWordList, int index)
+		{
+			if (CurrentConfig!.DelayPerCharEnabled)
+			{
+				int remain = Handler!.TurnTimeMillis;
+				int delay = CurrentConfig.DelayInMillis;
+				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay + WORD_TURNTIME_DELAY_SPARE_TIME_MILLIS <= remain).ToArray();
+				string? word = (arr.Length - 1 >= index) ? arr[index].Content : null;
+				if (word == null)
+					Logger.DebugFormat("[INDEX: {0}] There's no word submittable in time! (Turn Time {1}ms)", index, remain);
+				else
+					Logger.DebugFormat("[INDEX: {0}] Turn Time {1}ms > Word Delay {2}ms", index, remain, word.Length * delay);
+				return word;
+			}
+
+			return qualifiedWordList.Count - 1 >= WordIndex ? qualifiedWordList[index].Content : null;
 		}
 
 		private void DelayedEnter(string content, UpdatedPathEventArgs? args, string pathAttribute = "first")
@@ -651,7 +697,7 @@ namespace AutoKkutu
 		{
 			Logger.Info("Reset Path list... ");
 			PathFinder.ResetFinalList();
-			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.FinalList);
+			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.DisplayList);
 		}
 
 		private void SearchField_KeyDown(object? sender, KeyEventArgs e)
