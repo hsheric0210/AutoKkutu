@@ -28,8 +28,6 @@ namespace AutoKkutu
 	{
 		public const string VERSION = "1.0.0000";
 
-		private const int WORD_TURNTIME_DELAY_SPARE_TIME_MILLIS = 20;
-
 		private ChromiumWebBrowser Browser
 		{
 			get; set;
@@ -576,11 +574,11 @@ namespace AutoKkutu
 			{
 				int remain = Handler!.TurnTimeMillis;
 				int delay = CurrentConfig.DelayInMillis;
-				string? word = qualifiedWordList.FirstOrDefault(po => po!.Content.Length * delay + WORD_TURNTIME_DELAY_SPARE_TIME_MILLIS <= remain, null)?.Content;
+				string? word = qualifiedWordList.FirstOrDefault(po => po!.Content.Length * delay <= remain, null)?.Content;
 				if (word == null)
 					Logger.DebugFormat("There's no word submittable in time! (Turn Time {0}ms)", remain);
 				else
-					Logger.DebugFormat("Turn Time {0}ms > Word Delay {1}ms", remain, word.Length * delay);
+					Logger.DebugFormat("Turn Time {0}ms >= Word Delay {1}ms", remain, word.Length * delay);
 				return word;
 			}
 
@@ -593,12 +591,12 @@ namespace AutoKkutu
 			{
 				int remain = Handler!.TurnTimeMillis;
 				int delay = CurrentConfig.DelayInMillis;
-				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay + WORD_TURNTIME_DELAY_SPARE_TIME_MILLIS <= remain).ToArray();
+				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
 				string? word = (arr.Length - 1 >= index) ? arr[index].Content : null;
 				if (word == null)
 					Logger.DebugFormat("[INDEX: {0}] There's no word submittable in time! (Turn Time {1}ms)", index, remain);
 				else
-					Logger.DebugFormat("[INDEX: {0}] Turn Time {1}ms > Word Delay {2}ms", index, remain, word.Length * delay);
+					Logger.DebugFormat("[INDEX: {0}] Turn Time {1}ms >= Word Delay {2}ms", index, remain, word.Length * delay);
 				return word;
 			}
 
