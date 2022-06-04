@@ -49,7 +49,12 @@ namespace AutoKkutu
 
 		public int TurnTimeMillis
 		{
-			get; private set;
+			get
+			{
+				if (!float.TryParse(GetTurnTime().TrimEnd('초'), out float turnTime) || !float.TryParse(GetRoundTime().TrimEnd('초'), out float roundTime))
+					return 150000; // 150초 (라운드 시간 최댓값)
+				return (int)(Math.Min(turnTime, roundTime) * 1000);
+			}
 		}
 
 		public bool IsMyTurn => _isMyTurn;
@@ -75,8 +80,6 @@ namespace AutoKkutu
 		private string _exampleWordCache = "";
 
 		private string _currentPresentedWordCache = "";
-
-		private string _turnTimeCache = "";
 
 		private GameMode _gameModeCache = GameMode.LastAndFirst;
 
@@ -150,7 +153,6 @@ namespace AutoKkutu
 				Task.Run(async () => await WatchdogGameMode(token, mainWatchdogID));
 				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameTurn(mainWatchdogID), token, mainWatchdogID));
 				Task.Run(async () => await WatchdogPresentWord(token, mainWatchdogID));
-				Task.Run(async () => await WatchdogAssistant("Turn time", CheckTurnTime, mainWatchdogID, token));
 
 				GetLogger(mainWatchdogID).Info("Watchdog threads are started.");
 			}
@@ -444,19 +446,6 @@ namespace AutoKkutu
 			return new ResponsePresentedWord(primary, hasSecondary, secondary);
 		}
 
-		private void CheckTurnTime(int watchdogID)
-		{
-			string turnTimeString = GetTurnTime();
-			if (string.IsNullOrWhiteSpace(turnTimeString))
-				return;
-			if (string.Equals(turnTimeString, _turnTimeCache, StringComparison.OrdinalIgnoreCase))
-				return;
-			_turnTimeCache = turnTimeString;
-			if (!float.TryParse(turnTimeString.TrimEnd('초'), out float parsed))
-				return;
-			TurnTimeMillis = (int)(parsed * 1000);
-		}
-
 		protected static bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
 
 		protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
@@ -588,6 +577,11 @@ namespace AutoKkutu
 		public virtual string GetTurnTime()
 		{
 			return EvaluateJS("document.querySelector('[class=\"graph jjo-turn-time\"] > [class=\"graph-bar\"]').textContent", "GetTurnTime");
+		}
+
+		public virtual string GetRoundTime()
+		{
+			return EvaluateJS("document.querySelector('[class=\"graph jjo-round-time\"] > [class=\"graph-bar round-extreme\"]').textContent", "GetRoundTime");
 		}
 
 		public void Dispose()

@@ -572,7 +572,7 @@ namespace AutoKkutu
 		{
 			if (CurrentConfig!.DelayPerCharEnabled)
 			{
-				int remain = Handler!.TurnTimeMillis;
+				int remain = Math.Max(300, Handler!.TurnTimeMillis);
 				int delay = CurrentConfig.DelayInMillis;
 				string? word = qualifiedWordList.FirstOrDefault(po => po!.Content.Length * delay <= remain, null)?.Content;
 				if (word == null)
@@ -589,7 +589,7 @@ namespace AutoKkutu
 		{
 			if (CurrentConfig!.DelayPerCharEnabled)
 			{
-				int remain = Handler!.TurnTimeMillis;
+				int remain = Math.Max(300, Handler!.TurnTimeMillis);
 				int delay = CurrentConfig.DelayInMillis;
 				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
 				string? word = (arr.Length - 1 >= index) ? arr[index].Content : null;
