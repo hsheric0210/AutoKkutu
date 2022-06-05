@@ -109,7 +109,7 @@ namespace AutoKkutu
 
 			try
 			{
-				var config = Properties.Settings.Default;
+				Settings config = Settings.Default;
 				config.AutoEnterEnabled = conf.AutoEnterEnabled;
 				config.AutoDBUpdateEnabled = conf.AutoDBUpdateEnabled;
 				config.AutoDBUpdateMode = conf.AutoDBUpdateMode;
@@ -129,7 +129,7 @@ namespace AutoKkutu
 				config.FixDelayEnabled = conf.FixDelayEnabled;
 				config.FixDelayPerCharEnabled = conf.FixDelayPerCharEnabled;
 				config.FixDelayInMillis = conf.FixDelayInMillis;
-				Properties.Settings.Default.Save();
+				Settings.Default.Save();
 			}
 			catch (Exception ex)
 			{

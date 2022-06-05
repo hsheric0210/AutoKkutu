@@ -39,13 +39,13 @@ namespace AutoKkutu
 
 			try
 			{
-				Properties.Settings config = Properties.Settings.Default;
+				Settings config = Settings.Default;
 				config.EndWordColor = newPref.EndWordColor.ToDrawingColor();
 				config.AttackWordColor = newPref.AttackWordColor.ToDrawingColor();
 				config.MissionWordColor = newPref.MissionWordColor.ToDrawingColor();
 				config.EndMissionWordColor = newPref.EndMissionWordColor.ToDrawingColor();
 				config.AttackMissionWordColor = newPref.AttackMissionWordColor.ToDrawingColor();
-				Properties.Settings.Default.Save();
+				Settings.Default.Save();
 			}
 			catch (Exception ex)
 			{

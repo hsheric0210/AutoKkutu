@@ -1,0 +1,53 @@
+AllocConsoleFailed	Failed to AllocConsole() : Error code {0}	0: Error code
+Auto_NoMorePathAvailable	Auto mode enabled, but can't find any path.	
+Auto_TimeOver	Auto mode enabled, found path, but there's no word submittable in time.	
+ConsoleIntroduction	Logging console enabled where debugging is not enabled	
+DeleteConsoleMenuFailed	Failed to call console DeleteMenu() : Error code {0}	0: Error code
+HandlerRegistry_Unregistered	Unregistered previous handler: {0}	0: Handler ID
+Main_AutoEnter	Auto mode enabled. automatically use {attr:l} path: {word}	attr: Word attributes (End, Attack), word: The word
+Main_CEFFrameLoadEnd	Browser frame-load end.	
+Main_ClipboardSubmitException	Can't submit clipboard text.	
+Main_ClosingDBConnection	Closing database connection...	
+Main_ColorPrefsUpdated	Updated color preferences.	
+Main_ConfigLoadException	Failed to load configurations.	
+Main_ConfigUpdated	Updated configurations.	
+Main_DBConfigException	Error loading database.config	
+Main_GameModeUpdated	Automatically updated game mode to {gameMode}	gameMode: The updated game mode
+Main_GameResultWriteException	Failed to write game result.	
+Main_Initialization	{0} initialization took {1}ms.	0: Module name, 1: Elapsed time in millis
+Main_MyPathIsUnsupported	My path {word} was confirmed unsupported.	word: The word
+Main_Next	next	
+Main_NoMorePathAvailable	There's no path available.	
+Main_Optimal	optimal	
+Main_PathSubmitException	Can't submit path due exception.	
+Main_PathSubmitted	Path submitted: {word}.	word: The word
+Main_PathUpdateReceived	Path update received.	
+Main_Presented	presented	
+Main_ResetPathList	Reset path list... 	
+Main_StartLoad	Start loading page...	
+Main_UnsupportedURL	Unsupported site: {url}	url: The site url
+Main_UnsupportedWord_Existent	Entered word {word} is exists but not supported, added to unsupported list.	word: The word
+Main_UnsupportedWord_Inexistent	Entered word {word} is inexistent, added to removal list.	word: The word
+Main_UseHandler	Using handler: {0}	0: Handler ID
+Main_WaitingSubmit	Waiting {0}ms before entering path.	0: Delay
+Main_WaitingSubmitNext	Waiting {0}ms before submitting next path.	0: Delay
+Main_WordIndexReset	Reset WordIndex to zero.	
+PathFinder_InvalidatedUpdate	Invalidated potential incorrect path update result. (Word: {0}, MissionChar: {1})	0: Is caused by word, 1: Is caused by mission char
+PathFinderAttackWord	Attack	
+PathFinderEndWord	End	
+PathFinderError	Failed to find word due to exception.	
+PathFinderFailed_Endword	Can't find any path : Presented word is end word.	
+PathFinderFailed_Exception	Can't find path due exception.	
+PathFinderFound	Found {0} total, {1} feasible.	0: Total word count, 1: Feasible word count
+PathFinderFoundButEmpty	Found total {0}, but none of them are feasible.	0: Total word count
+PathFinderIncludedWord	{0} word(s) used.	0: Included word type(s)
+PathFinderSearchOverview	Search result for {0}	0: Search overview messages
+PathFinderSearchOverview_MissionChar	{0}, mission char '{1}'	0: Character filter, etc.
+PathFinderSearchOverview_Or	{0} or {1}	0: Substituation word
+PathFinderTookTime	Took {0}ms.	0: Elapsed time in millis
+PathFinderUnavailable	No available word found.	
+PathFinderWaiting	Waiting...	
+ProgramIntroduction	AutoKkutu v{0} - Kkutu cheat	0: Program version
+Status_AutoUpdate	Automatic database updating.	
+TimeFilter_Success	Turn Time {0}ms >= Word Delay {1}ms	0: Remaining turn time, 1: Total word delay
+TimeFilter_TimeOver	There's no word submittable in time! (Turn Time {0}ms)	0: Remaining turn time

@@ -54,12 +54,6 @@ namespace AutoKkutu
 			get; private set;
 		}
 
-		private const string PATHFINDER_ERROR = "오류가 발생하여 단어 검색 실패.";
-
-		private const string PATHFINDER_UNAVAILABLE = "이 턴에 사용 가능한 단어 없음.";
-
-		private const string PATHFINDER_WAITING = "단어 검색 대기중.";
-
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
 
@@ -89,7 +83,7 @@ namespace AutoKkutu
 			Title = TITLE;
 			VersionLabel.Content = "v1.0";
 
-			Logger.Info("Start loading page...");
+			Logger.Info(I18n.Main_StartLoad);
 			LoadOverlay.Visibility = Visibility.Visible;
 
 			this.ChangeStatusBar(CurrentStatus.Wait);
@@ -108,25 +102,25 @@ namespace AutoKkutu
 				Database = DatabaseUtils.CreateDatabase(databaseConfig);
 				PathFinder.Init(Database.DefaultConnection);
 				watch.Stop();
-				Logger.Info(CultureInfo.CurrentCulture, "{0} initialization took {1}ms.", nameof(PathFinder), watch.ElapsedMilliseconds);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_Initialization, nameof(PathFinder), watch.ElapsedMilliseconds);
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Error loading database.config");
+				Logger.Error(ex, I18n.Main_DBConfigException);
 				Environment.Exit(1);
 			}
 		}
 
 		public static void UpdateColorPreference(AutoKkutuColorPreference newColorPref)
 		{
-			Logger.Info("Updated color preferences.");
+			Logger.Info(I18n.Main_ColorPrefsUpdated);
 			CurrentColorPreference = newColorPref;
 			PathFinder.UpdateColorPreference(newColorPref);
 		}
 
 		public static void UpdateConfig(AutoKkutuConfiguration newConfig)
 		{
-			Logger.Info("Updated configurations.");
+			Logger.Info(I18n.Main_ConfigUpdated);
 			CurrentConfig = newConfig;
 			PathFinder.UpdateConfig(newConfig);
 			CommonHandler.UpdateConfig(newConfig);
@@ -156,7 +150,7 @@ namespace AutoKkutu
 		{
 			try
 			{
-				Properties.Settings config = Properties.Settings.Default;
+				Settings config = AutoKkutu.Settings.Default;
 				config.Reload();
 				CurrentConfig = new AutoKkutuConfiguration
 				{
@@ -197,7 +191,7 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				// This log may only available in log file
-				Logger.Error(ex, "Failed to load configurations.");
+				Logger.Error(ex, I18n.Main_ConfigLoadException);
 			}
 		}
 
@@ -216,7 +210,7 @@ namespace AutoKkutu
 			bool differentMissionChar = CurrentConfig?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(missionChar, Handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
-				Logger.Warn(CultureInfo.CurrentCulture, "Invalidated potential incorrect path update result. (Word: {0}, MissionChar: {1})", differentWord, differentMissionChar);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
 				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar, flags);
 				return false;
 			}
@@ -233,7 +227,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Warn("Can't submit clipboard text.", ex);
+				Logger.Warn(I18n.Main_ClipboardSubmitException, ex);
 			}
 		}
 
@@ -249,7 +243,7 @@ namespace AutoKkutu
 			ResetPathList();
 			if (CurrentConfig.RequireNotNull().AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
 			{
-				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, "자동 업데이트");
+				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
 				string? result = PathFinder.AutoDBUpdate();
 				if (string.IsNullOrEmpty(result))
 				{
@@ -265,11 +259,11 @@ namespace AutoKkutu
 						}
 						catch (Exception ex)
 						{
-							Logger.Warn(ex, "Failed to write game result.");
+							Logger.Warn(ex, I18n.Main_GameResultWriteException);
 						}
 					}
 
-					this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, "자동 업데이트", result);
+					this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);
 				}
 			}
 			else
@@ -284,7 +278,7 @@ namespace AutoKkutu
 			{
 				GameMode newGameMode = args.GameMode;
 				CurrentConfig.GameMode = newGameMode;
-				Logger.Info(CultureInfo.CurrentCulture, "Automatically updated game mode to {gameMode}.", ConfigEnums.GetGameModeName(newGameMode));
+				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_GameModeUpdated, ConfigEnums.GetGameModeName(newGameMode));
 				UpdateConfig(CurrentConfig);
 			}
 		}
@@ -299,7 +293,7 @@ namespace AutoKkutu
 		private void CommonHandler_MyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 		{
 			string word = args.Word;
-			Logger.Warn(CultureInfo.CurrentCulture, "My path {word} was confirmed wrong.", word);
+			Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_MyPathIsUnsupported, word);
 
 			if (!CurrentConfig.RequireNotNull().AutoFixEnabled)
 				return;
@@ -311,7 +305,7 @@ namespace AutoKkutu
 					string? path = TimeFilterQualifiedWordListIndexed(PathFinder.QualifiedList, ++WordIndex);
 					if (path == null)
 					{
-						Logger.Warn("There's no path available.");
+						Logger.Warn(I18n.Main_NoMorePathAvailable);
 						this.ChangeStatusBar(CurrentStatus.NotFound);
 						return;
 					}
@@ -322,28 +316,28 @@ namespace AutoKkutu
 						if (CurrentConfig.FixDelayPerCharEnabled)
 							delay *= path.Length;
 						this.ChangeStatusBar(CurrentStatus.Delaying, delay);
-						Logger.Debug(CultureInfo.CurrentCulture, "Waiting {0}ms before submitting next path.", delay);
+						Logger.Debug(CultureInfo.CurrentCulture, I18n.Main_WaitingSubmitNext, delay);
 						Task.Run(async () =>
 						{
 							await Task.Delay(delay);
-							PerformAutoEnter(path, null, "next");
+							PerformAutoEnter(path, null, I18n.Main_Next);
 						});
 					}
 					else
 					{
-						PerformAutoEnter(path, null, "next");
+						PerformAutoEnter(path, null, I18n.Main_Next);
 					}
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "Can't submit path due exception.");
+					Logger.Error(ex, I18n.Main_PathSubmitException);
 				}
 			}
 		}
 
 		private void CommonHandler_MyTurnEndEvent(object? sender, EventArgs e)
 		{
-			Logger.Debug("Reset WordIndex to zero.");
+			Logger.Debug(I18n.Main_WordIndexReset);
 			WordIndex = 0;
 		}
 
@@ -354,9 +348,9 @@ namespace AutoKkutu
 			bool isInexistent = !args.IsExistingWord;
 			string word = args.Word;
 			if (isInexistent)
-				Logger.Warn(CultureInfo.CurrentCulture, "Entered word {word} is inexistent, added to removal list.", word);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedWord_Inexistent, word);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Entered word {word} is exists but not supported, added to unsupported list.", word);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedWord_Existent, word);
 			PathFinder.AddToUnsupportedWord(word, isInexistent);
 		}
 
@@ -374,7 +368,7 @@ namespace AutoKkutu
 			if (!CurrentConfig.RequireNotNull().AutoEnterEnabled)
 				return;
 
-			DelayedEnter(word, null, "presented");
+			DelayedEnter(word, null, I18n.Main_Presented);
 		}
 
 		private static ICollection<string>? GetEndWordList(GameMode mode) => mode switch
@@ -386,8 +380,6 @@ namespace AutoKkutu
 
 		private void HideLoadOverlay()
 		{
-			Logger.Info("Hide LoadOverlay.");
-
 			var img = new BitmapImage();
 			img.BeginInit();
 			img.UriSource = new Uri($@"Images\{Database.GetDBType()}.png", UriKind.Relative);
@@ -411,7 +403,7 @@ namespace AutoKkutu
 			if (Handler != null)
 				RegisterHandler(Handler);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Unsupported site: {url}", url);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedURL, url);
 		}
 
 		private void OnBrowserFrameLoadEnd_RunOnce(object? sender, FrameLoadEndEventArgs e)
@@ -501,7 +493,7 @@ namespace AutoKkutu
 			var i = (PathObject)selected;
 			if (i != null)
 			{
-				Logger.Info(CultureInfo.CurrentCulture, "Path submitted: {word}.", i.Content);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_PathSubmitted, i.Content);
 				SendMessage(i.Content);
 			}
 		}
@@ -520,14 +512,14 @@ namespace AutoKkutu
 
 		private void OnWindowClose(object? sender, CancelEventArgs e)
 		{
-			Logger.Info("Closing database connection...");
+			Logger.Info(I18n.Main_ClosingDBConnection);
 			Database.Dispose();
 			LogManager.Shutdown();
 		}
 
 		private void OnPathUpdated(object? sender, UpdatedPathEventArgs args)
 		{
-			Logger.Info("Path update received.");
+			Logger.Info(I18n.Main_PathUpdateReceived);
 
 			if (!CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.None))
 				return;
@@ -549,7 +541,7 @@ namespace AutoKkutu
 			{
 				if (args.Result == PathFinderResult.None)
 				{
-					Logger.Warn("Auto mode enabled, but can't find any path.");
+					Logger.Warn(I18n.Auto_NoMorePathAvailable);
 					this.ChangeStatusBar(CurrentStatus.NotFound);
 				}
 				else
@@ -557,7 +549,7 @@ namespace AutoKkutu
 					string? content = TimeFilterQualifiedWordList(PathFinder.QualifiedList);
 					if (content == null)
 					{
-						Logger.Warn("Auto mode enabled, found path, but there's no word submittable in time.");
+						Logger.Warn(I18n.Auto_TimeOver);
 						this.ChangeStatusBar(CurrentStatus.NotFound);
 					}
 					else
@@ -576,9 +568,9 @@ namespace AutoKkutu
 				int delay = CurrentConfig.DelayInMillis;
 				string? word = qualifiedWordList.FirstOrDefault(po => po!.Content.Length * delay <= remain, null)?.Content;
 				if (word == null)
-					Logger.Debug(CultureInfo.CurrentCulture, "There's no word submittable in time! (Turn Time {0}ms)", remain);
+					Logger.Debug(CultureInfo.CurrentCulture, I18n.TimeFilter_TimeOver, remain);
 				else
-					Logger.Debug(CultureInfo.CurrentCulture, "Turn Time {0}ms >= Word Delay {1}ms", remain, word.Length * delay);
+					Logger.Debug(CultureInfo.CurrentCulture, I18n.TimeFilter_Success, remain, word.Length * delay);
 				return word;
 			}
 
@@ -594,24 +586,27 @@ namespace AutoKkutu
 				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
 				string? word = (arr.Length - 1 >= wordIndex) ? arr[wordIndex].Content : null;
 				if (word == null)
-					Logger.Debug("[WordIndex: {0}] There's no word submittable in time! (Turn Time {1}ms)", wordIndex, remain);
+					Logger.Debug(CultureInfo.CurrentCulture, I18n.TimeFilter_TimeOver, remain);
 				else
-					Logger.Debug("[WordIndex: {0}] Turn Time {1}ms >= Word Delay {2}ms", wordIndex, remain, word.Length * delay);
+					Logger.Debug(CultureInfo.CurrentCulture, I18n.TimeFilter_Success, remain, word.Length * delay);
 				return word;
 			}
 
 			return qualifiedWordList.Count - 1 >= WordIndex ? qualifiedWordList[wordIndex].Content : null;
 		}
 
-		private void DelayedEnter(string content, UpdatedPathEventArgs? args, string pathAttribute = "first")
+		private void DelayedEnter(string content, UpdatedPathEventArgs? args, string? pathAttribute = null)
 		{
+			if (pathAttribute == null)
+				pathAttribute = I18n.Main_Optimal;
+
 			if (CurrentConfig.RequireNotNull().DelayEnabled && args?.Flags.HasFlag(PathFinderOptions.AutoFixed) != true)
 			{
 				int delay = CurrentConfig.DelayInMillis;
 				if (CurrentConfig.DelayPerCharEnabled)
 					delay *= content.Length;
 				this.ChangeStatusBar(CurrentStatus.Delaying, delay);
-				Logger.Debug(CultureInfo.CurrentCulture, "Waiting {0}ms before entering path.", delay);
+				Logger.Debug(CultureInfo.CurrentCulture, I18n.Main_WaitingSubmit, delay);
 				if (CurrentConfig.DelayStartAfterCharEnterEnabled)
 				{
 					// Delay-per-Char
@@ -640,16 +635,19 @@ namespace AutoKkutu
 			}
 		}
 
-		private void PerformAutoEnter(string content, UpdatedPathEventArgs? args, string pathAttribute = "first")
+		private void PerformAutoEnter(string content, UpdatedPathEventArgs? args, string? pathAttribute = null)
 		{
+			if (pathAttribute == null)
+				pathAttribute = I18n.Main_Optimal;
+
 			if (!Handler.RequireNotNull().IsGameStarted || !Handler.IsMyTurn || args != null && !CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed))
 				return;
 			PerformAutoEnter(content, pathAttribute);
 		}
 
-		private void PerformAutoEnter(string content, string pathAttribute = "first")
+		private void PerformAutoEnter(string content, string pathAttribute)
 		{
-			Logger.Info(CultureInfo.CurrentCulture, "Auto mode enabled. automatically use {0} path: '{1}'", pathAttribute, content);
+			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_AutoEnter, pathAttribute, content);
 			SendMessage(content);
 			this.ChangeStatusBar(CurrentStatus.AutoEntered, content);
 		}
@@ -657,7 +655,7 @@ namespace AutoKkutu
 		private void RegisterHandler(CommonHandler handler)
 		{
 			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
-			Logger.Info("Browser frame-load end.");
+			Logger.Info(I18n.Main_CEFFrameLoadEnd);
 
 			handler.OnGameStarted += CommonHandler_GameStart;
 			handler.OnGameEnded += CommonHandler_GameEnd;
@@ -670,7 +668,7 @@ namespace AutoKkutu
 			handler.OnTypingWordPresented += CommonHandler_OnTypingWordPresentedEvent;
 			handler.StartWatchdog();
 
-			Logger.Info(CultureInfo.CurrentCulture, "Using handler: {0}", handler.GetID());
+			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_UseHandler, handler.GetID());
 			RemoveAd();
 			Dispatcher.Invoke(() => HideLoadOverlay());
 		}
@@ -693,7 +691,7 @@ namespace AutoKkutu
 
 		private void ResetPathList()
 		{
-			Logger.Info("Reset path list... ");
+			Logger.Info(I18n.Main_ResetPathList);
 			PathFinder.ResetFinalList();
 			Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.DisplayList);
 		}
@@ -716,9 +714,9 @@ namespace AutoKkutu
 			if (arg == null)
 			{
 				if (IsEnd)
-					Result = PATHFINDER_UNAVAILABLE;
+					Result = I18n.PathFinderUnavailable;
 				else
-					Result = PATHFINDER_WAITING;
+					Result = I18n.PathFinderWaiting;
 			}
 			else
 			{
@@ -729,27 +727,32 @@ namespace AutoKkutu
 
 		private static string CreatePathResultExplain(UpdatedPathEventArgs arg)
 		{
-			string FilterText = $"'{arg.Word.Content}'{(arg.Word.CanSubstitution ? $" 또는 '{arg.Word.Substitution}'" : string.Empty)}{(string.IsNullOrWhiteSpace(arg.MissionChar) ? string.Empty : $", 미션 단어 '{arg.MissionChar}'")} 에 대한 검색 결과";
+			string filter = $"'{arg.Word.Content}'";
+			if (arg.Word.CanSubstitution)
+				filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{arg.Word.Substitution}'");
+			if (!string.IsNullOrWhiteSpace(arg.MissionChar))
+				filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, arg.MissionChar);
+			string FilterText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview, filter);
 			string SpecialFilterText = "";
 			string FindResult;
-			string ElapsedTimeText = $"{arg.Time}ms 소요.";
+			string ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.Time);
 			if (arg.Result == PathFinderResult.Normal)
 			{
-				FindResult = $"총 {arg.TotalWordCount}개의 단어 중, {arg.CalcWordCount}개의 단어 추천됨.";
+				FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
 			}
 			else
 			{
 				if (arg.Result == PathFinderResult.None)
-					FindResult = $"총 {arg.TotalWordCount}개의 단어 중, 가능한 것 없음.";
+					FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
 				else
-					FindResult = PATHFINDER_ERROR;
+					FindResult = I18n.PathFinderError;
 			}
 			if (arg.Flags.HasFlag(PathFinderOptions.UseEndWord))
-				SpecialFilterText += ", 한방";
+				SpecialFilterText += ", " + I18n.PathFinderEndWord;
 			if (arg.Flags.HasFlag(PathFinderOptions.UseAttackWord))
-				SpecialFilterText += ", 공격";
+				SpecialFilterText += ", " + I18n.PathFinderAttackWord;
 
-			string newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : $"{SpecialFilterText[2..]} 단어 사용";
+			string newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(CultureInfo.CurrentCulture, I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
 			return FilterText + Environment.NewLine + newSpecialFilterText + Environment.NewLine + FindResult + Environment.NewLine + ElapsedTimeText;
 		}
 
@@ -763,7 +766,7 @@ namespace AutoKkutu
 			{
 				if (!ConfigEnums.IsFreeMode(mode) && GetEndWordList(mode)?.Contains(word.Content) == true && (!word.CanSubstitution || GetEndWordList(mode)?.Contains(word.Substitution!) == true))
 				{
-					Logger.Warn("Can't find any path : Presented word is End word.");
+					Logger.Warn(I18n.PathFinderFailed_Endword);
 					ResetPathList();
 					SetSearchState(null, true);
 					this.ChangeStatusBar(CurrentStatus.EndWord);
@@ -786,7 +789,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Can't find path due exception.");
+				Logger.Error(ex, I18n.PathFinderFailed_Exception);
 			}
 		}
 
@@ -823,7 +826,7 @@ namespace AutoKkutu
 
 		private void UnloadPreviousHandler(CommonHandler handler)
 		{
-			Logger.Info(CultureInfo.CurrentCulture, "Unregistered previous handler: {0}", handler.GetID());
+			Logger.Info(CultureInfo.CurrentCulture, I18n.HandlerRegistry_Unregistered, handler.GetID());
 
 			// Unregister previous handler
 			handler.OnGameStarted -= CommonHandler_GameStart;

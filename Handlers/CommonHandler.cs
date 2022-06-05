@@ -422,7 +422,7 @@ namespace AutoKkutu
 				return null;
 
 			string primary;
-			string secondary = String.Empty;
+			string secondary = string.Empty;
 			bool hasSecondary = content.Contains('(', StringComparison.Ordinal) && content.Last() == ')';
 			if (hasSecondary)
 			{

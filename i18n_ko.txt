@@ -1,0 +1,52 @@
+AllocConsoleFailed	AllocConsole() 호출에 실패하였습니다 : 오류 코드 {0}	0: 오류 코드
+Auto_NoMorePathAvailable	자동 입력이 활성화되었지만, 사용할 수 있는 단어가 없습니다.	
+Auto_TimeOver	자동 입력이 활성화되었고, 단어들을 찾았지만, 남은 턴 시간 안에 입력할 수 있는 단어가 없습니다.	
+ConsoleIntroduction	디버깅이 활성화되지 않았기에 콘솔이 활성화되었습니다.	
+DeleteConsoleMenuFailed	DeleteMenu() 호출에 실패하였습니다 : 오류 코드 {0}	0: 오류 코드
+HandlerRegistry_Unregistered	이전 핸들러 '{0}'를 비활성화했습니다.	0: Handler ID
+Main_AutoEnter	자동 입력이 활성화되었습니다. {attr:l} 단어 {word}를 사용합니다.	attr: Word attributes (End, Attack), word: The word
+Main_CEFFrameLoadEnd	브라우저 프레임이 로드되었습니다.	
+Main_ClipboardSubmitException	클립보드에 저장된 텍스트를 보내는 것에 실패하였습니다.	
+Main_ClosingDBConnection	데이터베이스와의 연결을 닫습니다...	
+Main_ColorPrefsUpdated	색 설정이 업데이트되었습니다.	
+Main_ConfigLoadException	설정을 로드할 수 없습니다.	
+Main_ConfigUpdated	설정이 업데이트되었습니다.	
+Main_DBConfigException	데이터베이스 설정 파일 'database.config'에 문제가 있습니다.	
+Main_GameModeUpdated	게임 모드가 {gameMode}로 업데이트되었습니다.	gameMode: The updated game mode
+Main_GameResultWriteException	게임 결과를 작성하는 데 실패하였습니다.	
+Main_Initialization	모듈 '{0}'의 초기화가 {1}ms 소요되었습니다.	0: Module name, 1: Elapsed time in millis
+Main_MyPathIsUnsupported	제시한 단어 {word}가 지원되지 않음을 감지하였습니다.	word: The word
+Main_Next	다음	
+Main_NoMorePathAvailable	더 이상 사용할 수 있는 단어가 없습니다.	
+Main_Optimal	최적의	
+Main_PathSubmitException	단어 입력 중 예외가 발생하였습니다.	
+Main_PathSubmitted	입력된 단어: {word}.	word: The word
+Main_PathUpdateReceived	단어 목록이 업데이트되었습니다.	
+Main_Presented	나타난	
+Main_ResetPathList	단어 목록을 초기화하였습니다.	
+Main_StartLoad	페이지 로딩이 시작되었습니다.	
+Main_UnsupportedURL	지원되지 않는 사이트: {url}	url: The site url
+Main_UnsupportedWord_Existent	현재 상황에서 지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 이번 게임에서 더 이상 사용되지 않습니다.	word: The word
+Main_UnsupportedWord_Inexistent	지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 자동 업데이트 때 데이터베이스에서 제거될 것입니다.	word: The word
+Main_UseHandler	사용할 핸들러: {0}	0: Handler ID
+Main_WaitingSubmit	단어를 입력하기 전에 {0}ms를 기다립니다.	0: Delay
+Main_WaitingSubmitNext	다음 단어를 입력하기 전에 {0}ms를 기다립니다.	0: Delay
+Main_WordIndexReset	사용 단어 인덱스를 0으로 초기화하였습니다.	
+PathFinder_InvalidatedUpdate	이전 검색 결과를 무효화했습니다. (단어 문제: {0}, 미션 단어 문제: {1})	0: Is caused by word, 1: Is caused by mission char
+PathFinderAttackWord	공격	
+PathFinderEndWord	한방	
+PathFinderError	예외가 발생하여 단어 검색에 실패했습니다.	
+PathFinderFailed_Endword	단어를 찾을 수 없습니다. 제시된 단어가 한방 단어입니다.	
+PathFinderFailed_Exception	단어를 찾던 도중 예외가 발생하였습니다.	
+PathFinderFound	총 {0}개의 단어 중, {1}개 가능.	0: 전체 단어 수, 1: 사용 가능 단어 수
+PathFinderFoundButEmpty	총 {0}개의 단어 중, 가능한 것 없음.	0: 전체 단어 수
+PathFinderIncludedWord	{0} 단어 사용.	0: 포함된 단어 타입(들)
+PathFinderSearchOverview	{0} 에 대한 검색 결과.	0: 검색 필터 메시지
+PathFinderSearchOverview_MissionChar	{0}, 미션 단어 '{1}'	0: 단어 필터 (원 단어 및 대체 단어)
+PathFinderSearchOverview_Or	{0} 또는 {1}	0: 원 단어, 1: 대체 단어
+PathFinderTookTime	{0}ms 소요.	0: 소요된 시간 (ms)
+PathFinderUnavailable	이 턴에 사용 가능한 단어를 찾을 수 없습니다.	
+PathFinderWaiting	대기 중...	
+Status_AutoUpdate	자동 데이터베이스 업데이트	
+TimeFilter_Success	턴 시간ㄴ {0}ms >= 단어 입력 딜레이 {1}ms	0: Remaining turn time, 1: Total word delay
+TimeFilter_TimeOver	턴이 끝나기 전에 입력할 수 있는 단어가 없습니다! (남은 턴 시간: {0}ms)	0: Remaining turn time

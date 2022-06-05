@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllocConsoleFailed" xml:space="preserve">
+    <value>AllocConsole() 호출에 실패하였습니다 : 오류 코드 {0}</value>
+    <comment>0: 오류 코드</comment>
+  </data>
+  <data name="Auto_NoMorePathAvailable" xml:space="preserve">
+    <value>자동 입력이 활성화되었지만, 사용할 수 있는 단어가 없습니다.</value>
+  </data>
+  <data name="Auto_TimeOver" xml:space="preserve">
+    <value>자동 입력이 활성화되었고, 단어들을 찾았지만, 남은 턴 시간 안에 입력할 수 있는 단어가 없습니다.</value>
+  </data>
+  <data name="ConsoleIntroduction" xml:space="preserve">
+    <value>디버깅이 활성화되지 않았기에 콘솔이 활성화되었습니다.</value>
+  </data>
+  <data name="DeleteConsoleMenuFailed" xml:space="preserve">
+    <value>DeleteMenu() 호출에 실패하였습니다 : 오류 코드 {0}</value>
+    <comment>0: 오류 코드</comment>
+  </data>
+  <data name="HandlerRegistry_Unregistered" xml:space="preserve">
+    <value>이전 핸들러 '{0}'를 비활성화했습니다.</value>
+    <comment>0: Handler ID</comment>
+  </data>
+  <data name="Main_AutoEnter" xml:space="preserve">
+    <value>자동 입력이 활성화되었습니다. {attr:l} 단어 {word}를 사용합니다.</value>
+    <comment>attr: Word attributes (End, Attack), word: The word</comment>
+  </data>
+  <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
+    <value>브라우저 프레임이 로드되었습니다.</value>
+  </data>
+  <data name="Main_ClipboardSubmitException" xml:space="preserve">
+    <value>클립보드에 저장된 텍스트를 보내는 것에 실패하였습니다.</value>
+  </data>
+  <data name="Main_ClosingDBConnection" xml:space="preserve">
+    <value>데이터베이스와의 연결을 닫습니다...</value>
+  </data>
+  <data name="Main_ColorPrefsUpdated" xml:space="preserve">
+    <value>색 설정이 업데이트되었습니다.</value>
+  </data>
+  <data name="Main_ConfigLoadException" xml:space="preserve">
+    <value>설정을 로드할 수 없습니다.</value>
+  </data>
+  <data name="Main_ConfigUpdated" xml:space="preserve">
+    <value>설정이 업데이트되었습니다.</value>
+  </data>
+  <data name="Main_DBConfigException" xml:space="preserve">
+    <value>데이터베이스 설정 파일 'database.config'에 문제가 있습니다.</value>
+  </data>
+  <data name="Main_GameModeUpdated" xml:space="preserve">
+    <value>게임 모드가 {gameMode}로 업데이트되었습니다.</value>
+    <comment>gameMode: The updated game mode</comment>
+  </data>
+  <data name="Main_GameResultWriteException" xml:space="preserve">
+    <value>게임 결과를 작성하는 데 실패하였습니다.</value>
+  </data>
+  <data name="Main_Initialization" xml:space="preserve">
+    <value>모듈 '{0}'의 초기화가 {1}ms 소요되었습니다.</value>
+    <comment>0: Module name, 1: Elapsed time in millis</comment>
+  </data>
+  <data name="Main_MyPathIsUnsupported" xml:space="preserve">
+    <value>제시한 단어 {word}가 지원되지 않음을 감지하였습니다.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="Main_Next" xml:space="preserve">
+    <value>다음</value>
+  </data>
+  <data name="Main_NoMorePathAvailable" xml:space="preserve">
+    <value>더 이상 사용할 수 있는 단어가 없습니다.</value>
+  </data>
+  <data name="Main_Optimal" xml:space="preserve">
+    <value>최적의</value>
+  </data>
+  <data name="Main_PathSubmitException" xml:space="preserve">
+    <value>단어 입력 중 예외가 발생하였습니다.</value>
+  </data>
+  <data name="Main_PathSubmitted" xml:space="preserve">
+    <value>입력된 단어: {word}.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="Main_PathUpdateReceived" xml:space="preserve">
+    <value>단어 목록이 업데이트되었습니다.</value>
+  </data>
+  <data name="Main_Presented" xml:space="preserve">
+    <value>나타난</value>
+  </data>
+  <data name="Main_ResetPathList" xml:space="preserve">
+    <value>단어 목록을 초기화하였습니다.</value>
+  </data>
+  <data name="Main_StartLoad" xml:space="preserve">
+    <value>페이지 로딩이 시작되었습니다.</value>
+  </data>
+  <data name="Main_UnsupportedURL" xml:space="preserve">
+    <value>지원되지 않는 사이트: {url}</value>
+    <comment>url: The site url</comment>
+  </data>
+  <data name="Main_UnsupportedWord_Existent" xml:space="preserve">
+    <value>현재 상황에서 지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 이번 게임에서 더 이상 사용되지 않습니다.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="Main_UnsupportedWord_Inexistent" xml:space="preserve">
+    <value>지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 자동 업데이트 때 데이터베이스에서 제거될 것입니다.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="Main_UseHandler" xml:space="preserve">
+    <value>사용할 핸들러: {0}</value>
+    <comment>0: Handler ID</comment>
+  </data>
+  <data name="Main_WaitingSubmit" xml:space="preserve">
+    <value>단어를 입력하기 전에 {0}ms를 기다립니다.</value>
+    <comment>0: Delay</comment>
+  </data>
+  <data name="Main_WaitingSubmitNext" xml:space="preserve">
+    <value>다음 단어를 입력하기 전에 {0}ms를 기다립니다.</value>
+    <comment>0: Delay</comment>
+  </data>
+  <data name="Main_WordIndexReset" xml:space="preserve">
+    <value>사용 단어 인덱스를 0으로 초기화하였습니다.</value>
+  </data>
+  <data name="PathFinderAttackWord" xml:space="preserve">
+    <value>공격</value>
+  </data>
+  <data name="PathFinderEndWord" xml:space="preserve">
+    <value>한방</value>
+  </data>
+  <data name="PathFinderError" xml:space="preserve">
+    <value>예외가 발생하여 단어 검색에 실패했습니다.</value>
+  </data>
+  <data name="PathFinderFailed_Endword" xml:space="preserve">
+    <value>단어를 찾을 수 없습니다. 제시된 단어가 한방 단어입니다.</value>
+  </data>
+  <data name="PathFinderFailed_Exception" xml:space="preserve">
+    <value>단어를 찾던 도중 예외가 발생하였습니다.</value>
+  </data>
+  <data name="PathFinderFound" xml:space="preserve">
+    <value>총 {0}개의 단어 중, {1}개 가능.</value>
+    <comment>0: 전체 단어 수, 1: 사용 가능 단어 수</comment>
+  </data>
+  <data name="PathFinderFoundButEmpty" xml:space="preserve">
+    <value>총 {0}개의 단어 중, 가능한 것 없음.</value>
+    <comment>0: 전체 단어 수</comment>
+  </data>
+  <data name="PathFinderIncludedWord" xml:space="preserve">
+    <value>{0} 단어 사용.</value>
+    <comment>0: 포함된 단어 타입(들)</comment>
+  </data>
+  <data name="PathFinderSearchOverview" xml:space="preserve">
+    <value>{0} 에 대한 검색 결과.</value>
+    <comment>0: 검색 필터 메시지</comment>
+  </data>
+  <data name="PathFinderSearchOverview_MissionChar" xml:space="preserve">
+    <value>{0}, 미션 단어 '{1}'</value>
+    <comment>0: 단어 필터 (원 단어 및 대체 단어)</comment>
+  </data>
+  <data name="PathFinderSearchOverview_Or" xml:space="preserve">
+    <value>{0} 또는 {1}</value>
+    <comment>0: 원 단어, 1: 대체 단어</comment>
+  </data>
+  <data name="PathFinderTookTime" xml:space="preserve">
+    <value>{0}ms 소요.</value>
+    <comment>0: 소요된 시간 (ms)</comment>
+  </data>
+  <data name="PathFinderUnavailable" xml:space="preserve">
+    <value>이 턴에 사용 가능한 단어를 찾을 수 없습니다.</value>
+  </data>
+  <data name="PathFinderWaiting" xml:space="preserve">
+    <value>대기 중...</value>
+  </data>
+  <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
+    <value>이전 검색 결과를 무효화했습니다. (단어 문제: {0}, 미션 단어 문제: {1})</value>
+    <comment>0: Is caused by word, 1: Is caused by mission char</comment>
+  </data>
+  <data name="Status_AutoUpdate" xml:space="preserve">
+    <value>자동 데이터베이스 업데이트</value>
+  </data>
+  <data name="TimeFilter_Success" xml:space="preserve">
+    <value>턴 시간ㄴ {0}ms &gt;= 단어 입력 딜레이 {1}ms</value>
+    <comment>0: Remaining turn time, 1: Total word delay</comment>
+  </data>
+  <data name="TimeFilter_TimeOver" xml:space="preserve">
+    <value>턴이 끝나기 전에 입력할 수 있는 단어가 없습니다! (남은 턴 시간: {0}ms)</value>
+    <comment>0: Remaining turn time</comment>
+  </data>
+</root>
