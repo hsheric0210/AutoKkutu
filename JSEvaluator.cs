@@ -3,6 +3,7 @@ using CefSharp.Wpf;
 using log4net;
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
@@ -26,7 +27,10 @@ namespace AutoKkutu
 			using (IFrame frame = Browser.GetMainFrame())
 			{
 				if (frame != null)
-					return frame.EvaluateScriptAsync(javaScript)?.Result?.Result ?? defaultResult;
+				{
+					using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
+					return task.Result.Result ?? defaultResult;
+				}
 			}
 			return defaultResult;
 		}
@@ -49,7 +53,8 @@ namespace AutoKkutu
 			{
 				if (frame != null)
 				{
-					error = frame.EvaluateScriptAsync(javaScript).Result.Message;
+					using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
+					error = task.Result.Message;
 					return !string.IsNullOrWhiteSpace(error);
 				}
 			}
