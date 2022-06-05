@@ -204,7 +204,7 @@ namespace AutoKkutu
 			{
 				if (!Directory.Exists(folderName))
 				{
-					Logger.Warn("Folder {folderName} doesn't exists.", folderName);
+					Logger.Warn(CultureInfo.CurrentCulture, "Folder {folderName} doesn't exists.", folderName);
 					continue;
 				}
 

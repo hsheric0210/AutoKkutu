@@ -197,9 +197,9 @@ namespace AutoKkutu.Databases.SQLite
 			// Legacy support
 			bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName], CultureInfo.InvariantCulture));
 			if (args.targetDatabaseConnection.AddWord(word, isEndWord ? WordDatabaseAttributes.EndWord : WordDatabaseAttributes.None))
-				Logger.Info("Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
+				Logger.Info(CultureInfo.CurrentCulture, "Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
 			else
-				Logger.Warn("Word {word} already exists in database.", word);
+				Logger.Warn(CultureInfo.CurrentCulture, "Word {word} already exists in database.", word);
 		}
 
 		private static int ImportWordsFromExternalSQLite(SQLiteImportArgs args)
