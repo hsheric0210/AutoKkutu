@@ -2,7 +2,7 @@
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Utils;
-using log4net;
+using NLog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace AutoKkutu
 {
 	public static class PathFinder
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(PathFinder));
 
 		public static ICollection<string>? AttackWordList
 		{
@@ -121,11 +121,11 @@ namespace AutoKkutu
 			else
 			{
 				int NewPathCount = NewPathList.Count;
-				Logger.DebugFormat("Get {0} elements from NewPathList.", NewPathCount);
+				Logger.Debug(CultureInfo.CurrentCulture, "Get {0} elements from NewPathList.", NewPathCount);
 				int AddedPathCount = AddNewPaths();
 
 				int InexistentPathCount = InexistentPathList.Count;
-				Logger.InfoFormat("Get {0} elements from WrongPathList.", InexistentPathCount);
+				Logger.Info(CultureInfo.CurrentCulture, "Get {0} elements from WrongPathList.", InexistentPathCount);
 
 				int RemovedPathCount = RemoveInexistentPaths();
 				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
@@ -206,9 +206,9 @@ namespace AutoKkutu
 			string missionChar = info.MissionChar;
 			PathFinderOptions flags = info.PathFinderFlags;
 			if (wordCondition.CanSubstitution)
-				Logger.InfoFormat("Finding path for {0} ({1}).", wordCondition.Content, wordCondition.Substitution);
+				Logger.Info(CultureInfo.CurrentCulture, "Finding path for {word} and {substituation}.", wordCondition.Content, wordCondition.Substitution);
 			else
-				Logger.InfoFormat("Finding path for {0}.", wordCondition.Content);
+				Logger.Info(CultureInfo.CurrentCulture, "Finding path for {word}.", wordCondition.Content);
 
 			// Prevent watchdog thread from being blocked
 			Task.Run(() =>
@@ -225,12 +225,12 @@ namespace AutoKkutu
 				try
 				{
 					totalWordList = Connection.RequireNotNull().FindWord(info);
-					Logger.InfoFormat("Found {0} words. (AttackWord: {1}, EndWord: {2})", totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
+					Logger.Info(CultureInfo.CurrentCulture, "Found {0} words. (AttackWord: {1}, EndWord: {2})", totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
 				{
 					watch.Stop();
-					Logger.Error("Failed to Find Path", e);
+					Logger.Error(e, "Failed to Find Path");
 					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.Error, 0, 0, 0, flags));
 					return;
 				}
@@ -258,7 +258,7 @@ namespace AutoKkutu
 				QualifiedList = qualifiedWordList;
 
 				watch.Stop();
-				Logger.InfoFormat("Total {0} words are ready. ({1}ms)", DisplayList.Count, watch.ElapsedMilliseconds);
+				Logger.Info(CultureInfo.CurrentCulture, "Total {0} words are ready. (Took {1}ms)", DisplayList.Count, watch.ElapsedMilliseconds);
 				NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.Normal, totalWordCount, QualifiedList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
 		}
@@ -288,7 +288,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Failed to update node lists", ex);
+				Logger.Error(ex, "Failed to update node lists");
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}
@@ -318,16 +318,16 @@ namespace AutoKkutu
 
 				try
 				{
-					Logger.Debug($"Check and add '{word}' into database. (flags: {flags})");
+					Logger.Debug(CultureInfo.CurrentCulture, "Check and add {word} into database. (flags: {flags})", word, flags);
 					if (Connection.RequireNotNull().AddWord(word, flags))
 					{
-						Logger.Info($"Added '{word}' into database.");
+						Logger.Info(CultureInfo.CurrentCulture, "Added {word} into database.", word);
 						count++;
 					}
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Can't add '{word}' to database", ex);
+					Logger.Error(ex, CultureInfo.CurrentCulture, "Can't add {word} to database", word);
 				}
 			}
 
@@ -367,7 +367,7 @@ namespace AutoKkutu
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Can't delete '{word}' from database", ex);
+					Logger.Error(ex, "Can't delete {word} from database", word);
 				}
 			}
 
@@ -440,7 +440,7 @@ namespace AutoKkutu
 			get; set;
 		}
 
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(PathFinder));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(PathFinder));
 
 		public PathObject(string content, WordAttributes flags, int missionCharCount)
 		{
@@ -484,9 +484,9 @@ namespace AutoKkutu
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetEndWordListTableName(mode));
 			if (connection.AddNode(node, GetAttackWordListTableName(mode)))
-				Logger.InfoFormat("Successfully marked node '{0}' as AttackWord. [Mode: {1}]", node, mode);
+				Logger.Info(CultureInfo.CurrentCulture, "Successfully marked node {node} as attack word. [Gamemode: {gameMode}]", node, mode);
 			else
-				Logger.WarnFormat("Node '{0}' is already marked as AttackWord. [Mode: {1}]", node, mode);
+				Logger.Warn(CultureInfo.CurrentCulture, "Node {node} is already marked as attack word. [Gamemode: {gameMode}]", node, mode);
 		}
 
 		public void MakeEnd(GameMode mode, CommonDatabaseConnection connection)
@@ -494,9 +494,9 @@ namespace AutoKkutu
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetAttackWordListTableName(mode));
 			if (connection.AddNode(node, GetEndWordListTableName(mode)))
-				Logger.InfoFormat("Successfully marked node '{0}' as EndWord. [Mode: {1}]", node, mode);
+				Logger.Info(CultureInfo.CurrentCulture, "Successfully marked node {node} as end word. [Gamemode: {gameMode}]", node, mode);
 			else
-				Logger.WarnFormat("Node '{0}' is already marked as EndWord. [Mode: {1}]", node, mode);
+				Logger.Warn(CultureInfo.CurrentCulture, "Node {node} is already marked as end word. [Gamemode: {gameMode}]", node, mode);
 		}
 
 		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
@@ -505,9 +505,9 @@ namespace AutoKkutu
 			bool a = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
 			bool b = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
 			if (a || b)
-				Logger.InfoFormat("Successfully marked node '{0}' as NormalWord. [Mode: {1}]", node, mode);
+				Logger.Info(CultureInfo.CurrentCulture, "Successfully marked node {node} as normal word. [Gamemode: {gameMode}]", node, mode);
 			else
-				Logger.WarnFormat("Node '{0}' is already marked as NormalWord. [Mode: {1}]", node, mode);
+				Logger.Warn(CultureInfo.CurrentCulture, "Node {node} is already marked as normal word. [Gamemode: {gameMode}]", node, mode);
 		}
 
 		private static string GetAttackWordListTableName(GameMode mode) => mode switch

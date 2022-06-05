@@ -1,4 +1,4 @@
-﻿using log4net;
+﻿using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -8,7 +8,7 @@ namespace AutoKkutu.Databases.Extension
 {
 	public static class DatabaseNodeExtension
 	{
-		private static readonly ILog Logger = LogManager.GetLogger("Database Node Exts");
+		private static readonly Logger Logger = LogManager.GetLogger("Database Node Exts");
 
 		public static bool AddNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
 		{
@@ -59,7 +59,7 @@ namespace AutoKkutu.Databases.Extension
 			while (reader.Read())
 				result.Add(reader.GetString(wordIndexOrdinal));
 
-			Logger.InfoFormat("Found Total {0} nodes in {1}.", result.Count, tableName);
+			Logger.Info(CultureInfo.CurrentCulture, "Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}
 	}

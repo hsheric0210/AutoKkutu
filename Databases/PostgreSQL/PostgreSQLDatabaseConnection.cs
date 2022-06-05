@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Databases.Extension;
-using log4net;
+using NLog;
 using Npgsql;
 using System;
 using System.Globalization;
@@ -8,7 +8,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 {
 	public partial class PostgreSQLDatabaseConnection : CommonDatabaseConnection
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
 		private readonly NpgsqlConnection Connection;
 
 		public PostgreSQLDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
@@ -36,7 +36,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName), ex);
+				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
 			}
 			return null;
 		}
@@ -56,7 +56,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName), ex);
+				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
 				return false;
 			}
 		}
@@ -69,7 +69,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tablename), ex);
+				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tablename);
 				return false;
 			}
 		}

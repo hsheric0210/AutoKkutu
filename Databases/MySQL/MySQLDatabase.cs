@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Databases.Extension;
 using MySqlConnector;
 using System;
+using System.Globalization;
 
 namespace AutoKkutu.Databases.MySQL
 {
@@ -19,7 +20,7 @@ namespace AutoKkutu.Databases.MySQL
 				int databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;
 				int databaseNameIndexEnd = connectionString.IndexOf(';', databaseNameIndex) - databaseNameIndex;
 				DatabaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
-				Logger.InfoFormat("MySQL database name is '{0}'", DatabaseName);
+				Logger.Info(CultureInfo.CurrentCulture, "MySQL database name is {databaseName}.", DatabaseName);
 
 				// Open the connection
 				Logger.Info("Opening database connection...");
@@ -80,7 +81,7 @@ END;
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(DatabaseConstants.ErrorConnect, ex);
+				Logger.Error(ex, DatabaseConstants.ErrorConnect);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}

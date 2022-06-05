@@ -49,7 +49,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="jjoriping.ico" />
-    <Content Include="log4net.config">
+    <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -103,10 +103,10 @@
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0">
         <NoWarn>NU1701</NoWarn>
     </PackageReference>
-    <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.5" />
     <PackageReference Include="MySqlConnector" Version="2.1.9" />
+    <PackageReference Include="NLog" Version="5.0.0" />
     <PackageReference Include="Npgsql" Version="6.0.4" />
   </ItemGroup>
 
