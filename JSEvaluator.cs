@@ -1,6 +1,6 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
-using log4net;
+using NLog;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ namespace AutoKkutu
 {
 	public static class JSEvaluator
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(typeof(JSEvaluator));
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 		private static ChromiumWebBrowser? Browser;
 
 		public static void RegisterBrowser(ChromiumWebBrowser browser)
@@ -62,7 +62,7 @@ namespace AutoKkutu
 			return true;
 		}
 
-		public static string EvaluateJS(string javaScript, string defaultResult = " ", ILog? logger = null)
+		public static string EvaluateJS(string javaScript, string defaultResult = " ", Logger? logger = null)
 		{
 			try
 			{
@@ -74,12 +74,12 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				(logger ?? Logger).Error("Failed to run script on site.", ex);
+				(logger ?? Logger).Error(ex, "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
 
-		public static int EvaluateJSInt(string javaScript, int defaultResult = -1, ILog? logger = null)
+		public static int EvaluateJSInt(string javaScript, int defaultResult = -1, Logger? logger = null)
 		{
 			try
 			{
@@ -94,12 +94,12 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				(logger ?? Logger).Error("Failed to run script on site.", ex);
+				(logger ?? Logger).Error(ex, "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
 
-		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, ILog? logger = null)
+		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, Logger? logger = null)
 		{
 			try
 			{
@@ -111,7 +111,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				(logger ?? Logger).Error("Failed to run script on site.", ex);
+				(logger ?? Logger).Error(ex, "Failed to run script on site.");
 				return defaultResult;
 			}
 		}

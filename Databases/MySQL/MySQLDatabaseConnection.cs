@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Databases.Extension;
-using log4net;
+using NLog;
 using MySqlConnector;
 using System;
 using System.Globalization;
@@ -8,7 +8,7 @@ namespace AutoKkutu.Databases.MySQL
 {
 	public partial class MySQLDatabaseConnection : CommonDatabaseConnection
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
 		private readonly MySqlConnection Connection;
 		private readonly string DatabaseName;
 
@@ -40,7 +40,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Info(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName), ex);
+				Logger.Info(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
 				return "";
 			}
 		}
@@ -60,7 +60,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Info(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName), ex);
+				Logger.Info(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
 				return false;
 			}
 		}
@@ -73,7 +73,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Info(string.Format(CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tablename), ex);
+				Logger.Info(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tablename);
 				return false;
 			}
 		}

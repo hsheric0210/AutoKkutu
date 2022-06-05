@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Handlers;
 using AutoKkutu.Utils;
-using log4net;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,7 +28,7 @@ namespace AutoKkutu
 			MyTurn
 		}
 
-		protected ILog GetLogger(int? watchdogID = null, string? watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
+		protected Logger GetLogger(int? watchdogID = null, string? watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
 
 		private readonly Dictionary<string, string> RegisteredFunctionNames = new();
 
@@ -196,7 +196,7 @@ namespace AutoKkutu
 			{
 				CheckGameStarted(mainWatchdogID);
 				await Task.Delay(IsGameStarted ? _ingame_interval : _checkgame_interval, cancelToken);
-			}, ex => GetLogger(mainWatchdogID).Error("Main watchdog task terminated", ex), cancelToken);
+			}, ex => GetLogger(mainWatchdogID).Error(ex, "Main watchdog task interrupted."), cancelToken);
 		}
 
 		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
@@ -210,13 +210,13 @@ namespace AutoKkutu
 																																				{
 																																					await Task.Delay(_checkgame_interval, cancelToken);
 																																				}
-																																			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, watchdogName).Error($"{watchdogName} watchdog task terminated", ex), cancelToken);
+																																			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, watchdogName).Error(ex, "{0} watchdog task interrupted.", watchdogName), cancelToken);
 
 		private async Task WatchdogGameMode(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
 																									   {
 																										   CheckGameMode(mainWatchdogID);
 																										   await Task.Delay(_checkgame_interval, cancelToken);
-																									   }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error("GameMode watchdog task terminated", ex), cancelToken);
+																									   }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error(ex, CultureInfo.CurrentCulture, "GameMode watchdog task interrupted."), cancelToken);
 
 		// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
 		private async Task WatchdogPresentWord(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
@@ -231,13 +231,13 @@ namespace AutoKkutu
 																											  {
 																												  await Task.Delay(_checkgame_interval, cancelToken);
 																											  }
-																										  }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error("Present word watchdog task terminated", ex), cancelToken);
+																										  }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error(ex, "Present word watchdog task interrupted."), cancelToken);
 
 		private async Task WatchdogAssistant(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken) => await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
 
 		private void CheckGameStarted(int watchdogID)
 		{
-			ILog logger = GetLogger(watchdogID);
+			Logger logger = GetLogger(watchdogID);
 			if (IsGameNotInProgress())
 			{
 				if (!IsGameStarted)
@@ -258,7 +258,7 @@ namespace AutoKkutu
 
 		private void CheckGameTurn(int watchdogID)
 		{
-			ILog logger = GetLogger(watchdogID, "Turn");
+			Logger logger = GetLogger(watchdogID, "Turn");
 			if (IsGameNotInMyTurn())
 			{
 				if (!IsMyTurn)
@@ -276,9 +276,9 @@ namespace AutoKkutu
 					return;
 
 				if (presentedWord.CanSubstitution)
-					logger.InfoFormat("My Turn. presented word is {0} (Subsitution: {1})", presentedWord.Content, presentedWord.Substitution);
+					logger.Info(CultureInfo.CurrentCulture, "My turn arrived, presented word is {word} (Subsitution: {subsituation})", presentedWord.Content, presentedWord.Substitution);
 				else
-					logger.InfoFormat("My Turn. presented word is {0}", presentedWord.Content);
+					logger.Info(CultureInfo.CurrentCulture, "My turn arrived, presented word is {word}.", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
 				OnMyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
 			}
@@ -307,7 +307,7 @@ namespace AutoKkutu
 				string word = tmpWordCache[index];
 				if (!string.IsNullOrWhiteSpace(word) && !_wordCache.Contains(word))
 				{
-					GetLogger(watchdogID, "Previous word").InfoFormat("Found Previous Word : {0}", word);
+					GetLogger(watchdogID, "Previous word").Info(CultureInfo.CurrentCulture, "Found previous word : {word}", word);
 
 					if (!PathFinder.NewPathList.Contains(word))
 						PathFinder.NewPathList.Add(word);
@@ -327,7 +327,7 @@ namespace AutoKkutu
 			string missionWord = GetMissionWord();
 			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, CurrentMissionChar, StringComparison.Ordinal))
 				return;
-			GetLogger(watchdogID, "Mission word").InfoFormat("Mission Word Changed : {0}", missionWord);
+			GetLogger(watchdogID, "Mission word").Info(CultureInfo.CurrentCulture, "Mission word change detected : {word}", missionWord);
 			CurrentMissionChar = missionWord;
 		}
 
@@ -349,7 +349,7 @@ namespace AutoKkutu
 
 			if (roundIndex <= 0)
 				return;
-			GetLogger(watchdogID, "Round").InfoFormat("Round Changed : Index {0} Word {1}", roundIndex, roundText);
+			GetLogger(watchdogID, "Round").Info(CultureInfo.CurrentCulture, "Round Changed : Index {0} Word {1}", roundIndex, roundText);
 			OnRoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
 			PathFinder.ResetPreviousPath();
 		}
@@ -384,7 +384,7 @@ namespace AutoKkutu
 			if (string.Equals(example, _exampleWordCache, StringComparison.OrdinalIgnoreCase))
 				return;
 			_exampleWordCache = example;
-			GetLogger(watchdogID, "Example").InfoFormat("Path example detected : {0}", example);
+			GetLogger(watchdogID, "Example").Info(CultureInfo.CurrentCulture, "Path example detected : {word}", example);
 			PathFinder.NewPathList.Add(example);
 		}
 
@@ -398,7 +398,7 @@ namespace AutoKkutu
 			if (string.Equals(word, _currentPresentedWordCache, StringComparison.OrdinalIgnoreCase))
 				return;
 			_currentPresentedWordCache = word;
-			GetLogger(watchdogID, "Presented word").InfoFormat("Word detected : {0}", word);
+			GetLogger(watchdogID, "Presented word").Info(CultureInfo.CurrentCulture, "Word detected : {word}", word);
 			OnTypingWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
 		}
 
@@ -408,7 +408,7 @@ namespace AutoKkutu
 			if (gameMode == _gameModeCache)
 				return;
 			_gameModeCache = gameMode;
-			GetLogger(watchdogID, "GameMode").InfoFormat("GameMode Changed : {0}", ConfigEnums.GetGameModeName(gameMode));
+			GetLogger(watchdogID, "GameMode").Info(CultureInfo.CurrentCulture, "Game mode change detected : {gameMode}", ConfigEnums.GetGameModeName(gameMode));
 			OnGameModeChange?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 		}
 
@@ -463,9 +463,9 @@ namespace AutoKkutu
 			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
 			{
 				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
-					GetLogger().ErrorFormat("Failed to register JavaScript function '{0}' : {1}", funcName, error);
+					GetLogger().Error(CultureInfo.CurrentCulture, "Failed to register JavaScript function {funcName} : {error:l}", funcName, error);
 				else
-					GetLogger().InfoFormat("Registered JavaScript function '{0}' : {1}()", funcName, realFuncName);
+					GetLogger().Info(CultureInfo.CurrentCulture, "Registered JavaScript function {funcName} : {realFuncName:l}()", funcName, realFuncName);
 			}
 		}
 

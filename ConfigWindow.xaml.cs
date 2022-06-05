@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Config;
 using AutoKkutu.Constants;
-using log4net;
+using NLog;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ConfigWindow : Window
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(ConfigWindow));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(ConfigWindow));
 		private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
 
 		public ConfigWindow(AutoKkutuConfiguration config)
@@ -66,21 +66,21 @@ namespace AutoKkutu
 			if (!int.TryParse(delayNumber, out int _delay))
 			{
 				_delay = 10;
-				Logger.WarnFormat("Can't parse delay number '{0}'; reset to {1}", delayNumber, _delay);
+				Logger.Warn(CultureInfo.CurrentCulture, "Can't parse delay number {string}, will be reset to {default:l}.", delayNumber, _delay);
 			}
 
 			string maxWordNumber = MaxWordCount.Text;
 			if (!int.TryParse(maxWordNumber, out int MaxWords))
 			{
 				MaxWords = 20;
-				Logger.WarnFormat("Can't parse maxWordCount number '{0}'; reset to {1}", maxWordNumber, MaxWords);
+				Logger.Warn(CultureInfo.CurrentCulture, "Can't parse maxWordCount number {string}; will be reset to {default:l}.", maxWordNumber, MaxWords);
 			}
 
 			string fixDelayNumber = FixDelayNumber.Text;
 			if (!int.TryParse(fixDelayNumber, out int _fixdelay))
 			{
 				_fixdelay = 10;
-				Logger.WarnFormat("Can't parse fix delay number '{0}'; reset to {1}", fixDelayNumber, _fixdelay);
+				Logger.Warn(CultureInfo.CurrentCulture, "Can't parse fix delay number {string}; will be reset to {default:l}.", fixDelayNumber, _fixdelay);
 			}
 
 			var conf = new AutoKkutuConfiguration
@@ -133,7 +133,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Failed to save configuration", ex);
+				Logger.Error(ex, "Failed to save the configuration.");
 			}
 
 			Dispatcher.Invoke(() =>
@@ -144,7 +144,7 @@ namespace AutoKkutu
 				}
 				catch (Exception ex)
 				{
-					Logger.Error("Failed to apply configuration", ex);
+					Logger.Error(ex, "Failed to apply the configuration.");
 				}
 			});
 			Close();

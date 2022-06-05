@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Databases.Extension;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -19,7 +20,7 @@ namespace AutoKkutu.Databases.SQLite
 				// Create database if not exists
 				if (!new FileInfo(DatabaseFilePath).Exists)
 				{
-					Logger.Info($"Database file '{DatabaseFilePath}' doesn't exists; creating new one...");
+					Logger.Info(CultureInfo.CurrentCulture, "Database file {databaseFilePath} doesn't exists; creating new one...", DatabaseFilePath);
 					File.Create(DatabaseFilePath).Close();
 				}
 
@@ -37,7 +38,7 @@ namespace AutoKkutu.Databases.SQLite
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(DatabaseConstants.ErrorConnect, ex);
+				Logger.Error(ex, DatabaseConstants.ErrorConnect);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}

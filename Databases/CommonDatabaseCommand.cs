@@ -1,13 +1,14 @@
-﻿using log4net;
+﻿using NLog;
 using System;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 
 namespace AutoKkutu.Databases
 {
 	public abstract class CommonDatabaseCommand : IDisposable
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
 		protected DbCommand? Command
 		{
@@ -44,7 +45,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to {action}", ex);
+				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to {0}", action);
 			}
 			return -1;
 		}
@@ -57,7 +58,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to {action}", ex);
+				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to {0}", action);
 			}
 			return null;
 		}
@@ -70,7 +71,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error($"Failed to {action}", ex);
+				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to {0}", action);
 			}
 			return null;
 		}

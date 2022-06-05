@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Constants;
-using log4net;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -10,7 +10,7 @@ namespace AutoKkutu.Databases.Extension
 {
 	public static class FindWordExtension
 	{
-		private static readonly ILog Logger = LogManager.GetLogger("Database Word Finder");
+		private static readonly Logger Logger = LogManager.GetLogger("Database Word Finder");
 
 		private static CommonDatabaseCommand? CachedCommand;
 		private static string? PreviousQuery;
@@ -97,15 +97,15 @@ namespace AutoKkutu.Databases.Extension
 			if (CachedCommand == null || PreviousQuery?.Equals(query.Command, StringComparison.Ordinal) != true)
 			{
 				CachedCommand = connection.CreateCommand(query.Command);
-				Logger.DebugFormat("Query command : {0}", query.Command);
+				Logger.Debug(CultureInfo.CurrentCulture, "Query command : {command}", query.Command);
 
 				int paramCount = query.Parameters.Length;
 				var paramArray = new CommonDatabaseParameter[paramCount];
 				for (int i = 0; i < paramCount; i++)
 				{
-					(string name, object? value) = query.Parameters[i];
-					paramArray[i] = connection.CreateParameter(name, value);
-					Logger.DebugFormat("Query parameter : {0} = {1}", name, value);
+					(string paramName, object? paramValue) = query.Parameters[i];
+					paramArray[i] = connection.CreateParameter(paramName, paramValue);
+					Logger.Debug(CultureInfo.CurrentCulture, "Query parameter : {paramName} = {paramValue}", paramName, paramValue);
 				}
 
 				CachedCommand.AddParameters(paramArray);
@@ -114,10 +114,10 @@ namespace AutoKkutu.Databases.Extension
 			}
 			else
 			{
-				foreach ((string name, object? value) in query.Parameters)
+				foreach ((string paramName, object? paramValue) in query.Parameters)
 				{
-					CachedCommand.UpdateParameter(name, value);
-					Logger.DebugFormat("Cached query with parameter : {0} = {1}", name, value);
+					CachedCommand.UpdateParameter(paramName, paramValue);
+					Logger.Debug(CultureInfo.CurrentCulture, "Cached query with parameter : {paramName} = {paramValue}", paramName, paramValue);
 				}
 			}
 

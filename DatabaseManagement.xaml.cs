@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Databases;
 using AutoKkutu.Databases.SQLite;
 using AutoKkutu.Utils;
-using log4net;
+using NLog;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
@@ -11,12 +11,13 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using AutoKkutu.Constants;
+using System.Globalization;
 
 namespace AutoKkutu
 {
 	public partial class DatabaseManagement : Window
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(DatabaseManagement));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(DatabaseManagement));
 
 		private readonly DatabaseWithDefaultConnection Database;
 
@@ -68,21 +69,21 @@ namespace AutoKkutu
 			if (dialog.ShowDialog() ?? false)
 			{
 				var builder = new StringBuilder();
-				foreach (string filename in dialog.FileNames)
+				foreach (string fileName in dialog.FileNames)
 				{
-					if (!new FileInfo(filename).Exists)
+					if (!new FileInfo(fileName).Exists)
 					{
-						Logger.WarnFormat("File '{0}' doesn't exists.", filename);
+						Logger.Warn(CultureInfo.CurrentCulture, "File {fileName} doesn't exists.", fileName);
 						continue;
 					}
 
 					try
 					{
-						builder.AppendLine(File.ReadAllText(filename, Encoding.UTF8));
+						builder.AppendLine(File.ReadAllText(fileName, Encoding.UTF8));
 					}
 					catch (IOException ioe)
 					{
-						Logger.Error("IOException occurred during reading word list files", ioe);
+						Logger.Error(ioe, CultureInfo.CurrentCulture, "IOException occurred during reading word list file {fileName}.", fileName);
 					}
 				}
 
@@ -199,31 +200,31 @@ namespace AutoKkutu
 			if (folderNames?.Any() != true)
 				return;
 
-			foreach (string foldername in folderNames)
+			foreach (string folderName in folderNames)
 			{
-				if (!Directory.Exists(foldername))
+				if (!Directory.Exists(folderName))
 				{
-					Logger.WarnFormat("Folder '{0}' doesn't exists.", foldername);
+					Logger.Warn("Folder {folderName} doesn't exists.", folderName);
 					continue;
 				}
 
 				try
 				{
-					foreach (string filename in Directory.EnumerateFiles(foldername, "*", SearchOption.AllDirectories))
+					foreach (string fileName in Directory.EnumerateFiles(folderName, "*", SearchOption.AllDirectories))
 					{
 						try
 						{
-							builder.AppendLine(File.ReadAllText(filename, Encoding.UTF8));
+							builder.AppendLine(File.ReadAllText(fileName, Encoding.UTF8));
 						}
 						catch (IOException ioe)
 						{
-							Logger.Error("IOException during reading word list files.", ioe);
+							Logger.Error(ioe, CultureInfo.CurrentCulture, "IOException during reading word list file {fileName}.", fileName);
 						}
 					}
 				}
 				catch (IOException ioe)
 				{
-					Logger.Error($"Unable to enumerate files in folder '{foldername}'.", ioe);
+					Logger.Error(ioe, CultureInfo.CurrentCulture, "Unable to enumerate files in folder {folderName}.", folderName);
 				}
 			}
 

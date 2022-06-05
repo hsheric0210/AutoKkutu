@@ -1,11 +1,11 @@
-﻿using log4net;
+﻿using NLog;
 using System;
 
 namespace AutoKkutu.Databases
 {
 	public abstract class CommonDatabase : IDisposable
 	{
-		public static readonly ILog Logger = LogManager.GetLogger(nameof(CommonDatabase));
+		public static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
 		protected CommonDatabase()
 		{

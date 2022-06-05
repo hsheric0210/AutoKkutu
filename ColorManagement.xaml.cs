@@ -1,7 +1,8 @@
-﻿using log4net;
+﻿using NLog;
 using System;
 using System.Windows;
 using AutoKkutu.Utils;
+using System.Globalization;
 
 namespace AutoKkutu
 {
@@ -10,7 +11,7 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ColorManagement : Window
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(nameof(ColorManagement));
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(ColorManagement));
 
 		public ColorManagement(AutoKkutuColorPreference config)
 		{
@@ -38,7 +39,7 @@ namespace AutoKkutu
 
 			try
 			{
-				var config = Properties.Settings.Default;
+				Properties.Settings config = Properties.Settings.Default;
 				config.EndWordColor = newPref.EndWordColor.ToDrawingColor();
 				config.AttackWordColor = newPref.AttackWordColor.ToDrawingColor();
 				config.MissionWordColor = newPref.MissionWordColor.ToDrawingColor();
@@ -48,7 +49,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error("Failed to save configuration", ex);
+				Logger.Error(ex, "Failed to save the configuration.");
 			}
 
 			Dispatcher.Invoke(() =>
@@ -59,7 +60,7 @@ namespace AutoKkutu
 				}
 				catch (Exception ex)
 				{
-					Logger.Error("Failed to apply color preference", ex);
+					Logger.Error(ex, "Failed to apply the color preference.");
 				}
 			});
 
