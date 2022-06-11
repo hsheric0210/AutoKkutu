@@ -42,7 +42,7 @@ namespace AutoKkutu.Databases.Extension
 					attackWordFlag = (int)WordDatabaseAttributes.ReverseAttackWord;
 					return;
 
-				case GameMode.MiddleAddFirst:
+				case GameMode.MiddleAndFirst:
 					endWordFlag = (int)WordDatabaseAttributes.MiddleEndWord;
 					attackWordFlag = (int)WordDatabaseAttributes.MiddleAttackWord;
 					return;

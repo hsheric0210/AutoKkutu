@@ -15,7 +15,7 @@
 		/// <summary>
 		/// 가운뎃말잇기
 		/// </summary>
-		MiddleAddFirst,
+		MiddleAndFirst,
 
 		/// <summary>
 		/// 끄투

@@ -121,6 +121,12 @@
     <value>Failed to AllocConsole() : Error code {0}</value>
     <comment>0: Error code</comment>
   </data>
+  <data name="AutoDBUpdate_OnGameEnd" xml:space="preserve">
+    <value>When a game finished</value>
+  </data>
+  <data name="AutoDBUpdate_OnRoundEnd" xml:space="preserve">
+    <value>When a round finished</value>
+  </data>
   <data name="Auto_NoMorePathAvailable" xml:space="preserve">
     <value>Auto mode enabled, but can't find any path.</value>
   </data>
@@ -133,6 +139,33 @@
   <data name="DeleteConsoleMenuFailed" xml:space="preserve">
     <value>Failed to call console DeleteMenu() : Error code {0}</value>
     <comment>0: Error code</comment>
+  </data>
+  <data name="GameMode_All" xml:space="preserve">
+    <value>All words</value>
+  </data>
+  <data name="GameMode_FirstAndLast" xml:space="preserve">
+    <value>First and Last</value>
+  </data>
+  <data name="GameMode_Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="GameMode_Kkutu" xml:space="preserve">
+    <value>Kkutu</value>
+  </data>
+  <data name="GameMode_KungKungTta" xml:space="preserve">
+    <value>KungKungTta</value>
+  </data>
+  <data name="GameMode_LastAndFirst" xml:space="preserve">
+    <value>Last and First</value>
+  </data>
+  <data name="GameMode_LastAndFirstFree" xml:space="preserve">
+    <value>Free Last and First</value>
+  </data>
+  <data name="GameMode_MiddleAndFirst" xml:space="preserve">
+    <value>Middle and First</value>
+  </data>
+  <data name="GameMode_TypingBattle" xml:space="preserve">
+    <value>Typing battle</value>
   </data>
   <data name="HandlerRegistry_Unregistered" xml:space="preserve">
     <value>Unregistered previous handler: {0}</value>
@@ -300,5 +333,23 @@
   <data name="TimeFilter_TimeOver" xml:space="preserve">
     <value>There's no word submittable in time! (Turn Time {0}ms)</value>
     <comment>0: Remaining turn time</comment>
+  </data>
+  <data name="Validate_ColorPrefs" xml:space="preserve">
+    <value>Color preference not set.</value>
+  </data>
+  <data name="Validate_Config" xml:space="preserve">
+    <value>Config not set.</value>
+  </data>
+  <data name="Validate_DatabaseCommand" xml:space="preserve">
+    <value>Database command not initialized.</value>
+  </data>
+  <data name="Validate_DatabaseConnection" xml:space="preserve">
+    <value>Database connection not established.</value>
+  </data>
+  <data name="Validate_DatabaseReader" xml:space="preserve">
+    <value>Database reader not open.</value>
+  </data>
+  <data name="Validate_Handler" xml:space="preserve">
+    <value>Handler not registered.</value>
   </data>
 </root>

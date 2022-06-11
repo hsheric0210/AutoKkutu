@@ -541,7 +541,7 @@ namespace AutoKkutu
 						return GameMode.FirstAndLast;
 
 					case "가운뎃말잇기":
-						return GameMode.MiddleAddFirst;
+						return GameMode.MiddleAndFirst;
 
 					case "쿵쿵따":
 						return GameMode.KungKungTta;

@@ -88,6 +88,24 @@ namespace AutoKkutu {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to When a game finished.
+        /// </summary>
+        public static string AutoDBUpdate_OnGameEnd {
+            get {
+                return ResourceManager.GetString("AutoDBUpdate_OnGameEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When a round finished.
+        /// </summary>
+        public static string AutoDBUpdate_OnRoundEnd {
+            get {
+                return ResourceManager.GetString("AutoDBUpdate_OnRoundEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Logging console enabled where debugging is not enabled.
         /// </summary>
         public static string ConsoleIntroduction {
@@ -102,6 +120,87 @@ namespace AutoKkutu {
         public static string DeleteConsoleMenuFailed {
             get {
                 return ResourceManager.GetString("DeleteConsoleMenuFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All words.
+        /// </summary>
+        public static string GameMode_All {
+            get {
+                return ResourceManager.GetString("GameMode_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to First and Last.
+        /// </summary>
+        public static string GameMode_FirstAndLast {
+            get {
+                return ResourceManager.GetString("GameMode_FirstAndLast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Free.
+        /// </summary>
+        public static string GameMode_Free {
+            get {
+                return ResourceManager.GetString("GameMode_Free", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kkutu.
+        /// </summary>
+        public static string GameMode_Kkutu {
+            get {
+                return ResourceManager.GetString("GameMode_Kkutu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to KungKungTta.
+        /// </summary>
+        public static string GameMode_KungKungTta {
+            get {
+                return ResourceManager.GetString("GameMode_KungKungTta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last and First.
+        /// </summary>
+        public static string GameMode_LastAndFirst {
+            get {
+                return ResourceManager.GetString("GameMode_LastAndFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Free Last and First.
+        /// </summary>
+        public static string GameMode_LastAndFirstFree {
+            get {
+                return ResourceManager.GetString("GameMode_LastAndFirstFree", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Middle and First.
+        /// </summary>
+        public static string GameMode_MiddleAndFirst {
+            get {
+                return ResourceManager.GetString("GameMode_MiddleAndFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Typing battle.
+        /// </summary>
+        public static string GameMode_TypingBattle {
+            get {
+                return ResourceManager.GetString("GameMode_TypingBattle", resourceCulture);
             }
         }
         
@@ -534,6 +633,60 @@ namespace AutoKkutu {
         public static string TimeFilter_TimeOver {
             get {
                 return ResourceManager.GetString("TimeFilter_TimeOver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color preference not set..
+        /// </summary>
+        public static string Validate_ColorPrefs {
+            get {
+                return ResourceManager.GetString("Validate_ColorPrefs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Config not set..
+        /// </summary>
+        public static string Validate_Config {
+            get {
+                return ResourceManager.GetString("Validate_Config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database command not initialized..
+        /// </summary>
+        public static string Validate_DatabaseCommand {
+            get {
+                return ResourceManager.GetString("Validate_DatabaseCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database connection not established..
+        /// </summary>
+        public static string Validate_DatabaseConnection {
+            get {
+                return ResourceManager.GetString("Validate_DatabaseConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database reader not open..
+        /// </summary>
+        public static string Validate_DatabaseReader {
+            get {
+                return ResourceManager.GetString("Validate_DatabaseReader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Handler not registered..
+        /// </summary>
+        public static string Validate_Handler {
+            get {
+                return ResourceManager.GetString("Validate_Handler", resourceCulture);
             }
         }
     }

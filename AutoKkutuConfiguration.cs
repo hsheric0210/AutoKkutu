@@ -150,22 +150,22 @@ namespace AutoKkutu
 
 		public static string? GetDBAutoUpdateModeName(AutoDBUpdateMode key) => key switch
 		{
-			AutoDBUpdateMode.OnGameEnd => "게임이 끝났을 때",
-			AutoDBUpdateMode.OnRoundEnd => "라운드가 끝났을 때",
+			AutoDBUpdateMode.OnGameEnd => I18n.AutoDBUpdate_OnGameEnd,
+			AutoDBUpdateMode.OnRoundEnd => I18n.AutoDBUpdate_OnRoundEnd,
 			_ => null,
 		};
 
 		public static string? GetGameModeName(GameMode key) => key switch
 		{
-			GameMode.LastAndFirst => "끝말잇기",
-			GameMode.FirstAndLast => "앞말잇기",
-			GameMode.MiddleAddFirst => "가운뎃말잇기",
-			GameMode.Kkutu => "끄투",
-			GameMode.KungKungTta => "쿵쿵따",
-			GameMode.TypingBattle => "타자 대결",
-			GameMode.All => "전체",
-			GameMode.Free => "자유",
-			GameMode.LastAndFirstFree => "자유 끝말잇기",
+			GameMode.LastAndFirst => I18n.GameMode_LastAndFirst,
+			GameMode.FirstAndLast => I18n.GameMode_FirstAndLast,
+			GameMode.MiddleAndFirst => I18n.GameMode_MiddleAndFirst,
+			GameMode.Kkutu => I18n.GameMode_Kkutu,
+			GameMode.KungKungTta => I18n.GameMode_KungKungTta,
+			GameMode.TypingBattle => I18n.GameMode_TypingBattle,
+			GameMode.All => I18n.GameMode_All,
+			GameMode.Free => I18n.GameMode_Free,
+			GameMode.LastAndFirstFree => I18n.GameMode_LastAndFirstFree,
 			_ => null,
 		};
 

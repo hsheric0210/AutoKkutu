@@ -10,42 +10,42 @@ namespace AutoKkutu
 		public static AutoKkutuConfiguration RequireNotNull([NotNull] this AutoKkutuConfiguration? config)
 		{
 			if (config == null)
-				throw new InvalidOperationException("Config is not set");
+				throw new InvalidOperationException(I18n.Validate_Config);
 			return config;
 		}
 
 		public static AutoKkutuColorPreference RequireNotNull([NotNull] this AutoKkutuColorPreference? colorPref)
 		{
 			if (colorPref == null)
-				throw new InvalidOperationException("Color preference is not set");
+				throw new InvalidOperationException(I18n.Validate_ColorPrefs);
 			return colorPref;
 		}
 
 		public static CommonHandler RequireNotNull([NotNull] this CommonHandler? handler)
 		{
 			if (handler == null)
-				throw new InvalidOperationException("Handler is not registered");
+				throw new InvalidOperationException(I18n.Validate_Handler);
 			return handler;
 		}
 
 		public static CommonDatabaseConnection RequireNotNull([NotNull] this CommonDatabaseConnection? handler)
 		{
 			if (handler == null)
-				throw new InvalidOperationException("Database connection is not established");
+				throw new InvalidOperationException(I18n.Validate_DatabaseConnection);
 			return handler;
 		}
 
 		public static DbDataReader RequireNotNull([NotNull] this DbDataReader? reader)
 		{
 			if (reader == null)
-				throw new InvalidOperationException("Reader not open");
+				throw new InvalidOperationException(I18n.Validate_DatabaseReader);
 			return reader;
 		}
 
 		public static DbCommand RequireNotNull([NotNull] this DbCommand? command)
 		{
 			if (command == null)
-				throw new InvalidOperationException("Command not initialized");
+				throw new InvalidOperationException(I18n.Validate_DatabaseCommand);
 			return command;
 		}
 	}

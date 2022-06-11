@@ -171,7 +171,7 @@ namespace AutoKkutu
 				case GameMode.FirstAndLast:
 					return path.GetFaLHeadNode();
 
-				case GameMode.MiddleAddFirst:
+				case GameMode.MiddleAndFirst:
 					if (path.Length > 2 && path.Length % 2 == 1)
 						return path.GetMaFNode();
 					break;
@@ -531,7 +531,7 @@ namespace AutoKkutu
 				case GameMode.FirstAndLast:
 					return Content.GetFaLTailNode();
 
-				case GameMode.MiddleAddFirst:
+				case GameMode.MiddleAndFirst:
 					if (Content.Length % 2 == 1)
 						return Content.GetMaFNode();
 					break;

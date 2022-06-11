@@ -121,6 +121,12 @@
     <value>AllocConsole() 호출에 실패하였습니다 : 오류 코드 {0}</value>
     <comment>0: 오류 코드</comment>
   </data>
+  <data name="AutoDBUpdate_OnGameEnd" xml:space="preserve">
+    <value>게임이 끝났을 때</value>
+  </data>
+  <data name="AutoDBUpdate_OnRoundEnd" xml:space="preserve">
+    <value>한 라운드가 끝났을 때</value>
+  </data>
   <data name="Auto_NoMorePathAvailable" xml:space="preserve">
     <value>자동 입력이 활성화되었지만, 사용할 수 있는 단어가 없습니다.</value>
   </data>
@@ -133,6 +139,33 @@
   <data name="DeleteConsoleMenuFailed" xml:space="preserve">
     <value>DeleteMenu() 호출에 실패하였습니다 : 오류 코드 {0}</value>
     <comment>0: 오류 코드</comment>
+  </data>
+  <data name="GameMode_All" xml:space="preserve">
+    <value>전체</value>
+  </data>
+  <data name="GameMode_FirstAndLast" xml:space="preserve">
+    <value>앞말잇기</value>
+  </data>
+  <data name="GameMode_Free" xml:space="preserve">
+    <value>자유</value>
+  </data>
+  <data name="GameMode_Kkutu" xml:space="preserve">
+    <value>끄투</value>
+  </data>
+  <data name="GameMode_KungKungTta" xml:space="preserve">
+    <value>쿵쿵따</value>
+  </data>
+  <data name="GameMode_LastAndFirst" xml:space="preserve">
+    <value>끝말잇기</value>
+  </data>
+  <data name="GameMode_LastAndFirstFree" xml:space="preserve">
+    <value>자유 끝말잇기</value>
+  </data>
+  <data name="GameMode_MiddleAndFirst" xml:space="preserve">
+    <value>가운뎃말잇기</value>
+  </data>
+  <data name="GameMode_TypingBattle" xml:space="preserve">
+    <value>타자 대결</value>
   </data>
   <data name="HandlerRegistry_Unregistered" xml:space="preserve">
     <value>이전 핸들러 '{0}'를 비활성화했습니다.</value>
@@ -296,5 +329,23 @@
   <data name="TimeFilter_TimeOver" xml:space="preserve">
     <value>턴이 끝나기 전에 입력할 수 있는 단어가 없습니다! (남은 턴 시간: {0}ms)</value>
     <comment>0: Remaining turn time</comment>
+  </data>
+  <data name="Validate_ColorPrefs" xml:space="preserve">
+    <value>색 설정이 설정되지 않았습니다.</value>
+  </data>
+  <data name="Validate_Config" xml:space="preserve">
+    <value>환경 설정이 설정되지 않았습니다.</value>
+  </data>
+  <data name="Validate_DatabaseCommand" xml:space="preserve">
+    <value>데이베이스 명령 초기화에 실패하였습니다.</value>
+  </data>
+  <data name="Validate_DatabaseConnection" xml:space="preserve">
+    <value>데이터베이스 연결이 이루어지지 않았습니다.</value>
+  </data>
+  <data name="Validate_DatabaseReader" xml:space="preserve">
+    <value>데이터베이스 리더 초기화에 실패하였습니다.</value>
+  </data>
+  <data name="Validate_Handler" xml:space="preserve">
+    <value>핸들러가 설정되지 않았습니다.</value>
   </data>
 </root>
