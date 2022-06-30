@@ -58,13 +58,19 @@
 									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,0,5" Source="{Binding PrimaryImage}" />
 									<Image Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" Margin="5,5,10,5" Source="{Binding SecondaryImage}" />
 									<Border Height="40" Width="Auto" VerticalAlignment="Center" BorderBrush="{x:Null}">
-										<TextBlock Foreground="{Binding Color}" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" TextDecorations="{Binding Decorations}" />
+										<TextBlock Foreground="{Binding Color}" FontFamily="NanumGothic" FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Title}" TextDecorations="{Binding Decorations}" FontWeight="{Binding FontWeight}" FontStyle="{Binding FontStyle}" />
 									</Border>
 								</StackPanel>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
 						<ItemsControl.ContextMenu>
 							<ContextMenu>
+								<MenuItem x:Name="Copy" Header="복사하기" Click="OnPathListCopyClick"/>
+								<Separator/>
+								<MenuItem x:Name="Include" Header="포함시키기" Click="OnPathListIncludeClick"/>
+								<MenuItem x:Name="Exclude" Header="제외시키기" Click="OnPathListQueueExcludedClick"/>
+								<MenuItem x:Name="Remove" Header="제거 예약시키기" Click="OnPathListQueueRemoveClick"/>
+								<Separator/>
 								<MenuItem x:Name="MakeEnd" Header="한방 노드로 만들기" Click="OnPathListMakeEndClick">
 									<MenuItem.Icon>
 										<Image Source="Images\skull.png" />

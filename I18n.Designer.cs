@@ -466,11 +466,173 @@ namespace AutoKkutu {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Added new {0} node &apos;{1}&apos;.
+        /// </summary>
+        public static string PathFinder_AddNode {
+            get {
+                return ResourceManager.GetString("PathFinder_AddNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Check and add {word} into database. (flags: {flags}).
+        /// </summary>
+        public static string PathFinder_AddPath {
+            get {
+                return ResourceManager.GetString("PathFinder_AddPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t add {word} to database..
+        /// </summary>
+        public static string PathFinder_AddPath_Failed {
+            get {
+                return ResourceManager.GetString("PathFinder_AddPath_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Added {word} into database..
+        /// </summary>
+        public static string PathFinder_AddPath_Success {
+            get {
+                return ResourceManager.GetString("PathFinder_AddPath_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatically updating the database based on last game..
+        /// </summary>
+        public static string PathFinder_AutoDBUpdate {
+            get {
+                return ResourceManager.GetString("PathFinder_AutoDBUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No such element in autoupdate list..
+        /// </summary>
+        public static string PathFinder_AutoDBUpdate_Empty {
+            get {
+                return ResourceManager.GetString("PathFinder_AutoDBUpdate_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatic database update finished: {0}.
+        /// </summary>
+        public static string PathFinder_AutoDBUpdate_Finished {
+            get {
+                return ResourceManager.GetString("PathFinder_AutoDBUpdate_Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Got {0} elements from NewPathList..
+        /// </summary>
+        public static string PathFinder_AutoDBUpdate_New {
+            get {
+                return ResourceManager.GetString("PathFinder_AutoDBUpdate_New", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Got {0} elements from WrongPathList..
+        /// </summary>
+        public static string PathFinder_AutoDBUpdate_Remove {
+            get {
+                return ResourceManager.GetString("PathFinder_AutoDBUpdate_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of {1} added, {2} of {3} removed..
+        /// </summary>
+        public static string PathFinder_AutoDBUpdate_Result {
+            get {
+                return ResourceManager.GetString("PathFinder_AutoDBUpdate_Result", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finding path for {word}..
+        /// </summary>
+        public static string PathFinder_FindPath {
+            get {
+                return ResourceManager.GetString("PathFinder_FindPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to find path..
+        /// </summary>
+        public static string PathFinder_FindPath_Error {
+            get {
+                return ResourceManager.GetString("PathFinder_FindPath_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t find any path..
+        /// </summary>
+        public static string PathFinder_FindPath_NotFound {
+            get {
+                return ResourceManager.GetString("PathFinder_FindPath_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finding path for {word} and {substituation}..
+        /// </summary>
+        public static string PathFinder_FindPath_Substituation {
+            get {
+                return ResourceManager.GetString("PathFinder_FindPath_Substituation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found {0} words. (AttackWord: {1}, EndWord: {2}).
+        /// </summary>
+        public static string PathFinder_FoundPath {
+            get {
+                return ResourceManager.GetString("PathFinder_FoundPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total {0} words are ready. (Took {1}ms).
+        /// </summary>
+        public static string PathFinder_FoundPath_Ready {
+            get {
+                return ResourceManager.GetString("PathFinder_FoundPath_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to update node lists..
+        /// </summary>
+        public static string PathFinder_Init_Error {
+            get {
+                return ResourceManager.GetString("PathFinder_Init_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalidated potential incorrect path update result. (Word: {0}, MissionChar: {1}).
         /// </summary>
         public static string PathFinder_InvalidatedUpdate {
             get {
                 return ResourceManager.GetString("PathFinder_InvalidatedUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t delete {word} from database..
+        /// </summary>
+        public static string PathFinder_RemoveInexistent_Failed {
+            get {
+                return ResourceManager.GetString("PathFinder_RemoveInexistent_Failed", resourceCulture);
             }
         }
         
@@ -597,6 +759,105 @@ namespace AutoKkutu {
         public static string PathFinderWaiting {
             get {
                 return ResourceManager.GetString("PathFinderWaiting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Node {node} is already marked as {type}. [Gamemode: {gameMode}].
+        /// </summary>
+        public static string PathMark_AlreadyDone {
+            get {
+                return ResourceManager.GetString("PathMark_AlreadyDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to attack word.
+        /// </summary>
+        public static string PathMark_Attack {
+            get {
+                return ResourceManager.GetString("PathMark_Attack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to end word.
+        /// </summary>
+        public static string PathMark_End {
+            get {
+                return ResourceManager.GetString("PathMark_End", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to normal word.
+        /// </summary>
+        public static string PathMark_Normal {
+            get {
+                return ResourceManager.GetString("PathMark_Normal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully marked node {node} as {type}. [Gamemode: {gameMode}].
+        /// </summary>
+        public static string PathMark_Success {
+            get {
+                return ResourceManager.GetString("PathMark_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attack word: {0}.
+        /// </summary>
+        public static string PathTooltip_Attack {
+            get {
+                return ResourceManager.GetString("PathTooltip_Attack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attack mission(x{1}) word: {0}.
+        /// </summary>
+        public static string PathTooltip_AttackMission {
+            get {
+                return ResourceManager.GetString("PathTooltip_AttackMission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End word: {0}.
+        /// </summary>
+        public static string PathTooltip_End {
+            get {
+                return ResourceManager.GetString("PathTooltip_End", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End mission(x{1}) word: {0}.
+        /// </summary>
+        public static string PathTooltip_EndMission {
+            get {
+                return ResourceManager.GetString("PathTooltip_EndMission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mission(x{1}) word: {0}.
+        /// </summary>
+        public static string PathTooltip_Mission {
+            get {
+                return ResourceManager.GetString("PathTooltip_Mission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Word: {0}.
+        /// </summary>
+        public static string PathTooltip_Normal {
+            get {
+                return ResourceManager.GetString("PathTooltip_Normal", resourceCulture);
             }
         }
         

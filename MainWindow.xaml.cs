@@ -439,9 +439,12 @@ namespace AutoKkutu
 			if (currentSelected is not PathObject)
 				return;
 			var current = ((PathObject)currentSelected);
-			foreach (MenuItem item in contextMenu.Items)
+			foreach (Control item in contextMenu.Items)
 			{
-				bool available = false;
+				if (item is not MenuItem)
+					continue;
+
+				bool available = true;
 				switch (item.Name.ToUpperInvariant())
 				{
 					case "MAKEEND":
@@ -454,6 +457,18 @@ namespace AutoKkutu
 
 					case "MAKENORMAL":
 						available = current.MakeNormalAvailable;
+						break;
+
+					case "INCLUDE":
+						available = current.AlreadyUsed || current.Excluded;
+						break;
+
+					case "EXCLUDE":
+						available = !current.AlreadyUsed;
+						break;
+
+					case "REMOVE":
+						available = !current.Excluded;
 						break;
 				}
 				item.IsEnabled = available;
@@ -482,6 +497,74 @@ namespace AutoKkutu
 			if (currentSelected is not PathObject)
 				return;
 			((PathObject)currentSelected).MakeNormal(CurrentConfig.RequireNotNull().GameMode, Database.DefaultConnection);
+		}
+
+		private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)
+		{
+			object currentSelected = PathList.SelectedItem;
+			if (currentSelected is not PathObject)
+				return;
+			var path = (PathObject)currentSelected;
+			path.Excluded = true;
+			path.RemoveQueued = false;
+			try
+			{
+				PathFinder.PathListLock.EnterWriteLock();
+				PathFinder.UnsupportedPathList.Add(path.Content);
+				PathFinder.InexistentPathList.Remove(path.Content);
+			}
+			finally
+			{
+				PathFinder.PathListLock.ExitWriteLock();
+			}
+		}
+
+		private void OnPathListIncludeClick(object? sender, RoutedEventArgs e)
+		{
+			object currentSelected = PathList.SelectedItem;
+			if (currentSelected is not PathObject)
+				return;
+			var path = (PathObject)currentSelected;
+			path.Excluded = false;
+			path.RemoveQueued = false;
+			try
+			{
+				PathFinder.PathListLock.EnterWriteLock();
+				PathFinder.UnsupportedPathList.Remove(path.Content);
+				PathFinder.InexistentPathList.Remove(path.Content);
+			}
+			finally
+			{
+				PathFinder.PathListLock.ExitWriteLock();
+			}
+		}
+
+		private void OnPathListQueueRemoveClick(object? sender, RoutedEventArgs e)
+		{
+			object currentSelected = PathList.SelectedItem;
+			if (currentSelected is not PathObject)
+				return;
+			var path = (PathObject)currentSelected;
+			path.Excluded = false;
+			path.RemoveQueued = true;
+			try
+			{
+				PathFinder.PathListLock.EnterWriteLock();
+				PathFinder.UnsupportedPathList.Add(path.Content);
+				PathFinder.InexistentPathList.Add(path.Content);
+			}
+			finally
+			{
+				PathFinder.PathListLock.ExitWriteLock();
+			}
+		}
+
+		private void OnPathListCopyClick(object? sender, RoutedEventArgs e)
+		{
+			object currentSelected = PathList.SelectedItem;
+			if (currentSelected is not PathObject)
+				return;
+			Clipboard.SetText(((PathObject)currentSelected).Content);
 		}
 
 		private void OnPathListMouseDoubleClick(object? sender, MouseButtonEventArgs e)

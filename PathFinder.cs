@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AutoKkutu
@@ -82,13 +83,15 @@ namespace AutoKkutu
 			get; private set;
 		} = new List<PathObject>();
 
-		public static ConcurrentBag<string> InexistentPathList { get; private set; } = new ConcurrentBag<string>();
+		public static ICollection<string> InexistentPathList { get; } = new List<string>();
 
-		public static ConcurrentBag<string> NewPathList { get; private set; } = new ConcurrentBag<string>();
+		public static ICollection<string> NewPathList { get; } = new List<string>();
 
 		public static ICollection<string> PreviousPath { get; private set; } = new List<string>();
 
 		public static ICollection<string> UnsupportedPathList { get; } = new List<string>();
+
+		public static readonly ReaderWriterLockSlim PathListLock = new();
 
 		public static event EventHandler<UpdatedPathEventArgs>? OnPathUpdated;
 
@@ -102,9 +105,17 @@ namespace AutoKkutu
 		{
 			if (!string.IsNullOrWhiteSpace(word))
 			{
-				UnsupportedPathList.Add(word);
-				if (isNonexistent)
-					InexistentPathList.Add(word);
+				try
+				{
+					PathListLock.EnterWriteLock();
+					UnsupportedPathList.Add(word);
+					if (isNonexistent)
+						InexistentPathList.Add(word);
+				}
+				finally
+				{
+					PathListLock.ExitWriteLock();
+				}
 			}
 		}
 
@@ -113,33 +124,49 @@ namespace AutoKkutu
 			if (!CurrentConfig.RequireNotNull().AutoDBUpdateEnabled)
 				return null;
 
-			Logger.Debug("Automatically update the DB based on last game.");
-			if (NewPathList.Count + UnsupportedPathList.Count == 0)
+			Logger.Debug(I18n.PathFinder_AutoDBUpdate);
+			try
 			{
-				Logger.Warn("No such element in autoupdate list.");
-			}
-			else
-			{
+				PathListLock.EnterUpgradeableReadLock();
 				int NewPathCount = NewPathList.Count;
-				Logger.Debug(CultureInfo.CurrentCulture, "Get {0} elements from NewPathList.", NewPathCount);
-				int AddedPathCount = AddNewPaths();
-
 				int InexistentPathCount = InexistentPathList.Count;
-				Logger.Info(CultureInfo.CurrentCulture, "Get {0} elements from WrongPathList.", InexistentPathCount);
+				if (NewPathCount + InexistentPathCount == 0)
+				{
+					Logger.Warn(I18n.PathFinder_AutoDBUpdate_Empty);
+				}
+				else
+				{
+					try
+					{
+						PathListLock.EnterWriteLock();
+						Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
+						int AddedPathCount = AddNewPaths();
 
-				int RemovedPathCount = RemoveInexistentPaths();
-				string result = $"{AddedPathCount} of {NewPathCount} added, {RemovedPathCount} of {InexistentPathCount} removed";
+						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Remove, InexistentPathCount);
 
-				Logger.Info($"Automatic DB Update complete ({result})");
-				return result;
+						int RemovedPathCount = RemoveInexistentPaths();
+						string result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddedPathCount, NewPathCount, RemovedPathCount, InexistentPathCount);
+
+						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Finished, result);
+						return result;
+					}
+					finally
+					{
+						PathListLock.ExitWriteLock();
+					}
+				}
+			}
+			finally
+			{
+				PathListLock.ExitUpgradeableReadLock();
 			}
 
 			return null;
 		}
 
-		public static bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool add = false)
+		public static bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool tryAdd = false)
 		{
-			if (add && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(item) || nodeList == null)
+			if (tryAdd && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(item) || nodeList == null)
 				return false;
 
 			bool exists = nodeList.Contains(item);
@@ -147,10 +174,10 @@ namespace AutoKkutu
 			{
 				flags |= theFlag;
 			}
-			else if (add && flags.HasFlag(theFlag))
+			else if (tryAdd && flags.HasFlag(theFlag))
 			{
 				nodeList.Add(item);
-				Logger.Info($"Added new {nodeType} node '{item}");
+				Logger.Info(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, item));
 				return true;
 			}
 			return false;
@@ -206,9 +233,9 @@ namespace AutoKkutu
 			string missionChar = info.MissionChar;
 			PathFinderOptions flags = info.PathFinderFlags;
 			if (wordCondition.CanSubstitution)
-				Logger.Info(CultureInfo.CurrentCulture, "Finding path for {word} and {substituation}.", wordCondition.Content, wordCondition.Substitution);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FindPath_Substituation, wordCondition.Content, wordCondition.Substitution);
 			else
-				Logger.Info(CultureInfo.CurrentCulture, "Finding path for {word}.", wordCondition.Content);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FindPath, wordCondition.Content);
 
 			// Prevent watchdog thread from being blocked
 			Task.Run(() =>
@@ -225,12 +252,12 @@ namespace AutoKkutu
 				try
 				{
 					totalWordList = Connection.RequireNotNull().FindWord(info);
-					Logger.Info(CultureInfo.CurrentCulture, "Found {0} words. (AttackWord: {1}, EndWord: {2})", totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
+					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
 				{
 					watch.Stop();
-					Logger.Error(e, "Failed to Find Path");
+					Logger.Error(e, I18n.PathFinder_FindPath_Error);
 					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.Error, 0, 0, 0, flags));
 					return;
 				}
@@ -249,7 +276,7 @@ namespace AutoKkutu
 				if (qualifiedWordList.Count == 0)
 				{
 					watch.Stop();
-					Logger.Warn("Can't find any path.");
+					Logger.Warn(I18n.PathFinder_FindPath_NotFound);
 					NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.None, totalWordCount, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 					return;
 				}
@@ -258,7 +285,7 @@ namespace AutoKkutu
 				QualifiedList = qualifiedWordList;
 
 				watch.Stop();
-				Logger.Info(CultureInfo.CurrentCulture, "Total {0} words are ready. (Took {1}ms)", DisplayList.Count, watch.ElapsedMilliseconds);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FoundPath_Ready, DisplayList.Count, watch.ElapsedMilliseconds);
 				NotifyPathUpdate(new UpdatedPathEventArgs(wordCondition, missionChar, PathFinderResult.Normal, totalWordCount, QualifiedList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
 		}
@@ -268,12 +295,22 @@ namespace AutoKkutu
 			var qualifiedList = new List<PathObject>();
 			foreach (PathObject word in wordList)
 			{
-				if (UnsupportedPathList.Contains(word.Content))
-					word.Unsupported = true;
-				else if (CurrentConfig?.ReturnModeEnabled != true && PreviousPath.Contains(word.Content))
-					word.AlreadyUsed = true;
-				else
-					qualifiedList.Add(word);
+				try
+				{
+					PathListLock.EnterReadLock();
+					if (InexistentPathList.Contains(word.Content))
+						word.RemoveQueued = true;
+					if (UnsupportedPathList.Contains(word.Content))
+						word.Excluded = true;
+					else if (CurrentConfig?.ReturnModeEnabled != true && PreviousPath.Contains(word.Content))
+						word.AlreadyUsed = true;
+					else
+						qualifiedList.Add(word);
+				}
+				finally
+				{
+					PathListLock.ExitReadLock();
+				}
 			}
 			return qualifiedList;
 		}
@@ -288,7 +325,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Failed to update node lists");
+				Logger.Error(ex, I18n.PathFinder_Init_Error);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}
@@ -312,26 +349,35 @@ namespace AutoKkutu
 		private static int AddNewPaths()
 		{
 			int count = 0;
-			foreach (string word in NewPathList)
+			var listCopy = new List<string>(NewPathList);
+			try
+			{
+				PathListLock.EnterWriteLock();
+				NewPathList.Clear();
+			}
+			finally
+			{
+				PathListLock.ExitWriteLock();
+			}
+
+			foreach (string word in listCopy)
 			{
 				WordDatabaseAttributes flags = DatabaseUtils.GetFlags(word);
 
 				try
 				{
-					Logger.Debug(CultureInfo.CurrentCulture, "Check and add {word} into database. (flags: {flags})", word, flags);
+					Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AddPath, word, flags);
 					if (Connection.RequireNotNull().AddWord(word, flags))
 					{
-						Logger.Info(CultureInfo.CurrentCulture, "Added {word} into database.", word);
+						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AddPath_Success, word);
 						count++;
 					}
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, CultureInfo.CurrentCulture, "Can't add {word} to database", word);
+					Logger.Error(ex, CultureInfo.CurrentCulture, I18n.PathFinder_AddPath_Failed, word);
 				}
 			}
-
-			NewPathList = new ConcurrentBag<string>();
 
 			return count;
 		}
@@ -359,7 +405,18 @@ namespace AutoKkutu
 		private static int RemoveInexistentPaths()
 		{
 			int count = 0;
-			foreach (string word in InexistentPathList)
+			var listCopy = new List<string>(InexistentPathList);
+			try
+			{
+				PathListLock.EnterWriteLock();
+				InexistentPathList.Clear();
+			}
+			finally
+			{
+				PathListLock.ExitWriteLock();
+			}
+
+			foreach (string word in listCopy)
 			{
 				try
 				{
@@ -367,11 +424,9 @@ namespace AutoKkutu
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "Can't delete {word} from database", word);
+					Logger.Error(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
 				}
 			}
-
-			InexistentPathList = new ConcurrentBag<string>();
 
 			return count;
 		}
@@ -428,14 +483,23 @@ namespace AutoKkutu
 			get;
 		}
 
-		public string Decorations => Unsupported ? "Underline,Strikethrough,Overline" : AlreadyUsed ? "Strikethrough" : "None";
+		public string Decorations => AlreadyUsed || Excluded || RemoveQueued ? "Strikethrough" : "None";
+
+		public string FontWeight => RemoveQueued ? "Bold" : "Normal";
+
+		public string FontStyle => RemoveQueued ? "Italic" : "Normal";
 
 		public bool AlreadyUsed
 		{
 			get; set;
 		}
 
-		public bool Unsupported
+		public bool Excluded
+		{
+			get; set;
+		}
+
+		public bool RemoveQueued
 		{
 			get; set;
 		}
@@ -454,29 +518,28 @@ namespace AutoKkutu
 			MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;
 
 			bool isMissionWord = flags.HasFlag(WordAttributes.MissionWord);
-			string mission = isMissionWord ? $"미션({missionCharCount}) " : string.Empty;
 			string tooltipPrefix;
 			if (flags.HasFlag(WordAttributes.EndWord))
 			{
-				tooltipPrefix = $"한방 {mission}단어: ";
+				tooltipPrefix = isMissionWord ? I18n.PathTooltip_EndMission : I18n.PathTooltip_End;
 				Color = (isMissionWord ? colorPref.EndMissionWordColor : colorPref.EndWordColor).ToString(CultureInfo.InvariantCulture);
 				PrimaryImage = @"images\skull.png";
 			}
 			else if (flags.HasFlag(WordAttributes.AttackWord))
 			{
-				tooltipPrefix = $"공격 {mission}단어: ";
+				tooltipPrefix = isMissionWord ? I18n.PathTooltip_AttackMission : I18n.PathTooltip_Attack;
 				Color = (isMissionWord ? colorPref.AttackMissionWordColor : colorPref.AttackWordColor).ToString(CultureInfo.InvariantCulture);
 				PrimaryImage = @"images\attack.png";
 			}
 			else
 			{
 				Color = isMissionWord ? colorPref.MissionWordColor.ToString(CultureInfo.InvariantCulture) : "#FFFFFFFF";
-				tooltipPrefix = isMissionWord ? $"미션({missionCharCount}) 단어: " : string.Empty;
+				tooltipPrefix = isMissionWord ? I18n.PathTooltip_Mission : I18n.PathTooltip_Normal;
 				PrimaryImage = string.Empty;
 			}
 			SecondaryImage = isMissionWord ? @"images\mission.png" : string.Empty;
 
-			ToolTip = tooltipPrefix + content;
+			ToolTip = string.Format(CultureInfo.CurrentCulture, tooltipPrefix, isMissionWord ? new object[2] { content, missionCharCount } : new object[1] { content });
 		}
 
 		public void MakeAttack(GameMode mode, CommonDatabaseConnection connection)
@@ -484,9 +547,9 @@ namespace AutoKkutu
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetEndWordListTableName(mode));
 			if (connection.AddNode(node, GetAttackWordListTableName(mode)))
-				Logger.Info(CultureInfo.CurrentCulture, "Successfully marked node {node} as attack word. [Gamemode: {gameMode}]", node, mode);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Node {node} is already marked as attack word. [Gamemode: {gameMode}]", node, mode);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
 		}
 
 		public void MakeEnd(GameMode mode, CommonDatabaseConnection connection)
@@ -494,20 +557,20 @@ namespace AutoKkutu
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetAttackWordListTableName(mode));
 			if (connection.AddNode(node, GetEndWordListTableName(mode)))
-				Logger.Info(CultureInfo.CurrentCulture, "Successfully marked node {node} as end word. [Gamemode: {gameMode}]", node, mode);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.PathMark_Success, node, I18n.PathMark_End, mode);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Node {node} is already marked as end word. [Gamemode: {gameMode}]", node, mode);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
 		}
 
 		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
 		{
 			string node = ToNode(mode);
-			bool a = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
-			bool b = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
-			if (a || b)
-				Logger.Info(CultureInfo.CurrentCulture, "Successfully marked node {node} as normal word. [Gamemode: {gameMode}]", node, mode);
+			bool endWord = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
+			bool attackWord = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
+			if (endWord || attackWord)
+				Logger.Info(CultureInfo.CurrentCulture, I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Node {node} is already marked as normal word. [Gamemode: {gameMode}]", node, mode);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
 		}
 
 		private static string GetAttackWordListTableName(GameMode mode) => mode switch

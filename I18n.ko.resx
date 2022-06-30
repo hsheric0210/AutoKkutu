@@ -273,16 +273,16 @@
     <value>한방</value>
   </data>
   <data name="PathFinderError" xml:space="preserve">
-    <value>예외가 발생하여 단어 검색에 실패했습니다.</value>
+    <value>예외가 발생하여 단어 검색에 실패했습니다!</value>
   </data>
   <data name="PathFinderFailed_Endword" xml:space="preserve">
-    <value>단어를 찾을 수 없습니다. 제시된 단어가 한방 단어입니다.</value>
+    <value>단어를 찾을 수 없습니다. 제시된 단어가 한방 단어입니다!</value>
   </data>
   <data name="PathFinderFailed_Exception" xml:space="preserve">
-    <value>단어를 찾던 도중 예외가 발생하였습니다.</value>
+    <value>단어를 찾던 도중 예외가 발생하였습니다!</value>
   </data>
   <data name="PathFinderFound" xml:space="preserve">
-    <value>총 {0}개의 단어 중, {1}개 가능.</value>
+    <value>총 {0}개의 단어 중, {1}개 가능!</value>
     <comment>0: 전체 단어 수, 1: 사용 가능 단어 수</comment>
   </data>
   <data name="PathFinderFoundButEmpty" xml:space="preserve">
@@ -323,11 +323,11 @@
     <value>자동 데이터베이스 업데이트</value>
   </data>
   <data name="TimeFilter_Success" xml:space="preserve">
-    <value>턴 시간ㄴ {0}ms &gt;= 단어 입력 딜레이 {1}ms</value>
+    <value>턴 시간 {0}ms &gt;= 단어 입력 딜레이 {1}ms</value>
     <comment>0: Remaining turn time, 1: Total word delay</comment>
   </data>
   <data name="TimeFilter_TimeOver" xml:space="preserve">
-    <value>턴이 끝나기 전에 입력할 수 있는 단어가 없습니다! (남은 턴 시간: {0}ms)</value>
+    <value>남은 턴 시간 {0}ms 안에 입력할 수 있는 단어가 없습니다!</value>
     <comment>0: Remaining turn time</comment>
   </data>
   <data name="Validate_ColorPrefs" xml:space="preserve">
