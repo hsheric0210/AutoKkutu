@@ -315,9 +315,117 @@
   <data name="PathFinderWaiting" xml:space="preserve">
     <value>대기 중...</value>
   </data>
+  <data name="PathFinder_AddNode" xml:space="preserve">
+    <value>새로운 {0} 노드 '{1}'가 추가되었습니다.</value>
+    <comment>0: Node type, 1: The node</comment>
+  </data>
+  <data name="PathFinder_AddPath" xml:space="preserve">
+    <value>단어 {word}를 데이터베이스에 추가 시도합니다. (속성: {flags})</value>
+    <comment>word: The word, flags: Word flags</comment>
+  </data>
+  <data name="PathFinder_AddPath_Failed" xml:space="preserve">
+    <value>단어 {word}를 데이터베이스에 추가할 수 없습니다.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="PathFinder_AddPath_Success" xml:space="preserve">
+    <value>단어 {word}를 데이터베이스에 추가하였습니다.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="PathFinder_AutoDBUpdate" xml:space="preserve">
+    <value>이전 게임을 기반으로 데이터베이스를 자동으로 업데이트합니다.</value>
+  </data>
+  <data name="PathFinder_AutoDBUpdate_Empty" xml:space="preserve">
+    <value>데이터베이스 자동 업데이트 목록에서 단어를 찾을 수 없습니다.</value>
+  </data>
+  <data name="PathFinder_AutoDBUpdate_Finished" xml:space="preserve">
+    <value>데이터베이스 자동 업데이틍 완료: {0}</value>
+    <comment>0: The result</comment>
+  </data>
+  <data name="PathFinder_AutoDBUpdate_New" xml:space="preserve">
+    <value>총 {0}개의 새로운 단어 발견.</value>
+    <comment>0: Element count</comment>
+  </data>
+  <data name="PathFinder_AutoDBUpdate_Remove" xml:space="preserve">
+    <value>총 {0}개의 제거할 단어 발견.</value>
+    <comment>0: Element count</comment>
+  </data>
+  <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
+    <value>{0}개 중에서 {1}개의 단어가 추가되었고, {2}개 중에서 {3}개의 단어가 삭제되었습니다.</value>
+    <comment>0: Added path count, 1: New path count, 2: Removed path count, 3: Inexistent path count</comment>
+  </data>
+  <data name="PathFinder_FindPath" xml:space="preserve">
+    <value>{word}에 대해서 검색 중.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="PathFinder_FindPath_Error" xml:space="preserve">
+    <value>단어 검색에 실패하였습니다.</value>
+  </data>
+  <data name="PathFinder_FindPath_NotFound" xml:space="preserve">
+    <value>검색 결과를 찾을 수 없습니다.</value>
+  </data>
+  <data name="PathFinder_FindPath_Substituation" xml:space="preserve">
+    <value>{word}와 {substituation}에 대해서 검색 중.</value>
+    <comment>word: The word, substituation: Substituation word</comment>
+  </data>
+  <data name="PathFinder_FoundPath" xml:space="preserve">
+    <value>총 {0}개의 단어를 찾았습니다. (공격 단어: {1}, 한방 단어: {2})</value>
+    <comment>0: Count of words, 1: Attack word capability, 2: End word capability</comment>
+  </data>
+  <data name="PathFinder_FoundPath_Ready" xml:space="preserve">
+    <value>총 {0} 개의 단어가 준비되었습니다. ({1}ms 소요)</value>
+    <comment>0: Feasible word count, 1: Time elapsed</comment>
+  </data>
+  <data name="PathFinder_Init_Error" xml:space="preserve">
+    <value>노드 목록을 초기화하지 못했습니다.</value>
+  </data>
   <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
     <value>이전 검색 결과를 무효화했습니다. (단어 문제: {0}, 미션 단어 문제: {1})</value>
     <comment>0: Is caused by word, 1: Is caused by mission char</comment>
+  </data>
+  <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
+    <value>단어 {word}를 데이터베이스에서 삭제하지 못했습니다.</value>
+    <comment>word: The inexistent word in database</comment>
+  </data>
+  <data name="PathMark_AlreadyDone" xml:space="preserve">
+    <value>노드 {node}는 이미 {type} 입니다. [현재 게임 모드: {gameMode}]</value>
+    <comment>node: The node, type: New type, gameMode: Current game mode</comment>
+  </data>
+  <data name="PathMark_Attack" xml:space="preserve">
+    <value>공격 단어</value>
+  </data>
+  <data name="PathMark_End" xml:space="preserve">
+    <value>한방 단어</value>
+  </data>
+  <data name="PathMark_Normal" xml:space="preserve">
+    <value>일반 단어</value>
+  </data>
+  <data name="PathMark_Success" xml:space="preserve">
+    <value>노드 {node}를 성공적으로 {type}로 저장했습니다. [현재 게임 모드: {gameMode}]</value>
+    <comment>node: The node, type: New type, gameMode: Current game mode</comment>
+  </data>
+  <data name="PathTooltip_Attack" xml:space="preserve">
+    <value>공격 단어: {0}</value>
+    <comment>0: The word</comment>
+  </data>
+  <data name="PathTooltip_AttackMission" xml:space="preserve">
+    <value>공격 미션(x{1}) 단어: {0}</value>
+    <comment>0: The word, 1: Mission char count</comment>
+  </data>
+  <data name="PathTooltip_End" xml:space="preserve">
+    <value>한방 단어: {0}</value>
+    <comment>0: The word</comment>
+  </data>
+  <data name="PathTooltip_EndMission" xml:space="preserve">
+    <value>한방 미션(x{1}) 단어: {0}</value>
+    <comment>0: The word, 1: Mission char count</comment>
+  </data>
+  <data name="PathTooltip_Mission" xml:space="preserve">
+    <value>미션(x{1}) 단어: {0}</value>
+    <comment>0: The word, 1: Mission char count</comment>
+  </data>
+  <data name="PathTooltip_Normal" xml:space="preserve">
+    <value>단어: {0}</value>
+    <comment>0: The word</comment>
   </data>
   <data name="Status_AutoUpdate" xml:space="preserve">
     <value>자동 데이터베이스 업데이트</value>
