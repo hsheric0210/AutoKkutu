@@ -238,6 +238,7 @@ namespace AutoKkutu
 		{
 			SetSearchState(null, false);
 			ResetPathList();
+			PathFinder.UnsupportedPathList.Clear();
 			if (CurrentConfig.RequireNotNull().AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
 			{
 				this.ChangeStatusBar(CurrentStatus.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);

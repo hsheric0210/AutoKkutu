@@ -83,13 +83,13 @@ namespace AutoKkutu
 			get; private set;
 		} = new List<PathObject>();
 
-		public static ICollection<string> InexistentPathList { get; } = new List<string>();
+		public static ICollection<string> InexistentPathList { get; } = new HashSet<string>();
 
-		public static ICollection<string> NewPathList { get; } = new List<string>();
+		public static ICollection<string> NewPathList { get; } = new HashSet<string>();
 
-		public static ICollection<string> PreviousPath { get; private set; } = new List<string>();
+		public static ICollection<string> PreviousPath { get; } = new HashSet<string>();
 
-		public static ICollection<string> UnsupportedPathList { get; } = new List<string>();
+		public static ICollection<string> UnsupportedPathList { get; } = new HashSet<string>();
 
 		public static readonly ReaderWriterLockSlim PathListLock = new();
 
@@ -423,7 +423,7 @@ namespace AutoKkutu
 			return count;
 		}
 
-		public static void ResetPreviousPath() => PreviousPath = new List<string>();
+		public static void ResetPreviousPath() => PreviousPath.Clear();
 
 		public static void ResetFinalList() => DisplayList = new List<PathObject>();
 	}
