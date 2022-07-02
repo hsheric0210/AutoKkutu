@@ -136,24 +136,16 @@ namespace AutoKkutu
 				}
 				else
 				{
-					try
-					{
-						PathListLock.EnterWriteLock();
-						Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
-						int AddedPathCount = AddNewPaths();
+					Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
+					int AddedPathCount = AddNewPaths();
 
-						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Remove, InexistentPathCount);
+					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Remove, InexistentPathCount);
 
-						int RemovedPathCount = RemoveInexistentPaths();
-						string result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddedPathCount, NewPathCount, RemovedPathCount, InexistentPathCount);
+					int RemovedPathCount = RemoveInexistentPaths();
+					string result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddedPathCount, NewPathCount, RemovedPathCount, InexistentPathCount);
 
-						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Finished, result);
-						return result;
-					}
-					finally
-					{
-						PathListLock.ExitWriteLock();
-					}
+					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Finished, result);
+					return result;
 				}
 			}
 			finally
