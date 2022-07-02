@@ -133,12 +133,37 @@
   <data name="Auto_TimeOver" xml:space="preserve">
     <value>Auto mode enabled, found path, but there's no word submittable in time.</value>
   </data>
+  <data name="BatchJob_CheckOnline" xml:space="preserve">
+    <value>Finding {word} in kkutu dictionary...</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="BatchJob_CheckOnline_Found" xml:space="preserve">
+    <value>Successfully Find {word} in kkutu dict.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="BatchJob_CheckOnline_InvalidResponse" xml:space="preserve">
+    <value>Invaild server response. Resend the request.</value>
+  </data>
+  <data name="BatchJob_CheckOnline_NotFound" xml:space="preserve">
+    <value>Can't find {word} in kkutu dict.</value>
+    <comment>word: The word</comment>
+  </data>
+  <data name="BatchJob_CheckOnline_Response" xml:space="preserve">
+    <value>Server Response : {response}</value>
+    <comment>response: The server response</comment>
+  </data>
   <data name="ConsoleIntroduction" xml:space="preserve">
     <value>Logging console enabled where debugging is not enabled</value>
   </data>
   <data name="DeleteConsoleMenuFailed" xml:space="preserve">
     <value>Failed to call console DeleteMenu() : Error code {0}</value>
     <comment>0: Error code</comment>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>Enabled</value>
   </data>
   <data name="GameMode_All" xml:space="preserve">
     <value>All words</value>

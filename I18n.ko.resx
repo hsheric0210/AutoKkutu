@@ -140,6 +140,12 @@
     <value>DeleteMenu() 호출에 실패하였습니다 : 오류 코드 {0}</value>
     <comment>0: 오류 코드</comment>
   </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>비활성화</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>활성화</value>
+  </data>
   <data name="GameMode_All" xml:space="preserve">
     <value>전체</value>
   </data>
@@ -169,11 +175,11 @@
   </data>
   <data name="HandlerRegistry_Unregistered" xml:space="preserve">
     <value>이전 핸들러 '{0}'를 비활성화했습니다.</value>
-    <comment>0: Handler ID</comment>
+    <comment>0: 핸들러 ID</comment>
   </data>
   <data name="Main_AutoEnter" xml:space="preserve">
     <value>자동 입력이 활성화되었습니다. {attr:l} 단어 {word}를 사용합니다.</value>
-    <comment>attr: Word attributes (End, Attack), word: The word</comment>
+    <comment>attr: 단어 속성 (한방, 공격), word: 단어</comment>
   </data>
   <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
     <value>브라우저 프레임이 로드되었습니다.</value>
@@ -198,18 +204,18 @@
   </data>
   <data name="Main_GameModeUpdated" xml:space="preserve">
     <value>게임 모드가 {gameMode}로 업데이트되었습니다.</value>
-    <comment>gameMode: The updated game mode</comment>
+    <comment>gameMode: 업데이트된 게임 모드</comment>
   </data>
   <data name="Main_GameResultWriteException" xml:space="preserve">
     <value>게임 결과를 작성하는 데 실패하였습니다.</value>
   </data>
   <data name="Main_Initialization" xml:space="preserve">
     <value>모듈 '{0}'의 초기화가 {1}ms 소요되었습니다.</value>
-    <comment>0: Module name, 1: Elapsed time in millis</comment>
+    <comment>0: 모듈 이름, 1: 걸린 시간</comment>
   </data>
   <data name="Main_MyPathIsUnsupported" xml:space="preserve">
     <value>제시한 단어 {word}가 지원되지 않음을 감지하였습니다.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="Main_Next" xml:space="preserve">
     <value>다음</value>
@@ -225,7 +231,7 @@
   </data>
   <data name="Main_PathSubmitted" xml:space="preserve">
     <value>입력된 단어: {word}.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="Main_PathUpdateReceived" xml:space="preserve">
     <value>단어 목록이 업데이트되었습니다.</value>
@@ -241,27 +247,27 @@
   </data>
   <data name="Main_UnsupportedURL" xml:space="preserve">
     <value>지원되지 않는 사이트: {url}</value>
-    <comment>url: The site url</comment>
+    <comment>url: 사이트 URL</comment>
   </data>
   <data name="Main_UnsupportedWord_Existent" xml:space="preserve">
     <value>현재 상황에서 지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 이번 게임에서 더 이상 사용되지 않습니다.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="Main_UnsupportedWord_Inexistent" xml:space="preserve">
     <value>지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 자동 업데이트 때 데이터베이스에서 제거될 것입니다.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="Main_UseHandler" xml:space="preserve">
     <value>사용할 핸들러: {0}</value>
-    <comment>0: Handler ID</comment>
+    <comment>0: 핸들러 ID</comment>
   </data>
   <data name="Main_WaitingSubmit" xml:space="preserve">
     <value>단어를 입력하기 전에 {0}ms를 기다립니다.</value>
-    <comment>0: Delay</comment>
+    <comment>0: 지연 시간</comment>
   </data>
   <data name="Main_WaitingSubmitNext" xml:space="preserve">
     <value>다음 단어를 입력하기 전에 {0}ms를 기다립니다.</value>
-    <comment>0: Delay</comment>
+    <comment>0: 지연 시간</comment>
   </data>
   <data name="Main_WordIndexReset" xml:space="preserve">
     <value>사용 단어 인덱스를 0으로 초기화하였습니다.</value>
@@ -317,19 +323,19 @@
   </data>
   <data name="PathFinder_AddNode" xml:space="preserve">
     <value>새로운 {0} 노드 '{1}'가 추가되었습니다.</value>
-    <comment>0: Node type, 1: The node</comment>
+    <comment>0: 노드 종류, 1: 노드</comment>
   </data>
   <data name="PathFinder_AddPath" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에 추가 시도합니다. (속성: {flags})</value>
-    <comment>word: The word, flags: Word flags</comment>
+    <comment>word: 단어, flags: 단어 속성</comment>
   </data>
   <data name="PathFinder_AddPath_Failed" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에 추가할 수 없습니다.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="PathFinder_AddPath_Success" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에 추가하였습니다.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="PathFinder_AutoDBUpdate" xml:space="preserve">
     <value>이전 게임을 기반으로 데이터베이스를 자동으로 업데이트합니다.</value>
@@ -338,24 +344,24 @@
     <value>데이터베이스 자동 업데이트 목록에서 단어를 찾을 수 없습니다.</value>
   </data>
   <data name="PathFinder_AutoDBUpdate_Finished" xml:space="preserve">
-    <value>데이터베이스 자동 업데이틍 완료: {0}</value>
-    <comment>0: The result</comment>
+    <value>데이터베이스 자동 업데이트 완료: {0}</value>
+    <comment>0: 결과</comment>
   </data>
   <data name="PathFinder_AutoDBUpdate_New" xml:space="preserve">
     <value>총 {0}개의 새로운 단어 발견.</value>
-    <comment>0: Element count</comment>
+    <comment>0: 단어 갯수</comment>
   </data>
   <data name="PathFinder_AutoDBUpdate_Remove" xml:space="preserve">
     <value>총 {0}개의 제거할 단어 발견.</value>
-    <comment>0: Element count</comment>
+    <comment>0: 단어 갯수</comment>
   </data>
   <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
     <value>{0}개 중에서 {1}개의 단어가 추가되었고, {2}개 중에서 {3}개의 단어가 삭제되었습니다.</value>
-    <comment>0: Added path count, 1: New path count, 2: Removed path count, 3: Inexistent path count</comment>
+    <comment>0: 실제로 추가된 단어 갯수, 1: 추가할 단어 갯수, 2: 실제로 제거된 단어 갯수, 3: 제거할 단어 갯수</comment>
   </data>
   <data name="PathFinder_FindPath" xml:space="preserve">
     <value>{word}에 대해서 검색 중.</value>
-    <comment>word: The word</comment>
+    <comment>word: 단어</comment>
   </data>
   <data name="PathFinder_FindPath_Error" xml:space="preserve">
     <value>단어 검색에 실패하였습니다.</value>
@@ -365,30 +371,30 @@
   </data>
   <data name="PathFinder_FindPath_Substituation" xml:space="preserve">
     <value>{word}와 {substituation}에 대해서 검색 중.</value>
-    <comment>word: The word, substituation: Substituation word</comment>
+    <comment>word: 단어, substituation: 대체 단어 (두음법칙 등)</comment>
   </data>
   <data name="PathFinder_FoundPath" xml:space="preserve">
     <value>총 {0}개의 단어를 찾았습니다. (공격 단어: {1}, 한방 단어: {2})</value>
-    <comment>0: Count of words, 1: Attack word capability, 2: End word capability</comment>
+    <comment>0: 단어 갯수, 1: 공격 단어 사용 여부, 2: 한방 단어 사용 여부</comment>
   </data>
   <data name="PathFinder_FoundPath_Ready" xml:space="preserve">
     <value>총 {0} 개의 단어가 준비되었습니다. ({1}ms 소요)</value>
-    <comment>0: Feasible word count, 1: Time elapsed</comment>
+    <comment>0: 사용 가능 단어 갯수, 1: 걸린 시간</comment>
   </data>
   <data name="PathFinder_Init_Error" xml:space="preserve">
     <value>노드 목록을 초기화하지 못했습니다.</value>
   </data>
   <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
     <value>이전 검색 결과를 무효화했습니다. (단어 문제: {0}, 미션 단어 문제: {1})</value>
-    <comment>0: Is caused by word, 1: Is caused by mission char</comment>
+    <comment>0: 발생 원인이 단어 문제인지 여부, 1: 발생 원인이 미션 단어 문제인지 여부</comment>
   </data>
   <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에서 삭제하지 못했습니다.</value>
-    <comment>word: The inexistent word in database</comment>
+    <comment>word: (데이터베이스에 존재하지 않는) 단어</comment>
   </data>
   <data name="PathMark_AlreadyDone" xml:space="preserve">
     <value>노드 {node}는 이미 {type} 입니다. [현재 게임 모드: {gameMode}]</value>
-    <comment>node: The node, type: New type, gameMode: Current game mode</comment>
+    <comment>node: 노드, type: 새로운 노트 타입, gameMode: 현재 게임 모드</comment>
   </data>
   <data name="PathMark_Attack" xml:space="preserve">
     <value>공격 단어</value>
@@ -401,42 +407,42 @@
   </data>
   <data name="PathMark_Success" xml:space="preserve">
     <value>노드 {node}를 성공적으로 {type}로 저장했습니다. [현재 게임 모드: {gameMode}]</value>
-    <comment>node: The node, type: New type, gameMode: Current game mode</comment>
+    <comment>node: 노드, type: 새로운 노드 타입, gameMode: 현재 게임 모드</comment>
   </data>
   <data name="PathTooltip_Attack" xml:space="preserve">
     <value>공격 단어: {0}</value>
-    <comment>0: The word</comment>
+    <comment>0: 단어</comment>
   </data>
   <data name="PathTooltip_AttackMission" xml:space="preserve">
     <value>공격 미션(x{1}) 단어: {0}</value>
-    <comment>0: The word, 1: Mission char count</comment>
+    <comment>0: 단어, 1: 미션 단어 포함 갯수</comment>
   </data>
   <data name="PathTooltip_End" xml:space="preserve">
     <value>한방 단어: {0}</value>
-    <comment>0: The word</comment>
+    <comment>0: 단어</comment>
   </data>
   <data name="PathTooltip_EndMission" xml:space="preserve">
     <value>한방 미션(x{1}) 단어: {0}</value>
-    <comment>0: The word, 1: Mission char count</comment>
+    <comment>0: 단어, 1: 미션 단어 포함 갯수</comment>
   </data>
   <data name="PathTooltip_Mission" xml:space="preserve">
     <value>미션(x{1}) 단어: {0}</value>
-    <comment>0: The word, 1: Mission char count</comment>
+    <comment>0: 단어, 1: 미션 단어 포함 갯수</comment>
   </data>
   <data name="PathTooltip_Normal" xml:space="preserve">
     <value>단어: {0}</value>
-    <comment>0: The word</comment>
+    <comment>0: 단어</comment>
   </data>
   <data name="Status_AutoUpdate" xml:space="preserve">
     <value>자동 데이터베이스 업데이트</value>
   </data>
   <data name="TimeFilter_Success" xml:space="preserve">
     <value>턴 시간 {0}ms &gt;= 단어 입력 딜레이 {1}ms</value>
-    <comment>0: Remaining turn time, 1: Total word delay</comment>
+    <comment>0: 남은 턴 시간, 1: 단어 길이 기반 지연 시간</comment>
   </data>
   <data name="TimeFilter_TimeOver" xml:space="preserve">
     <value>남은 턴 시간 {0}ms 안에 입력할 수 있는 단어가 없습니다!</value>
-    <comment>0: Remaining turn time</comment>
+    <comment>0: 남은 턴 시간</comment>
   </data>
   <data name="Validate_ColorPrefs" xml:space="preserve">
     <value>색 설정이 설정되지 않았습니다.</value>

@@ -20,10 +20,7 @@ using System.Globalization;
 
 namespace AutoKkutu
 {
-	/* TODO: Memcached 지원 추가
-	 * - word list 내의 'word', (게임 모드에 맞는)'word index', 'flags' 행을 그대로 Memcached로 캐싱
-	 * - 게임 모드 변경, 데이터베이스 업데이트가 감지되면 이를 통째로 업데이트하는 식으로
-	*/
+	// TODO: Hotkey 지원 추가 - 자동 입력 토글, 딜레이 토글
 
 	public partial class MainWindow : Window
 	{
@@ -387,6 +384,33 @@ namespace AutoKkutu
 			DBLogo.Source = img;
 
 			LoadOverlay.Visibility = Visibility.Hidden;
+		}
+
+		private void OnToggleDelay(object? sender, RoutedEventArgs e)
+		{
+			if (CurrentConfig == null)
+				return;
+			CurrentConfig.DelayEnabled = !CurrentConfig.DelayEnabled;
+			UpdateConfig(CurrentConfig);
+			this.ChangeStatusBar(CurrentStatus.DelayToggled, CurrentConfig.DelayEnabled ? I18n.Enabled : I18n.Disabled);
+		}
+
+		private void OnToggleAllDelay(object? sender, RoutedEventArgs e)
+		{
+			if (CurrentConfig == null)
+				return;
+			CurrentConfig.DelayEnabled = CurrentConfig.FixDelayEnabled = !CurrentConfig.DelayEnabled;
+			UpdateConfig(CurrentConfig);
+			this.ChangeStatusBar(CurrentStatus.AllDelayToggled, CurrentConfig.DelayEnabled ? I18n.Enabled : I18n.Disabled);
+		}
+
+		private void OnToggleAutoEnter(object? sender, RoutedEventArgs e)
+		{
+			if (CurrentConfig == null)
+				return;
+			CurrentConfig.AutoEnterEnabled = !CurrentConfig.AutoEnterEnabled;
+			UpdateConfig(CurrentConfig);
+			this.ChangeStatusBar(CurrentStatus.AutoEnterToggled, CurrentConfig.AutoEnterEnabled ? I18n.Enabled : I18n.Disabled);
 		}
 
 		private void OnBrowserFrameLoadEnd(object? sender, FrameLoadEndEventArgs e)

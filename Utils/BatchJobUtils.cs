@@ -22,7 +22,7 @@ namespace AutoKkutu.Utils
 		/// <returns>True if existence is verified, false otherwise.</returns>
 		public static bool CheckOnline(string word)
 		{
-			Logger.Info(CultureInfo.CurrentCulture, "Finding {word} in kkutu dictionary...", word);
+			Logger.Info(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline, word);
 
 			// Enter the word to dictionary search field
 			JSEvaluator.EvaluateJS($"document.getElementById('dict-input').value = '{word}'");
@@ -35,20 +35,20 @@ namespace AutoKkutu.Utils
 
 			// Query the response
 			string result = JSEvaluator.EvaluateJS("document.getElementById('dict-output').innerHTML");
-			Logger.Info(CultureInfo.CurrentCulture, "Server Response : {response}", result);
+			Logger.Info(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline_Response, result);
 			if (string.IsNullOrWhiteSpace(result) || string.Equals(result, "404: 유효하지 않은 단어입니다.", StringComparison.OrdinalIgnoreCase))
 			{
-				Logger.Warn(CultureInfo.CurrentCulture, "Can't find {word} in kkutu dict.", word);
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline_NotFound, word);
 				return false;
 			}
 			else if (string.Equals(result, "검색 중", StringComparison.OrdinalIgnoreCase))
 			{
-				Logger.Warn("Invaild server response. Resend the request.");
+				Logger.Warn(I18n.BatchJob_CheckOnline_InvalidResponse);
 				return CheckOnline(word);
 			}
 			else
 			{
-				Logger.Info(CultureInfo.CurrentCulture, "Successfully Find {word} in kkutu dict.", word);
+				Logger.Info(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline_Found, word);
 				return true;
 			}
 		}

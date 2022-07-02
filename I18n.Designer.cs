@@ -106,6 +106,51 @@ namespace AutoKkutu {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Finding {word} in kkutu dictionary....
+        /// </summary>
+        public static string BatchJob_CheckOnline {
+            get {
+                return ResourceManager.GetString("BatchJob_CheckOnline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully Find {word} in kkutu dict..
+        /// </summary>
+        public static string BatchJob_CheckOnline_Found {
+            get {
+                return ResourceManager.GetString("BatchJob_CheckOnline_Found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invaild server response. Resend the request..
+        /// </summary>
+        public static string BatchJob_CheckOnline_InvalidResponse {
+            get {
+                return ResourceManager.GetString("BatchJob_CheckOnline_InvalidResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t find {word} in kkutu dict..
+        /// </summary>
+        public static string BatchJob_CheckOnline_NotFound {
+            get {
+                return ResourceManager.GetString("BatchJob_CheckOnline_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server Response : {response}.
+        /// </summary>
+        public static string BatchJob_CheckOnline_Response {
+            get {
+                return ResourceManager.GetString("BatchJob_CheckOnline_Response", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Logging console enabled where debugging is not enabled.
         /// </summary>
         public static string ConsoleIntroduction {
@@ -120,6 +165,24 @@ namespace AutoKkutu {
         public static string DeleteConsoleMenuFailed {
             get {
                 return ResourceManager.GetString("DeleteConsoleMenuFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        public static string Disabled {
+            get {
+                return ResourceManager.GetString("Disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabled.
+        /// </summary>
+        public static string Enabled {
+            get {
+                return ResourceManager.GetString("Enabled", resourceCulture);
             }
         }
         

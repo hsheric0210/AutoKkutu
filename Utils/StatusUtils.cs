@@ -1,8 +1,8 @@
-﻿using System;
+﻿using AutoKkutu.Constants;
+using System;
 using System.Globalization;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using AutoKkutu.Constants;
 
 namespace AutoKkutu.Utils
 {
@@ -82,6 +82,24 @@ namespace AutoKkutu.Utils
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 찾음! 딜레이 대기 중: {0}ms";
 					ImageName = "waiting";
+					break;
+
+				case CurrentStatus.AutoEnterToggled:
+					StatusColor = ColorDefinitions.NormalColor;
+					StatusContent = "자동 입력 기능: {0}";
+					ImageName = "ok";
+					break;
+
+				case CurrentStatus.DelayToggled:
+					StatusColor = ColorDefinitions.NormalColor;
+					StatusContent = "딜레이: {0}";
+					ImageName = "ok";
+					break;
+
+				case CurrentStatus.AllDelayToggled:
+					StatusColor = ColorDefinitions.NormalColor;
+					StatusContent = "모든 종류의 딜레이: {0}";
+					ImageName = "ok";
 					break;
 
 				default:
@@ -164,6 +182,21 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// 딜레이 기다리는 중
 		/// </summary>
-		Delaying
+		Delaying,
+
+		/// <summary>
+		/// 자동 입력 토글됨
+		/// </summary>
+		AutoEnterToggled,
+
+		/// <summary>
+		/// 딜레이 토글됨
+		/// </summary>
+		DelayToggled,
+
+		/// <summary>
+		/// 모든 딜레이 토글됨
+		/// </summary>
+		AllDelayToggled
 	}
 }
