@@ -6,7 +6,7 @@
 
 		public override string GetHandlerName() => "BFKkutu.kr Handler";
 
-		public override void SendMessage(string input)
+		protected override void UpdateChatInternal(string input)
 		{
 			RegisterJSFunction(WriteInputFunc, "input", @"
 var chatFields = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
@@ -20,6 +20,11 @@ while (index < maxIndex) {{
 }}
 ");
 
+			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
+		}
+
+		public override void PressSubmitButton()
+		{
 			RegisterJSFunction(ClickSubmitFunc, "", @"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button')
 var maxIndex = buttons.length, index = 0;
@@ -32,7 +37,6 @@ while (index < maxIndex) {{
 }}
 ");
 
-			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
 			EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
 		}
 	}

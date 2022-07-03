@@ -83,6 +83,8 @@ namespace AutoKkutu
 
 		private GameMode _gameModeCache = GameMode.LastAndFirst;
 
+		private string LastChat = "";
+
 		public event EventHandler? OnGameStarted;
 
 		public event EventHandler? OnGameEnded;
@@ -523,10 +525,25 @@ namespace AutoKkutu
 
 		public virtual string GetMissionWord() => EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", "GetMissionWord") : "";
 
-		public virtual void SendMessage(string input)
+		public void UpdateChat(string input)
 		{
-			EvaluateJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", "SendMessage");
-			EvaluateJS("document.getElementById('ChatBtn').click()", "SendMessage");
+			UpdateChatInternal(input);
+			LastChat = input;
+		}
+
+		public void AppendChat(JamoType type, char ch)
+		{
+			UpdateChat(LastChat.AppendChar(type, ch));
+		}
+
+		protected virtual void UpdateChatInternal(string input)
+		{
+			EvaluateJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", "UpdateChat");
+		}
+
+		public virtual void PressSubmitButton()
+		{
+			EvaluateJS("document.getElementById('ChatBtn').click()", "PressEnterButton");
 		}
 
 		public virtual GameMode GetCurrentGameMode()

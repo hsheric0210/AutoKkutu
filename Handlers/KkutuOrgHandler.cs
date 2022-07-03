@@ -1,13 +1,10 @@
 ﻿namespace AutoKkutu.Handlers
 {
-	// TODO
 	internal partial class KkutuOrgHandler : CommonHandler
 	{
-		public override void SendMessage(string input)
-		{
-			EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
-			EvaluateJS("document.getElementById('ChatBtn').click()");
-		}
+		protected override void UpdateChatInternal(string input) => EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
+
+		public override void PressSubmitButton() => EvaluateJS("document.getElementById('ChatBtn').click()");
 
 		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?kkutu\\.org.*$";
 
