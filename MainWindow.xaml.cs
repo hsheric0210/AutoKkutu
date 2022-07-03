@@ -798,9 +798,25 @@ namespace AutoKkutu
 				SubmitSearch_Click(sender, e);
 		}
 
+		private static string LAST = "";
+
 		private void SendMessage(string message)
 		{
-			Handler.RequireNotNull().SendMessage(message);
+			LAST = "";
+			Task.Run(async () =>
+			{
+				var list = new List<(JamoType, char)>(message.Length * 3);
+				foreach (var ch in message)
+					list.AddRange(ch.SplitConsonants().Serialize());
+				foreach ((JamoType type, char ch) in list)
+				{
+					//Handler.RequireNotNull().AppendChat(type, ch);
+					var text = LAST = LAST.AppendChar(type, ch);
+					Logger.Warn("{0} - Append {1} '{2}'", text, type, ch);
+					await Task.Delay(50);
+				}
+				//Handler.RequireNotNull().PressSubmitButton();
+			}).Wait();
 			inputStopwatch.Restart();
 		}
 

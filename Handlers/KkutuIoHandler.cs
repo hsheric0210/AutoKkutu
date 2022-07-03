@@ -12,7 +12,7 @@
 
 		public override string GetHandlerName() => "Kkutu.io Handler";
 
-		public override void SendMessage(string input)
+		protected override void UpdateChatInternal(string input)
 		{
 			RegisterJSFunction(ParseExtraVisibilityStyleTagsFunc, "", @"
 var styles = document.querySelectorAll('style');
@@ -48,6 +48,32 @@ for (let index=0;index<maxTalks;index++) {{
 }}
 ");
 
+			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
+		}
+
+		public override void PressSubmitButton()
+		{
+			RegisterJSFunction(ParseExtraVisibilityStyleTagsFunc, "", @"
+var styles = document.querySelectorAll('style');
+var maxIndex = styles.length, index = 0;
+var visibleStyles = [];
+while (index < maxIndex) {
+	var doc = document.implementation.createHTMLDocument(""),
+        styleElement = document.createElement('style');
+
+	styleElement.textContent = styles[index].textContent;
+	doc.body.appendChild(styleElement);
+
+	var css = styleElement.sheet.cssRules[0];
+	if (css.selectorText[0] == '#' && css.style.display != 'none' && css.style.visibility != 'hidden')
+	{
+		visibleStyles.push(css.selectorText.substring(1));
+	}
+	index++;
+}
+return visibleStyles;
+");
+
 			RegisterJSFunction(ClickSubmitFunc, "", $@"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
 var visible = {GetRegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
@@ -61,7 +87,6 @@ for (let index=0;index<maxButtons;index++) {{
 }}
 ");
 
-			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
 			EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
 		}
 	}
