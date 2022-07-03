@@ -387,31 +387,19 @@ namespace AutoKkutu
 			LoadOverlay.Visibility = Visibility.Hidden;
 		}
 
-		private void OnToggleDelay(object? sender, RoutedEventArgs e)
-		{
-			if (CurrentConfig == null)
-				return;
-			CurrentConfig.DelayEnabled = !CurrentConfig.DelayEnabled;
-			UpdateConfig(CurrentConfig);
-			this.ChangeStatusBar(CurrentStatus.DelayToggled, CurrentConfig.DelayEnabled ? I18n.Enabled : I18n.Disabled);
-		}
+		private void OnToggleDelay(object? sender, RoutedEventArgs e) => ToggleFeature(config => config.DelayEnabled = !config.DelayEnabled, CurrentStatus.DelayToggled);
 
-		private void OnToggleAllDelay(object? sender, RoutedEventArgs e)
-		{
-			if (CurrentConfig == null)
-				return;
-			CurrentConfig.DelayEnabled = CurrentConfig.FixDelayEnabled = !CurrentConfig.DelayEnabled;
-			UpdateConfig(CurrentConfig);
-			this.ChangeStatusBar(CurrentStatus.AllDelayToggled, CurrentConfig.DelayEnabled ? I18n.Enabled : I18n.Disabled);
-		}
+		private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => ToggleFeature(config => config.DelayEnabled = config.FixDelayEnabled = !config.DelayEnabled, CurrentStatus.AllDelayToggled);
 
-		private void OnToggleAutoEnter(object? sender, RoutedEventArgs e)
+		private void OnToggleAutoEnter(object? sender, RoutedEventArgs e) => ToggleFeature(config => config.AutoEnterEnabled = !config.AutoEnterEnabled, CurrentStatus.AutoEnterToggled);
+
+		private void ToggleFeature(Func<AutoKkutuConfiguration, bool> toggleFunc, CurrentStatus displayStatus)
 		{
 			if (CurrentConfig == null)
 				return;
-			CurrentConfig.AutoEnterEnabled = !CurrentConfig.AutoEnterEnabled;
+			bool newState = toggleFunc(CurrentConfig);
 			UpdateConfig(CurrentConfig);
-			this.ChangeStatusBar(CurrentStatus.AutoEnterToggled, CurrentConfig.AutoEnterEnabled ? I18n.Enabled : I18n.Disabled);
+			this.ChangeStatusBar(displayStatus, newState ? I18n.Enabled : I18n.Disabled);
 		}
 
 		private void OnBrowserFrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
