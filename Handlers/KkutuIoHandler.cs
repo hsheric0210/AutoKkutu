@@ -51,7 +51,7 @@ for (let index=0;index<maxTalks;index++) {{
 			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
 		}
 
-		public override void PressSubmitButton()
+		public override void ClickSubmitButtonInternal()
 		{
 			RegisterJSFunction(ParseExtraVisibilityStyleTagsFunc, "", @"
 var styles = document.querySelectorAll('style');

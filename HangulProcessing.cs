@@ -29,6 +29,8 @@ namespace AutoKkutu
 
 		public static string AppendChar(this string str, JamoType type, char ch)
 		{
+			if (str is null)
+				throw new ArgumentNullException(nameof(str));
 			HangulSplitted? lastSplit = str.Length == 0 ? null : str.Last().SplitConsonants();
 			char result = ch;
 			if (lastSplit?.IsHangul == true)
