@@ -536,12 +536,18 @@ namespace AutoKkutu
 			UpdateChat(LastChat.AppendChar(type, ch));
 		}
 
+		public void ClickSubmitButton()
+		{
+			ClickSubmitButtonInternal();
+			LastChat = "";
+		}
+
 		protected virtual void UpdateChatInternal(string input)
 		{
 			EvaluateJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", "UpdateChat");
 		}
 
-		public virtual void PressSubmitButton()
+		public virtual void ClickSubmitButtonInternal()
 		{
 			EvaluateJS("document.getElementById('ChatBtn').click()", "PressEnterButton");
 		}
