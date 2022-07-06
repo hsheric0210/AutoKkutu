@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AutoKkutu.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AutoKkutu" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="AutoEnterEnabled" Type="System.Boolean" Scope="User">
@@ -73,6 +73,9 @@
     </Setting>
     <Setting Name="AttackMissionWordColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">255, 255, 64</Value>
+    </Setting>
+    <Setting Name="InputSimulate" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

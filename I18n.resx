@@ -198,7 +198,7 @@
   </data>
   <data name="Main_AutoEnter" xml:space="preserve">
     <value>Auto mode enabled. automatically use {attr:l} path: {word}</value>
-    <comment>attr: Word attributes (End, Attack), word: The word</comment>
+    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
   <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
     <value>Browser frame-load end.</value>
@@ -231,6 +231,18 @@
   <data name="Main_Initialization" xml:space="preserve">
     <value>{0} initialization took {1}ms.</value>
     <comment>0: Module name, 1: Elapsed time in millis</comment>
+  </data>
+  <data name="Main_InputSimulating" xml:space="preserve">
+    <value>Simulating {attr:l} word input: {word}</value>
+    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
+  </data>
+  <data name="Main_InputSimulationAborted" xml:space="preserve">
+    <value>Input simulation of {attr:l} word aborted: {words}</value>
+    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
+  </data>
+  <data name="Main_InputSimulationFinished" xml:space="preserve">
+    <value>Input simulation of {attr:l} word finished: {word}</value>
+    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
   <data name="Main_MyPathIsUnsupported" xml:space="preserve">
     <value>My path {word} was confirmed unsupported.</value>

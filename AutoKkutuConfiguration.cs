@@ -80,6 +80,11 @@ namespace AutoKkutu
 			get; set;
 		} = true;
 
+		public bool InputSimulate
+		{
+			get; set;
+		}
+
 		public bool GameModeAutoDetectEnabled
 		{
 			get; set;
@@ -109,7 +114,7 @@ namespace AutoKkutu
 		{
 		}
 
-		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnterEnabled, AutoDBUpdateEnabled, AutoDBUpdateMode, ActiveWordPreference, EndWordEnabled, ReturnModeEnabled, AutoFixEnabled, MissionAutoDetectionEnabled), HashCode.Combine(GameMode, DelayEnabled, DelayPerCharEnabled, DelayInMillis, DelayStartAfterCharEnterEnabled, GameModeAutoDetectEnabled, MaxDisplayedWordCount));
+		public override int GetHashCode() => HashCode.Combine(HashCode.Combine(AutoEnterEnabled, AutoDBUpdateEnabled, AutoDBUpdateMode, ActiveWordPreference, EndWordEnabled, ReturnModeEnabled, AutoFixEnabled, MissionAutoDetectionEnabled), HashCode.Combine(GameMode, DelayEnabled, DelayPerCharEnabled, DelayInMillis, DelayStartAfterCharEnterEnabled, GameModeAutoDetectEnabled, MaxDisplayedWordCount, InputSimulate));
 
 		public override bool Equals(object? obj)
 		{
@@ -120,6 +125,7 @@ namespace AutoKkutu
 			return GameMode == other.GameMode
 				&& DelayEnabled == other.DelayEnabled
 				&& DelayInMillis == other.DelayInMillis
+				&& InputSimulate == other.InputSimulate
 				&& AutoFixEnabled == other.AutoFixEnabled
 				&& EndWordEnabled == other.EndWordEnabled
 				&& FixDelayEnabled == other.FixDelayEnabled

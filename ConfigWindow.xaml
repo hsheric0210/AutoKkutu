@@ -130,6 +130,7 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
@@ -168,6 +169,16 @@
 					<CheckBox Name="DelayStartAfterWordEnter" Content="단어 입력 후부터 시작" ToolTip="지연의 시작 지점을 내 턴의 시작 시간이 아닌, 이전 단어의 입력의 끝 시간으로 합니다." IsChecked="False" Grid.Column="0" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="14" />
 					<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0" MinWidth="20"/>
 					<Label Content="{Binding ElementName=DelayStartAfterWordEnter, Path=ToolTip}" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
+				</Grid>
+				<Grid Grid.Row="3" Margin="20,0,0,0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<CheckBox Name="InputSimulate" Content="단어 입력 시뮬레이트" ToolTip="단어 전체를 한 번에 입력하는 것이 아닌, 한 글자 한 글자 키보드로 친 것처럼 보이게 합니다." IsChecked="False" Grid.Column="0" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="14" />
+					<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0" MinWidth="20"/>
+					<Label Content="{Binding ElementName=InputSimulate, Path=ToolTip}" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
 				</Grid>
 			</Grid>
 			<Grid Grid.Row="8" Margin="0,5,0,5">
@@ -209,7 +220,7 @@
 						<ColumnDefinition Width="*"/>
 						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
-					<CheckBox Name="FixDelayPerWord" Content="단어 갯수에 비례" ToolTip="단어의 갯수에 비례하여 지연을 줍니다." IsChecked="True" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="16" />
+					<CheckBox Name="FixDelayPerWord" Content="단어 갯수에 비례" ToolTip="단어의 갯수에 비례하여 지연을 줍니다." IsChecked="True" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" FontSize="14" />
 					<Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,15,5,0" />
 					<Label Content="{Binding ElementName=FixDelayPerWord, Path=ToolTip}" Grid.Column="2" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFBDBDBD" Margin="5,5,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
 				</Grid>
