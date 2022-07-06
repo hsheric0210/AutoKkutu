@@ -179,7 +179,7 @@
   </data>
   <data name="Main_AutoEnter" xml:space="preserve">
     <value>자동 입력이 활성화되었습니다. {attr:l} 단어 {word}를 사용합니다.</value>
-    <comment>attr: 단어 속성 (한방, 공격), word: 단어</comment>
+    <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
   </data>
   <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
     <value>브라우저 프레임이 로드되었습니다.</value>
@@ -212,6 +212,18 @@
   <data name="Main_Initialization" xml:space="preserve">
     <value>모듈 '{0}'의 초기화가 {1}ms 소요되었습니다.</value>
     <comment>0: 모듈 이름, 1: 걸린 시간</comment>
+  </data>
+  <data name="Main_InputSimulating" xml:space="preserve">
+    <value>{attr:l} 단어 입력 시뮬레이션 시작: {word}</value>
+    <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
+  </data>
+  <data name="Main_InputSimulationAborted" xml:space="preserve">
+    <value>{attr:l} 단어 입력 시뮬레이션 중단됨: {word}</value>
+    <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
+  </data>
+  <data name="Main_InputSimulationFinished" xml:space="preserve">
+    <value>{attr:l} 단어 입력 시뮬레이션 완료: {word}</value>
+    <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
   </data>
   <data name="Main_MyPathIsUnsupported" xml:space="preserve">
     <value>제시한 단어 {word}가 지원되지 않음을 감지하였습니다.</value>

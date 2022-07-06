@@ -376,6 +376,33 @@ namespace AutoKkutu {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Simulating {attr:l} word input: {word}.
+        /// </summary>
+        public static string Main_InputSimulating {
+            get {
+                return ResourceManager.GetString("Main_InputSimulating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input simulation of {attr:l} word aborted: {words}.
+        /// </summary>
+        public static string Main_InputSimulationAborted {
+            get {
+                return ResourceManager.GetString("Main_InputSimulationAborted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input simulation of {attr:l} word finished: {word}.
+        /// </summary>
+        public static string Main_InputSimulationFinished {
+            get {
+                return ResourceManager.GetString("Main_InputSimulationFinished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to My path {word} was confirmed unsupported..
         /// </summary>
         public static string Main_MyPathIsUnsupported {

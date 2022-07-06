@@ -48,6 +48,7 @@ namespace AutoKkutu
 						}
 
 						break;
+
 					case JamoType.Medial:
 						if (lastSplit.Medial is null)
 						{
@@ -57,12 +58,23 @@ namespace AutoKkutu
 							});
 						}
 						break;
+
 					case JamoType.Final:
 						// 종성은 비어 있을 수도, 차 있을 수도 있기에 IsFull로 검사가 불가능하다.
-						result = Merge(lastSplit with
+						if (char.IsWhiteSpace(lastSplit.FinalConsonant)) // 종성이 비어 있을 경우
 						{
-							FinalConsonant = ch
-						});
+							result = Merge(lastSplit with
+							{
+								FinalConsonant = ch
+							});
+						}
+						else // 종성이 비어 있지 않을 경우
+						{
+							result = Merge(lastSplit with
+							{
+								FinalConsonant = MergeConsonantCluster(lastSplit.FinalConsonant, ch) // 자음군 조합
+							});
+						}
 						return str[..^1] + result.ToString();
 				}
 				return (isFull ? str : str[..^1]) + result.ToString();
@@ -158,6 +170,37 @@ namespace AutoKkutu
 		public static bool IsHangul(this ushort index) => IsHangulJamoChoseong(index) || IsHangulJamoJungseong(index) || IsHangulJamoJongseong(index) || IsHangulCompatibilityJamoConsonant(index) || IsHangulCompatibilityJamoVowel(index) || IsHangulSyllable(index);
 
 		public static bool IsHangul(this char character) => Convert.ToUInt16(character).IsHangul();
+
+		public static char MergeConsonantCluster(params char[] consonants)
+		{
+			if (consonants is null)
+				throw new ArgumentNullException(nameof(consonants));
+
+			switch (consonants.Length)
+			{
+				case 0:
+					return ' ';
+				case 1:
+					return consonants[0];
+				default:
+					var filtered = consonants.Where(ch => !char.IsWhiteSpace(ch)).ToArray();
+					// TODO: 어두자음군 지원
+					char ch = filtered[0];
+					foreach (char consonant in filtered.Skip(1))
+					{
+						if (!HangulConstants.ConsonantClusterTable.TryGetValue(ch, out IDictionary<char, char>? combination) || !combination.TryGetValue(consonant, out ch))
+							throw new InvalidOperationException($"Unsupported combination: {ch} + {consonant}");
+					}
+					return ch;
+			}
+		}
+
+		public static IList<char> SplitConsonantCluster(this char consonantCluster)
+		{
+			if (HangulConstants.InverseConsonantClusterTable.TryGetValue(consonantCluster, out IList<char>? consonants))
+				return consonants;
+			return new List<char>() { consonantCluster };
+		}
 	}
 
 	public sealed record HangulSplitted(bool IsHangul, char? InitialConsonant = null, char? Medial = null, char FinalConsonant = ' ')
@@ -172,7 +215,11 @@ namespace AutoKkutu
 			if (Medial is not null)
 				enumerable.Add((JamoType.Medial, (char)Medial));
 			if (!char.IsWhiteSpace(FinalConsonant))
-				enumerable.Add((JamoType.Final, FinalConsonant));
+			{
+				foreach (var consonant in FinalConsonant.SplitConsonantCluster())
+					enumerable.Add((JamoType.Final, consonant));
+			}
+
 			return enumerable;
 		}
 	}
@@ -254,6 +301,79 @@ namespace AutoKkutu
 		/// 유니코드 'Hangul Syllables' 끝 위치
 		/// </summary>
 		public const ushort HangulSyllablesBound = 0xD79F;
+
+		/// <summary>
+		/// 겹자음 조합 변환 테이블
+		/// </summary>
+		public static IDictionary<char, IDictionary<char, char>> ConsonantClusterTable
+		{
+			get;
+		} = new Dictionary<char, IDictionary<char, char>>()
+		{
+			{ 'ㄱ', new Dictionary<char, char>()
+			{
+				{ 'ㄱ', 'ㄲ' },
+				{ 'ㅅ', 'ㄳ' }
+			}
+			},
+			{ 'ㄴ', new Dictionary<char, char>()
+			{
+				{ 'ㅈ', 'ㄵ' },
+				{ 'ㅎ', 'ㄶ' }
+			}
+			},
+			{ 'ㄷ', new Dictionary<char, char>()
+			{
+				{ 'ㄷ', 'ㄸ' }
+			} },
+			{ 'ㄹ', new Dictionary<char, char>()
+			{
+				{ 'ㄱ', 'ㄺ' },
+				{ 'ㅁ', 'ㄻ' },
+				{ 'ㅂ', 'ㄼ' },
+				{ 'ㅅ', 'ㄽ' },
+				{ 'ㅌ', 'ㄾ' },
+				{ 'ㅍ', 'ㄿ' },
+				{ 'ㅎ', 'ㅀ' }
+			} },
+			{ 'ㅂ', new Dictionary<char, char>()
+			{
+				{ 'ㅂ', 'ㅃ' },
+				{ 'ㅅ', 'ㅄ' }
+			}
+			},
+			{ 'ㅅ', new Dictionary<char, char>()
+			{
+				{ 'ㅅ', 'ㅆ' }
+			}
+			},
+			{ 'ㅈ', new Dictionary<char, char>()
+			{
+				{ 'ㅈ', 'ㅉ' }
+			}
+			}
+		};
+
+		/// <summary>
+		/// 겹자음 조합 역변환 테이블
+		/// </summary>
+		public static IDictionary<char, IList<char>> InverseConsonantClusterTable
+		{
+			get;
+		} = new Dictionary<char, IList<char>>()
+		{
+			{ 'ㄳ', new List<char>() { 'ㄱ', 'ㅅ' } },
+			{ 'ㄵ', new List<char>() { 'ㄴ', 'ㅈ' } },
+			{ 'ㄶ', new List<char>() { 'ㄴ', 'ㅎ' } },
+			{ 'ㄺ', new List<char>() { 'ㄹ', 'ㄱ' } },
+			{ 'ㄻ', new List<char>() { 'ㄹ', 'ㅁ' } },
+			{ 'ㄼ', new List<char>() { 'ㄹ', 'ㅂ' } },
+			{ 'ㄽ', new List<char>() { 'ㄹ', 'ㅅ' } },
+			{ 'ㄾ', new List<char>() { 'ㄹ', 'ㅌ' } },
+			{ 'ㄿ', new List<char>() { 'ㄹ', 'ㅍ' } },
+			{ 'ㅀ', new List<char>() { 'ㄹ', 'ㅎ' } },
+			{ 'ㅄ', new List<char>() { 'ㅂ', 'ㅅ' } }
+		};
 	}
 
 	public enum JamoType

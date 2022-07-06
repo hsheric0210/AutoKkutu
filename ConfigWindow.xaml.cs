@@ -39,6 +39,7 @@ namespace AutoKkutu
 			DelayPerWord.IsChecked = config.DelayPerCharEnabled;
 			DelayNumber.Text = config.DelayInMillis.ToString(CultureInfo.InvariantCulture);
 			DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterCharEnterEnabled;
+			InputSimulate.IsChecked = config.InputSimulate;
 			GameModeAutoDetect.IsChecked = config.GameModeAutoDetectEnabled;
 			MaxWordCount.Text = config.MaxDisplayedWordCount.ToString(CultureInfo.InvariantCulture);
 			FixDelay.IsChecked = config.FixDelayEnabled;
@@ -100,6 +101,7 @@ namespace AutoKkutu
 				DelayPerCharEnabled = DelayPerWord.IsChecked ?? false,
 				DelayInMillis = _delay,
 				DelayStartAfterCharEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
+				InputSimulate = InputSimulate.IsChecked ?? false,
 				GameModeAutoDetectEnabled = GameModeAutoDetect.IsChecked ?? false,
 				MaxDisplayedWordCount = MaxWords,
 				FixDelayEnabled = FixDelay.IsChecked ?? false,
@@ -124,6 +126,7 @@ namespace AutoKkutu
 				config.DelayPerCharEnabled = conf.DelayPerCharEnabled;
 				config.DelayInMillis = conf.DelayInMillis;
 				config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterCharEnterEnabled;
+				config.InputSimulate = conf.InputSimulate;
 				config.GameModeAutoDetectionEnabled = conf.GameModeAutoDetectEnabled;
 				config.MaxDisplayedWordCount = conf.MaxDisplayedWordCount;
 				config.FixDelayEnabled = conf.FixDelayEnabled;

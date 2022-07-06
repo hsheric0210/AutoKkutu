@@ -23,7 +23,7 @@ while (index < maxIndex) {{
 			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
 		}
 
-		public override void ClickSubmitButtonInternal()
+		protected override void ClickSubmitButtonInternal()
 		{
 			RegisterJSFunction(ClickSubmitFunc, "", @"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button')

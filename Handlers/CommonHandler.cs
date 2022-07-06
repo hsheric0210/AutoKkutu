@@ -547,7 +547,7 @@ namespace AutoKkutu
 			EvaluateJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", "UpdateChat");
 		}
 
-		public virtual void ClickSubmitButtonInternal()
+		protected virtual void ClickSubmitButtonInternal()
 		{
 			EvaluateJS("document.getElementById('ChatBtn').click()", "PressEnterButton");
 		}

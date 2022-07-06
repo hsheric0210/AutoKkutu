@@ -20,8 +20,6 @@ using System.Globalization;
 
 namespace AutoKkutu
 {
-	// TODO: Hotkey 지원 추가 - 자동 입력 토글, 딜레이 토글
-
 	public partial class MainWindow : Window
 	{
 		public const string VERSION = "1.0.0000";
@@ -165,6 +163,7 @@ namespace AutoKkutu
 					DelayPerCharEnabled = config.DelayPerCharEnabled,
 					DelayInMillis = config.DelayInMillis,
 					DelayStartAfterCharEnterEnabled = config.DelayStartAfterWordEnterEnabled,
+					InputSimulate = config.InputSimulate,
 					GameModeAutoDetectEnabled = config.GameModeAutoDetectionEnabled,
 					MaxDisplayedWordCount = config.MaxDisplayedWordCount,
 					FixDelayEnabled = config.FixDelayEnabled,
@@ -300,8 +299,8 @@ namespace AutoKkutu
 			{
 				try
 				{
-					string? path = TimeFilterQualifiedWordListIndexed(PathFinder.QualifiedList, ++WordIndex);
-					if (path == null)
+					string? content = TimeFilterQualifiedWordListIndexed(PathFinder.QualifiedList, ++WordIndex);
+					if (content == null)
 					{
 						Logger.Warn(I18n.Main_NoMorePathAvailable);
 						this.ChangeStatusBar(CurrentStatus.NotFound);
@@ -310,20 +309,18 @@ namespace AutoKkutu
 
 					if (CurrentConfig.FixDelayEnabled)
 					{
+						// Setup delay
 						int delay = CurrentConfig.FixDelayInMillis;
 						if (CurrentConfig.FixDelayPerCharEnabled)
-							delay *= path.Length;
+							delay *= content.Length;
+
 						this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 						Logger.Debug(CultureInfo.CurrentCulture, I18n.Main_WaitingSubmitNext, delay);
-						Task.Run(async () =>
-						{
-							await Task.Delay(delay);
-							PerformAutoEnter(path, null, I18n.Main_Next);
-						});
+						Task.Run(async () => await AutoEnterTask(content, delay, null, I18n.Main_Next));
 					}
 					else
 					{
-						PerformAutoEnter(path, null, I18n.Main_Next);
+						PerformAutoEnter(content, null, I18n.Main_Next);
 					}
 				}
 				catch (Exception ex)
@@ -331,6 +328,16 @@ namespace AutoKkutu
 					Logger.Error(ex, I18n.Main_PathSubmitException);
 				}
 			}
+		}
+
+		private async Task AutoEnterTask(string content, int delay, UpdatedPathEventArgs? args, string? pathAttributes = null)
+		{
+			await Task.Delay(delay);
+
+			if (CanSimulateInput)
+				await PerformInputSimulation(content, args, delay / content.Length, pathAttributes);
+			else
+				PerformAutoEnter(content, args, pathAttributes);
 		}
 
 		private void CommonHandler_MyTurnEndEvent(object? sender, EventArgs e)
@@ -691,6 +698,21 @@ namespace AutoKkutu
 			return qualifiedWordList.Count - 1 >= WordIndex ? qualifiedWordList[wordIndex].Content : null;
 		}
 
+		private async Task AutoEnterTask2(string content, int delay, UpdatedPathEventArgs? args, string? pathAttribute = null)
+		{
+			int _delay = 0;
+			if (inputStopwatch.ElapsedMilliseconds <= delay)
+			{
+				_delay = (int)(delay - inputStopwatch.ElapsedMilliseconds);
+				await Task.Delay(_delay);
+			}
+
+			if (CanSimulateInput)
+				await PerformInputSimulation(content, args, _delay / content.Length, pathAttribute);
+			else
+				PerformAutoEnter(content, args, pathAttribute);
+		}
+
 		private void DelayedEnter(string content, UpdatedPathEventArgs? args, string? pathAttribute = null)
 		{
 			if (pathAttribute == null)
@@ -703,26 +725,14 @@ namespace AutoKkutu
 					delay *= content.Length;
 				this.ChangeStatusBar(CurrentStatus.Delaying, delay);
 				Logger.Debug(CultureInfo.CurrentCulture, I18n.Main_WaitingSubmit, delay);
-				if (CurrentConfig.DelayStartAfterCharEnterEnabled)
-				{
-					// Delay-per-Char
-					Task.Run(async () =>
-					{
-						while (inputStopwatch.ElapsedMilliseconds <= delay)
-							await Task.Delay(1);
 
-						PerformAutoEnter(content, args, pathAttribute);
-					});
-				}
-				else
+				Task.Run(async () =>
 				{
-					// Delay
-					Task.Run(async () =>
-					{
-						await Task.Delay(delay);
-						PerformAutoEnter(content, args, pathAttribute);
-					});
-				}
+					if (CurrentConfig.DelayStartAfterCharEnterEnabled)
+						await AutoEnterTask2(content, delay, args);
+					else
+						await AutoEnterTask(content, delay, args);
+				});
 			}
 			else
 			{
@@ -731,22 +741,76 @@ namespace AutoKkutu
 			}
 		}
 
+		/// <summary>
+		/// Perform an automated enter
+		/// </summary>
+		/// <param name="content">Content to enter</param>
+		/// <param name="args">Path arguments</param>
+		/// <param name="pathAttribute">Explanation of auto-enter path</param>
 		private void PerformAutoEnter(string content, UpdatedPathEventArgs? args, string? pathAttribute = null)
 		{
 			if (pathAttribute == null)
 				pathAttribute = I18n.Main_Optimal;
 
-			if (!Handler.RequireNotNull().IsGameStarted || !Handler.IsMyTurn || args != null && !CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed))
+			if (!CanPerformAutoEnter(args))
 				return;
-			PerformAutoEnter(content, pathAttribute);
-		}
 
-		private void PerformAutoEnter(string content, string pathAttribute)
-		{
 			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_AutoEnter, pathAttribute, content);
-			SendMessage(content);
+			SendMessage(content, true);
 			this.ChangeStatusBar(CurrentStatus.AutoEntered, content);
 		}
+
+		private static bool CanSimulateInput
+		{
+			get
+			{
+				AutoKkutuConfiguration config = CurrentConfig.RequireNotNull();
+				return config.DelayEnabled && config.DelayPerCharEnabled && config.InputSimulate;
+			}
+		}
+
+		private async Task PerformInputSimulation(string content, UpdatedPathEventArgs? args, int delay, string? pathAttribute = null)
+		{
+			if (pathAttribute == null)
+				pathAttribute = I18n.Main_Optimal;
+
+			CommonHandler handler = Handler.RequireNotNull();
+
+			bool aborted = false;
+			var list = new List<(JamoType, char)>();
+			foreach (var ch in content)
+				list.AddRange(ch.SplitConsonants().Serialize());
+
+			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_InputSimulating, pathAttribute, content);
+
+			handler.UpdateChat("");
+			foreach ((JamoType type, char ch) in list)
+			{
+				if (!CanPerformAutoEnter(args))
+				{
+					aborted = true; // Abort
+					break;
+				}
+
+				handler.AppendChat(type, ch);
+				await Task.Delay(delay);
+			}
+
+			if (aborted)
+			{
+				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_InputSimulationAborted, pathAttribute, content);
+			}
+			else
+			{
+				handler.ClickSubmitButton();
+				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_InputSimulationFinished, pathAttribute, content);
+			}
+
+			handler.UpdateChat("");
+			this.ChangeStatusBar(CurrentStatus.AutoEntered, content);
+		}
+
+		private bool CanPerformAutoEnter(UpdatedPathEventArgs? args) => Handler.RequireNotNull().IsGameStarted && Handler.IsMyTurn && (args == null || CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed));
 
 		private void RegisterHandler(CommonHandler handler)
 		{
@@ -798,30 +862,37 @@ namespace AutoKkutu
 				SubmitSearch_Click(sender, e);
 		}
 
-		private void SendMessage(string message)
+		/// <summary>
+		/// Warning: Shouldn't use this method to send message directly as it applies undiscriminating delay any time.
+		/// </summary>
+		/// <param name="message"></param>
+		private void SendMessage(string message, bool direct = false)
 		{
 			AutoKkutuConfiguration config = CurrentConfig.RequireNotNull();
 			CommonHandler handler = Handler.RequireNotNull();
-			if (config.DelayEnabled && config.DelayPerCharEnabled)
+			if (!direct && CanSimulateInput)
 			{
 				Task.Run(async () =>
 				{
-					var list = new List<(JamoType, char)>(message.Length * 3);
+					var list = new List<(JamoType, char)>();
 					foreach (var ch in message)
 						list.AddRange(ch.SplitConsonants().Serialize());
+
+					handler.UpdateChat("");
 					foreach ((JamoType type, char ch) in list)
 					{
 						handler.AppendChat(type, ch);
-						await Task.Delay(50);
+						await Task.Delay(config.DelayInMillis);
 					}
-					handler.ClickSubmitButtonInternal();
+
+					handler.ClickSubmitButton();
 					handler.UpdateChat("");
 				});
 			}
 			else
 			{
 				handler.UpdateChat(message);
-				handler.ClickSubmitButtonInternal();
+				handler.ClickSubmitButton();
 			}
 			inputStopwatch.Restart();
 		}
