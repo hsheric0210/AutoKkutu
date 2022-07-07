@@ -8,7 +8,7 @@ namespace AutoKkutu.Utils
 {
 	public static class InputSimulation
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(InputSimulation));
 
 		public static bool CanSimulateInput()
 		{

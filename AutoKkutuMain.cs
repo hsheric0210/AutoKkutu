@@ -296,7 +296,7 @@ namespace AutoKkutu
 
 		public static void StartPathFinding(ResponsePresentedWord? word, string? missionChar, PathFinderOptions flags)
 		{
-			GameMode mode = Configuration.RequireNotNull().GameMode;
+			GameMode mode = Configuration.GameMode;
 			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderOptions.ManualSearch))
 				return;
 
@@ -334,7 +334,7 @@ namespace AutoKkutu
 		private static void SetupPathFinderInfo(ref PathFinderOptions flags)
 		{
 			// Setup flag
-			if (Configuration.RequireNotNull().EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
+			if (Configuration.EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
 				flags |= PathFinderOptions.UseEndWord;
 			else
 				flags &= ~PathFinderOptions.UseEndWord;
@@ -465,7 +465,7 @@ namespace AutoKkutu
 			UpdateSearchState(null, false);
 			ResetPathList();
 			PathFinder.UnsupportedPathList.Clear();
-			if (Configuration.RequireNotNull().AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
+			if (Configuration.AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
 			{
 				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
 				string? result = PathFinder.AutoDBUpdate();
@@ -498,7 +498,7 @@ namespace AutoKkutu
 
 		private static void OnGameModeChange(object? sender, GameModeChangeEventArgs args)
 		{
-			if (Configuration.RequireNotNull().GameModeAutoDetectEnabled)
+			if (Configuration.GameModeAutoDetectEnabled)
 			{
 				GameMode newGameMode = args.GameMode;
 				Configuration.GameMode = newGameMode;
@@ -545,7 +545,7 @@ namespace AutoKkutu
 
 		private static void OnRoundChange(object? sender, EventArgs e)
 		{
-			if (Configuration.RequireNotNull().AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
+			if (Configuration.AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
 				PathFinder.AutoDBUpdate();
 		}
 
@@ -554,7 +554,7 @@ namespace AutoKkutu
 			string word = args.Word.Content;
 
 			Handler.RequireNotNull();
-			if (!Configuration.RequireNotNull().AutoEnterEnabled)
+			if (!Configuration.AutoEnterEnabled)
 				return;
 
 			AutoEnter.DelayedEnter(word, null, I18n.Main_Presented);

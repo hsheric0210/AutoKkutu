@@ -184,7 +184,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeEnd(AutoKkutuMain.Configuration.RequireNotNull().GameMode, AutoKkutuMain.Database.DefaultConnection);
+			((PathObject)currentSelected).MakeEnd(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
 		}
 
 		private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -192,7 +192,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeNormal(AutoKkutuMain.Configuration.RequireNotNull().GameMode, AutoKkutuMain.Database.DefaultConnection);
+			((PathObject)currentSelected).MakeNormal(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
 		}
 
 		private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)
