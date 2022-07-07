@@ -85,25 +85,25 @@ namespace AutoKkutu
 
 		private string LastChat = "";
 
-		public event EventHandler? OnGameStarted;
+		public event EventHandler? GameStarted;
 
-		public event EventHandler? OnGameEnded;
+		public event EventHandler? GameEnded;
 
-		public event EventHandler<WordPresentEventArgs>? OnMyTurn;
+		public event EventHandler<WordPresentEventArgs>? MyTurn;
 
-		public event EventHandler? OnMyTurnEnded;
+		public event EventHandler? MyTurnEnded;
 
-		public event EventHandler<UnsupportedWordEventArgs>? OnUnsupportedWordEntered;
+		public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 
-		public event EventHandler<UnsupportedWordEventArgs>? OnMyPathIsUnsupported;
+		public event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
 
-		public event EventHandler? OnRoundChange;
+		public event EventHandler? RoundChange;
 
-		public event EventHandler<GameModeChangeEventArgs>? OnGameModeChange;
+		public event EventHandler<GameModeChangeEventArgs>? GameModeChange;
 
-		public event EventHandler<WordPresentEventArgs>? OnTypingWordPresented;
+		public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 
-		private static AutoKkutuConfiguration? CurrentConfig;
+		public event EventHandler? ChatUpdated;
 
 		public static CommonHandler[] GetAvailableHandlers()
 		{
@@ -130,12 +130,8 @@ namespace AutoKkutu
 			return null;
 		}
 
-		public static void UpdateConfig(AutoKkutuConfiguration newConfig) => CurrentConfig = newConfig;
-
 		public void StartWatchdog()
 		{
-			CurrentConfig.RequireNotNull();
-
 			if (!_isWatchdogStarted)
 			{
 				_isWatchdogStarted = true;
@@ -223,7 +219,7 @@ namespace AutoKkutu
 		// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
 		private async Task WatchdogPresentWord(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
 																										  {
-																											  if (CurrentConfig?.GameMode == GameMode.TypingBattle && IsGameStarted)
+																											  if (AutoKkutuMain.Configuration.GameMode == GameMode.TypingBattle && IsGameStarted)
 																											  {
 																												  if (_isMyTurn)
 																													  GetCurrentTypingWord(mainWatchdogID);
@@ -246,14 +242,14 @@ namespace AutoKkutu
 					return;
 
 				logger.Debug("Game ended.");
-				OnGameEnded?.Invoke(this, EventArgs.Empty);
+				GameEnded?.Invoke(this, EventArgs.Empty);
 				IsGameStarted = false;
 			}
 			else if (!IsGameStarted)
 			{
 				RegisterJSFunction(CurrentRoundIndexFunc, "", "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));");
 				logger.Debug("New game started; Previous word list flushed.");
-				OnGameStarted?.Invoke(this, EventArgs.Empty);
+				GameStarted?.Invoke(this, EventArgs.Empty);
 				IsGameStarted = true;
 			}
 		}
@@ -268,7 +264,7 @@ namespace AutoKkutu
 
 				_isMyTurn = false;
 				logger.Debug("My turn ended.");
-				OnMyTurnEnded?.Invoke(this, EventArgs.Empty);
+				MyTurnEnded?.Invoke(this, EventArgs.Empty);
 			}
 			else if (!_isMyTurn)
 			{
@@ -282,7 +278,7 @@ namespace AutoKkutu
 				else
 					logger.Info(CultureInfo.CurrentCulture, "My turn arrived, presented word is {word}.", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
-				OnMyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
+				MyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
 			}
 		}
 
@@ -292,7 +288,7 @@ namespace AutoKkutu
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
 		private void GetPreviousWord(int watchdogID)
 		{
-			if (CurrentConfig == null || ConfigEnums.IsFreeMode(CurrentConfig.GameMode))
+			if (ConfigEnums.IsFreeMode(AutoKkutuMain.Configuration.GameMode))
 				return;
 
 			string[] tmpWordCache = new string[6];
@@ -352,7 +348,7 @@ namespace AutoKkutu
 			if (roundIndex <= 0)
 				return;
 			GetLogger(watchdogID, "Round").Info(CultureInfo.CurrentCulture, "Round Changed : Index {0} Word {1}", roundIndex, roundText);
-			OnRoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
+			RoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
 			PathFinder.ResetPreviousPath();
 		}
 
@@ -369,9 +365,9 @@ namespace AutoKkutu
 			bool isExistingWord = unsupportedWord.Contains(':', StringComparison.Ordinal); // 첫 턴 한방 금지, 한방 단어(매너) 등등...
 			_unsupportedWordCache = unsupportedWord;
 
-			OnUnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
-			if (IsMyTurn && OnMyPathIsUnsupported != null)
-				OnMyPathIsUnsupported(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+			UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+			if (IsMyTurn && MyPathIsUnsupported != null)
+				MyPathIsUnsupported(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
 		}
 
 		/// <summary>
@@ -401,7 +397,7 @@ namespace AutoKkutu
 				return;
 			_currentPresentedWordCache = word;
 			GetLogger(watchdogID, "Presented word").Info(CultureInfo.CurrentCulture, "Word detected : {word}", word);
-			OnTypingWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
+			TypingWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
 		}
 
 		private void CheckGameMode(int watchdogID)
@@ -411,7 +407,7 @@ namespace AutoKkutu
 				return;
 			_gameModeCache = gameMode;
 			GetLogger(watchdogID, "GameMode").Info(CultureInfo.CurrentCulture, "Game mode change detected : {gameMode}", ConfigEnums.GetGameModeName(gameMode));
-			OnGameModeChange?.Invoke(this, new GameModeChangeEventArgs(gameMode));
+			GameModeChange?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 		}
 
 		protected int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
@@ -529,6 +525,7 @@ namespace AutoKkutu
 		{
 			UpdateChatInternal(input);
 			LastChat = input;
+			ChatUpdated?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void AppendChat(JamoType type, char ch)

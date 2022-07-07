@@ -5,33 +5,23 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace AutoKkutu
+namespace AutoKkutu.Utils
 {
 	public static class JSEvaluator
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-		private static ChromiumWebBrowser? Browser;
-
-		public static void RegisterBrowser(ChromiumWebBrowser browser)
-		{
-			if (Browser != null)
-				throw new InvalidOperationException("Browser is already registered");
-			Browser = browser;
-		}
 
 		private static object? EvaluateJSInternal(string javaScript, object? defaultResult)
 		{
-			if (Browser?.CanExecuteJavascriptInMainFrame != true)
+			if (!AutoKkutuMain.Browser.CanExecuteJavascriptInMainFrame)
 				return defaultResult;
 
-			using (IFrame frame = Browser.GetMainFrame())
-			{
+			using (IFrame frame = AutoKkutuMain.Browser.GetMainFrame())
 				if (frame != null)
 				{
 					using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
 					return task.Result.Result ?? defaultResult;
 				}
-			}
 			return defaultResult;
 		}
 
@@ -43,21 +33,19 @@ namespace AutoKkutu
 		/// <returns>true if error occurred, false otherwise.</returns>
 		public static bool EvaluateJSReturnError(string javaScript, out string error)
 		{
-			if (Browser?.CanExecuteJavascriptInMainFrame != true)
+			if (!AutoKkutuMain.Browser.CanExecuteJavascriptInMainFrame)
 			{
 				error = "Browser is not prepared";
 				return true;
 			}
 
-			using (IFrame frame = Browser.GetMainFrame())
-			{
+			using (IFrame frame = AutoKkutuMain.Browser.GetMainFrame())
 				if (frame != null)
 				{
 					using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
 					error = task.Result.Message;
 					return !string.IsNullOrWhiteSpace(error);
 				}
-			}
 			error = "Main frame is null";
 			return true;
 		}

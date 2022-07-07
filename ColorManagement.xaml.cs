@@ -2,7 +2,6 @@
 using System;
 using System.Windows;
 using AutoKkutu.Utils;
-using System.Globalization;
 
 namespace AutoKkutu
 {
@@ -52,18 +51,7 @@ namespace AutoKkutu
 				Logger.Error(ex, "Failed to save the configuration.");
 			}
 
-			Dispatcher.Invoke(() =>
-			{
-				try
-				{
-					MainWindow.UpdateColorPreference(newPref);
-				}
-				catch (Exception ex)
-				{
-					Logger.Error(ex, "Failed to apply the color preference.");
-				}
-			});
-
+			AutoKkutuMain.ColorPreference = newPref;
 			Close();
 		}
 

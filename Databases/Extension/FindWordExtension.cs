@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Constants;
+using AutoKkutu.Utils;
 using NLog;
 using System;
 using System.Collections.Generic;

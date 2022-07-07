@@ -4,15 +4,15 @@ using AutoKkutu.Databases.Extension;
 using AutoKkutu.Utils;
 using NLog;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
-namespace AutoKkutu
+namespace AutoKkutu.Utils
 {
 	public static class PathFinder
 	{
@@ -54,21 +54,6 @@ namespace AutoKkutu
 		}
 
 		public static ICollection<string>? ReverseEndWordList
-		{
-			get; private set;
-		}
-
-		public static CommonDatabaseConnection? Connection
-		{
-			get; private set;
-		}
-
-		public static AutoKkutuColorPreference? CurrentColorPreference
-		{
-			get; private set;
-		}
-
-		public static AutoKkutuConfiguration? CurrentConfig
 		{
 			get; private set;
 		}
@@ -121,7 +106,7 @@ namespace AutoKkutu
 
 		public static string? AutoDBUpdate()
 		{
-			if (!CurrentConfig.RequireNotNull().AutoDBUpdateEnabled)
+			if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
 				return null;
 
 			Logger.Debug(I18n.PathFinder_AutoDBUpdate);
@@ -180,7 +165,7 @@ namespace AutoKkutu
 			if (string.IsNullOrWhiteSpace(path))
 				throw new ArgumentException("Parameter is null or blank", nameof(path));
 
-			switch (CurrentConfig.RequireNotNull().GameMode)
+			switch (AutoKkutuMain.Configuration.GameMode)
 			{
 				case GameMode.LastAndFirst:
 				case GameMode.KungKungTta:
@@ -213,8 +198,6 @@ namespace AutoKkutu
 
 		public static void FindPath(FindWordInfo info)
 		{
-			CurrentConfig.RequireNotNull();
-
 			if (ConfigEnums.IsFreeMode(info.Mode))
 			{
 				RandomPath(info);
@@ -243,7 +226,7 @@ namespace AutoKkutu
 				IList<PathObject>? totalWordList = null;
 				try
 				{
-					totalWordList = Connection.RequireNotNull().FindWord(info);
+					totalWordList = AutoKkutuMain.Database.DefaultConnection.FindWord(info);
 					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
@@ -257,7 +240,7 @@ namespace AutoKkutu
 				int totalWordCount = totalWordList.Count;
 
 				// Limit the word list size
-				int maxCount = CurrentConfig.MaxDisplayedWordCount;
+				int maxCount = AutoKkutuMain.Configuration.MaxDisplayedWordCount;
 				if (totalWordList.Count > maxCount)
 					totalWordList = totalWordList.Take(maxCount).ToList();
 
@@ -294,7 +277,7 @@ namespace AutoKkutu
 						word.RemoveQueued = true;
 					if (UnsupportedPathList.Contains(word.Content))
 						word.Excluded = true;
-					else if (CurrentConfig?.ReturnModeEnabled != true && PreviousPath.Contains(word.Content))
+					else if (!AutoKkutuMain.Configuration.ReturnModeEnabled && PreviousPath.Contains(word.Content))
 						word.AlreadyUsed = true;
 					else
 						qualifiedList.Add(word);
@@ -304,16 +287,15 @@ namespace AutoKkutu
 					PathListLock.ExitReadLock();
 				}
 			}
+
 			return qualifiedList;
 		}
 
-		public static void Init(CommonDatabaseConnection connection)
+		public static void Initialize()
 		{
-			Connection = connection;
-
 			try
 			{
-				UpdateNodeLists(connection);
+				UpdateNodeLists(AutoKkutuMain.Database.DefaultConnection);
 			}
 			catch (Exception ex)
 			{
@@ -321,10 +303,6 @@ namespace AutoKkutu
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}
-
-		public static void UpdateColorPreference(AutoKkutuColorPreference newColorPref) => CurrentColorPreference = newColorPref;
-
-		public static void UpdateConfig(AutoKkutuConfiguration newConfig) => CurrentConfig = newConfig;
 
 		public static void UpdateNodeLists(CommonDatabaseConnection connection)
 		{
@@ -359,7 +337,7 @@ namespace AutoKkutu
 				try
 				{
 					Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AddPath, word, flags);
-					if (Connection.RequireNotNull().AddWord(word, flags))
+					if (AutoKkutuMain.Database.DefaultConnection.AddWord(word, flags))
 					{
 						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AddPath_Success, word);
 						count++;
@@ -380,7 +358,7 @@ namespace AutoKkutu
 		{
 			ResponsePresentedWord word = info.Word;
 			string missionChar = info.MissionChar;
-			string firstChar = (info.Mode == GameMode.LastAndFirstFree) ? word.Content : "";
+			string firstChar = info.Mode == GameMode.LastAndFirstFree ? word.Content : "";
 
 			var watch = new Stopwatch();
 			watch.Start();
@@ -412,7 +390,7 @@ namespace AutoKkutu
 			{
 				try
 				{
-					count += Connection.RequireNotNull().DeleteWord(word);
+					count += AutoKkutuMain.Database.DefaultConnection.RequireNotNull().DeleteWord(word);
 				}
 				catch (Exception ex)
 				{
@@ -433,7 +411,7 @@ namespace AutoKkutu
 		public string Color
 		{
 			get;
-		}
+		} = "#FFFFFFFF";
 
 		public string Content
 		{
@@ -500,7 +478,7 @@ namespace AutoKkutu
 
 		public PathObject(string content, WordAttributes flags, int missionCharCount)
 		{
-			AutoKkutuColorPreference colorPref = PathFinder.CurrentColorPreference.RequireNotNull();
+			AutoKkutuColorPreference colorPref = AutoKkutuMain.ColorPreference;
 
 			Content = content;
 			Title = content;
@@ -511,27 +489,70 @@ namespace AutoKkutu
 
 			bool isMissionWord = flags.HasFlag(WordAttributes.MissionWord);
 			string tooltipPrefix;
+
+			int i = isMissionWord ? 0 : 1;
+			Color? color = null;
 			if (flags.HasFlag(WordAttributes.EndWord))
 			{
-				tooltipPrefix = isMissionWord ? I18n.PathTooltip_EndMission : I18n.PathTooltip_End;
-				Color = (isMissionWord ? colorPref.EndMissionWordColor : colorPref.EndWordColor).ToString(CultureInfo.InvariantCulture);
 				PrimaryImage = @"images\skull.png";
 			}
 			else if (flags.HasFlag(WordAttributes.AttackWord))
 			{
-				tooltipPrefix = isMissionWord ? I18n.PathTooltip_AttackMission : I18n.PathTooltip_Attack;
-				Color = (isMissionWord ? colorPref.AttackMissionWordColor : colorPref.AttackWordColor).ToString(CultureInfo.InvariantCulture);
 				PrimaryImage = @"images\attack.png";
+				i += 2;
 			}
 			else
 			{
-				Color = isMissionWord ? colorPref.MissionWordColor.ToString(CultureInfo.InvariantCulture) : "#FFFFFFFF";
-				tooltipPrefix = isMissionWord ? I18n.PathTooltip_Mission : I18n.PathTooltip_Normal;
 				PrimaryImage = string.Empty;
+				i += 4;
 			}
+
+			switch (i)
+			{
+				case 0:
+					// End mission word
+					tooltipPrefix = I18n.PathTooltip_EndMission;
+					color = colorPref.EndMissionWordColor;
+					break;
+
+				case 1:
+					// End word
+					tooltipPrefix = I18n.PathTooltip_End;
+					color = colorPref.EndWordColor;
+					break;
+
+				case 2:
+					// Attack mission word
+					tooltipPrefix = I18n.PathTooltip_AttackMission;
+					color = colorPref.AttackMissionWordColor;
+					break;
+
+				case 3:
+					// Attack word
+					tooltipPrefix = I18n.PathTooltip_Attack;
+					color = colorPref.AttackWordColor;
+					break;
+
+				case 4:
+					// Mission word
+					color = colorPref.MissionWordColor;
+					tooltipPrefix = I18n.PathTooltip_Mission;
+					break;
+
+				default:
+					// Normal word
+					tooltipPrefix = I18n.PathTooltip_Normal;
+					break;
+			}
+
+			if (color is not null)
+				Color = ((Color)color).ToString(CultureInfo.InvariantCulture);
+
 			SecondaryImage = isMissionWord ? @"images\mission.png" : string.Empty;
 
-			ToolTip = string.Format(CultureInfo.CurrentCulture, tooltipPrefix, isMissionWord ? new object[2] { content, missionCharCount } : new object[1] { content });
+			ToolTip = string.Format(CultureInfo.CurrentCulture, tooltipPrefix, isMissionWord ? new object[2] { content, missionCharCount
+	} : new object[1] { content
+});
 		}
 
 		public void MakeAttack(GameMode mode, CommonDatabaseConnection connection)

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 
-namespace AutoKkutu
+namespace AutoKkutu.Utils
 {
 	public static class ConsoleManager
 	{
