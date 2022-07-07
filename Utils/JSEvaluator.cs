@@ -9,7 +9,7 @@ namespace AutoKkutu.Utils
 {
 	public static class JSEvaluator
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(JSEvaluator));
 
 		private static object? EvaluateJSInternal(string javaScript, object? defaultResult)
 		{

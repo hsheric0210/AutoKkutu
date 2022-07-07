@@ -11,7 +11,7 @@ namespace AutoKkutu.Utils
 	{
 		// TODO: Remove those UpdateStatusMessage() calls and replace it with callback functions
 
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(AutoEnter));
 
 		public static int WordIndex
 		{

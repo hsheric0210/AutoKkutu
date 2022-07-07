@@ -9,7 +9,7 @@ namespace AutoKkutu.Databases
 {
 	public abstract class CommonDatabaseCommand : IDisposable
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabaseCommand));
 
 		protected DbCommand? Command
 		{

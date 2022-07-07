@@ -11,7 +11,7 @@ namespace AutoKkutu.Databases.SQLite
 {
 	public static class SQLiteDatabaseHelper
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		private static readonly Logger Logger = LogManager.GetLogger(nameof(SQLiteDatabaseHelper));
 
 		public static int ExecuteNonQuery(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
