@@ -3,7 +3,7 @@ using System;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace AutoKkutu
+namespace AutoKkutu.Utils
 {
 	public static class Validate
 	{

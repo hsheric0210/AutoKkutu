@@ -1,7 +1,6 @@
 ﻿using AutoKkutu.Databases.Extension;
 using Npgsql;
 using System;
-using System.Globalization;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {

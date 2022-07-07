@@ -1,6 +1,4 @@
-﻿using NLog;
-using System;
-using System.Data.Common;
+﻿using System;
 
 namespace AutoKkutu.Databases.Extension
 {

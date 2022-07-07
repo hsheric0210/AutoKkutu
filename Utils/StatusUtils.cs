@@ -8,7 +8,7 @@ namespace AutoKkutu.Utils
 {
 	public static class StatusUtils
 	{
-		public static void ChangeStatusBar(this MainWindow mainWindow, CurrentStatus status, params object?[] formatterArgs)
+		public static void ChangeStatusBar(this MainWindow mainWindow, StatusMessage status, params object?[] formatterArgs)
 		{
 			if (mainWindow == null)
 				throw new ArgumentNullException(nameof(mainWindow));
@@ -18,85 +18,85 @@ namespace AutoKkutu.Utils
 			string ImageName;
 			switch (status)
 			{
-				case CurrentStatus.Normal:
+				case StatusMessage.Normal:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "준비";
 					ImageName = "waiting";
 					break;
 
-				case CurrentStatus.NotFound:
+				case StatusMessage.NotFound:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "이 턴에 낼 수 있는 단어를 데이터 집합에서 찾을 수 없었습니다. 수동으로 입력하십시오.";
 					ImageName = "warning";
 					break;
 
-				case CurrentStatus.EndWord:
+				case StatusMessage.EndWord:
 					StatusColor = ColorDefinitions.ErrorColor;
 					StatusContent = "더 이상 이 턴에 낼 수 있는 단어가 없습니다.";
 					ImageName = "skull";
 					break;
 
-				case CurrentStatus.Error:
+				case StatusMessage.Error:
 					StatusColor = ColorDefinitions.ErrorColor;
 					StatusContent = "프로그램에 오류가 발생하였습니다. 자세한 사항은 콘솔을 참조하십시오.";
 					ImageName = "error";
 					break;
 
-				case CurrentStatus.Searching:
+				case StatusMessage.Searching:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "단어 찾는 중...";
 					ImageName = "searching";
 					break;
 
-				case CurrentStatus.AutoEntered:
+				case StatusMessage.AutoEntered:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 자동 입력됨: {0}";
 					ImageName = "ok";
 					break;
 
-				case CurrentStatus.DatabaseIntegrityCheck:
+				case StatusMessage.DatabaseIntegrityCheck:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "데이터베이스 검증 작업 진행 중...";
 					ImageName = "cleaning";
 					break;
 
-				case CurrentStatus.DatabaseIntegrityCheckDone:
+				case StatusMessage.DatabaseIntegrityCheckDone:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "데이터베이스 검증 작업 완료: {0}";
 					ImageName = "ok";
 					break;
 
-				case CurrentStatus.BatchJob:
+				case StatusMessage.BatchJob:
 					StatusColor = ColorDefinitions.WarningColor;
 					StatusContent = "단어 일괄 추가 작업 중 ({0})...";
 					ImageName = "cleaning";
 					break;
 
-				case CurrentStatus.BatchJobDone:
+				case StatusMessage.BatchJobDone:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 일괄 추가 작업 ({0}) 완료: {1}";
 					ImageName = "ok";
 					break;
 
-				case CurrentStatus.Delaying:
+				case StatusMessage.Delaying:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "단어 찾음! 딜레이 대기 중: {0}ms";
 					ImageName = "waiting";
 					break;
 
-				case CurrentStatus.AutoEnterToggled:
+				case StatusMessage.AutoEnterToggled:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "자동 입력 기능: {0}";
 					ImageName = "ok";
 					break;
 
-				case CurrentStatus.DelayToggled:
+				case StatusMessage.DelayToggled:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "딜레이: {0}";
 					ImageName = "ok";
 					break;
 
-				case CurrentStatus.AllDelayToggled:
+				case StatusMessage.AllDelayToggled:
 					StatusColor = ColorDefinitions.NormalColor;
 					StatusContent = "모든 종류의 딜레이: {0}";
 					ImageName = "ok";
@@ -122,7 +122,7 @@ namespace AutoKkutu.Utils
 		}
 	}
 
-	public enum CurrentStatus
+	public enum StatusMessage
 	{
 		/// <summary>
 		/// 준비됨

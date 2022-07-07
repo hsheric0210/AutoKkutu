@@ -139,17 +139,7 @@ namespace AutoKkutu
 				Logger.Error(ex, "Failed to save the configuration.");
 			}
 
-			Dispatcher.Invoke(() =>
-			{
-				try
-				{
-					MainWindow.UpdateConfig(conf);
-				}
-				catch (Exception ex)
-				{
-					Logger.Error(ex, "Failed to apply the configuration.");
-				}
-			});
+			AutoKkutuMain.Configuration = conf;
 			Close();
 		}
 
