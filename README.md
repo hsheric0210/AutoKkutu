@@ -59,5 +59,5 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 # 관련 프로젝트
 * [CefSharp](https://github.com/cefsharp/CefSharp/) - AutoKkutu는 CefSharp을(를) 기반으로 만들어졌습니다
 * [Npgsql](https://github.com/npgsql/npgsql) - .NET용 PostgreSQL 접속 및 데이터 제공 라이브러리
-* [Log4net](https://github.com/apache/logging-log4net/) - .NET용 로깅 라이브러리
+* [NLog](https://github.com/NLog/NLog) - .NET용 로깅 라이브러리
 * [MySqlConnector](https://github.com/mysql-net/MySqlConnector) - .NET용 MySQL 접속 및 데이터 제공 라이브러리

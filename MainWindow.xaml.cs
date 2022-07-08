@@ -1,14 +1,16 @@
-﻿using AutoKkutu.Databases;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Databases;
+using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
 using NLog;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Globalization;
 
 namespace AutoKkutu
 {
@@ -40,10 +42,22 @@ namespace AutoKkutu
 			AutoKkutuMain.PathListUpdated += OnPathListUpdated;
 			AutoKkutuMain.InitializeUI += OnInitializeUI;
 			AutoKkutuMain.SearchStateChanged += OnSearchStateChanged;
-			AutoKkutuMain.StatusChanged += OnStatusChanged;
+			AutoKkutuMain.StatusMessageChanged += OnStatusMessageChanged;
+
+			AutoEnter.EnterDelaying += OnEnterDelaying;
+			AutoEnter.PathNotFound += OnPathNotFound;
+			AutoEnter.AutoEntered += OnAutoEntered;
 
 			AutoKkutuMain.Initialize();
 		}
+
+		/* EVENTS: AutoEnter */
+
+		private void OnEnterDelaying(object? sender, EnterDelayingEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
+
+		private void OnPathNotFound(object? sender, EventArgs args) => this.UpdateStatusMessage(StatusMessage.NotFound);
+
+		private void OnAutoEntered(object? sender, AutoEnteredEventArgs args) => this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
 
 		/* EVENTS: AutoKkutu */
 
@@ -51,8 +65,8 @@ namespace AutoKkutu
 
 		private void OnInitializeUI(object? sender, EventArgs args)
 		{
-			this.ChangeStatusBar(StatusMessage.Wait);
-			SetSearchState(null, false);
+			this.UpdateStatusMessage(StatusMessage.Wait);
+			UpdateSearchState(null, false);
 			Dispatcher.Invoke(() =>
 			{
 				// Apply browser frame
@@ -70,21 +84,21 @@ namespace AutoKkutu
 			});
 		}
 
-		private void OnSearchStateChanged(object? sender, SearchStateChangedEventArgs args) => SetSearchState(args.Arguments, args.IsEndWord);
+		private void OnSearchStateChanged(object? sender, SearchStateChangedEventArgs args) => UpdateSearchState(args.Arguments, args.IsEndWord);
 
-		private void OnStatusChanged(object? sender, StatusChangedEventArgs args) => this.ChangeStatusBar(args.Status, args.GetFormatterArguments());
+		private void OnStatusMessageChanged(object? sender, StatusMessageChangedEventArgs args) => this.UpdateStatusMessage(args.Status, args.GetFormatterArguments());
 
 		/* EVENTS: Database */
 
-		private void OnDatabaseIntegrityCheckDone(object? sender, DataBaseIntegrityCheckDoneEventArgs args) => this.ChangeStatusBar(StatusMessage.DatabaseIntegrityCheckDone, args.Result);
+		private void OnDatabaseIntegrityCheckDone(object? sender, DataBaseIntegrityCheckDoneEventArgs args) => this.UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, args.Result);
 
-		private void OnDatabaseIntegrityCheckStart(object? sender, EventArgs e) => this.ChangeStatusBar(StatusMessage.DatabaseIntegrityCheck);
+		private void OnDatabaseIntegrityCheckStart(object? sender, EventArgs e) => this.UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck);
 
-		private void OnDataBaseError(object? sender, EventArgs e) => this.ChangeStatusBar(StatusMessage.Error);
+		private void OnDataBaseError(object? sender, EventArgs e) => this.UpdateStatusMessage(StatusMessage.Error);
 
-		private void OnDatabaseImportDone(object? sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(StatusMessage.BatchJobDone, args.Name, args.Result);
+		private void OnDatabaseImportDone(object? sender, DatabaseImportEventArgs args) => this.UpdateStatusMessage(StatusMessage.BatchJobDone, args.Name, args.Result);
 
-		private void OnDatabaseImportStart(object? sender, DatabaseImportEventArgs args) => this.ChangeStatusBar(StatusMessage.BatchJob, args.Name);
+		private void OnDatabaseImportStart(object? sender, DatabaseImportEventArgs args) => this.UpdateStatusMessage(StatusMessage.BatchJob, args.Name);
 
 		/* EVENT: Hotkeys */
 
@@ -101,7 +115,6 @@ namespace AutoKkutu
 			if (e.Key is Key.Enter or Key.Return)
 				SubmitChat_Click(sender, e);
 		}
-
 
 		private void OnClipboardSubmitClick(object? sender, RoutedEventArgs e)
 		{
@@ -205,13 +218,13 @@ namespace AutoKkutu
 			path.RemoveQueued = false;
 			try
 			{
-				PathFinder.PathListLock.EnterWriteLock();
-				PathFinder.UnsupportedPathList.Add(path.Content);
-				PathFinder.InexistentPathList.Remove(path.Content);
+				PathManager.PathListLock.EnterWriteLock();
+				PathManager.UnsupportedPathList.Add(path.Content);
+				PathManager.InexistentPathList.Remove(path.Content);
 			}
 			finally
 			{
-				PathFinder.PathListLock.ExitWriteLock();
+				PathManager.PathListLock.ExitWriteLock();
 			}
 		}
 
@@ -225,13 +238,13 @@ namespace AutoKkutu
 			path.RemoveQueued = false;
 			try
 			{
-				PathFinder.PathListLock.EnterWriteLock();
-				PathFinder.UnsupportedPathList.Remove(path.Content);
-				PathFinder.InexistentPathList.Remove(path.Content);
+				PathManager.PathListLock.EnterWriteLock();
+				PathManager.UnsupportedPathList.Remove(path.Content);
+				PathManager.InexistentPathList.Remove(path.Content);
 			}
 			finally
 			{
-				PathFinder.PathListLock.ExitWriteLock();
+				PathManager.PathListLock.ExitWriteLock();
 			}
 		}
 
@@ -245,13 +258,13 @@ namespace AutoKkutu
 			path.RemoveQueued = true;
 			try
 			{
-				PathFinder.PathListLock.EnterWriteLock();
-				PathFinder.UnsupportedPathList.Add(path.Content);
-				PathFinder.InexistentPathList.Add(path.Content);
+				PathManager.PathListLock.EnterWriteLock();
+				PathManager.UnsupportedPathList.Add(path.Content);
+				PathManager.InexistentPathList.Add(path.Content);
 			}
 			finally
 			{
-				PathFinder.PathListLock.ExitWriteLock();
+				PathManager.PathListLock.ExitWriteLock();
 			}
 		}
 
@@ -301,7 +314,7 @@ namespace AutoKkutu
 				SubmitSearch_Click(sender, e);
 		}
 
-		private void SetSearchState(UpdatedPathEventArgs? arg, bool IsEnd = false)
+		private void UpdateSearchState(PathUpdatedEventArgs? arg, bool IsEnd = false)
 		{
 			string Result;
 			if (arg == null)
@@ -318,7 +331,7 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
-		private static string CreatePathResultExplain(UpdatedPathEventArgs arg)
+		private static string CreatePathResultExplain(PathUpdatedEventArgs arg)
 		{
 			string filter = $"'{arg.Word.Content}'";
 			if (arg.Word.CanSubstitution)

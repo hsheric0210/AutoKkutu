@@ -4,6 +4,7 @@ using AutoKkutu.Databases;
 using AutoKkutu.Databases.MySQL;
 using AutoKkutu.Databases.PostgreSQL;
 using AutoKkutu.Databases.SQLite;
+using AutoKkutu.Modules;
 using NLog;
 using System;
 using System.Configuration;

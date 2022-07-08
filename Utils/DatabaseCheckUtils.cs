@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
+using AutoKkutu.Modules;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -281,7 +282,7 @@ namespace AutoKkutu.Utils
 			Logger.Info("Updating node lists...");
 			try
 			{
-				PathFinder.UpdateNodeLists(connection);
+				PathManager.UpdateNodeLists(connection);
 				watch.Stop();
 				Logger.Info(CultureInfo.CurrentCulture, "Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 			}

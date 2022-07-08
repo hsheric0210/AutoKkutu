@@ -1,10 +1,10 @@
-﻿using NLog;
-using System;
+﻿using AutoKkutu.Utils;
+using NLog;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Utils
+namespace AutoKkutu.Modules
 {
 	public static class InputSimulation
 	{
@@ -16,7 +16,7 @@ namespace AutoKkutu.Utils
 			return config is not null && config.DelayEnabled && config.DelayPerCharEnabled && config.InputSimulate;
 		}
 
-		public static async Task PerformAutoEnterInputSimulation(string content, UpdatedPathEventArgs? args, int delay, string? pathAttribute = null)
+		public static async Task PerformAutoEnterInputSimulation(string content, PathUpdatedEventArgs? args, int delay, string? pathAttribute = null)
 		{
 			if (pathAttribute is null)
 				pathAttribute = I18n.Main_Optimal;
@@ -34,7 +34,7 @@ namespace AutoKkutu.Utils
 			handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
-				if (!AutoEnter.CanPerformAutoEnter(args))
+				if (!AutoEnter.CanPerformAutoEnterNow(args))
 				{
 					aborted = true; // Abort
 					break;
@@ -44,9 +44,7 @@ namespace AutoKkutu.Utils
 			}
 
 			if (aborted)
-			{
 				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_InputSimulationAborted, pathAttribute, content);
-			}
 			else
 			{
 				handler.ClickSubmitButton();

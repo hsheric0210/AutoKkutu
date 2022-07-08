@@ -4,7 +4,7 @@ using System.Linq;
 
 // Copyright PLOG (@ plog2012.blogspot.com) All rights reserved
 // Original source available at https://plog2012.blogspot.com/2012/11/c.html
-namespace AutoKkutu.Utils
+namespace AutoKkutu.Modules
 {
 	public static class HangulProcessing
 	{
@@ -35,43 +35,100 @@ namespace AutoKkutu.Utils
 			char result = ch;
 			if (lastSplit?.IsHangul == true)
 			{
-				bool isFull = lastSplit.IsFull;
-				switch (type)
-				{
-					case JamoType.Initial:
-						if (lastSplit.InitialConsonant is null)
-							result = Merge(lastSplit with
-							{
-								InitialConsonant = ch
-							});
-
-						break;
-
-					case JamoType.Medial:
-						if (lastSplit.Medial is null)
-							result = Merge(lastSplit with
-							{
-								Medial = ch
-							});
-						break;
-
-					case JamoType.Final:
-						// 종성은 비어 있을 수도, 차 있을 수도 있기에 IsFull로 검사가 불가능하다.
-						if (char.IsWhiteSpace(lastSplit.FinalConsonant)) // 종성이 비어 있을 경우
-							result = Merge(lastSplit with
-							{
-								FinalConsonant = ch
-							});
-						else // 종성이 비어 있지 않을 경우
-							result = Merge(lastSplit with
-							{
-								FinalConsonant = MergeConsonantCluster(lastSplit.FinalConsonant, ch) // 자음군 조합
-							});
-						return str[..^1] + result.ToString();
-				}
-				return (isFull ? str : str[..^1]) + result.ToString();
+				return CombineHangulSebeol(str, type, ch, lastSplit);
 			}
 			return str + ch;
+		}
+
+		private static string CombineHangulDubeol(string str, JamoType appendCharType, char charToAppend, HangulSplitted lastSplit)
+		{
+			char result = charToAppend;
+			bool isFull = lastSplit.IsFull;
+			if (appendCharType == JamoType.Medial)
+			{
+			}
+			switch (appendCharType)
+			{
+				case JamoType.Initial:
+					if (lastSplit.InitialConsonant is null)
+					{
+						result = Merge(lastSplit with
+						{
+							InitialConsonant = charToAppend
+						});
+					}
+
+					break;
+
+				case JamoType.Medial:
+					if (lastSplit.Medial is null)
+					{
+						result = Merge(lastSplit with
+						{
+							Medial = charToAppend
+						});
+					}
+
+					break;
+
+				case JamoType.Final:
+					// 종성은 비어 있을 수도, 차 있을 수도 있기에 IsFull로 검사가 불가능하다.
+					result = char.IsWhiteSpace(lastSplit.FinalConsonant)
+						? Merge(lastSplit with
+						{
+							FinalConsonant = charToAppend
+						})
+						: Merge(lastSplit with
+						{
+							FinalConsonant = MergeConsonantCluster(lastSplit.FinalConsonant, charToAppend) // 자음군 조합
+						});
+					return str[..^1] + result.ToString();
+			}
+			return (isFull ? str : str[..^1]) + result.ToString();
+		}
+
+		private static string CombineHangulSebeol(string str, JamoType appendCharType, char charToAppend, HangulSplitted lastSplit)
+		{
+			char result = charToAppend;
+			bool isFull = lastSplit.IsFull;
+			switch (appendCharType)
+			{
+				case JamoType.Initial:
+					if (lastSplit.InitialConsonant is null)
+					{
+						result = Merge(lastSplit with
+						{
+							InitialConsonant = charToAppend
+						});
+					}
+
+					break;
+
+				case JamoType.Medial:
+					if (lastSplit.Medial is null)
+					{
+						result = Merge(lastSplit with
+						{
+							Medial = charToAppend
+						});
+					}
+
+					break;
+
+				case JamoType.Final:
+					// 종성은 비어 있을 수도, 차 있을 수도 있기에 IsFull로 검사가 불가능하다.
+					result = char.IsWhiteSpace(lastSplit.FinalConsonant)
+						? Merge(lastSplit with
+						{
+							FinalConsonant = charToAppend
+						})
+						: Merge(lastSplit with
+						{
+							FinalConsonant = MergeConsonantCluster(lastSplit.FinalConsonant, charToAppend) // 자음군 조합
+						});
+					return str[..^1] + result.ToString();
+			}
+			return (isFull ? str : str[..^1]) + result.ToString();
 		}
 
 		/// <summary>
@@ -94,11 +151,17 @@ namespace AutoKkutu.Utils
 				return new HangulSplitted(true, HangulConstants.InitialConsonantTable[initialIndex], HangulConstants.MedialTable[medialIndex], HangulConstants.FinalConsonantTable[finalIndex]);
 			}
 			else if (unicodeIndex.IsHangulCompatibilityJamoConsonant() || unicodeIndex.IsHangulJamoChoseong())
+			{
 				return new HangulSplitted(true, character);
+			}
 			else if (unicodeIndex.IsHangulCompatibilityJamoVowel() || unicodeIndex.IsHangulJamoJungseong())
+			{
 				return new HangulSplitted(true, Medial: character);
+			}
 			else if (unicodeIndex.IsHangulJamoJongseong())
+			{
 				return new HangulSplitted(true, FinalConsonant: character);
+			}
 
 			return new HangulSplitted(false, character);
 		}
@@ -173,8 +236,11 @@ namespace AutoKkutu.Utils
 					// TODO: 어두자음군 지원
 					char ch = filtered[0];
 					foreach (char consonant in filtered.Skip(1))
+					{
 						if (!HangulConstants.ConsonantClusterTable.TryGetValue(ch, out IDictionary<char, char>? combination) || !combination.TryGetValue(consonant, out ch))
 							throw new InvalidOperationException($"Unsupported combination: {ch} + {consonant}");
+					}
+
 					return ch;
 			}
 		}
@@ -199,8 +265,10 @@ namespace AutoKkutu.Utils
 			if (Medial is not null)
 				enumerable.Add((JamoType.Medial, (char)Medial));
 			if (!char.IsWhiteSpace(FinalConsonant))
+			{
 				foreach (var consonant in FinalConsonant.SplitConsonantCluster())
 					enumerable.Add((JamoType.Final, consonant));
+			}
 
 			return enumerable;
 		}

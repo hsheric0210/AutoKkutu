@@ -1,11 +1,10 @@
 ﻿using CefSharp;
-using CefSharp.Wpf;
 using NLog;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Utils
+namespace AutoKkutu.Modules
 {
 	public static class JSEvaluator
 	{
