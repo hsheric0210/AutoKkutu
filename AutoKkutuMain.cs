@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
+using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
 using CefSharp.Wpf;
@@ -54,7 +55,7 @@ namespace AutoKkutu
 
 		public static event EventHandler<SearchStateChangedEventArgs>? SearchStateChanged;
 
-		public static event EventHandler<StatusChangedEventArgs>? StatusChanged;
+		public static event EventHandler<StatusMessageChangedEventArgs>? StatusMessageChanged;
 
 		public static event EventHandler? ChatUpdated;
 
@@ -196,7 +197,7 @@ namespace AutoKkutu
 				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 				watch.Restart();
-				PathFinder.Initialize();
+				PathManager.Initialize();
 				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
 
 				watch.Stop();
@@ -272,9 +273,9 @@ namespace AutoKkutu
 
 		/* Status-related */
 
-		public static void UpdateSearchState(UpdatedPathEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
+		public static void UpdateSearchState(PathUpdatedEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
 
-		public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusChanged?.Invoke(null, new StatusChangedEventArgs(status, formatterArgs));
+		public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
 
 		/* Path-related */
 
@@ -334,7 +335,7 @@ namespace AutoKkutu
 		private static void SetupPathFinderInfo(ref PathFinderOptions flags)
 		{
 			// Setup flag
-			if (Configuration.EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathFinder.PreviousPath.Count > 0))  // 첫 턴 한방 방지
+			if (Configuration.EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathManager.PreviousPath.Count > 0))  // 첫 턴 한방 방지
 				flags |= PathFinderOptions.UseEndWord;
 			else
 				flags &= ~PathFinderOptions.UseEndWord;
@@ -353,9 +354,9 @@ namespace AutoKkutu
 
 		private static ICollection<string>? GetEndWordList(GameMode mode) => mode switch
 		{
-			GameMode.FirstAndLast => PathFinder.ReverseEndWordList,
-			GameMode.Kkutu => PathFinder.KkutuEndWordList,
-			_ => PathFinder.EndWordList,
+			GameMode.FirstAndLast => PathManager.ReverseEndWordList,
+			GameMode.Kkutu => PathManager.KkutuEndWordList,
+			_ => PathManager.EndWordList,
 		};
 
 		/// <summary>
@@ -415,7 +416,7 @@ namespace AutoKkutu
 
 		/* EVENTS: PathFinder */
 
-		private static void OnPathUpdated(object? sender, UpdatedPathEventArgs args)
+		private static void OnPathUpdated(object? sender, PathUpdatedEventArgs args)
 		{
 			Logger.Info(I18n.Main_PathUpdateReceived);
 
@@ -444,7 +445,7 @@ namespace AutoKkutu
 				}
 				else
 				{
-					string? content = AutoEnter.TimeFilterQualifiedWordList(PathFinder.QualifiedList);
+					string? content = AutoEnter.ApplyTimeFilter(PathFinder.QualifiedList);
 					if (content == null)
 					{
 						Logger.Warn(I18n.Auto_TimeOver);
@@ -452,7 +453,7 @@ namespace AutoKkutu
 					}
 					else
 					{
-						AutoEnter.DelayedEnter(content, args);
+						AutoEnter.PerformAutoEnter(content, args);
 					}
 				}
 			}
@@ -464,11 +465,11 @@ namespace AutoKkutu
 		{
 			UpdateSearchState(null, false);
 			ResetPathList();
-			PathFinder.UnsupportedPathList.Clear();
+			PathManager.UnsupportedPathList.Clear();
 			if (Configuration.AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
 			{
 				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-				string? result = PathFinder.AutoDBUpdate();
+				string? result = PathManager.AutoDBUpdate();
 				if (string.IsNullOrEmpty(result))
 				{
 					UpdateStatusMessage(StatusMessage.Wait);
@@ -519,9 +520,7 @@ namespace AutoKkutu
 			Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_MyPathIsUnsupported, word);
 
 			if (Configuration.AutoEnterEnabled && Configuration.AutoFixEnabled)
-			{
-				AutoEnter.PerformAutoFix(delay => UpdateStatusMessage(StatusMessage.Delaying, delay));
-			}
+				AutoEnter.PerformAutoFix();
 		}
 
 		private static void OnMyTurnEnded(object? sender, EventArgs e)
@@ -540,13 +539,13 @@ namespace AutoKkutu
 				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedWord_Inexistent, word);
 			else
 				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedWord_Existent, word);
-			PathFinder.AddToUnsupportedWord(word, isInexistent);
+			PathManager.AddToUnsupportedWord(word, isInexistent);
 		}
 
 		private static void OnRoundChange(object? sender, EventArgs e)
 		{
 			if (Configuration.AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
-				PathFinder.AutoDBUpdate();
+				PathManager.AutoDBUpdate();
 		}
 
 		private static void OnTypingWordPresented(object? sender, WordPresentEventArgs args)
@@ -557,7 +556,7 @@ namespace AutoKkutu
 			if (!Configuration.AutoEnterEnabled)
 				return;
 
-			AutoEnter.DelayedEnter(word, null, I18n.Main_Presented);
+			AutoEnter.PerformAutoEnter(word, null, I18n.Main_Presented);
 		}
 
 		private static void OnChatUpdated(object? sender, EventArgs args) => ChatUpdated?.Invoke(null, args);
@@ -565,7 +564,7 @@ namespace AutoKkutu
 
 	public class SearchStateChangedEventArgs : EventArgs
 	{
-		public UpdatedPathEventArgs? Arguments
+		public PathUpdatedEventArgs? Arguments
 		{
 			get;
 		}
@@ -575,14 +574,14 @@ namespace AutoKkutu
 			get;
 		}
 
-		public SearchStateChangedEventArgs(UpdatedPathEventArgs? arguments, bool isEndWord = false)
+		public SearchStateChangedEventArgs(PathUpdatedEventArgs? arguments, bool isEndWord = false)
 		{
 			Arguments = arguments;
 			IsEndWord = isEndWord;
 		}
 	}
 
-	public class StatusChangedEventArgs : EventArgs
+	public class StatusMessageChangedEventArgs : EventArgs
 	{
 		private readonly object?[] formatterArguments;
 
@@ -593,7 +592,7 @@ namespace AutoKkutu
 
 		public object?[] GetFormatterArguments() => formatterArguments;
 
-		public StatusChangedEventArgs(StatusMessage status, params object?[] formatterArgs)
+		public StatusMessageChangedEventArgs(StatusMessage status, params object?[] formatterArgs)
 		{
 			Status = status;
 			formatterArguments = formatterArgs;
