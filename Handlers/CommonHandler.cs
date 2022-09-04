@@ -308,9 +308,9 @@ namespace AutoKkutu
 				{
 					GetLogger(watchdogID, "Previous word").Info(CultureInfo.CurrentCulture, "Found previous word : {word}", word);
 
-					if (!PathFinder.NewPathList.Contains(word))
-						PathFinder.NewPathList.Add(word);
-					PathFinder.AddPreviousPath(word);
+					if (!PathManager.NewPathList.Contains(word))
+						PathManager.NewPathList.Add(word);
+					PathManager.AddPreviousPath(word);
 				}
 			}
 
@@ -350,7 +350,7 @@ namespace AutoKkutu
 				return;
 			GetLogger(watchdogID, "Round").Info(CultureInfo.CurrentCulture, "Round Changed : Index {0} Word {1}", roundIndex, roundText);
 			RoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
-			PathFinder.ResetPreviousPath();
+			PathManager.ResetPreviousPath();
 		}
 
 		/// <summary>
@@ -384,7 +384,7 @@ namespace AutoKkutu
 				return;
 			_exampleWordCache = example;
 			GetLogger(watchdogID, "Example").Info(CultureInfo.CurrentCulture, "Path example detected : {word}", example);
-			PathFinder.NewPathList.Add(example);
+			PathManager.NewPathList.Add(example);
 		}
 
 		private void GetCurrentTypingWord(int watchdogID)
@@ -436,7 +436,7 @@ namespace AutoKkutu
 			}
 			else  // 가끔가다가 서버 랙때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 넘어오는 경우가 있음
 			{
-				var converted = PathFinder.ConvertToPresentedWord(content);
+				var converted = PathManager.ConvertToPresentedWord(content);
 				if (converted == null)
 					return null;
 				primary = converted;
