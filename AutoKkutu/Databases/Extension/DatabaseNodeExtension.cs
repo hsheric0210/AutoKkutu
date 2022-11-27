@@ -1,33 +1,45 @@
-﻿using Serilog;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.EF;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using System.Linq;
 
 namespace AutoKkutu.Databases.Extension
 {
 	public static class DatabaseNodeExtension
 	{
-		public static bool AddNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
+		public static DbSet<WordIndex> GetWordIndexTable(this PathDbContext ctx, NodeDatabaseAttributes nodeType)
 		{
-			if (connection == null)
-				throw new ArgumentNullException(nameof(connection));
+			if (ctx is null)
+				throw new ArgumentNullException(nameof(ctx));
+
+			return nodeType switch
+			{
+				NodeDatabaseAttributes.EndWord or NodeDatabaseAttributes.KKTEndWord => ctx.EndWordIndex,
+				NodeDatabaseAttributes.AttackWord or NodeDatabaseAttributes.KKTAttackWord => ctx.AttackWordIndex,
+				NodeDatabaseAttributes.ReverseEndWord => ctx.ReverseEndWordIndex,
+				NodeDatabaseAttributes.ReverseAttackWord => ctx.ReverseAttackWordIndex,
+				NodeDatabaseAttributes.KkutuEndWord => ctx.KkutuEndWordIndex,
+				NodeDatabaseAttributes.KkutuAttackWord => ctx.KkutuAttackWordIndex,
+				_ => throw new ArgumentException("node type must be specified.", nameof(nodeType)),
+			};
+		}
+
+		public static bool AddNode(this DbSet<WordIndex> indexContext, string node)
+		{
+			if (indexContext == null)
+				throw new ArgumentNullException(nameof(indexContext));
 			if (string.IsNullOrWhiteSpace(node))
 				throw new ArgumentNullException(nameof(node));
 
-			if (string.IsNullOrWhiteSpace(tableName))
-				tableName = DatabaseConstants.EndWordListTableName;
+			if (indexContext.Any(c => string.Equals(c.Index, node, StringComparison.OrdinalIgnoreCase)))
+				return false; // Already exists
 
-			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @node;", connection.CreateParameter("@node", node[0])), CultureInfo.InvariantCulture) > 0)
-				return false;
-
-			CommonDatabaseParameter parameter;
-			if (tableName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.Ordinal))
-				parameter = connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@index", node[..2]);
-			else
-				parameter = connection.CreateParameter(CommonDatabaseType.Character, 1, "@index", node[0]);
-
-			connection.ExecuteNonQuery($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@index)", parameter);
+			indexContext.Add(new WordIndex() { Index = node });
 			return true;
 		}
 

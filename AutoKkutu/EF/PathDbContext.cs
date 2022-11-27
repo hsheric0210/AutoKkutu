@@ -15,20 +15,29 @@ namespace AutoKkutu.EF
 			get; set;
 		}
 
-		public DbSet<SingleWordIndex> AttackWordIndex
+		public DbSet<WordIndex> AttackWordIndex
 		{
 			get; set;
 		}
-		public DbSet<SingleWordIndex> EndWordIndex
+		public DbSet<WordIndex> EndWordIndex
 		{
 			get; set;
 		}
 
-		public DbSet<DoubleWordIndex> KkutuAttackWordIndex
+		public DbSet<WordIndex> ReverseAttackWordIndex
 		{
 			get; set;
 		}
-		public DbSet<DoubleWordIndex> KkutuEndWordIndex
+		public DbSet<WordIndex> ReverseEndWordIndex
+		{
+			get; set;
+		}
+
+		public DbSet<WordIndex> KkutuAttackWordIndex
+		{
+			get; set;
+		}
+		public DbSet<WordIndex> KkutuEndWordIndex
 		{
 			get; set;
 		}

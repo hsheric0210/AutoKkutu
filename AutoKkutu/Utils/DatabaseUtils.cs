@@ -4,6 +4,7 @@ using AutoKkutu.Databases;
 using AutoKkutu.Databases.MySQL;
 using AutoKkutu.Databases.PostgreSQL;
 using AutoKkutu.Databases.SQLite;
+using AutoKkutu.EF;
 using AutoKkutu.Modules;
 using Serilog;
 using System;
@@ -14,33 +15,31 @@ namespace AutoKkutu.Utils
 {
 	public static class DatabaseUtils
 	{
-		public static DatabaseWithDefaultConnection CreateDatabase(Configuration config)
+		public static PathDbContext CreateDatabase(Configuration config)
 		{
 			if (config == null)
 				throw new ArgumentNullException(nameof(config));
 
+			DatabaseProvider prov = DatabaseProvider.Sqlite;
+			string connString = $"Data Source={((SQLiteSection)config.GetSection("sqlite")).File}";
+
 			switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToUpperInvariant())
 			{
 				case "MYSQL":
-					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
-					Log.Information("MySQL selected: {connString}", mysqlConnectionString);
-					return new MySQLDatabase(mysqlConnectionString);
-
 				case "MARIADB":
-					string mariadbConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
-					Log.Information("MariaDB selected: {connString}", mariadbConnectionString);
-					return new MariaDBDatabase(mariadbConnectionString);
+					prov = DatabaseProvider.MySql;
+					connString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
+					break;
 
+				case "POSTGRE":
 				case "POSTGRESQL":
 				case "PGSQL":
-					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
-					Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
-					return new PostgreSQLDatabase(pgsqlConnectionString);
+					prov = DatabaseProvider.PostgreSql;
+					connString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
+					break;
 			}
 
-			string file = ((SQLiteSection)config.GetSection("sqlite")).File;
-			Log.Information("SQLite selected: File={file}", file);
-			return new SQLiteDatabase(file);
+			return new PathDbContext(prov, connString);
 		}
 
 		public static WordDatabaseAttributes GetFlags(string word)

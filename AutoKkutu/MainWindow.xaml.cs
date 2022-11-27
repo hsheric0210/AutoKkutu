@@ -311,7 +311,14 @@ namespace AutoKkutu
 		private void OnWindowClose(object? sender, CancelEventArgs e)
 		{
 			Log.Information(I18n.Main_ClosingDBConnection);
-			AutoKkutuMain.Database.Dispose();
+			try
+			{
+				AutoKkutuMain.Database.Dispose();
+			}
+			catch
+			{
+				// ignored
+			}
 			Log.CloseAndFlush();
 		}
 

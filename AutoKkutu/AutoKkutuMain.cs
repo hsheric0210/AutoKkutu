@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
+using AutoKkutu.EF;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
@@ -32,7 +33,7 @@ namespace AutoKkutu
 			get; private set;
 		} = null!;
 
-		public static DatabaseWithDefaultConnection Database
+		public static PathDbContext Database
 		{
 			get; private set;
 		} = null!;

@@ -2,9 +2,9 @@
 
 namespace AutoKkutu.EF
 {
-	public class DoubleWordIndex
+	public class WordIndex
 	{
-		[Key, MinLength(2), MaxLength(2)]
+		[Key, MinLength(1), MaxLength(2)]
 		public string Index
 		{
 			get; set;
