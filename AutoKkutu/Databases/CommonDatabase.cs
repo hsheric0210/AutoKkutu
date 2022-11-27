@@ -1,12 +1,10 @@
-﻿using NLog;
+﻿using Serilog;
 using System;
 
 namespace AutoKkutu.Databases
 {
 	public abstract class CommonDatabase : IDisposable
 	{
-		public static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabase));
-
 		protected CommonDatabase()
 		{
 		}

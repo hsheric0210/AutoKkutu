@@ -112,7 +112,7 @@ namespace AutoKkutu.Utils
 			mainWindow.Dispatcher.Invoke(() =>
 			{
 				mainWindow.StatusGrid.Background = new SolidColorBrush(StatusColor);
-				mainWindow.StatusLabel.Content = string.Format(CultureInfo.CurrentCulture, StatusContent, formatterArgs);
+				mainWindow.StatusLabel.Content = string.Format(StatusContent, formatterArgs);
 				var img = new BitmapImage();
 				img.BeginInit();
 				img.UriSource = new Uri($@"images\{ImageName}.png", UriKind.Relative);

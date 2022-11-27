@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -8,8 +8,6 @@ namespace AutoKkutu.Modules
 {
 	public static class InputSimulation
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(InputSimulation));
-
 		public static bool CanSimulateInput()
 		{
 			AutoKkutuConfiguration config = AutoKkutuMain.Configuration;
@@ -30,7 +28,7 @@ namespace AutoKkutu.Modules
 			foreach (var ch in content)
 				list.AddRange(ch.SplitConsonants().Serialize());
 
-			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_InputSimulating, pathAttribute, content);
+			Log.Information(I18n.Main_InputSimulating, pathAttribute, content);
 			handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
@@ -44,11 +42,11 @@ namespace AutoKkutu.Modules
 			}
 
 			if (aborted)
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_InputSimulationAborted, pathAttribute, content);
+				Log.Warning(I18n.Main_InputSimulationAborted, pathAttribute, content);
 			else
 			{
 				handler.ClickSubmitButton();
-				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_InputSimulationFinished, pathAttribute, content);
+				Log.Information(I18n.Main_InputSimulationFinished, pathAttribute, content);
 			}
 			handler.UpdateChat("");
 			AutoKkutuMain.UpdateStatusMessage(StatusMessage.AutoEntered, content);
@@ -64,7 +62,7 @@ namespace AutoKkutu.Modules
 			foreach (var ch in message)
 				list.AddRange(ch.SplitConsonants().Serialize());
 
-			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_InputSimulating, "Input", message);
+			Log.Information(I18n.Main_InputSimulating, "Input", message);
 			handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
@@ -74,7 +72,7 @@ namespace AutoKkutu.Modules
 
 			handler.ClickSubmitButton();
 			handler.UpdateChat("");
-			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_InputSimulationFinished, "Input ", message);
+			Log.Information(I18n.Main_InputSimulationFinished, "Input ", message);
 		}
 	}
 }

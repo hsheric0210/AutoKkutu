@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -8,8 +8,6 @@ namespace AutoKkutu.Databases.Extension
 {
 	public static class DatabaseNodeExtension
 	{
-		private static readonly Logger Logger = LogManager.GetLogger("Database Node Exts");
-
 		public static bool AddNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
 		{
 			if (connection == null)
@@ -59,7 +57,7 @@ namespace AutoKkutu.Databases.Extension
 			while (reader.Read())
 				result.Add(reader.GetString(wordIndexOrdinal));
 
-			Logger.Info(CultureInfo.CurrentCulture, "Found Total {0} nodes in {1}.", result.Count, tableName);
+			Log.Information("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}
 	}

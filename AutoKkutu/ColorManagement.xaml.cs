@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Serilog;
 using System;
 using System.Windows;
 using AutoKkutu.Utils;
@@ -10,8 +10,6 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ColorManagement : Window
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(ColorManagement));
-
 		public ColorManagement(AutoKkutuColorPreference config)
 		{
 			if (config == null)
@@ -48,7 +46,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Failed to save the configuration.");
+				Log.Error(ex, "Failed to save the configuration.");
 			}
 
 			AutoKkutuMain.ColorPreference = newPref;

@@ -1,7 +1,8 @@
 ﻿using AutoKkutu.Databases.Extension;
-using MySqlConnector;
 using System;
 using System.Globalization;
+using Serilog;
+using MySql.Data.MySqlClient;
 
 namespace AutoKkutu.Databases.MySQL
 {
@@ -20,10 +21,10 @@ namespace AutoKkutu.Databases.MySQL
 				int databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;
 				int databaseNameIndexEnd = connectionString.IndexOf(';', databaseNameIndex) - databaseNameIndex;
 				DatabaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
-				Logger.Info(CultureInfo.CurrentCulture, "MySQL database name is {databaseName}.", DatabaseName);
+				Log.Information("MySQL database name is {databaseName}.", DatabaseName);
 
 				// Open the connection
-				Logger.Info("Opening database connection...");
+				Log.Information("Opening database connection...");
 				var connection = new MySqlConnection(connectionString);
 				connection.Open();
 				RegisterDefaultConnection(new MySQLDatabaseConnection(connection, DatabaseName));
@@ -77,11 +78,11 @@ END;
 				// Check the database tables
 				DefaultConnection.CheckTable();
 
-				Logger.Info("Successfully established database connection.");
+				Log.Information("Successfully established database connection.");
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, DatabaseConstants.ErrorConnect);
+				Log.Error(ex, DatabaseConstants.ErrorConnect);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}

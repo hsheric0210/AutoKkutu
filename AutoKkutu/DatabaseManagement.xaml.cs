@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Databases;
 using AutoKkutu.Databases.SQLite;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
@@ -17,8 +17,6 @@ namespace AutoKkutu
 {
 	public partial class DatabaseManagement : Window
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(DatabaseManagement));
-
 		private readonly DatabaseWithDefaultConnection Database;
 
 		public DatabaseManagement(DatabaseWithDefaultConnection database)
@@ -73,7 +71,7 @@ namespace AutoKkutu
 				{
 					if (!new FileInfo(fileName).Exists)
 					{
-						Logger.Warn(CultureInfo.CurrentCulture, "File {fileName} doesn't exists.", fileName);
+						Log.Warning("File {fileName} doesn't exists.", fileName);
 						continue;
 					}
 
@@ -83,7 +81,7 @@ namespace AutoKkutu
 					}
 					catch (IOException ioe)
 					{
-						Logger.Error(ioe, CultureInfo.CurrentCulture, "IOException occurred during reading word list file {fileName}.", fileName);
+						Log.Error(ioe, "IOException occurred during reading word list file {fileName}.", fileName);
 					}
 				}
 
@@ -204,7 +202,7 @@ namespace AutoKkutu
 			{
 				if (!Directory.Exists(folderName))
 				{
-					Logger.Warn(CultureInfo.CurrentCulture, "Folder {folderName} doesn't exists.", folderName);
+					Log.Warning("Folder {folderName} doesn't exists.", folderName);
 					continue;
 				}
 
@@ -218,13 +216,13 @@ namespace AutoKkutu
 						}
 						catch (IOException ioe)
 						{
-							Logger.Error(ioe, CultureInfo.CurrentCulture, "IOException during reading word list file {fileName}.", fileName);
+							Log.Error(ioe, "IOException during reading word list file {fileName}.", fileName);
 						}
 					}
 				}
 				catch (IOException ioe)
 				{
-					Logger.Error(ioe, CultureInfo.CurrentCulture, "Unable to enumerate files in folder {folderName}.", folderName);
+					Log.Error(ioe, "Unable to enumerate files in folder {folderName}.", folderName);
 				}
 			}
 

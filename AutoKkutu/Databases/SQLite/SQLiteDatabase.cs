@@ -1,5 +1,6 @@
 ﻿using AutoKkutu.Databases.Extension;
 using Microsoft.Data.Sqlite;
+using Serilog;
 using System;
 using System.Globalization;
 using System.IO;
@@ -20,12 +21,12 @@ namespace AutoKkutu.Databases.SQLite
 				// Create database if not exists
 				if (!new FileInfo(DatabaseFilePath).Exists)
 				{
-					Logger.Info(CultureInfo.CurrentCulture, "Database file {databaseFilePath} doesn't exists; creating new one...", DatabaseFilePath);
+					Log.Information("Database file {databaseFilePath} doesn't exists; creating new one...", DatabaseFilePath);
 					File.Create(DatabaseFilePath).Close();
 				}
 
 				// Open the connection
-				Logger.Info("Opening database connection...");
+				Log.Information("Opening database connection...");
 				SqliteConnection connection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
 				RegisterDefaultConnection(new SQLiteDatabaseConnection(connection));
 				RegisterRearrangeFunc(connection);
@@ -34,11 +35,11 @@ namespace AutoKkutu.Databases.SQLite
 				// Check the database tables
 				DefaultConnection.CheckTable();
 
-				Logger.Info("Successfully established database connection.");
+				Log.Information("Successfully established database connection.");
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, DatabaseConstants.ErrorConnect);
+				Log.Error(ex, DatabaseConstants.ErrorConnect);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}

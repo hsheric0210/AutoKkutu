@@ -3,7 +3,6 @@ using AutoKkutu.Databases;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
-using NLog;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -11,6 +10,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
+using Serilog.Events;
+using Serilog.Core;
 
 namespace AutoKkutu
 {
@@ -21,7 +24,13 @@ namespace AutoKkutu
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
 
-		public static readonly Logger Logger = LogManager.GetLogger("UI");
+		static MainWindow()
+		{
+			Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose()
+				.WriteTo.Async(a => a.Console(restrictedToMinimumLevel: LogEventLevel.Information, theme: AnsiConsoleTheme.Code))
+				.WriteTo.Async(a => a.File("AutoKkutu.log", fileSizeLimitBytes: 8388608 /* 64 MB */, rollOnFileSizeLimit: true, buffered: true, flushToDiskInterval: TimeSpan.FromSeconds(1)))
+				.CreateLogger();
+		}
 
 		public MainWindow()
 		{
@@ -30,7 +39,7 @@ namespace AutoKkutu
 			Title = TITLE;
 			VersionLabel.Content = "v1.0";
 
-			Logger.Info(I18n.Main_StartLoad);
+			Log.Information(I18n.Main_StartLoad);
 			LoadOverlay.Visibility = Visibility.Visible;
 
 			DatabaseEvents.DatabaseError += OnDataBaseError;
@@ -126,7 +135,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Warn(I18n.Main_ClipboardSubmitException, ex);
+				Log.Warning(I18n.Main_ClipboardSubmitException, ex);
 			}
 		}
 
@@ -285,7 +294,7 @@ namespace AutoKkutu
 			var i = (PathObject)selected;
 			if (i != null)
 			{
-				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_PathSubmitted, i.Content);
+				Log.Information(I18n.Main_PathSubmitted, i.Content);
 				AutoKkutuMain.SendMessage(i.Content);
 			}
 		}
@@ -303,9 +312,9 @@ namespace AutoKkutu
 
 		private void OnWindowClose(object? sender, CancelEventArgs e)
 		{
-			Logger.Info(I18n.Main_ClosingDBConnection);
+			Log.Information(I18n.Main_ClosingDBConnection);
 			AutoKkutuMain.Database.Dispose();
-			LogManager.Shutdown();
+			Log.CloseAndFlush();
 		}
 
 		private void SearchField_KeyDown(object? sender, KeyEventArgs e)
@@ -335,21 +344,21 @@ namespace AutoKkutu
 		{
 			string filter = $"'{arg.Word.Content}'";
 			if (arg.Word.CanSubstitution)
-				filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{arg.Word.Substitution}'");
+				filter = string.Format(I18n.PathFinderSearchOverview_Or, filter, $"'{arg.Word.Substitution}'");
 			if (!string.IsNullOrWhiteSpace(arg.MissionChar))
-				filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, arg.MissionChar);
-			string FilterText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview, filter);
+				filter = string.Format(I18n.PathFinderSearchOverview_MissionChar, filter, arg.MissionChar);
+			string FilterText = string.Format(I18n.PathFinderSearchOverview, filter);
 			string SpecialFilterText = "";
 			string FindResult;
-			string ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.Time);
+			string ElapsedTimeText = string.Format(I18n.PathFinderTookTime, arg.Time);
 			if (arg.Result == PathFinderResult.Normal)
 			{
-				FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
+				FindResult = string.Format(I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
 			}
 			else
 			{
 				if (arg.Result == PathFinderResult.None)
-					FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
+					FindResult = string.Format(I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
 				else
 					FindResult = I18n.PathFinderError;
 			}
@@ -358,7 +367,7 @@ namespace AutoKkutu
 			if (arg.Flags.HasFlag(PathFinderOptions.UseAttackWord))
 				SpecialFilterText += ", " + I18n.PathFinderAttackWord;
 
-			string newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(CultureInfo.CurrentCulture, I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
+			string newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
 			return FilterText + Environment.NewLine + newSpecialFilterText + Environment.NewLine + FindResult + Environment.NewLine + ElapsedTimeText;
 		}
 

@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System;
 using System.Data.Common;
 using System.Globalization;
@@ -9,8 +9,6 @@ namespace AutoKkutu.Databases
 {
 	public abstract class CommonDatabaseCommand : IDisposable
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabaseCommand));
-
 		protected DbCommand? Command
 		{
 			get; set;
@@ -46,7 +44,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to {0}", action);
+				Log.Error(ex, "Failed to {0}", action);
 			}
 			return -1;
 		}
@@ -59,7 +57,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to {0}", action);
+				Log.Error(ex, "Failed to {0}", action);
 			}
 			return null;
 		}
@@ -72,7 +70,7 @@ namespace AutoKkutu.Databases
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to {0}", action);
+				Log.Error(ex, "Failed to {0}", action);
 			}
 			return null;
 		}

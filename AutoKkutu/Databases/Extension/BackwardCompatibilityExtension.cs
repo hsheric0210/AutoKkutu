@@ -1,12 +1,10 @@
-﻿using NLog;
+﻿using Serilog;
 using System;
 
 namespace AutoKkutu.Databases.Extension
 {
 	public static class BackwardCompatibilityExtension
 	{
-		private static readonly Logger Logger = LogManager.GetLogger("Database Backward-Compatibility");
-
 		private static void AddInexistentColumns(this CommonDatabaseConnection connection)
 		{
 			if (connection == null)
@@ -15,13 +13,13 @@ namespace AutoKkutu.Databases.Extension
 			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.ReverseWordIndexColumnName))
 			{
 				connection.TryExecuteNonQuery($"add {DatabaseConstants.ReverseWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
-				Logger.Warn($"Added {DatabaseConstants.ReverseWordIndexColumnName} column.");
+				Log.Warning($"Added {DatabaseConstants.ReverseWordIndexColumnName} column.");
 			}
 
 			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName))
 			{
 				connection.TryExecuteNonQuery($"add {DatabaseConstants.KkutuWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
-				Logger.Warn($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
+				Log.Warning($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
 			}
 		}
 
@@ -35,12 +33,12 @@ namespace AutoKkutu.Databases.Extension
 				try
 				{
 					connection.AddSequenceColumnToWordList();
-					Logger.Warn("Added sequence column.");
+					Log.Warning("Added sequence column.");
 					return true;
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "Failed to add sequence column.");
+					Log.Error(ex, "Failed to add sequence column.");
 				}
 			}
 
@@ -61,7 +59,7 @@ namespace AutoKkutu.Databases.Extension
 
 			if (needToCleanUp)
 			{
-				Logger.Warn("Executing vacuum...");
+				Log.Warning("Executing vacuum...");
 				connection.PerformVacuum();
 			}
 		}
@@ -79,16 +77,16 @@ namespace AutoKkutu.Databases.Extension
 					{
 						connection.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
 						connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
-						Logger.Warn($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
+						Log.Warning($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
 					}
 
 					connection.DropWordListColumn(DatabaseConstants.IsEndwordColumnName);
-					Logger.Warn($"Dropped {DatabaseConstants.IsEndwordColumnName} column as it is no longer used.");
+					Log.Warning($"Dropped {DatabaseConstants.IsEndwordColumnName} column as it is no longer used.");
 					return true;
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, $"Failed to add {DatabaseConstants.FlagsColumnName} column.");
+					Log.Error(ex, $"Failed to add {DatabaseConstants.FlagsColumnName} column.");
 				}
 			}
 
@@ -104,7 +102,7 @@ namespace AutoKkutu.Databases.Extension
 			if (kkutuindextype != null && (kkutuindextype.Equals("CHAR(2)", StringComparison.OrdinalIgnoreCase) || kkutuindextype.Equals("character", StringComparison.OrdinalIgnoreCase)))
 			{
 				connection.ChangeWordListColumnType(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)");
-				Logger.Warn($"Changed type of '{DatabaseConstants.KkutuWordIndexColumnName}' from CHAR(2) to VARCHAR(2).");
+				Log.Warning($"Changed type of '{DatabaseConstants.KkutuWordIndexColumnName}' from CHAR(2) to VARCHAR(2).");
 				return true;
 			}
 

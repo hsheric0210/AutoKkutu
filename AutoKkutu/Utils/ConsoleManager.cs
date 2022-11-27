@@ -52,12 +52,12 @@ namespace AutoKkutu.Utils
 			if (!Debugger.IsAttached && !HasConsole)
 			{
 				if (!AllocConsole())
-					DrawErrorBox(string.Format(CultureInfo.CurrentCulture, I18n.AllocConsoleFailed, GetLastError()));
+					DrawErrorBox(string.Format(I18n.AllocConsoleFailed, GetLastError()));
 				Console.InputEncoding = Encoding.UTF8;
 				Console.OutputEncoding = Encoding.UTF8;
 				if (DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND) == 0)
-					DrawErrorBox(string.Format(CultureInfo.CurrentCulture, I18n.DeleteConsoleMenuFailed, GetLastError()));
-				Console.WriteLine(string.Format(CultureInfo.CurrentCulture, I18n.ProgramIntroduction, MainWindow.VERSION));
+					DrawErrorBox(string.Format(I18n.DeleteConsoleMenuFailed, GetLastError()));
+				Console.WriteLine(string.Format(I18n.ProgramIntroduction, MainWindow.VERSION));
 				Console.WriteLine(I18n.ConsoleIntroduction);
 				Console.WriteLine("");
 			}

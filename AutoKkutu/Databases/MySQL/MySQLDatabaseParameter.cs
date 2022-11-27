@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Data.Common;
-using MySqlConnector;
 
 namespace AutoKkutu.Databases.MySQL
 {

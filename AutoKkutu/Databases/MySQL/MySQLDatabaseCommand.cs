@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 
 namespace AutoKkutu.Databases.MySQL
 {

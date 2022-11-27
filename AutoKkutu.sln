@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutu", "AutoKkutu\AutoKkutu.csproj", "{D96D2306-2D68-4586-A3D3-2AEFF84B1457}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutu.Test", "AutoKkutu.Test\AutoKkutu.Test.csproj", "{D5CF2925-3A98-4517-9C66-0B0651258FEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{D96D2306-2D68-4586-A3D3-2AEFF84B1457}.Release|x64.Build.0 = Release|x64
 		{D96D2306-2D68-4586-A3D3-2AEFF84B1457}.Release|x86.ActiveCfg = Release|x86
 		{D96D2306-2D68-4586-A3D3-2AEFF84B1457}.Release|x86.Build.0 = Release|x86
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Debug|x64.Build.0 = Debug|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Debug|x86.Build.0 = Debug|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Release|x64.ActiveCfg = Release|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Release|x64.Build.0 = Release|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Release|x86.ActiveCfg = Release|Any CPU
+		{D5CF2925-3A98-4517-9C66-0B0651258FEF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
