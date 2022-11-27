@@ -1,6 +1,5 @@
 ﻿using AutoKkutu.Databases.Extension;
 using System;
-using System.Globalization;
 using Serilog;
 using MySql.Data.MySqlClient;
 

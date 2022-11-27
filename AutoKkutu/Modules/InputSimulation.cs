@@ -1,7 +1,6 @@
 ﻿using AutoKkutu.Utils;
 using Serilog;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace AutoKkutu.Modules

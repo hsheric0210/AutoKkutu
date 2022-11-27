@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
 using System;
 
 namespace AutoKkutu.EF

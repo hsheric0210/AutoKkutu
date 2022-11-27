@@ -2,7 +2,6 @@
 using Microsoft.Data.Sqlite;
 using Serilog;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 

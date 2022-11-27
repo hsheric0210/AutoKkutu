@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using AutoKkutu.Constants;
-using System.Globalization;
 
 namespace AutoKkutu
 {

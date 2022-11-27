@@ -8,7 +8,6 @@ using AutoKkutu.Modules;
 using Serilog;
 using System;
 using System.Configuration;
-using System.Globalization;
 using System.Linq;
 
 namespace AutoKkutu.Utils
