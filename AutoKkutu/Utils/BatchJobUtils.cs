@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
+using AutoKkutu.EF;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using Serilog;

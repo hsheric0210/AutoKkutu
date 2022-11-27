@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Constants;
+using AutoKkutu.EF;
 using AutoKkutu.Modules;
 using Serilog;
 using System;

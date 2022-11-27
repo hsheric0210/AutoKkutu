@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoKkutu.EF;
+using System;
 
 namespace AutoKkutu.Databases.Extension
 {
