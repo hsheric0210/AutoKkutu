@@ -1,38 +1,40 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.EF;
 using AutoKkutu.Utils;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Globalization;
+using System.Linq;
 
 namespace AutoKkutu.Databases.Extension
 {
 	public static class DatabaseWordExtension
 	{
-		public static bool AddWord(this CommonDatabaseConnection connection, string word, WordDatabaseAttributes flags)
+		public static bool AddWord(this DbSet<WordModel> table, string word, WordDatabaseAttributes flags)
 		{
-			if (connection == null)
-				throw new ArgumentNullException(nameof(connection));
+			if (table == null)
+				throw new ArgumentNullException(nameof(table));
 			if (string.IsNullOrWhiteSpace(word))
 				throw new ArgumentNullException(nameof(word));
 
-			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word;", connection.CreateParameter("@word", word)), CultureInfo.InvariantCulture) > 0)
+			if (table.Any(w => string.Equals(w.Word, word, StringComparison.OrdinalIgnoreCase)))
 				return false;
 
-			connection.ExecuteNonQuery(
-				$"INSERT INTO {DatabaseConstants.WordListTableName}({DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES(@lafHead, @falHead, @kkutuHead, @word, {(int)flags})",
-				connection.CreateParameter(CommonDatabaseType.Character, 1, "@lafHead", word.GetLaFHeadNode()),
-				connection.CreateParameter(CommonDatabaseType.Character, 1, "@falHead", word.GetFaLHeadNode()),
-				connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@kkutuHead", word.GetKkutuHeadNode()),
-				connection.CreateParameter("@word", word));
+			table.Add(new WordModel()
+			{
+				Word = word,
+				WordIndex = word.GetLaFHeadNode(),
+				ReverseWordIndex = word.GetFaLHeadNode(),
+				KkutuWorldIndex = word.GetKkutuHeadNode(),
+				Flags = (int)flags
+			});
+
 			return true;
 		}
 
-		public static int DeleteWord(this CommonDatabaseConnection connection, string word)
+		public static void DeleteWord(this DbSet<WordModel> table, string word)
 		{
-			if (connection == null)
-				throw new ArgumentNullException(nameof(connection));
-
-			return connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
+			if (table == null)
+				throw new ArgumentNullException(nameof(table));
+			table.RemoveRange(table.Where(w => string.Equals(w.Word, word, StringComparison.OrdinalIgnoreCase)));
 		}
 	}
 }

@@ -3,41 +3,48 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace AutoKkutu.EF
+namespace AutoKkutu.Databases
 {
 	public sealed class PathDbContext : DbContext
 	{
-		private readonly DatabaseProvider ProviderType;
-		private readonly string ConnectionString;
-
-		public DbSet<Word> Word
+		public DatabaseProvider ProviderType
 		{
-			get; set;
+			get;
 		}
 
-		public DbSet<WordIndex> AttackWordIndex
+		public string ConnectionString
 		{
-			get; set;
+			get;
 		}
-		public DbSet<WordIndex> EndWordIndex
+
+		public DbSet<WordModel> Word
 		{
 			get; set;
 		}
 
-		public DbSet<WordIndex> ReverseAttackWordIndex
+		public DbSet<WordIndexModel> AttackWordIndex
 		{
 			get; set;
 		}
-		public DbSet<WordIndex> ReverseEndWordIndex
+		public DbSet<WordIndexModel> EndWordIndex
 		{
 			get; set;
 		}
 
-		public DbSet<WordIndex> KkutuAttackWordIndex
+		public DbSet<WordIndexModel> ReverseAttackWordIndex
 		{
 			get; set;
 		}
-		public DbSet<WordIndex> KkutuEndWordIndex
+		public DbSet<WordIndexModel> ReverseEndWordIndex
+		{
+			get; set;
+		}
+
+		public DbSet<WordIndexModel> KkutuAttackWordIndex
+		{
+			get; set;
+		}
+		public DbSet<WordIndexModel> KkutuEndWordIndex
 		{
 			get; set;
 		}
@@ -49,7 +56,7 @@ namespace AutoKkutu.EF
 		}
 
 		public int WordPriority(int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) => throw new NotSupportedException("This method will be remapped by EF Core");
-		
+
 		public int MissionWordPriority(string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) => throw new NotSupportedException("This method will be remapped by EF Core");
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -92,10 +99,10 @@ namespace AutoKkutu.EF
 			conn.CreateFunction("WordPriority", (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
 			{
 				if ((flags & endWordFlag) != 0)
-					return endWordOrdinal * WordConstant.MaxLength;
+					return endWordOrdinal * DatabaseConstants.MaxWordLength;
 				if ((flags & attackWordFlag) != 0)
-					return attackWordOrdinal * WordConstant.MaxLength;
-				return normalWordOrdinal * WordConstant.MaxLength;
+					return attackWordOrdinal * DatabaseConstants.MaxWordLength;
+				return normalWordOrdinal * DatabaseConstants.MaxWordLength;
 			});
 
 			conn.CreateFunction("MissionWordPriority", (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
@@ -105,10 +112,10 @@ namespace AutoKkutu.EF
 				bool hasMission = missionOccurrence > 0;
 
 				if ((flags & endWordFlag) != 0)
-					return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * WordConstant.MaxWordPriority + missionOccurrence * 256;
+					return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * DatabaseConstants.MaxWordPriority + missionOccurrence * 256;
 				if ((flags & attackWordFlag) != 0)
-					return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * WordConstant.MaxWordPriority + missionOccurrence * 256;
-				return (hasMission ? missionWordOrdinal : normalWordOrdinal) * WordConstant.MaxWordPriority + missionOccurrence * 256;
+					return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPriority + missionOccurrence * 256;
+				return (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPriority + missionOccurrence * 256;
 			});
 		}
 
@@ -121,12 +128,12 @@ namespace AutoKkutu.EF
 RETURNS INTEGER AS $$
 BEGIN
 	IF ((flags & endWordFlag) != 0) THEN
-		RETURN endWordOrdinal * {WordConstant.MaxLength};
+		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
 	END IF;
 	IF ((flags & attackWordFlag) != 0) THEN
-		RETURN attackWordOrdinal * {WordConstant.MaxLength};
+		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
 	END IF;
-	RETURN normalWordOrdinal * {WordConstant.MaxLength};
+	RETURN normalWordOrdinal * {DatabaseConstants.MaxWordLength};
 END;
 $$ LANGUAGE plpgsql
 ");
@@ -140,23 +147,23 @@ BEGIN
 
 	IF ((flags & endWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
-			RETURN endMissionWordOrdinal * {WordConstant.MaxWordPriority} + occurrence * 256;
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPriority} + occurrence * 256;
 		ELSE
-			RETURN endWordOrdinal * {WordConstant.MaxWordPriority};
+			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPriority};
 		END IF;
 	END IF;
 	IF ((flags & attackWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
-			RETURN attackMissionWordOrdinal * {WordConstant.MaxWordPriority} + occurrence * 256;
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPriority} + occurrence * 256;
 		ELSE
-			RETURN attackWordOrdinal * {WordConstant.MaxWordPriority};
+			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPriority};
 		END IF;
 	END IF;
 
 	IF occurrence > 0 THEN
-		RETURN missionWordOrdinal * {WordConstant.MaxWordPriority} + occurrence * 256;
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPriority} + occurrence * 256;
 	ELSE
-		RETURN normalWordOrdinal * {WordConstant.MaxWordPriority};
+		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPriority};
 	END IF;
 END;
 $$ LANGUAGE plpgsql
@@ -174,12 +181,12 @@ DETERMINISTIC
 NO SQL
 BEGIN
 	IF (flags & endWordFlag) != 0 THEN
-		RETURN endWordOrdinal * {WordConstant.MaxLength};
+		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
 	END IF;
 	IF (flags & attackWordFlag) != 0 THEN
-		RETURN attackWordOrdinal * {WordConstant.MaxLength};
+		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
 	END IF;
-	RETURN normalWordOrdinal * {WordConstant.MaxLength};
+	RETURN normalWordOrdinal * {DatabaseConstants.MaxWordLength};
 END;
 ");
 
@@ -193,23 +200,23 @@ BEGIN
 	SET occurrence = ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
 	IF (flags & endWordFlag) != 0 THEN
 		IF occurrence > 0 THEN
-			RETURN endMissionWordOrdinal * {WordConstant.MaxWordPriority} + occurrence * 256;
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPriority} + occurrence * 256;
 		ELSE
-			RETURN endWordOrdinal * {WordConstant.MaxWordPriority};
+			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPriority};
 		END IF;
 	END IF;
 	IF (flags & attackWordFlag) != 0 THEN
 		IF occurrence > 0 THEN
-			RETURN attackMissionWordOrdinal * {WordConstant.MaxWordPriority} + occurrence * 256;
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPriority} + occurrence * 256;
 		ELSE
-			RETURN attackWordOrdinal * {WordConstant.MaxWordPriority};
+			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPriority};
 		END IF;
 	END IF;
 
 	IF occurrence > 0 THEN
-		RETURN missionWordOrdinal * {WordConstant.MaxWordPriority} + occurrence * 256;
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPriority} + occurrence * 256;
 	ELSE
-		RETURN normalWordOrdinal * {WordConstant.MaxWordPriority};
+		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPriority};
 	END IF;
 END;
 ");

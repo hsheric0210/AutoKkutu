@@ -1,4 +1,4 @@
-﻿namespace AutoKkutu.EF
+﻿namespace AutoKkutu.Databases
 {
 	public enum DatabaseProvider
 	{

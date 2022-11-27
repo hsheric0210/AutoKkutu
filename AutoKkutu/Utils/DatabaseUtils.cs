@@ -4,7 +4,6 @@ using AutoKkutu.Databases;
 using AutoKkutu.Databases.MySQL;
 using AutoKkutu.Databases.PostgreSQL;
 using AutoKkutu.Databases.SQLite;
-using AutoKkutu.EF;
 using AutoKkutu.Modules;
 using Serilog;
 using System;

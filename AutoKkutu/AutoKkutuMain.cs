@@ -1,6 +1,5 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
-using AutoKkutu.EF;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;

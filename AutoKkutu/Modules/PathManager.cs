@@ -1,7 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
-using AutoKkutu.EF;
 using AutoKkutu.Utils;
 using Serilog;
 using System;
@@ -72,7 +71,7 @@ namespace AutoKkutu.Modules
 		{
 			try
 			{
-				UpdateNodeLists(AutoKkutuMain.Database.DefaultConnection);
+				UpdateNodeLists(AutoKkutuMain.Database);
 			}
 			catch (Exception ex)
 			{
@@ -81,16 +80,19 @@ namespace AutoKkutu.Modules
 			}
 		}
 
-		public static void UpdateNodeLists(CommonDatabaseConnection connection)
+		public static void UpdateNodeLists(PathDbContext context)
 		{
-			AttackWordList = connection.GetNodeList(DatabaseConstants.AttackWordListTableName);
-			EndWordList = connection.GetNodeList(DatabaseConstants.EndWordListTableName);
-			ReverseAttackWordList = connection.GetNodeList(DatabaseConstants.ReverseAttackWordListTableName);
-			ReverseEndWordList = connection.GetNodeList(DatabaseConstants.ReverseEndWordListTableName);
-			KkutuAttackWordList = connection.GetNodeList(DatabaseConstants.KkutuAttackWordListTableName);
-			KkutuEndWordList = connection.GetNodeList(DatabaseConstants.KkutuEndWordListTableName);
-			KKTAttackWordList = connection.GetNodeList(DatabaseConstants.KKTAttackWordListTableName);
-			KKTEndWordList = connection.GetNodeList(DatabaseConstants.KKTEndWordListTableName);
+			if (context is null)
+				throw new ArgumentNullException(nameof(context));
+
+			AttackWordList = context.AttackWordIndex.GetNodeList();
+			EndWordList = context.EndWordIndex.GetNodeList();
+			ReverseAttackWordList = context.ReverseAttackWordIndex.GetNodeList();
+			ReverseEndWordList = context.ReverseEndWordIndex.GetNodeList();
+			KkutuAttackWordList = context.KkutuAttackWordIndex.GetNodeList();
+			KkutuEndWordList = context.KkutuEndWordIndex.GetNodeList();
+			KKTAttackWordList = context.AttackWordIndex.GetNodeList();
+			KKTEndWordList = context.EndWordIndex.GetNodeList();
 		}
 
 		/* Path-controlling */
@@ -179,7 +181,7 @@ namespace AutoKkutu.Modules
 				try
 				{
 					Log.Debug(I18n.PathFinder_AddPath, word, flags);
-					if (AutoKkutuMain.Database.DefaultConnection.AddWord(word, flags))
+					if (AutoKkutuMain.Database.AddWord(word, flags))
 					{
 						Log.Information(I18n.PathFinder_AddPath_Success, word);
 						count++;
@@ -212,7 +214,7 @@ namespace AutoKkutu.Modules
 			{
 				try
 				{
-					count += AutoKkutuMain.Database.DefaultConnection.RequireNotNull().DeleteWord(word);
+					count += AutoKkutuMain.Database.DeleteWord(word);
 				}
 				catch (Exception ex)
 				{

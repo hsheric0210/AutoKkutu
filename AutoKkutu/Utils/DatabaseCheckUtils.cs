@@ -1,8 +1,8 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
-using AutoKkutu.EF;
 using AutoKkutu.Modules;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace AutoKkutu.Utils
 		/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
 		/// </summary>
 		/// <param name="UseOnlineDB">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
-		public static void CheckDB(this DatabaseWithDefaultConnection database, bool UseOnlineDB)
+		public static void CheckDB(this PathDbContext context, bool UseOnlineDB)
 		{
 			if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS(nameof(CheckDB), "document.getElementById('dict-output').style")))
 			{
@@ -37,7 +37,7 @@ namespace AutoKkutu.Utils
 				{
 					var watch = new Stopwatch();
 
-					int totalElementCount = Convert.ToInt32(database.DefaultConnection.RequireNotNull().ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName}"), CultureInfo.InvariantCulture);
+					int totalElementCount = context.Word.Count();
 					Log.Information("Database has Total {0} elements.", totalElementCount);
 
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
@@ -46,74 +46,71 @@ namespace AutoKkutu.Utils
 					Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
 					var flagCorrection = new Dictionary<string, (int, int)>();
 
-					Log.Information("Opening auxiliary SQLite connection...");
-					using (CommonDatabaseConnection auxiliaryConnection = database.OpenSecondaryConnection())
+					Log.Information("Opening auxiliary connection...");
+					using (PathDbContext secondaryContext = new PathDbContext(context.ProviderType, context.ConnectionString))
 					{
+						DbSet<WordModel> table = secondaryContext.Word;
+
 						// Deduplicate
-						DeduplicatedCount = auxiliaryConnection.DeduplicateDatabaseAndGetCount();
+						DeduplicatedCount = table.DeduplicateDatabaseAndGetCount();
 
 						// Refresh node lists
-						auxiliaryConnection.RefreshNodeLists();
+						table.RefreshNodeLists();
 
 						// Check for errorsd
-						using (CommonDatabaseCommand _command = auxiliaryConnection.CreateCommand($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+						Log.Information("Searching problems...");
+
+						watch.Start();
+						foreach (WordModel word in table)
 						{
-							using DbDataReader reader = _command.ExecuteReader();
-							Log.Information("Searching problems...");
+							currentElementIndex++;
+							string content = word.Word;
+							Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
 
-							int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
-							watch.Start();
-							while (reader.Read())
+							// Check word validity
+							if (IsInvalid(content))
 							{
-								currentElementIndex++;
-								string content = reader.GetString(wordOrdinal);
-								Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
-
-								// Check word validity
-								if (IsInvalid(content))
-								{
-									Log.Information("Not a valid word; Will be removed.");
-									deletionList.Add(content);
-									continue;
-								}
-
-								// Online verify
-								if (UseOnlineDB && !auxiliaryConnection.CheckElementOnline(content))
-								{
-									deletionList.Add(content);
-									continue;
-								}
-
-								// Check WordIndex tag
-								CheckIndexColumn(reader, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
-
-								// Check ReverseWordIndex tag
-								CheckIndexColumn(reader, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
-
-								// Check KkutuIndex tag
-								CheckIndexColumn(reader, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
-
-								// Check Flags
-								CheckFlagsColumn(reader, flagCorrection);
+								Log.Information("Not a valid word; Will be removed.");
+								deletionList.Add(content);
+								continue;
 							}
-							watch.Stop();
-							Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
+
+							// Online verify
+							if (UseOnlineDB && !secondaryContext.CheckElementOnline(content))
+							{
+								deletionList.Add(content);
+								continue;
+							}
+
+							// Check WordIndex tag
+							CheckIndexColumn(reader, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
+
+							// Check ReverseWordIndex tag
+							CheckIndexColumn(reader, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
+
+							// Check KkutuIndex tag
+							CheckIndexColumn(reader, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
+
+							// Check Flags
+							CheckFlagsColumn(reader, flagCorrection);
 						}
+						watch.Stop();
+						Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
 						watch.Restart();
 
 						// Start fixing
-						RemovedCount += auxiliaryConnection.DeleteElements(deletionList);
-						FixedCount += auxiliaryConnection.FixIndex(wordFixList, DatabaseConstants.WordColumnName, null);
-						FixedCount += auxiliaryConnection.FixIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode);
-						FixedCount += auxiliaryConnection.FixIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode);
-						FixedCount += auxiliaryConnection.FixIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode);
-						FixedCount += auxiliaryConnection.FixFlag(flagCorrection);
+						RemovedCount += secondaryContext.DeleteElements(deletionList);
+						FixedCount += secondaryContext.FixIndex(wordFixList, DatabaseConstants.WordColumnName, null);
+						FixedCount += secondaryContext.FixIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode);
+						FixedCount += secondaryContext.FixIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode);
+						FixedCount += secondaryContext.FixIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode);
+						FixedCount += secondaryContext.FixFlag(flagCorrection);
 
 						watch.Stop();
 						Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
-						auxiliaryConnection.ExecuteVacuum();
+						secondaryContext.ExecuteVacuum();
 					}
 
 					Log.Information("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
@@ -130,7 +127,7 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// (지원되는 DBMS에 한해) Vacuum 작업을 실행합니다.
 		/// </summary>
-		private static void ExecuteVacuum(this CommonDatabaseConnection connection)
+		private static void ExecuteVacuum(this PathDbContext connection)
 		{
 			var watch = new Stopwatch();
 			Log.Information("Executing vacuum...");
@@ -140,7 +137,7 @@ namespace AutoKkutu.Utils
 			Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 		}
 
-		private static int FixFlag(this CommonDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
+		private static int FixFlag(this PathDbContext connection, Dictionary<string, (int, int)> FlagCorrection)
 		{
 			int count = 0;
 			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))

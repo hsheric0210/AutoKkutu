@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
+using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
-using AutoKkutu.EF;
 using AutoKkutu.Utils;
 using Serilog;
 using System.Globalization;
@@ -153,31 +153,31 @@ namespace AutoKkutu.Modules
 });
 		}
 
-		public void MakeAttack(GameMode mode, CommonDatabaseConnection connection)
+		public void MakeAttack(GameMode mode, PathDbContext context)
 		{
-			string node = ToNode(mode);
-			connection.DeleteNode(node, GetEndWordListTableName(mode));
-			if (connection.AddNode(node, GetAttackWordListTableName(mode)))
+			string node = ContentToNode(mode);
+			context.DeleteNode(node, GetEndWordListTableName(mode));
+			if (context.AddNode(node, GetAttackWordListTableName(mode)))
 				Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
 			else
 				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
 		}
 
-		public void MakeEnd(GameMode mode, CommonDatabaseConnection connection)
+		public void MakeEnd(GameMode mode, PathDbContext context)
 		{
-			string node = ToNode(mode);
-			connection.DeleteNode(node, GetAttackWordListTableName(mode));
-			if (connection.AddNode(node, GetEndWordListTableName(mode)))
+			string node = ContentToNode(mode);
+			context.DeleteNode(node, GetAttackWordListTableName(mode));
+			if (context.AddNode(node, GetEndWordListTableName(mode)))
 				Log.Information(I18n.PathMark_Success, node, I18n.PathMark_End, mode);
 			else
 				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
 		}
 
-		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
+		public void MakeNormal(GameMode mode, PathDbContext context)
 		{
-			string node = ToNode(mode);
-			bool endWord = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
-			bool attackWord = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
+			string node = ContentToNode(mode);
+			bool endWord = context.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
+			bool attackWord = context.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
 			if (endWord || attackWord)
 				Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
 			else
@@ -198,7 +198,7 @@ namespace AutoKkutu.Modules
 			_ => DatabaseConstants.EndWordListTableName,
 		};
 
-		private string ToNode(GameMode mode)
+		private string ContentToNode(GameMode mode)
 		{
 			switch (mode)
 			{

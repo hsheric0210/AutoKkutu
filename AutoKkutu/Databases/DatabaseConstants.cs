@@ -1,4 +1,4 @@
-﻿namespace AutoKkutu.EF
+﻿namespace AutoKkutu.Databases
 {
 	public static class DatabaseConstants
 	{
@@ -108,6 +108,7 @@
 		public const string ErrorGetColumnType = "Failed to get the data type of column '{0}' in table '{1}'";
 
 		public const int MaxWordLength = 256;
-		public const int MaxWordPlusMissionLength = 131072; // 256(Max db word length) * 256(Max mission char count per word) * 2(For correct result)
+
+		public const int MaxWordPriority = 131072; // 256(Max db word length) * 256(Max mission char count per word) * 2(For correct result)
 	}
 }
