@@ -4,8 +4,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <PlatformTarget>x64</PlatformTarget>
-    <Platforms>AnyCPU;x64;x86</Platforms>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
 	<AnalysisLevel>latest</AnalysisLevel>
 	<AnalysisMode>All</AnalysisMode>
@@ -16,14 +14,8 @@
 	<PackageProjectUrl>https://github.com/hsheric0210/AutoKkutu</PackageProjectUrl>
 	<Nullable>enable</Nullable>
 	<NeutralLanguage>en-US</NeutralLanguage>
+	<Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Memcached\**" />
-    <EmbeddedResource Remove="Memcached\**" />
-    <None Remove="Memcached\**" />
-    <Page Remove="Memcached\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Remove="database.config" />
