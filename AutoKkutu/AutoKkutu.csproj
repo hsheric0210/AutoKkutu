@@ -41,9 +41,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="jjoriping.ico" />
-    <Content Include="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -91,6 +88,8 @@
   <ItemGroup>
     <PackageReference Include="CefSharp.Common.NETCore" Version="107.1.90" />
     <PackageReference Include="CefSharp.Wpf.NETCore" Version="107.1.90" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="DapperExtensions" Version="1.7.0" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
         <NoWarn>NU1701</NoWarn>
     </PackageReference>
