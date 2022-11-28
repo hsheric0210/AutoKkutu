@@ -37,4 +37,8 @@
     <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="107.1.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="FindWord\" />
+  </ItemGroup>
+
 </Project>

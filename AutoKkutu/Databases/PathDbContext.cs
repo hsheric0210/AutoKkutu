@@ -1,7 +1,8 @@
-﻿using System.Linq;
+﻿using AutoKkutu.Databases.WordIndex;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace AutoKkutu.Databases
 {
@@ -22,31 +23,36 @@ namespace AutoKkutu.Databases
 			get; set;
 		}
 
-		public DbSet<WordIndexModel> AttackWordIndex
+		public DbSet<AttackWordIndex> AttackWordIndex
 		{
 			get; set;
 		}
-		public DbSet<WordIndexModel> EndWordIndex
-		{
-			get; set;
-		}
-
-		public DbSet<WordIndexModel> ReverseAttackWordIndex
-		{
-			get; set;
-		}
-		public DbSet<WordIndexModel> ReverseEndWordIndex
+		public DbSet<EndWordIndex> EndWordIndex
 		{
 			get; set;
 		}
 
-		public DbSet<WordIndexModel> KkutuAttackWordIndex
+		public DbSet<ReverseAttackWordIndex> ReverseAttackWordIndex
 		{
 			get; set;
 		}
-		public DbSet<WordIndexModel> KkutuEndWordIndex
+		public DbSet<ReverseEndWordIndex> ReverseEndWordIndex
 		{
 			get; set;
+		}
+
+		public DbSet<KkutuAttackWordIndex> KkutuAttackWordIndex
+		{
+			get; set;
+		}
+		public DbSet<KkutuEndWordIndex> KkutuEndWordIndex
+		{
+			get; set;
+		}
+
+		public PathDbContext() : this(DatabaseProvider.Sqlite, "Data Source=path.sqlite3")
+		{
+		
 		}
 
 		public PathDbContext(DatabaseProvider providerType, string connectionString)
@@ -73,6 +79,11 @@ namespace AutoKkutu.Databases
 					optionsBuilder.UseMySQL(ConnectionString);
 					break;
 			}
+		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+
 		}
 
 		public void ImplementRequiredFunctions()

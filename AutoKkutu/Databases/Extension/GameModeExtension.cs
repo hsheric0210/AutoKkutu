@@ -9,7 +9,7 @@ namespace AutoKkutu.Databases.Extension
 	public static class GameModeExtension
 	{
 
-		public static DbSet<WordIndexModel> GetAttackWordIndexForMode(this PathDbContext context, GameMode mode)
+		public static DbSet<IWordIndex> GetAttackWordIndexForMode(this PathDbContext context, GameMode mode)
 		{
 			if (context is null)
 				throw new ArgumentNullException(nameof(context));
@@ -22,7 +22,7 @@ namespace AutoKkutu.Databases.Extension
 			};
 		}
 
-		public static DbSet<WordIndexModel> GetEndWordIndexForMode(this PathDbContext context, GameMode mode)
+		public static DbSet<IWordIndex> GetEndWordIndexForMode(this PathDbContext context, GameMode mode)
 		{
 			if (context is null)
 				throw new ArgumentNullException(nameof(context));

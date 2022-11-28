@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AutoKkutu.Databases
 {
+	[Table(DatabaseConstants.WordTableName)]
 	public class WordModel
 	{
 		[Column(DatabaseConstants.SequenceColumnName), Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

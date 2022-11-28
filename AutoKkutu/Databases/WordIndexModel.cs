@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AutoKkutu.Databases
 {
-	public class WordIndexModel
+	public interface IWordIndex<out T>
 	{
 		[Column(DatabaseConstants.WordIndexColumnName), Key, MinLength(1), MaxLength(2)]
 		public string Index

@@ -6,7 +6,7 @@ namespace AutoKkutu.Databases.Extension
 {
 	public static class WordIndexTableExtension
 	{
-		public static DbSet<WordIndexModel> GetWordIndexTable(this PathDbContext context, NodeTypes nodeType)
+		public static DbSet<IWordIndex> GetWordIndexTable(this PathDbContext context, NodeTypes nodeType)
 		{
 			if (context is null)
 				throw new ArgumentNullException(nameof(context));

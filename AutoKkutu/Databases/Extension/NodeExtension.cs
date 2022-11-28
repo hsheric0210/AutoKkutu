@@ -9,7 +9,7 @@ namespace AutoKkutu.Databases.Extension
 {
 	public static class NodeExtension
 	{
-		public static DbSet<WordIndexModel> GetWordIndexTable(this PathDbContext table, NodeTypes nodeType)
+		public static DbSet<IWordIndex<T>> GetWordIndexTable<T>(this PathDbContext table, NodeTypes nodeType) where T : class
 		{
 			if (table is null)
 				throw new ArgumentNullException(nameof(table));
@@ -26,7 +26,7 @@ namespace AutoKkutu.Databases.Extension
 			};
 		}
 
-		public static bool AddNode(this DbSet<WordIndexModel> table, string node)
+		public static bool AddNode(this DbSet<IWordIndex> table, string node)
 		{
 			if (table == null)
 				throw new ArgumentNullException(nameof(table));
@@ -40,7 +40,7 @@ namespace AutoKkutu.Databases.Extension
 			return true;
 		}
 
-		public static int DeleteNode(this DbSet<WordIndexModel> table, string node)
+		public static int DeleteNode(this DbSet<IWordIndex> table, string node)
 		{
 			if (table == null)
 				throw new ArgumentNullException(nameof(table));
@@ -52,7 +52,7 @@ namespace AutoKkutu.Databases.Extension
 			return entities.Count;
 		}
 
-		public static ICollection<string> GetNodeList(this DbSet<WordIndexModel> table)
+		public static ICollection<string> GetNodeList(this DbSet<IWordIndex> table)
 		{
 			if (table == null)
 				throw new ArgumentNullException(nameof(table));

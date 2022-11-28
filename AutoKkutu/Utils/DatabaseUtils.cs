@@ -6,6 +6,7 @@ using Serilog;
 using System;
 using System.Configuration;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace AutoKkutu.Utils
 {
@@ -36,7 +37,10 @@ namespace AutoKkutu.Utils
 					break;
 			}
 
-			return new PathDbContext(prov, connString);
+			var context = new PathDbContext(prov, connString);
+			context.Database.Migrate();
+			context.SaveChanges();
+			return context;
 		}
 
 		public static WordDbTypes GetWordFlags(this string word)
