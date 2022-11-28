@@ -54,7 +54,7 @@ namespace AutoKkutu.Modules
 				IList<PathObject>? totalWordList = null;
 				try
 				{
-					totalWordList = AutoKkutuMain.Database.DefaultConnection.FindWord(info);
+					totalWordList = AutoKkutuMain.Database.FindWord(info);
 					Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)

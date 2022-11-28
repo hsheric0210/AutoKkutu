@@ -3,6 +3,7 @@ using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Threading;
@@ -58,11 +59,11 @@ namespace AutoKkutu.Utils
 			public int SuccessCount;
 			public int DuplicateCount;
 			public int FailedCount;
-			public int NewEndNode;
-			public int NewAttackNode;
+			public int NewEndWord;
+			public int NewAttackWord;
 		}
 
-		public static void BatchAddWord(this CommonDatabaseConnection connection, string[] wordlist, BatchWordJobOptions batchFlags, WordDbTypes WordDatabaseAttributes)
+		public static void BatchAddWord(this DbSet<WordModel> table, string[] wordlist, BatchWordJobOptions batchFlags, WordDbTypes WordDatabaseAttributes)
 		{
 			if (wordlist == null)
 				throw new ArgumentNullException(nameof(wordlist));
@@ -81,22 +82,22 @@ namespace AutoKkutu.Utils
 			var info = new AddWordInfo
 			{
 				WordDatabaseAttributes = WordDatabaseAttributes,
-				NewEndNodeCount = 0,
-				NewAttackNodeCount = 0
+				NewEndWordCount = 0,
+				NewAttackWordCount = 0
 			};
 
 			Task.Run(() =>
 			{
-				BatchAddWordInfo result = PerformBatchAddWord(connection, wordlist, onlineVerify, ref info);
+				BatchAddWordInfo result = PerformBatchAddWord(table, wordlist, onlineVerify, ref info);
 
-				string message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
+				string message = $"{result.SuccessCount} succeed / {result.NewEndWord} new end nodes / {result.NewAttackWord} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
 				Log.Information("Database Operation Complete: {0}", message);
 				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Add Word", message));
 				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			});
 		}
 
-		private static BatchAddWordInfo PerformBatchAddWord(CommonDatabaseConnection connection, string[] wordlist, bool onlineVerify, ref AddWordInfo info)
+		private static BatchAddWordInfo PerformBatchAddWord(DbSet<WordModel> table, string[] wordlist, bool onlineVerify, ref AddWordInfo info)
 		{
 			var result = new BatchAddWordInfo();
 			foreach (string word in wordlist)
@@ -114,7 +115,7 @@ namespace AutoKkutu.Utils
 
 				if (!onlineVerify || CheckOnline(word))
 				{
-					switch (connection.AddSingleWord(word, ref info))
+					switch (table.AddSingleWord(word, ref info))
 					{
 						case AddWordResult.Success:
 							result.SuccessCount++;
@@ -130,8 +131,8 @@ namespace AutoKkutu.Utils
 					}
 				}
 
-				result.NewEndNode += info.NewEndNodeCount;
-				result.NewAttackNode += info.NewAttackNodeCount;
+				result.NewEndWord += info.NewEndWordCount;
+				result.NewAttackWord += info.NewAttackWordCount;
 			}
 
 			return result;
@@ -147,11 +148,11 @@ namespace AutoKkutu.Utils
 		private struct AddWordInfo
 		{
 			public WordDbTypes WordDatabaseAttributes;
-			public int NewEndNodeCount;
-			public int NewAttackNodeCount;
+			public int NewEndWordCount;
+			public int NewAttackWordCount;
 		}
 
-		private static AddWordResult AddSingleWord(this CommonDatabaseConnection connection, string word, ref AddWordInfo info)
+		private static AddWordResult AddSingleWord(this DbSet<WordModel> table, string word, ref AddWordInfo info)
 		{
 			try
 			{
@@ -159,11 +160,11 @@ namespace AutoKkutu.Utils
 				int newEndNodeCount = 0, newAttackNodeCount = 0;
 				DatabaseUtils.CorrectFlags(word, ref flags, ref newEndNodeCount, ref newAttackNodeCount);
 
-				info.NewEndNodeCount = newEndNodeCount;
-				info.NewAttackNodeCount = newAttackNodeCount;
+				info.NewEndWordCount = newEndNodeCount;
+				info.NewAttackWordCount = newAttackNodeCount;
 
 				Log.Information("Adding {word} into database... (flags: {flags})", word, flags);
-				if (connection.AddWord(word, flags))
+				if (table.AddWord(word, flags))
 				{
 					Log.Information("Successfully Add {word} to database!", word);
 					return AddWordResult.Success;
@@ -181,7 +182,7 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		public static void BatchRemoveWord(this CommonDatabaseConnection connection, string[] wordlist)
+		public static void BatchRemoveWord(this DbSet<WordModel> table, string[] wordlist)
 		{
 			if (wordlist == null)
 				throw new ArgumentNullException(nameof(wordlist));
@@ -195,7 +196,7 @@ namespace AutoKkutu.Utils
 				int SuccessCount = 0, FailedCount = 0;
 				foreach (string word in wordlist)
 				{
-					if (connection.RemoveSingleWord(word))
+					if (table.TryDeleteWord(word))
 						SuccessCount++;
 					else
 						FailedCount++;
@@ -208,14 +209,14 @@ namespace AutoKkutu.Utils
 			});
 		}
 
-		private static bool RemoveSingleWord(this CommonDatabaseConnection connection, string word)
+		private static bool TryDeleteWord(this DbSet<WordModel> table, string word)
 		{
 			if (string.IsNullOrWhiteSpace(word))
 				return false;
 
 			try
 			{
-				return connection.DeleteWord(word) > 0;
+				return table.DeleteWord(word) > 0;
 			}
 			catch (Exception ex)
 			{
@@ -224,9 +225,9 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		public static void BatchAddNode(this CommonDatabaseConnection connection, string content, bool remove, NodeTypes type)
+		public static void BatchAddNode(this PathDbContext context, string content, bool remove, NodeTypes type)
 		{
-			if (connection == null || string.IsNullOrWhiteSpace(content))
+			if (context is null || string.IsNullOrWhiteSpace(content))
 				return;
 
 			string[] NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
@@ -247,9 +248,9 @@ namespace AutoKkutu.Utils
 				{
 					if (remove)
 					{
-						SuccessCount += connection.DeleteNode(node, type);
+						SuccessCount += context.DeleteNode(node, type);
 					}
-					else if (connection.AddNode(node, type))
+					else if (context.AddNode(node, type))
 					{
 						Log.Information("Successfully add node {node}!", node[0]);
 						SuccessCount++;
@@ -279,36 +280,36 @@ namespace AutoKkutu.Utils
 		/// <param name="node">추가할 노드</param>
 		/// <param name="types">추가할 노드의 속성들</param>
 		/// <returns>데이터베이스에 추가된 노드의 총 갯수</returns>
-		public static bool AddNode(this CommonDatabaseConnection connection, string node, NodeTypes types)
+		public static bool AddNode(this PathDbContext context, string node, NodeTypes types)
 		{
-			if (connection == null || string.IsNullOrWhiteSpace(node))
+			if (context == null || string.IsNullOrWhiteSpace(node))
 				return false;
 
 			bool result = false;
 
 			// 한방 단어
-			result |= types.HasFlag(NodeTypes.EndWord) && connection.AddNode(node, DatabaseConstants.EndWordListTableName);
+			result |= types.HasFlag(NodeTypes.EndWord) && context.EndWordIndex.AddNode(node);
 
 			// 공격 단어
-			result |= types.HasFlag(NodeTypes.AttackWord) && connection.AddNode(node, DatabaseConstants.AttackWordListTableName);
+			result |= types.HasFlag(NodeTypes.AttackWord) && context.AttackWordIndex.AddNode(node);
 
 			// 앞말잇기 한방 단어
-			result |= types.HasFlag(NodeTypes.ReverseEndWord) && connection.AddNode(node, DatabaseConstants.ReverseEndWordListTableName);
+			result |= types.HasFlag(NodeTypes.ReverseEndWord) && context.ReverseEndWordIndex.AddNode(node);
 
 			// 앞말잇기 공격 단어
-			result |= types.HasFlag(NodeTypes.ReverseAttackWord) && connection.AddNode(node, DatabaseConstants.ReverseAttackWordListTableName);
+			result |= types.HasFlag(NodeTypes.ReverseAttackWord) && context.ReverseAttackWordIndex.AddNode(node);
 
 			// 끄투 한방 단어
-			result |= types.HasFlag(NodeTypes.KkutuEndWord) && connection.AddNode(node, DatabaseConstants.KkutuEndWordListTableName);
+			result |= types.HasFlag(NodeTypes.KkutuEndWord) && context.KkutuEndWordIndex.AddNode(node);
 
 			// 끄투 공격 단어
-			result |= types.HasFlag(NodeTypes.KkutuAttackWord) && connection.AddNode(node, DatabaseConstants.KkutuAttackWordListTableName);
+			result |= types.HasFlag(NodeTypes.KkutuAttackWord) && context.KkutuAttackWordIndex.AddNode(node);
 
 			// 쿵쿵따 한방 단어
-			result |= types.HasFlag(NodeTypes.KKTEndWord) && connection.AddNode(node, DatabaseConstants.KKTEndWordListTableName);
+			result |= types.HasFlag(NodeTypes.KKTEndWord) && context.EndWordIndex.AddNode(node);
 
 			// 쿵쿵따 공격 단어
-			result |= types.HasFlag(NodeTypes.KKTAttackWord) && connection.AddNode(node, DatabaseConstants.KKTAttackWordListTableName);
+			result |= types.HasFlag(NodeTypes.KKTAttackWord) && context.AttackWordIndex.AddNode(node);
 
 			return result;
 		}
@@ -319,44 +320,44 @@ namespace AutoKkutu.Utils
 		/// <param name="node">삭제할 노드</param>
 		/// <param name="types">삭제할 노드의 속성들</param>
 		/// <returns>데이터베이스에서 삭제된 노드의 총 갯수</returns>
-		public static int DeleteNode(this CommonDatabaseConnection connection, string node, NodeTypes types)
+		public static int DeleteNode(this PathDbContext context, string node, NodeTypes types)
 		{
-			if (connection == null || string.IsNullOrWhiteSpace(node))
+			if (context == null || string.IsNullOrWhiteSpace(node))
 				return -1;
 
 			int count = 0;
 
 			// 한방 단어
 			if (types.HasFlag(NodeTypes.EndWord))
-				count += connection.DeleteNode(node, DatabaseConstants.EndWordListTableName);
+				count += context.EndWordIndex.DeleteNode(node);
 
 			// 공격 단어
 			if (types.HasFlag(NodeTypes.AttackWord))
-				count += connection.DeleteNode(node, DatabaseConstants.AttackWordListTableName);
+				count += context.AttackWordIndex.DeleteNode(node);
 
 			// 앞말잇기 한방 단어
 			if (types.HasFlag(NodeTypes.ReverseEndWord))
-				count += connection.DeleteNode(node, DatabaseConstants.ReverseEndWordListTableName);
+				count += context.ReverseEndWordIndex.DeleteNode(node);
 
 			// 앞말잇기 공격 단어
 			if (types.HasFlag(NodeTypes.ReverseAttackWord))
-				count += connection.DeleteNode(node, DatabaseConstants.ReverseAttackWordListTableName);
+				count += context.ReverseAttackWordIndex.DeleteNode(node);
 
 			// 끄투 한방 단어
 			if (types.HasFlag(NodeTypes.KkutuEndWord))
-				count += connection.DeleteNode(node, DatabaseConstants.KkutuEndWordListTableName);
+				count += context.KkutuEndWordIndex.DeleteNode(node);
 
 			// 끄투 공격 단어
 			if (types.HasFlag(NodeTypes.KkutuAttackWord))
-				count += connection.DeleteNode(node, DatabaseConstants.KkutuAttackWordListTableName);
+				count += context.KkutuAttackWordIndex.DeleteNode(node);
 
 			// 쿵쿵따 한방 단어
 			if (types.HasFlag(NodeTypes.KKTEndWord))
-				count += connection.DeleteNode(node, DatabaseConstants.KKTEndWordListTableName);
+				count += context.EndWordIndex.DeleteNode(node);
 
 			// 쿵쿵따 공격 단어
 			if (types.HasFlag(NodeTypes.KKTAttackWord))
-				count += connection.DeleteNode(node, DatabaseConstants.KKTAttackWordListTableName);
+				count += context.AttackWordIndex.DeleteNode(node);
 
 			return count;
 		}

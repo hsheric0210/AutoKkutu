@@ -30,11 +30,13 @@ namespace AutoKkutu.Databases.Extension
 			return true;
 		}
 
-		public static void DeleteWord(this DbSet<WordModel> table, string word)
+		public static int DeleteWord(this DbSet<WordModel> table, string word)
 		{
 			if (table == null)
 				throw new ArgumentNullException(nameof(table));
-			table.RemoveRange(table.Where(w => string.Equals(w.Word, word, StringComparison.OrdinalIgnoreCase)));
+			var list = table.Where(w => string.Equals(w.Word, word, StringComparison.OrdinalIgnoreCase)).ToList();
+			table.RemoveRange(list);
+			return list.Count;
 		}
 	}
 }

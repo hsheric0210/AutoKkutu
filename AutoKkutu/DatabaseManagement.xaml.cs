@@ -1,5 +1,4 @@
 ﻿using AutoKkutu.Databases;
-using AutoKkutu.Databases.SQLite;
 using AutoKkutu.Utils;
 using Serilog;
 using Microsoft.Win32;
@@ -16,42 +15,45 @@ namespace AutoKkutu
 {
 	public partial class DatabaseManagement : Window
 	{
-		private readonly DatabaseWithDefaultConnection Database;
+		private readonly PathDbContext Database;
 
-		public DatabaseManagement(DatabaseWithDefaultConnection database)
+		public DatabaseManagement(PathDbContext context)
 		{
-			Database = database;
+			Database = context;
 			InitializeComponent();
 			Title = "Data-base Management";
 		}
 
-		public static void BatchWordJob(DatabaseWithDefaultConnection database, string content, BatchWordJobOptions mode, WordDbTypes flags)
+		public static void BatchWordJob(PathDbContext context, string content, BatchWordJobOptions mode, WordDbTypes flags)
 		{
-			if (database == null || string.IsNullOrWhiteSpace(content))
+			if (context == null || string.IsNullOrWhiteSpace(content))
 				return;
 
 			string[] wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-			CommonDatabaseConnection connection = database.DefaultConnection;
 			if (mode.HasFlag(BatchWordJobOptions.Remove))
-				connection.BatchRemoveWord(wordlist);
+				context.Word.BatchRemoveWord(wordlist);
 			else
-				connection.BatchAddWord(wordlist, mode, flags);
+				context.Word.BatchAddWord(wordlist, mode, flags);
 		}
 
 		private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 
 		private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
 		{
+			return;
+
+			/*
 			var dialog = new OpenFileDialog
 			{
-				Title = "단어 목록을 불러올 외부 SQLite 데이터베이스 파일을 선택하세요",
+				Title = //"단어 목록을 불러올 외부 SQLite 데이터베이스 파일을 선택하세요",
 				Multiselect = false,
 				CheckPathExists = true,
 				CheckFileExists = true
 			};
 			if (dialog.ShowDialog() ?? false)
 				SQLiteDatabaseHelper.LoadFromExternalSQLite(Database.DefaultConnection, dialog.FileName);
+			*/
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -110,7 +112,7 @@ namespace AutoKkutu
 			return type;
 		}
 
-		private void BatchAddNode(bool remove) => Database.DefaultConnection.BatchAddNode(Node_Input.Text, remove, GetSelectedNodeTypes());
+		private void BatchAddNode(bool remove) => Database.BatchAddNode(Node_Input.Text, remove, GetSelectedNodeTypes());
 
 		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked ?? false);
 

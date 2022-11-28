@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using Serilog.Events;
+using AutoKkutu.Databases.Extension;
 
 namespace AutoKkutu
 {
@@ -80,11 +81,13 @@ namespace AutoKkutu
 				BrowserContainer.Content = AutoKkutuMain.Browser;
 
 				// Update database icon
+				/*
 				var img = new BitmapImage();
 				img.BeginInit();
 				img.UriSource = new Uri($@"Images\{AutoKkutuMain.Database.GetDBType()}.png", UriKind.Relative);
 				img.EndInit();
 				DBLogo.Source = img;
+				*/
 
 				// Hide LoadOverlay
 				LoadOverlay.Visibility = Visibility.Hidden;
@@ -196,7 +199,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeAttack(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
+			AutoKkutuMain.Database.MakeAttack(AutoKkutuMain.Configuration.GameMode, ((PathObject)currentSelected).Content);
 		}
 
 		private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -204,7 +207,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeEnd(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
+			AutoKkutuMain.Database.MakeEnd(AutoKkutuMain.Configuration.GameMode, ((PathObject)currentSelected).Content);
 		}
 
 		private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -212,7 +215,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeNormal(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
+			AutoKkutuMain.Database.MakeNormal(AutoKkutuMain.Configuration.GameMode, ((PathObject)currentSelected).Content);
 		}
 
 		private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)

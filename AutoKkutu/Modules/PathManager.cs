@@ -181,7 +181,7 @@ namespace AutoKkutu.Modules
 				try
 				{
 					Log.Debug(I18n.PathFinder_AddPath, word, flags);
-					if (AutoKkutuMain.Database.AddWord(word, flags))
+					if (AutoKkutuMain.Database.Word.AddWord(word, flags))
 					{
 						Log.Information(I18n.PathFinder_AddPath_Success, word);
 						count++;
@@ -214,7 +214,7 @@ namespace AutoKkutu.Modules
 			{
 				try
 				{
-					count += AutoKkutuMain.Database.DeleteWord(word);
+					count += AutoKkutuMain.Database.Word.DeleteWord(word);
 				}
 				catch (Exception ex)
 				{

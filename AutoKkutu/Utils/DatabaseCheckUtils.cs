@@ -106,6 +106,7 @@ namespace AutoKkutu.Utils
 						FixedCount += wordTable.FixWordIndexRange(kkutuIndexCorrection, WordIndexType.KkutuWordIndex, DatabaseUtils.GetKkutuHeadNode);
 						FixedCount += wordTable.FixFlagRange(flagCorrection);
 
+						secondaryContext.SaveChanges();
 						watch.Stop();
 						Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
@@ -249,7 +250,7 @@ namespace AutoKkutu.Utils
 			Log.Information("Deduplicating entries...");
 			try
 			{
-				count = table.DeduplicateDatabase();
+				// count = table.DeduplicateDatabase();
 				watch.Stop();
 				Log.Information("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 			}
