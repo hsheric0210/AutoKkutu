@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases.Extension;
-using NLog;
+using Serilog;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Globalization;
@@ -11,7 +11,6 @@ namespace AutoKkutu.Databases.SQLite
 {
 	public static class SQLiteDatabaseHelper
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(SQLiteDatabaseHelper));
 
 		public static int ExecuteNonQuery(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
 		{
@@ -69,7 +68,7 @@ namespace AutoKkutu.Databases.SQLite
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
+				Log.Error(ex, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
 			}
 
 			return null;
@@ -94,7 +93,7 @@ namespace AutoKkutu.Databases.SQLite
 			}
 			catch (Exception ex)
 			{
-				Logger.Warn(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
+				Log.Warning(ex, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
 			}
 
 			return false;
@@ -108,7 +107,7 @@ namespace AutoKkutu.Databases.SQLite
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tableName);
+				Log.Error(ex, DatabaseConstants.ErrorIsTableExists, tableName);
 				return false;
 			}
 		}
@@ -124,7 +123,7 @@ namespace AutoKkutu.Databases.SQLite
 			{
 				try
 				{
-					Logger.Info(CultureInfo.CurrentCulture, "Loading external SQLite database: {path}", externalSQLiteFilePath);
+					Log.Information("Loading external SQLite database: {path}", externalSQLiteFilePath);
 					var externalSQLiteConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
 					externalSQLiteConnection.Open();
 
@@ -137,13 +136,13 @@ namespace AutoKkutu.Databases.SQLite
 					int KkutuAttackWordCount = ImportNode(args, DatabaseConstants.KkutuAttackWordListTableName);
 					int KkutuEndWordCount = ImportNode(args, DatabaseConstants.KkutuEndWordListTableName);
 
-					Logger.Info(CultureInfo.CurrentCulture, "DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount);
+					Log.Information("DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount);
 
 					DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {AttackWordCount} 개의 공격 노드 / {EndWordCount} 개의 한방 노드 / {ReverseAttackWordCount} 개의 앞말잇기 공격 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuAttackWordCount} 개의 끄투 공격 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드"));
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "Failed to import external database.");
+					Log.Error(ex, "Failed to import external database.");
 				}
 			});
 		}
@@ -159,7 +158,7 @@ namespace AutoKkutu.Databases.SQLite
 		{
 			if (!args.targetDatabaseConnection.IsTableExists(tableName))
 			{
-				Logger.Info(CultureInfo.CurrentCulture, "External SQLite Database doesn't contain node list table {tableName}.", tableName);
+				Log.Information("External SQLite Database doesn't contain node list table {tableName}.", tableName);
 				return 0;
 			}
 
@@ -173,9 +172,9 @@ namespace AutoKkutu.Databases.SQLite
 				{
 					string wordIndex = reader.GetString(wordIndexOrdinal);
 					if (args.targetDatabaseConnection.AddNode(wordIndex))
-						Logger.Info(CultureInfo.CurrentCulture, "Added {node} to {tableName}.", wordIndex, tableName);
+						Log.Information("Added {node} to {tableName}.", wordIndex, tableName);
 					else
-						Logger.Warn(CultureInfo.CurrentCulture, "{node} in {tableName} already exists in database.", wordIndex, tableName);
+						Log.Warning("{node} in {tableName} already exists in database.", wordIndex, tableName);
 					count++;
 				}
 			}
@@ -187,9 +186,9 @@ namespace AutoKkutu.Databases.SQLite
 		{
 			int flags = Convert.ToInt32(reader[DatabaseConstants.FlagsColumnName], CultureInfo.InvariantCulture);
 			if (args.targetDatabaseConnection.AddWord(word, (WordDatabaseAttributes)flags))
-				Logger.Info(CultureInfo.CurrentCulture, "Imported word {word} with flags: {flags}", word, flags);
+				Log.Information("Imported word {word} with flags: {flags}", word, flags);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Word {word} already exists in database.", word);
+				Log.Warning("Word {word} already exists in database.", word);
 		}
 
 		private static void ImportSingleWordLegacy(SQLiteImportArgs args, SqliteDataReader reader, string word)
@@ -197,16 +196,16 @@ namespace AutoKkutu.Databases.SQLite
 			// Legacy support
 			bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName], CultureInfo.InvariantCulture));
 			if (args.targetDatabaseConnection.AddWord(word, isEndWord ? WordDatabaseAttributes.EndWord : WordDatabaseAttributes.None))
-				Logger.Info(CultureInfo.CurrentCulture, "Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
+				Log.Information("Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, "Word {word} already exists in database.", word);
+				Log.Warning("Word {word} already exists in database.", word);
 		}
 
 		private static int ImportWordsFromExternalSQLite(SQLiteImportArgs args)
 		{
 			if (!SQLiteDatabaseHelper.IsTableExists(args.externalSQLiteConnection, DatabaseConstants.WordListTableName))
 			{
-				Logger.Info($"External SQLite Database doesn't contain word list table {DatabaseConstants.WordListTableName}");
+				Log.Information($"External SQLite Database doesn't contain word list table {DatabaseConstants.WordListTableName}");
 				return 0;
 			}
 

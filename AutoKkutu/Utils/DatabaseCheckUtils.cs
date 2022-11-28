@@ -2,7 +2,7 @@
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Modules;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -16,7 +16,6 @@ namespace AutoKkutu.Utils
 {
 	public static class DatabaseCheckUtils
 	{
-		public static readonly Logger Logger = LogManager.GetLogger(nameof(DatabaseCheckUtils));
 
 		/// <summary>
 		/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
@@ -39,7 +38,7 @@ namespace AutoKkutu.Utils
 					var watch = new Stopwatch();
 
 					int totalElementCount = Convert.ToInt32(database.DefaultConnection.RequireNotNull().ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName}"), CultureInfo.InvariantCulture);
-					Logger.Info(CultureInfo.CurrentCulture, "Database has Total {0} elements.", totalElementCount);
+					Log.Information("Database has Total {0} elements.", totalElementCount);
 
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
 
@@ -47,7 +46,7 @@ namespace AutoKkutu.Utils
 					Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
 					var flagCorrection = new Dictionary<string, (int, int)>();
 
-					Logger.Info("Opening auxiliary SQLite connection...");
+					Log.Information("Opening auxiliary SQLite connection...");
 					using (CommonDatabaseConnection auxiliaryConnection = database.OpenSecondaryConnection())
 					{
 						// Deduplicate
@@ -60,7 +59,7 @@ namespace AutoKkutu.Utils
 						using (CommonDatabaseCommand _command = auxiliaryConnection.CreateCommand($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 						{
 							using DbDataReader reader = _command.ExecuteReader();
-							Logger.Info("Searching problems...");
+							Log.Information("Searching problems...");
 
 							int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
 							watch.Start();
@@ -68,12 +67,12 @@ namespace AutoKkutu.Utils
 							{
 								currentElementIndex++;
 								string content = reader.GetString(wordOrdinal);
-								Logger.Info(CultureInfo.CurrentCulture, "Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
+								Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
 
 								// Check word validity
 								if (IsInvalid(content))
 								{
-									Logger.Info("Not a valid word; Will be removed.");
+									Log.Information("Not a valid word; Will be removed.");
 									deletionList.Add(content);
 									continue;
 								}
@@ -98,7 +97,7 @@ namespace AutoKkutu.Utils
 								CheckFlagsColumn(reader, flagCorrection);
 							}
 							watch.Stop();
-							Logger.Info(CultureInfo.CurrentCulture, "Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
+							Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
 						}
 
 						watch.Restart();
@@ -112,18 +111,18 @@ namespace AutoKkutu.Utils
 						FixedCount += auxiliaryConnection.FixFlag(flagCorrection);
 
 						watch.Stop();
-						Logger.Info(CultureInfo.CurrentCulture, "Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
+						Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
 						auxiliaryConnection.ExecuteVacuum();
 					}
 
-					Logger.Info(CultureInfo.CurrentCulture, "Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
+					Log.Information("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
 
 					DatabaseEvents.TriggerDatabaseIntegrityCheckDone(new DataBaseIntegrityCheckDoneEventArgs($"{RemovedCount + DeduplicatedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨"));
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "Exception while checking database");
+					Log.Error(ex, "Exception while checking database");
 				}
 			});
 		}
@@ -134,11 +133,11 @@ namespace AutoKkutu.Utils
 		private static void ExecuteVacuum(this CommonDatabaseConnection connection)
 		{
 			var watch = new Stopwatch();
-			Logger.Info("Executing vacuum...");
+			Log.Information("Executing vacuum...");
 			watch.Restart();
 			connection.PerformVacuum();
 			watch.Stop();
-			Logger.Info(CultureInfo.CurrentCulture, "Vacuum took {0}ms.", watch.ElapsedMilliseconds);
+			Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 		}
 
 		private static int FixFlag(this CommonDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
@@ -157,7 +156,7 @@ namespace AutoKkutu.Utils
 
 					if (command.ExecuteNonQuery() > 0)
 					{
-						Logger.Info(CultureInfo.CurrentCulture, "Fixed {column:l} of {word}: from {from} to {to}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
+						Log.Information("Fixed {column:l} of {word}: from {from} to {to}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
 						count++;
 					}
 				}
@@ -192,9 +191,9 @@ namespace AutoKkutu.Utils
 					if (command.ExecuteNonQuery() > 0)
 					{
 						if (correctIndexSupplier == null)
-							Logger.Info(CultureInfo.CurrentCulture, "Fixed {column}: from {from} to {to}.", indexColumnName, pair.Key, correctWordIndex);
+							Log.Information("Fixed {column}: from {from} to {to}.", indexColumnName, pair.Key, correctWordIndex);
 						else
-							Logger.Info(CultureInfo.CurrentCulture, "Fixed {column} of {word}: from {from} to {to}.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
+							Log.Information("Fixed {column} of {word}: from {from} to {to}.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
 
 						count++;
 					}
@@ -217,7 +216,7 @@ namespace AutoKkutu.Utils
 					command.UpdateParameter("@word", word);
 					if (command.ExecuteNonQuery() > 0)
 					{
-						Logger.Info(CultureInfo.CurrentCulture, "Removed {word} from database.", word);
+						Log.Information("Removed {word} from database.", word);
 						count++;
 					}
 				}
@@ -234,7 +233,7 @@ namespace AutoKkutu.Utils
 			int currentFlags = reader.GetInt32(reader.GetOrdinal(DatabaseConstants.FlagsColumnName));
 			if (_correctFlags != currentFlags)
 			{
-				Logger.Info(CultureInfo.CurrentCulture, "Invaild flags, will be fixed to {flags}.", correctFlags);
+				Log.Information("Invaild flags, will be fixed to {flags}.", correctFlags);
 				FlagCorrection.Add(content, (currentFlags, _correctFlags));
 			}
 		}
@@ -246,7 +245,7 @@ namespace AutoKkutu.Utils
 			string currentWordIndex = reader.GetString(reader.GetOrdinal(indexColumnName));
 			if (correctWordIndex != currentWordIndex)
 			{
-				Logger.Info(CultureInfo.CurrentCulture, "Invaild {indexColumn} column, will be fixed to {correctIndex}.", indexColumnName, correctWordIndex);
+				Log.Information("Invaild {indexColumn} column, will be fixed to {correctIndex}.", indexColumnName, correctWordIndex);
 				toBeCorrectedTo.Add(content, currentWordIndex);
 			}
 		}
@@ -279,16 +278,16 @@ namespace AutoKkutu.Utils
 		{
 			var watch = new Stopwatch();
 			watch.Start();
-			Logger.Info("Updating node lists...");
+			Log.Information("Updating node lists...");
 			try
 			{
 				PathManager.UpdateNodeLists(connection);
 				watch.Stop();
-				Logger.Info(CultureInfo.CurrentCulture, "Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
+				Log.Information("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Failed to refresh node lists");
+				Log.Error(ex, "Failed to refresh node lists");
 			}
 		}
 
@@ -297,16 +296,16 @@ namespace AutoKkutu.Utils
 			int count = 0;
 			var watch = new Stopwatch();
 			watch.Start();
-			Logger.Info("Deduplicating entries...");
+			Log.Information("Deduplicating entries...");
 			try
 			{
 				count = connection.DeduplicateDatabase();
 				watch.Stop();
-				Logger.Info(CultureInfo.CurrentCulture, "Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
+				Log.Information("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Deduplication failed");
+				Log.Error(ex, "Deduplication failed");
 			}
 			return count;
 		}

@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Config;
 using AutoKkutu.Constants;
-using NLog;
+using Serilog;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -13,7 +13,6 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ConfigWindow : Window
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(ConfigWindow));
 		private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
 
 		public ConfigWindow(AutoKkutuConfiguration config)
@@ -67,21 +66,21 @@ namespace AutoKkutu
 			if (!int.TryParse(delayNumber, out int _delay))
 			{
 				_delay = 10;
-				Logger.Warn(CultureInfo.CurrentCulture, "Can't parse delay number {string}, will be reset to {default:l}.", delayNumber, _delay);
+				Log.Warning("Can't parse delay number {string}, will be reset to {default:l}.", delayNumber, _delay);
 			}
 
 			string maxWordNumber = MaxWordCount.Text;
 			if (!int.TryParse(maxWordNumber, out int MaxWords))
 			{
 				MaxWords = 20;
-				Logger.Warn(CultureInfo.CurrentCulture, "Can't parse maxWordCount number {string}; will be reset to {default:l}.", maxWordNumber, MaxWords);
+				Log.Warning("Can't parse maxWordCount number {string}; will be reset to {default:l}.", maxWordNumber, MaxWords);
 			}
 
 			string fixDelayNumber = FixDelayNumber.Text;
 			if (!int.TryParse(fixDelayNumber, out int _fixdelay))
 			{
 				_fixdelay = 10;
-				Logger.Warn(CultureInfo.CurrentCulture, "Can't parse fix delay number {string}; will be reset to {default:l}.", fixDelayNumber, _fixdelay);
+				Log.Warning("Can't parse fix delay number {string}; will be reset to {default:l}.", fixDelayNumber, _fixdelay);
 			}
 
 			var conf = new AutoKkutuConfiguration
@@ -136,7 +135,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Failed to save the configuration.");
+				Log.Error(ex, "Failed to save the configuration.");
 			}
 
 			AutoKkutuMain.Configuration = conf;

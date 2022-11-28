@@ -5,7 +5,7 @@ using AutoKkutu.Databases.MySQL;
 using AutoKkutu.Databases.PostgreSQL;
 using AutoKkutu.Databases.SQLite;
 using AutoKkutu.Modules;
-using NLog;
+using Serilog;
 using System;
 using System.Configuration;
 using System.Globalization;
@@ -15,7 +15,6 @@ namespace AutoKkutu.Utils
 {
 	public static class DatabaseUtils
 	{
-		private static readonly Logger Logger = LogManager.GetLogger("Database Exts");
 
 		public static DatabaseWithDefaultConnection CreateDatabase(Configuration config)
 		{
@@ -26,23 +25,23 @@ namespace AutoKkutu.Utils
 			{
 				case "MYSQL":
 					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
-					Logger.Info(CultureInfo.CurrentCulture, "MySQL selected: {connString}", mysqlConnectionString);
+					Log.Information("MySQL selected: {connString}", mysqlConnectionString);
 					return new MySQLDatabase(mysqlConnectionString);
 
 				case "MARIADB":
 					string mariadbConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
-					Logger.Info(CultureInfo.CurrentCulture, "MariaDB selected: {connString}", mariadbConnectionString);
+					Log.Information("MariaDB selected: {connString}", mariadbConnectionString);
 					return new MariaDBDatabase(mariadbConnectionString);
 
 				case "POSTGRESQL":
 				case "PGSQL":
 					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
-					Logger.Info(CultureInfo.CurrentCulture, "PostgreSQL selected: {connString}", pgsqlConnectionString);
+					Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
 					return new PostgreSQLDatabase(pgsqlConnectionString);
 			}
 
 			string file = ((SQLiteSection)config.GetSection("sqlite")).File;
-			Logger.Info(CultureInfo.CurrentCulture, "SQLite selected: File={file}", file);
+			Log.Information("SQLite selected: File={file}", file);
 			return new SQLiteDatabase(file);
 		}
 

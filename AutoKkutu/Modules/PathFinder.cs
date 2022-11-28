@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +13,6 @@ namespace AutoKkutu.Modules
 {
 	public static class PathFinder
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(PathFinder));
 
 		public static IList<PathObject> DisplayList
 		{
@@ -39,9 +38,9 @@ namespace AutoKkutu.Modules
 			string missionChar = info.MissionChar;
 			PathFinderOptions flags = info.PathFinderFlags;
 			if (wordCondition.CanSubstitution)
-				Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FindPath_Substituation, wordCondition.Content, wordCondition.Substitution);
+				Log.Information(I18n.PathFinder_FindPath_Substituation, wordCondition.Content, wordCondition.Substitution);
 			else
-				Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FindPath, wordCondition.Content);
+				Log.Information(I18n.PathFinder_FindPath, wordCondition.Content);
 
 			// Prevent watchdog thread from being blocked
 			Task.Run(() =>
@@ -58,12 +57,12 @@ namespace AutoKkutu.Modules
 				try
 				{
 					totalWordList = AutoKkutuMain.Database.DefaultConnection.FindWord(info);
-					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
+					Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
 				{
 					watch.Stop();
-					Logger.Error(e, I18n.PathFinder_FindPath_Error);
+					Log.Error(e, I18n.PathFinder_FindPath_Error);
 					NotifyPathUpdate(new PathUpdatedEventArgs(wordCondition, missionChar, PathFinderResult.Error, 0, 0, 0, flags));
 					return;
 				}
@@ -82,7 +81,7 @@ namespace AutoKkutu.Modules
 				if (qualifiedWordList.Count == 0)
 				{
 					watch.Stop();
-					Logger.Warn(I18n.PathFinder_FindPath_NotFound);
+					Log.Warning(I18n.PathFinder_FindPath_NotFound);
 					NotifyPathUpdate(new PathUpdatedEventArgs(wordCondition, missionChar, PathFinderResult.None, totalWordCount, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 					return;
 				}
@@ -91,7 +90,7 @@ namespace AutoKkutu.Modules
 				QualifiedList = qualifiedWordList;
 
 				watch.Stop();
-				Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_FoundPath_Ready, DisplayList.Count, watch.ElapsedMilliseconds);
+				Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, watch.ElapsedMilliseconds);
 				NotifyPathUpdate(new PathUpdatedEventArgs(wordCondition, missionChar, PathFinderResult.Normal, totalWordCount, QualifiedList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
 			});
 		}

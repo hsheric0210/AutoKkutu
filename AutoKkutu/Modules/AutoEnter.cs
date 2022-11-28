@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +11,6 @@ namespace AutoKkutu.Modules
 {
 	public static class AutoEnter
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(AutoEnter));
 
 		public static event EventHandler<EnterDelayingEventArgs>? EnterDelaying;
 		public static event EventHandler? PathNotFound;
@@ -38,7 +37,7 @@ namespace AutoKkutu.Modules
 			{
 				int delay = GetDelay(content);
 				EnterDelaying?.Invoke(null, new EnterDelayingEventArgs(delay, pathAttribute));
-				Logger.Debug(CultureInfo.CurrentCulture, I18n.Main_WaitingSubmit, delay);
+				Log.Debug(I18n.Main_WaitingSubmit, delay);
 
 				Task.Run(async () =>
 				{
@@ -60,7 +59,7 @@ namespace AutoKkutu.Modules
 				string? content = ApplyTimeFilter(PathFinder.QualifiedList, ++WordIndex);
 				if (content is null)
 				{
-					Logger.Warn(I18n.Main_NoMorePathAvailable);
+					Log.Warning(I18n.Main_NoMorePathAvailable);
 					PathNotFound?.Invoke(null, EventArgs.Empty);
 					return;
 				}
@@ -69,7 +68,7 @@ namespace AutoKkutu.Modules
 				{
 					int delay = GetFixDelay(content);
 					EnterDelaying?.Invoke(null, new EnterDelayingEventArgs(delay, I18n.Main_Next));
-					Logger.Debug(CultureInfo.CurrentCulture, I18n.Main_WaitingSubmitNext, delay);
+					Log.Debug(I18n.Main_WaitingSubmitNext, delay);
 					Task.Run(async () => await AutoEnterTask(content, delay, null, I18n.Main_Next));
 				}
 				else
@@ -77,7 +76,7 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, I18n.Main_PathSubmitException);
+				Log.Error(ex, I18n.Main_PathSubmitException);
 			}
 		}
 
@@ -93,7 +92,7 @@ namespace AutoKkutu.Modules
 			if (!CanPerformAutoEnterNow(args))
 				return;
 
-			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_AutoEnter, pathAttribute, content);
+			Log.Information(I18n.Main_AutoEnter, pathAttribute, content);
 			AutoKkutuMain.SendMessage(content, true);
 			AutoEntered?.Invoke(null, new AutoEnteredEventArgs(content));
 		}
@@ -151,9 +150,9 @@ namespace AutoKkutu.Modules
 				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
 				string? word = arr.Length - 1 >= wordIndex ? arr[wordIndex].Content : null;
 				if (word == null)
-					Logger.Debug(CultureInfo.CurrentCulture, I18n.TimeFilter_TimeOver, remain);
+					Log.Debug(I18n.TimeFilter_TimeOver, remain);
 				else
-					Logger.Debug(CultureInfo.CurrentCulture, I18n.TimeFilter_Success, remain, word.Length * delay);
+					Log.Debug(I18n.TimeFilter_Success, remain, word.Length * delay);
 				return word;
 			}
 

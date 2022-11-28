@@ -2,7 +2,7 @@
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System.Globalization;
 using System.Windows.Media;
 
@@ -76,7 +76,6 @@ namespace AutoKkutu.Modules
 			get; set;
 		}
 
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(PathFinder));
 
 		public PathObject(string content, WordAttributes flags, int missionCharCount)
 		{
@@ -160,9 +159,9 @@ namespace AutoKkutu.Modules
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetEndWordListTableName(mode));
 			if (connection.AddNode(node, GetAttackWordListTableName(mode)))
-				Logger.Info(CultureInfo.CurrentCulture, I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
+				Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
+				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
 		}
 
 		public void MakeEnd(GameMode mode, CommonDatabaseConnection connection)
@@ -170,9 +169,9 @@ namespace AutoKkutu.Modules
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetAttackWordListTableName(mode));
 			if (connection.AddNode(node, GetEndWordListTableName(mode)))
-				Logger.Info(CultureInfo.CurrentCulture, I18n.PathMark_Success, node, I18n.PathMark_End, mode);
+				Log.Information(I18n.PathMark_Success, node, I18n.PathMark_End, mode);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
+				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
 		}
 
 		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
@@ -181,9 +180,9 @@ namespace AutoKkutu.Modules
 			bool endWord = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
 			bool attackWord = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
 			if (endWord || attackWord)
-				Logger.Info(CultureInfo.CurrentCulture, I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
+				Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
+				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
 		}
 
 		private static string GetAttackWordListTableName(GameMode mode) => mode switch

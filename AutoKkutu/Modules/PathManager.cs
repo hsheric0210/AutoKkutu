@@ -2,7 +2,7 @@
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,7 +12,6 @@ namespace AutoKkutu.Modules
 {
 	public static class PathManager
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(PathManager));
 
 		/* Word lists */
 
@@ -78,7 +77,7 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, I18n.PathFinder_Init_Error);
+				Log.Error(ex, I18n.PathFinder_Init_Error);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}
@@ -128,7 +127,7 @@ namespace AutoKkutu.Modules
 			if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
 				return null;
 
-			Logger.Debug(I18n.PathFinder_AutoDBUpdate);
+			Log.Debug(I18n.PathFinder_AutoDBUpdate);
 			try
 			{
 				PathListLock.EnterUpgradeableReadLock();
@@ -136,19 +135,19 @@ namespace AutoKkutu.Modules
 				int InexistentPathCount = InexistentPathList.Count;
 				if (NewPathCount + InexistentPathCount == 0)
 				{
-					Logger.Warn(I18n.PathFinder_AutoDBUpdate_Empty);
+					Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
 				}
 				else
 				{
-					Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
+					Log.Debug(I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
 					int AddedPathCount = AddNewPaths();
 
-					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Remove, InexistentPathCount);
+					Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, InexistentPathCount);
 
 					int RemovedPathCount = RemoveInexistentPaths();
 					string result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddedPathCount, NewPathCount, RemovedPathCount, InexistentPathCount);
 
-					Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Finished, result);
+					Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
 					return result;
 				}
 			}
@@ -180,16 +179,16 @@ namespace AutoKkutu.Modules
 
 				try
 				{
-					Logger.Debug(CultureInfo.CurrentCulture, I18n.PathFinder_AddPath, word, flags);
+					Log.Debug(I18n.PathFinder_AddPath, word, flags);
 					if (AutoKkutuMain.Database.DefaultConnection.AddWord(word, flags))
 					{
-						Logger.Info(CultureInfo.CurrentCulture, I18n.PathFinder_AddPath_Success, word);
+						Log.Information(I18n.PathFinder_AddPath_Success, word);
 						count++;
 					}
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, CultureInfo.CurrentCulture, I18n.PathFinder_AddPath_Failed, word);
+					Log.Error(ex, I18n.PathFinder_AddPath_Failed, word);
 				}
 			}
 
@@ -218,7 +217,7 @@ namespace AutoKkutu.Modules
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
+					Log.Error(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
 				}
 			}
 
@@ -240,7 +239,7 @@ namespace AutoKkutu.Modules
 			else if (tryAdd && flags.HasFlag(theFlag))
 			{
 				nodeList.Add(item);
-				Logger.Info(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, item));
+				Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, item));
 				return true;
 			}
 			return false;

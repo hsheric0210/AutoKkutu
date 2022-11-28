@@ -1,5 +1,5 @@
 ﻿using CefSharp;
-using NLog;
+using Serilog;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -8,7 +8,6 @@ namespace AutoKkutu.Modules
 {
 	public static class JSEvaluator
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(JSEvaluator));
 
 		private static object? EvaluateJSInternal(string javaScript, object? defaultResult)
 		{
@@ -49,7 +48,7 @@ namespace AutoKkutu.Modules
 			return true;
 		}
 
-		public static string EvaluateJS(string javaScript, string defaultResult = " ", Logger? logger = null)
+		public static string EvaluateJS(string javaScript, string defaultResult = " ")
 		{
 			try
 			{
@@ -61,12 +60,12 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				(logger ?? Logger).Error(ex, "Failed to run script on site.");
+				Log.Error(ex, "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
 
-		public static int EvaluateJSInt(string javaScript, int defaultResult = -1, Logger? logger = null)
+		public static int EvaluateJSInt(string javaScript, int defaultResult = -1)
 		{
 			try
 			{
@@ -81,12 +80,12 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				(logger ?? Logger).Error(ex, "Failed to run script on site.");
+				Log.Error(ex, "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
 
-		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, Logger? logger = null)
+		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false)
 		{
 			try
 			{
@@ -98,7 +97,7 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				(logger ?? Logger).Error(ex, "Failed to run script on site.");
+				Log.Error(ex, "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
