@@ -4,7 +4,7 @@ using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
 using CefSharp.Wpf;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,7 +17,6 @@ namespace AutoKkutu
 {
 	public static class AutoKkutuMain
 	{
-		public static readonly Logger Logger = LogManager.GetLogger("MainThread");
 
 		public static AutoKkutuConfiguration Configuration
 		{
@@ -95,13 +94,13 @@ namespace AutoKkutu
 			}
 			catch (Exception e)
 			{
-				Logger.Error(e, "Initialization failure");
+				Log.Error(e, "Initialization failure");
 			}
 		}
 
 		private static void InitializeCEF()
 		{
-			Logger.Info("Initializing CEF");
+			Log.Information("Initializing CEF");
 
 			// TODO: Configurable CEF settings
 			using var settings = new CefSettings
@@ -123,7 +122,7 @@ namespace AutoKkutu
 
 		private static void InitializeConfiguration()
 		{
-			Logger.Info("Initializing configuration");
+			Log.Information("Initializing configuration");
 
 			try
 			{
@@ -165,13 +164,13 @@ namespace AutoKkutu
 			catch (Exception ex)
 			{
 				// This exception log may only available in the log file.
-				Logger.Error(ex, I18n.Main_ConfigLoadException);
+				Log.Error(ex, I18n.Main_ConfigLoadException);
 			}
 		}
 
 		private static void InitializeBrowser()
 		{
-			Logger.Info("Initializing browser");
+			Log.Information("Initializing browser");
 
 			// Initialize Browser
 			Browser = new ChromiumWebBrowser
@@ -194,17 +193,17 @@ namespace AutoKkutu
 
 				Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
 				Database = DatabaseUtils.CreateDatabase(databaseConfig);
-				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
+				Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 				watch.Restart();
 				PathManager.Initialize();
-				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
+				Log.Information(I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
 
 				watch.Stop();
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, I18n.Main_DBConfigException);
+				Log.Error(ex, I18n.Main_DBConfigException);
 				Environment.Exit(1);
 			}
 		}
@@ -233,7 +232,7 @@ namespace AutoKkutu
 
 		private static void LoadHandler(CommonHandler handler)
 		{
-			Logger.Info(I18n.Main_CEFFrameLoadEnd);
+			Log.Information(I18n.Main_CEFFrameLoadEnd);
 
 			handler.GameStarted += OnGameStarted;
 			handler.GameEnded += OnGameEnded;
@@ -247,7 +246,7 @@ namespace AutoKkutu
 			handler.ChatUpdated += OnChatUpdated;
 			handler.StartWatchdog();
 
-			Logger.Info(CultureInfo.CurrentCulture, I18n.Main_UseHandler, handler.GetID());
+			Log.Information(I18n.Main_UseHandler, handler.GetID());
 			RemoveAd();
 
 			HandlerRegistered?.Invoke(null, EventArgs.Empty);
@@ -255,7 +254,7 @@ namespace AutoKkutu
 
 		private static void UnloadHandler(CommonHandler handler)
 		{
-			Logger.Info(CultureInfo.CurrentCulture, I18n.HandlerRegistry_Unregistered, handler.GetID());
+			Log.Information(I18n.HandlerRegistry_Unregistered, handler.GetID());
 
 			// Unregister previous handler
 			handler.GameStarted -= OnGameStarted;
@@ -288,7 +287,7 @@ namespace AutoKkutu
 			bool differentMissionChar = Configuration?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(missionChar, Handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
 			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
 			{
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
+				Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
 				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar, flags);
 				return false;
 			}
@@ -305,7 +304,7 @@ namespace AutoKkutu
 			{
 				if (!ConfigEnums.IsFreeMode(mode) && GetEndWordList(mode)?.Contains(word.Content) == true && (!word.CanSubstitution || GetEndWordList(mode)?.Contains(word.Substitution!) == true))
 				{
-					Logger.Warn(I18n.PathFinderFailed_Endword);
+					Log.Warning(I18n.PathFinderFailed_Endword);
 					ResetPathList();
 					UpdateSearchState(null, true);
 					UpdateStatusMessage(StatusMessage.EndWord);
@@ -328,7 +327,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, I18n.PathFinderFailed_Exception);
+				Log.Error(ex, I18n.PathFinderFailed_Exception);
 			}
 		}
 
@@ -347,7 +346,7 @@ namespace AutoKkutu
 
 		private static void ResetPathList()
 		{
-			Logger.Info(I18n.Main_ResetPathList);
+			Log.Information(I18n.Main_ResetPathList);
 			PathFinder.ResetFinalList();
 			PathListUpdated?.Invoke(null, EventArgs.Empty);
 		}
@@ -410,7 +409,7 @@ namespace AutoKkutu
 			}
 			else
 			{
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedURL, url);
+				Log.Warning(I18n.Main_UnsupportedURL, url);
 			}
 		}
 
@@ -418,7 +417,7 @@ namespace AutoKkutu
 
 		private static void OnPathUpdated(object? sender, PathUpdatedEventArgs args)
 		{
-			Logger.Info(I18n.Main_PathUpdateReceived);
+			Log.Information(I18n.Main_PathUpdateReceived);
 
 			if (!CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.None))
 				return;
@@ -440,7 +439,7 @@ namespace AutoKkutu
 			{
 				if (args.Result == PathFinderResult.None)
 				{
-					Logger.Warn(I18n.Auto_NoMorePathAvailable);
+					Log.Warning(I18n.Auto_NoMorePathAvailable);
 					UpdateStatusMessage(StatusMessage.NotFound);
 				}
 				else
@@ -448,7 +447,7 @@ namespace AutoKkutu
 					string? content = AutoEnter.ApplyTimeFilter(PathFinder.QualifiedList);
 					if (content == null)
 					{
-						Logger.Warn(I18n.Auto_TimeOver);
+						Log.Warning(I18n.Auto_TimeOver);
 						UpdateStatusMessage(StatusMessage.NotFound);
 					}
 					else
@@ -484,7 +483,7 @@ namespace AutoKkutu
 						}
 						catch (Exception ex)
 						{
-							Logger.Warn(ex, I18n.Main_GameResultWriteException);
+							Log.Warning(ex, I18n.Main_GameResultWriteException);
 						}
 					}
 
@@ -503,7 +502,7 @@ namespace AutoKkutu
 			{
 				GameMode newGameMode = args.GameMode;
 				Configuration.GameMode = newGameMode;
-				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_GameModeUpdated, ConfigEnums.GetGameModeName(newGameMode));
+				Log.Information(I18n.Main_GameModeUpdated, ConfigEnums.GetGameModeName(newGameMode));
 			}
 		}
 
@@ -517,7 +516,7 @@ namespace AutoKkutu
 		private static void OnMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 		{
 			string word = args.Word;
-			Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_MyPathIsUnsupported, word);
+			Log.Warning(I18n.Main_MyPathIsUnsupported, word);
 
 			if (Configuration.AutoEnterEnabled && Configuration.AutoFixEnabled)
 				AutoEnter.PerformAutoFix();
@@ -525,7 +524,7 @@ namespace AutoKkutu
 
 		private static void OnMyTurnEnded(object? sender, EventArgs e)
 		{
-			Logger.Debug(I18n.Main_WordIndexReset);
+			Log.Debug(I18n.Main_WordIndexReset);
 			AutoEnter.ResetWordIndex();
 		}
 
@@ -536,9 +535,9 @@ namespace AutoKkutu
 			bool isInexistent = !args.IsExistingWord;
 			string word = args.Word;
 			if (isInexistent)
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedWord_Inexistent, word);
+				Log.Warning(I18n.Main_UnsupportedWord_Inexistent, word);
 			else
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.Main_UnsupportedWord_Existent, word);
+				Log.Warning(I18n.Main_UnsupportedWord_Existent, word);
 			PathManager.AddToUnsupportedWord(word, isInexistent);
 		}
 

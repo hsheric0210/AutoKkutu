@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Databases.Extension;
-using NLog;
+using Serilog;
 using Npgsql;
 using System;
 using System.Globalization;
@@ -8,7 +8,6 @@ namespace AutoKkutu.Databases.PostgreSQL
 {
 	public partial class PostgreSQLDatabaseConnection : CommonDatabaseConnection
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
 		private readonly NpgsqlConnection Connection;
 
 		public PostgreSQLDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
@@ -36,7 +35,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
+				Log.Error(ex, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
 			}
 			return null;
 		}
@@ -56,7 +55,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
+				Log.Error(ex, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
 				return false;
 			}
 		}
@@ -69,7 +68,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tablename);
+				Log.Error(ex, DatabaseConstants.ErrorIsTableExists, tablename);
 				return false;
 			}
 		}

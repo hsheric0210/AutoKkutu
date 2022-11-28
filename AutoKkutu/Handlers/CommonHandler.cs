@@ -2,7 +2,7 @@
 using AutoKkutu.Handlers;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,8 +28,6 @@ namespace AutoKkutu
 
 			MyTurn
 		}
-
-		protected Logger GetLogger(int? watchdogID = null, string? watchdogType = null) => LogManager.GetLogger($"{GetHandlerName()}{(watchdogType == null ? "" : $" - {watchdogType}")} - #{watchdogID ?? CurrentMainWatchdogID}");
 
 		private readonly Dictionary<string, string> RegisteredFunctionNames = new();
 
@@ -143,17 +141,16 @@ namespace AutoKkutu
 				_mainWatchdogTask = new Task(async () => await WatchdogPrimary(token), token);
 				_mainWatchdogTask.Start();
 
-				int mainWatchdogID = CurrentMainWatchdogID;
-				Task.Run(async () => await WatchdogAssistant("History", GetPreviousWord, mainWatchdogID, token));
-				Task.Run(async () => await WatchdogAssistant("Round", GetCurrentRound, mainWatchdogID, token));
-				Task.Run(async () => await WatchdogAssistant("Mission word", GetCurrentMissionWord, mainWatchdogID, token));
-				Task.Run(async () => await WatchdogAssistant("Unsupported word", CheckUnsupportedWord, mainWatchdogID, token));
-				Task.Run(async () => await WatchdogAssistant("Example word", CheckExample, mainWatchdogID, token));
-				Task.Run(async () => await WatchdogGameMode(token, mainWatchdogID));
-				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameTurn(mainWatchdogID), token, mainWatchdogID));
-				Task.Run(async () => await WatchdogPresentWord(token, mainWatchdogID));
+				Task.Run(async () => await WatchdogAssistant("History", GetPreviousWord, token));
+				Task.Run(async () => await WatchdogAssistant("Round", GetCurrentRound,  token));
+				Task.Run(async () => await WatchdogAssistant("Mission word", GetCurrentMissionWord,  token));
+				Task.Run(async () => await WatchdogAssistant("Unsupported word", CheckUnsupportedWord,  token));
+				Task.Run(async () => await WatchdogAssistant("Example word", CheckExample,  token));
+				Task.Run(async () => await WatchdogGameMode(token));
+				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameTurn(), token));
+				Task.Run(async () => await WatchdogPresentWord(token));
 
-				GetLogger(mainWatchdogID).Info("Watchdog threads are started.");
+				Log.Information("Watchdog threads are started.");
 			}
 		}
 
@@ -161,7 +158,7 @@ namespace AutoKkutu
 		{
 			if (_isWatchdogStarted)
 			{
-				GetLogger(CurrentMainWatchdogID).Info("Watchdog stop requested.");
+				Log.Information("Watchdog stop requested.");
 				cancelTokenSrc?.Cancel();
 				_isWatchdogStarted = false;
 			}
@@ -190,81 +187,87 @@ namespace AutoKkutu
 
 		private async Task WatchdogPrimary(CancellationToken cancelToken)
 		{
-			int mainWatchdogID = CurrentMainWatchdogID;
 			await Watchdog(async () =>
 			{
-				CheckGameStarted(mainWatchdogID);
+				CheckGameStarted();
 				await Task.Delay(IsGameStarted ? _ingame_interval : _checkgame_interval, cancelToken);
-			}, ex => GetLogger(mainWatchdogID).Error(ex, "Main watchdog task interrupted."), cancelToken);
+			}, ex => Log.Error(ex, "Main watchdog task interrupted."), cancelToken);
 		}
 
-		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
-																																			{
-																																				if (IsGameStarted)
-																																				{
-																																					action();
-																																					await Task.Delay(_ingame_interval, cancelToken);
-																																				}
-																																				else
-																																				{
-																																					await Task.Delay(_checkgame_interval, cancelToken);
-																																				}
-																																			}, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, watchdogName).Error(ex, "{0} watchdog task interrupted.", watchdogName), cancelToken);
+		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken)
+		{
+			await Watchdog(async () =>
+				{
+					if (IsGameStarted)
+					{
+						action();
+						await Task.Delay(_ingame_interval, cancelToken);
+					}
+					else
+					{
+						await Task.Delay(_checkgame_interval, cancelToken);
+					}
+				}, ex => Log.Error(ex, "{0} watchdog task interrupted.", watchdogName), cancelToken);
+		}
 
-		private async Task WatchdogGameMode(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
-																									   {
-																										   CheckGameMode(mainWatchdogID);
-																										   await Task.Delay(_checkgame_interval, cancelToken);
-																									   }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "GameMode").Error(ex, CultureInfo.CurrentCulture, "GameMode watchdog task interrupted."), cancelToken);
+		private async Task WatchdogGameMode(CancellationToken cancelToken)
+		{
+			await Watchdog(async () =>
+				{
+					CheckGameMode();
+					await Task.Delay(_checkgame_interval, cancelToken);
+				}, ex => Log.Error(ex, "GameMode watchdog task interrupted."), cancelToken);
+		}
 
 		// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
-		private async Task WatchdogPresentWord(CancellationToken cancelToken, int mainWatchdogID = -1) => await Watchdog(async () =>
-																										  {
-																											  if (AutoKkutuMain.Configuration.GameMode == GameMode.TypingBattle && IsGameStarted)
-																											  {
-																												  if (_isMyTurn)
-																													  GetCurrentTypingWord(mainWatchdogID);
-																												  await Task.Delay(_ingame_interval, cancelToken);
-																											  }
-																											  else
-																											  {
-																												  await Task.Delay(_checkgame_interval, cancelToken);
-																											  }
-																										  }, ex => GetLogger(mainWatchdogID > 0 ? mainWatchdogID : CurrentMainWatchdogID, "Present word").Error(ex, "Present word watchdog task interrupted."), cancelToken);
-
-		private async Task WatchdogAssistant(string watchdogName, Action<int> task, int mainWatchdogID, CancellationToken cancelToken) => await AssistantWatchdog(watchdogName, () => task.Invoke(mainWatchdogID), cancelToken, mainWatchdogID);
-
-		private void CheckGameStarted(int watchdogID)
+		private async Task WatchdogPresentWord(CancellationToken cancelToken)
 		{
-			Logger logger = GetLogger(watchdogID);
+			await Watchdog(async () =>
+				{
+					if (AutoKkutuMain.Configuration.GameMode == GameMode.TypingBattle && IsGameStarted)
+					{
+						if (_isMyTurn)
+							GetCurrentTypingWord();
+						await Task.Delay(_ingame_interval, cancelToken);
+					}
+					else
+					{
+						await Task.Delay(_checkgame_interval, cancelToken);
+					}
+				}, ex => Log.Error(ex, "Present word watchdog task interrupted."), cancelToken);
+		}
+
+		private async Task WatchdogAssistant(string watchdogName, Action task, CancellationToken cancelToken) => await AssistantWatchdog(watchdogName, () => task.Invoke(), cancelToken);
+
+		private void CheckGameStarted()
+		{
 			if (IsGameNotInProgress())
 			{
 				if (!IsGameStarted)
 					return;
 
-				logger.Debug("Game ended.");
+				Log.Debug("Game ended.");
 				GameEnded?.Invoke(this, EventArgs.Empty);
 				IsGameStarted = false;
 			}
 			else if (!IsGameStarted)
 			{
 				RegisterJSFunction(CurrentRoundIndexFunc, "", "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));");
-				logger.Debug("New game started; Previous word list flushed.");
+				Log.Debug("New game started; Previous word list flushed.");
 				GameStarted?.Invoke(this, EventArgs.Empty);
 				IsGameStarted = true;
 			}
 		}
 
-		private void CheckGameTurn(int watchdogID)
+		private void CheckGameTurn()
 		{
-			Logger logger = GetLogger(watchdogID, "Turn");
 			if (IsGameNotInMyTurn())
 			{
 				if (!IsMyTurn)
 					return;
 
 				_isMyTurn = false;
-				logger.Debug("My turn ended.");
+				Log.Debug("My turn ended.");
 				MyTurnEnded?.Invoke(this, EventArgs.Empty);
 			}
 			else if (!_isMyTurn)
@@ -275,9 +278,9 @@ namespace AutoKkutu
 					return;
 
 				if (presentedWord.CanSubstitution)
-					logger.Info(CultureInfo.CurrentCulture, "My turn arrived, presented word is {word} (Subsitution: {subsituation})", presentedWord.Content, presentedWord.Substitution);
+					Log.Information("My turn arrived, presented word is {word} (Subsitution: {subsituation})", presentedWord.Content, presentedWord.Substitution);
 				else
-					logger.Info(CultureInfo.CurrentCulture, "My turn arrived, presented word is {word}.", presentedWord.Content);
+					Log.Information("My turn arrived, presented word is {word}.", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
 				MyTurn?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
 			}
@@ -287,7 +290,7 @@ namespace AutoKkutu
 		/// 이전에 제시된 단어들의 목록을 읽어들입니다.
 		/// </summary>
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
-		private void GetPreviousWord(int watchdogID)
+		private void GetPreviousWord()
 		{
 			if (ConfigEnums.IsFreeMode(AutoKkutuMain.Configuration.GameMode))
 				return;
@@ -306,7 +309,7 @@ namespace AutoKkutu
 				string word = tmpWordCache[index];
 				if (!string.IsNullOrWhiteSpace(word) && !_wordCache.Contains(word))
 				{
-					GetLogger(watchdogID, "Previous word").Info(CultureInfo.CurrentCulture, "Found previous word : {word}", word);
+					Log.Information("Found previous word : {word}", word);
 
 					if (!PathManager.NewPathList.Contains(word))
 						PathManager.NewPathList.Add(word);
@@ -321,12 +324,12 @@ namespace AutoKkutu
 		/// 현재 미션 단어를 읽어들입니다.
 		/// </summary>
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
-		private void GetCurrentMissionWord(int watchdogID)
+		private void GetCurrentMissionWord()
 		{
 			string missionWord = GetMissionWord();
 			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, CurrentMissionChar, StringComparison.Ordinal))
 				return;
-			GetLogger(watchdogID, "Mission word").Info(CultureInfo.CurrentCulture, "Mission word change detected : {word}", missionWord);
+			Log.Information("Mission word change detected : {word}", missionWord);
 			CurrentMissionChar = missionWord;
 		}
 
@@ -334,7 +337,7 @@ namespace AutoKkutu
 		/// 현재 게임의 라운드를 읽어들이고, 만약 바뀌었으면 이벤트를 호출합니다.
 		/// </summary>
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
-		private void GetCurrentRound(int watchdogID)
+		private void GetCurrentRound()
 		{
 			int roundIndex = GetGameRoundIndex();
 			if (roundIndex == _roundIndexCache)
@@ -348,7 +351,7 @@ namespace AutoKkutu
 
 			if (roundIndex <= 0)
 				return;
-			GetLogger(watchdogID, "Round").Info(CultureInfo.CurrentCulture, "Round Changed : Index {0} Word {1}", roundIndex, roundText);
+			Log.Information("Round Changed : Index {0} Word {1}", roundIndex, roundText);
 			RoundChange?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
 			PathManager.ResetPreviousPath();
 		}
@@ -357,7 +360,7 @@ namespace AutoKkutu
 		/// 현재 입력된 단어가 틀렸는지 검사하고, 이벤트를 호출합니다.
 		/// </summary>
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
-		private void CheckUnsupportedWord(int watchdogID)
+		private void CheckUnsupportedWord()
 		{
 			string unsupportedWord = GetUnsupportedWord();
 			if (string.IsNullOrWhiteSpace(unsupportedWord) || string.Equals(unsupportedWord, _unsupportedWordCache, StringComparison.OrdinalIgnoreCase) || unsupportedWord.Contains("T.T", StringComparison.OrdinalIgnoreCase))
@@ -375,7 +378,7 @@ namespace AutoKkutu
 		/// 라운드가 끝났을 때, 회색으로 옅게 제시되는 예시 단어를 읽어들입니다.
 		/// </summary>
 		/// <param name="watchdogID">현재 와치독 스레드의 ID</param>
-		private void CheckExample(int watchdogID)
+		private void CheckExample()
 		{
 			string example = GetExampleWord();
 			if (string.IsNullOrWhiteSpace(example) || example.StartsWith("게임 끝", StringComparison.Ordinal))
@@ -383,11 +386,11 @@ namespace AutoKkutu
 			if (string.Equals(example, _exampleWordCache, StringComparison.OrdinalIgnoreCase))
 				return;
 			_exampleWordCache = example;
-			GetLogger(watchdogID, "Example").Info(CultureInfo.CurrentCulture, "Path example detected : {word}", example);
+			Log.Information("Path example detected : {word}", example);
 			PathManager.NewPathList.Add(example);
 		}
 
-		private void GetCurrentTypingWord(int watchdogID)
+		private void GetCurrentTypingWord()
 		{
 			string word = GetGamePresentedWord();
 			if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝", StringComparison.InvariantCultureIgnoreCase))
@@ -397,21 +400,19 @@ namespace AutoKkutu
 			if (string.Equals(word, _currentPresentedWordCache, StringComparison.OrdinalIgnoreCase))
 				return;
 			_currentPresentedWordCache = word;
-			GetLogger(watchdogID, "Presented word").Info(CultureInfo.CurrentCulture, "Word detected : {word}", word);
+			Log.Information("Word detected : {word}", word);
 			TypingWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
 		}
 
-		private void CheckGameMode(int watchdogID)
+		private void CheckGameMode()
 		{
 			GameMode gameMode = GetCurrentGameMode();
 			if (gameMode == _gameModeCache)
 				return;
 			_gameModeCache = gameMode;
-			GetLogger(watchdogID, "GameMode").Info(CultureInfo.CurrentCulture, "Game mode change detected : {gameMode}", ConfigEnums.GetGameModeName(gameMode));
+			Log.Information("Game mode change detected : {gameMode}", ConfigEnums.GetGameModeName(gameMode));
 			GameModeChange?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 		}
-
-		protected int CurrentMainWatchdogID => _mainWatchdogTask == null ? -1 : _mainWatchdogTask.Id;
 
 		private ResponsePresentedWord? GetPresentedWord()
 		{
@@ -447,11 +448,11 @@ namespace AutoKkutu
 
 		protected static bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
 
-		protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
+		protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult);
 
-		protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => JSEvaluator.EvaluateJSInt(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
+		protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => JSEvaluator.EvaluateJSInt(javaScript, defaultResult);
 
-		protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => JSEvaluator.EvaluateJSBool(javaScript, defaultResult, GetLogger(CurrentMainWatchdogID, moduleName));
+		protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => JSEvaluator.EvaluateJSBool(javaScript, defaultResult);
 
 		protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
 		{
@@ -462,9 +463,9 @@ namespace AutoKkutu
 			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
 			{
 				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
-					GetLogger().Error(CultureInfo.CurrentCulture, "Failed to register JavaScript function {funcName} : {error:l}", funcName, error);
+					Log.Error("Failed to register JavaScript function {funcName} : {error:l}", funcName, error);
 				else
-					GetLogger().Info(CultureInfo.CurrentCulture, "Registered JavaScript function {funcName} : {realFuncName:l}()", funcName, realFuncName);
+					Log.Information("Registered JavaScript function {funcName} : {realFuncName:l}()", funcName, realFuncName);
 			}
 		}
 

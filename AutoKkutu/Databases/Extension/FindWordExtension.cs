@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Modules;
-using NLog;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -11,7 +11,6 @@ namespace AutoKkutu.Databases.Extension
 {
 	public static class FindWordExtension
 	{
-		private static readonly Logger Logger = LogManager.GetLogger("Database Word Finder");
 
 		private static CommonDatabaseCommand? CachedCommand;
 		private static string? PreviousQuery;
@@ -98,7 +97,7 @@ namespace AutoKkutu.Databases.Extension
 			if (CachedCommand == null || PreviousQuery?.Equals(query.Command, StringComparison.Ordinal) != true)
 			{
 				CachedCommand = connection.CreateCommand(query.Command);
-				Logger.Debug(CultureInfo.CurrentCulture, "Query command : {command}", query.Command);
+				Log.Debug("Query command : {command}", query.Command);
 
 				int paramCount = query.Parameters.Length;
 				var paramArray = new CommonDatabaseParameter[paramCount];
@@ -106,7 +105,7 @@ namespace AutoKkutu.Databases.Extension
 				{
 					(string paramName, object? paramValue) = query.Parameters[i];
 					paramArray[i] = connection.CreateParameter(paramName, paramValue);
-					Logger.Debug(CultureInfo.CurrentCulture, "Query parameter : {paramName} = {paramValue}", paramName, paramValue);
+					Log.Debug("Query parameter : {paramName} = {paramValue}", paramName, paramValue);
 				}
 
 				CachedCommand.AddParameters(paramArray);
@@ -118,7 +117,7 @@ namespace AutoKkutu.Databases.Extension
 				foreach ((string paramName, object? paramValue) in query.Parameters)
 				{
 					CachedCommand.UpdateParameter(paramName, paramValue);
-					Logger.Debug(CultureInfo.CurrentCulture, "Cached query with parameter : {paramName} = {paramValue}", paramName, paramValue);
+					Log.Debug("Cached query with parameter : {paramName} = {paramValue}", paramName, paramValue);
 				}
 			}
 

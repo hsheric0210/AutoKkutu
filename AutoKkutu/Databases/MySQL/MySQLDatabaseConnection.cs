@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Databases.Extension;
-using NLog;
+using Serilog;
 using MySqlConnector;
 using System;
 using System.Globalization;
@@ -8,7 +8,6 @@ namespace AutoKkutu.Databases.MySQL
 {
 	public partial class MySQLDatabaseConnection : CommonDatabaseConnection
 	{
-		private static readonly Logger Logger = LogManager.GetLogger(nameof(CommonDatabaseConnection));
 		private readonly MySqlConnection Connection;
 		private readonly string DatabaseName;
 
@@ -40,7 +39,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Info(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
+				Log.Information(ex, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
 				return "";
 			}
 		}
@@ -60,7 +59,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Info(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
+				Log.Information(ex, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
 				return false;
 			}
 		}
@@ -73,7 +72,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 			catch (Exception ex)
 			{
-				Logger.Info(ex, CultureInfo.CurrentCulture, DatabaseConstants.ErrorIsTableExists, tablename);
+				Log.Information(ex, DatabaseConstants.ErrorIsTableExists, tablename);
 				return false;
 			}
 		}

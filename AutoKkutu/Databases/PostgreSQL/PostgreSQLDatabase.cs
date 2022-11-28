@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Databases.Extension;
 using Npgsql;
 using System;
+using Serilog;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
@@ -15,7 +16,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			try
 			{
 				// Open the connection
-				Logger.Info("Opening database connection...");
+				Log.Information("Opening database connection...");
 				var connection = new NpgsqlConnection(connectionString);
 				connection.Open();
 				RegisterDefaultConnection(new PostgreSQLDatabaseConnection(connection));
@@ -71,11 +72,11 @@ $$ LANGUAGE plpgsql
 				// Check the database tables
 				DefaultConnection.CheckTable();
 
-				Logger.Info("Successfully established database connection.");
+				Log.Information("Successfully established database connection.");
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, DatabaseConstants.ErrorConnect);
+				Log.Error(ex, DatabaseConstants.ErrorConnect);
 				DatabaseEvents.TriggerDatabaseError();
 			}
 		}

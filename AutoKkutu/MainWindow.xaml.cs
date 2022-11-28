@@ -3,7 +3,7 @@ using AutoKkutu.Databases;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
-using NLog;
+using Serilog;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -21,7 +21,6 @@ namespace AutoKkutu
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
 
-		public static readonly Logger Logger = LogManager.GetLogger("UI");
 
 		public MainWindow()
 		{
@@ -30,7 +29,7 @@ namespace AutoKkutu
 			Title = TITLE;
 			VersionLabel.Content = "v1.0";
 
-			Logger.Info(I18n.Main_StartLoad);
+			Log.Information(I18n.Main_StartLoad);
 			LoadOverlay.Visibility = Visibility.Visible;
 
 			DatabaseEvents.DatabaseError += OnDataBaseError;
@@ -126,7 +125,7 @@ namespace AutoKkutu
 			}
 			catch (Exception ex)
 			{
-				Logger.Warn(I18n.Main_ClipboardSubmitException, ex);
+				Log.Warning(I18n.Main_ClipboardSubmitException, ex);
 			}
 		}
 
@@ -285,7 +284,7 @@ namespace AutoKkutu
 			var i = (PathObject)selected;
 			if (i != null)
 			{
-				Logger.Info(CultureInfo.CurrentCulture, I18n.Main_PathSubmitted, i.Content);
+				Log.Information(I18n.Main_PathSubmitted, i.Content);
 				AutoKkutuMain.SendMessage(i.Content);
 			}
 		}
@@ -303,9 +302,9 @@ namespace AutoKkutu
 
 		private void OnWindowClose(object? sender, CancelEventArgs e)
 		{
-			Logger.Info(I18n.Main_ClosingDBConnection);
+			Log.Information(I18n.Main_ClosingDBConnection);
 			AutoKkutuMain.Database.Dispose();
-			LogManager.Shutdown();
+			Log.CloseAndFlush();
 		}
 
 		private void SearchField_KeyDown(object? sender, KeyEventArgs e)

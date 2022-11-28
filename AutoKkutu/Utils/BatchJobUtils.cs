@@ -3,7 +3,7 @@ using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
-using NLog;
+using Serilog;
 using System;
 using System.Globalization;
 using System.Threading;
@@ -15,7 +15,6 @@ namespace AutoKkutu.Utils
 	public static class BatchJobUtils
 	{
 		private const string _namespace = nameof(BatchJobUtils);
-		private static readonly Logger Logger = LogManager.GetLogger(_namespace);
 
 		/// <summary>
 		/// Check if the word is available in the current server using the official kkutu dictionary feature.
@@ -24,7 +23,7 @@ namespace AutoKkutu.Utils
 		/// <returns>True if existence is verified, false otherwise.</returns>
 		public static bool CheckOnline(string word)
 		{
-			Logger.Info(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline, word);
+			Log.Information(I18n.BatchJob_CheckOnline, word);
 
 			// Enter the word to dictionary search field
 			JSEvaluator.EvaluateJS($"document.getElementById('dict-input').value = '{word}'");
@@ -37,20 +36,20 @@ namespace AutoKkutu.Utils
 
 			// Query the response
 			string result = JSEvaluator.EvaluateJS("document.getElementById('dict-output').innerHTML");
-			Logger.Info(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline_Response, result);
+			Log.Information(I18n.BatchJob_CheckOnline_Response, result);
 			if (string.IsNullOrWhiteSpace(result) || string.Equals(result, "404: 유효하지 않은 단어입니다.", StringComparison.OrdinalIgnoreCase))
 			{
-				Logger.Warn(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline_NotFound, word);
+				Log.Warning(I18n.BatchJob_CheckOnline_NotFound, word);
 				return false;
 			}
 			else if (string.Equals(result, "검색 중", StringComparison.OrdinalIgnoreCase))
 			{
-				Logger.Warn(I18n.BatchJob_CheckOnline_InvalidResponse);
+				Log.Warning(I18n.BatchJob_CheckOnline_InvalidResponse);
 				return CheckOnline(word);
 			}
 			else
 			{
-				Logger.Info(CultureInfo.CurrentCulture, I18n.BatchJob_CheckOnline_Found, word);
+				Log.Information(I18n.BatchJob_CheckOnline_Found, word);
 				return true;
 			}
 		}
@@ -78,7 +77,7 @@ namespace AutoKkutu.Utils
 
 			DatabaseEvents.TriggerDatabaseImportStart(new DatabaseImportEventArgs("Batch Add Words"));
 
-			Logger.Info(CultureInfo.CurrentCulture, "{0} elements queued.", wordlist.Length);
+			Log.Information("{0} elements queued.", wordlist.Length);
 
 			var info = new AddWordInfo
 			{
@@ -92,7 +91,7 @@ namespace AutoKkutu.Utils
 				BatchAddWordInfo result = PerformBatchAddWord(connection, wordlist, onlineVerify, ref info);
 
 				string message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
-				Logger.Info(CultureInfo.CurrentCulture, "Database Operation Complete: {0}", message);
+				Log.Information("Database Operation Complete: {0}", message);
 				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Add Word", message));
 				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			});
@@ -109,7 +108,7 @@ namespace AutoKkutu.Utils
 				// Check word length
 				if (word.Length <= 1)
 				{
-					Logger.Warn(CultureInfo.CurrentCulture, "{word} is too short to add!", word);
+					Log.Warning("{word} is too short to add!", word);
 					result.FailedCount++;
 					continue;
 				}
@@ -164,21 +163,21 @@ namespace AutoKkutu.Utils
 				info.NewEndNodeCount = newEndNodeCount;
 				info.NewAttackNodeCount = newAttackNodeCount;
 
-				Logger.Info(CultureInfo.CurrentCulture, "Adding {word} into database... (flags: {flags})", word, flags);
+				Log.Information("Adding {word} into database... (flags: {flags})", word, flags);
 				if (connection.AddWord(word, flags))
 				{
-					Logger.Info(CultureInfo.CurrentCulture, "Successfully Add {word} to database!", word);
+					Log.Information("Successfully Add {word} to database!", word);
 					return AddWordResult.Success;
 				}
 				else
 				{
-					Logger.Warn(CultureInfo.CurrentCulture, "{word} already exists on database", word);
+					Log.Warning("{word} already exists on database", word);
 					return AddWordResult.Duplicate;
 				}
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, CultureInfo.CurrentCulture, "Failed to add {word} to the database", word);
+				Log.Error(ex, "Failed to add {word} to the database", word);
 				return AddWordResult.Failed;
 			}
 		}
@@ -190,7 +189,7 @@ namespace AutoKkutu.Utils
 
 			DatabaseEvents.TriggerDatabaseImportStart(new DatabaseImportEventArgs("Batch Remove Word"));
 
-			Logger.Info(CultureInfo.CurrentCulture, "{0} elements queued.", wordlist.Length);
+			Log.Information("{0} elements queued.", wordlist.Length);
 
 			Task.Run(() =>
 			{
@@ -204,7 +203,7 @@ namespace AutoKkutu.Utils
 				}
 
 				string message = $"{SuccessCount} deleted / {FailedCount} failed";
-				Logger.Info(CultureInfo.CurrentCulture, "Batch remove operation complete: {0}", message);
+				Log.Information("Batch remove operation complete: {0}", message);
 				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Remove Word", message));
 				MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			});
@@ -221,7 +220,7 @@ namespace AutoKkutu.Utils
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "Failed to remove {word} from the database", word);
+				Log.Error(ex, "Failed to remove {word} from the database", word);
 				return false;
 			}
 		}
@@ -239,7 +238,7 @@ namespace AutoKkutu.Utils
 
 			DatabaseEvents.TriggerDatabaseImportStart(new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node"));
 
-			Logger.Info(CultureInfo.CurrentCulture, "{0} elements queued.", NodeList.Length);
+			Log.Information("{0} elements queued.", NodeList.Length);
 			foreach (string node in NodeList)
 			{
 				if (string.IsNullOrWhiteSpace(node))
@@ -253,24 +252,24 @@ namespace AutoKkutu.Utils
 					}
 					else if (connection.AddNode(node, type))
 					{
-						Logger.Info(CultureInfo.CurrentCulture, "Successfully add node {node}!", node[0]);
+						Log.Information("Successfully add node {node}!", node[0]);
 						SuccessCount++;
 					}
 					else
 					{
-						Logger.Warn(CultureInfo.CurrentCulture, "{node} already exists.", node[0]);
+						Log.Warning("{node} already exists.", node[0]);
 						DuplicateCount++;
 					}
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "Failed to add node {node}!", node[0]);
+					Log.Error(ex, "Failed to add node {node}!", node[0]);
 					FailedCount++;
 				}
 			}
 
 			string message = $"{SuccessCount} succeed / {DuplicateCount} duplicated / {FailedCount} failed";
-			Logger.Info(CultureInfo.CurrentCulture, "Database Operation Complete: {0}", message);
+			Log.Information("Database Operation Complete: {0}", message);
 			DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node", message));
 			MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
