@@ -221,5 +221,11 @@ BEGIN
 END;
 ");
 		}
+
+		public void ExecuteVacuum()
+		{
+			if (Database.IsSqlite() || Database.IsNpgsql())
+				Database.ExecuteSqlRaw("VACUUM;");
+		}
 	}
 }

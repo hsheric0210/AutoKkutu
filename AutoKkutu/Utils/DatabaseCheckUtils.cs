@@ -20,10 +20,10 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
 		/// </summary>
-		/// <param name="UseOnlineDB">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
-		public static void CheckDB(this PathDbContext context, bool UseOnlineDB)
+		/// <param name="checkOnlineDictionary">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
+		public static void CheckDB(this PathDbContext context, bool checkOnlineDictionary)
 		{
-			if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS(nameof(CheckDB), "document.getElementById('dict-output').style")))
+			if (checkOnlineDictionary && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS(nameof(CheckDB), "document.getElementById('dict-output').style")))
 			{
 				MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 여십시오.", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
@@ -42,57 +42,57 @@ namespace AutoKkutu.Utils
 
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
 
-					var deletionList = new List<string>();
-					Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
-					var flagCorrection = new Dictionary<string, (int, int)>();
+					var delete = new List<string>();
+					Dictionary<string, string> wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
+					var flagCorrection = new Dictionary<string, int>();
 
 					Log.Information("Opening auxiliary connection...");
 					using (PathDbContext secondaryContext = new PathDbContext(context.ProviderType, context.ConnectionString))
 					{
-						DbSet<WordModel> table = secondaryContext.Word;
+						DbSet<WordModel> wordTable = secondaryContext.Word;
 
 						// Deduplicate
-						DeduplicatedCount = table.DeduplicateDatabaseAndGetCount();
+						DeduplicatedCount = wordTable.DeduplicateDatabaseAndGetCount();
 
 						// Refresh node lists
-						table.RefreshNodeLists();
+						secondaryContext.RefreshNodeLists();
 
 						// Check for errorsd
 						Log.Information("Searching problems...");
 
 						watch.Start();
-						foreach (WordModel word in table)
+						foreach (WordModel word in wordTable) // for each all words
 						{
 							currentElementIndex++;
 							string content = word.Word;
-							Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
 
 							// Check word validity
-							if (IsInvalid(content))
+							if (IsWordInvalid(content))
 							{
-								Log.Information("Not a valid word; Will be removed.");
-								deletionList.Add(content);
+								Log.Information("Invalid word {word} will be removed.", content);
+								delete.Add(content);
 								continue;
 							}
 
 							// Online verify
-							if (UseOnlineDB && !secondaryContext.CheckElementOnline(content))
+							if (checkOnlineDictionary && !BatchJobUtils.CheckOnline(content.Trim()))
 							{
-								deletionList.Add(content);
+								Log.Information("Inexistent-in-online word {word} will be removed.", content);
+								delete.Add(content);
 								continue;
 							}
 
 							// Check WordIndex tag
-							CheckIndexColumn(reader, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
+							ValidateWordIndex(word, WordIndexType.WordIndex, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
 
 							// Check ReverseWordIndex tag
-							CheckIndexColumn(reader, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
+							ValidateWordIndex(word, WordIndexType.ReverseWordIndex, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
 
 							// Check KkutuIndex tag
-							CheckIndexColumn(reader, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
+							ValidateWordIndex(word, WordIndexType.KkutuWordIndex, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
 
 							// Check Flags
-							CheckFlagsColumn(reader, flagCorrection);
+							ValidateFlags(word, flagCorrection);
 						}
 						watch.Stop();
 						Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
@@ -100,17 +100,16 @@ namespace AutoKkutu.Utils
 						watch.Restart();
 
 						// Start fixing
-						RemovedCount += secondaryContext.DeleteElements(deletionList);
-						FixedCount += secondaryContext.FixIndex(wordFixList, DatabaseConstants.WordColumnName, null);
-						FixedCount += secondaryContext.FixIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode);
-						FixedCount += secondaryContext.FixIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode);
-						FixedCount += secondaryContext.FixIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode);
-						FixedCount += secondaryContext.FixFlag(flagCorrection);
+						RemovedCount += wordTable.DeleteWordRange(delete);
+						FixedCount += wordTable.FixWordIndexRange(wordIndexCorrection, WordIndexType.WordIndex, DatabaseUtils.GetLaFHeadNode);
+						FixedCount += wordTable.FixWordIndexRange(reverseWordIndexCorrection, WordIndexType.ReverseWordIndex, DatabaseUtils.GetFaLHeadNode);
+						FixedCount += wordTable.FixWordIndexRange(kkutuIndexCorrection, WordIndexType.KkutuWordIndex, DatabaseUtils.GetKkutuHeadNode);
+						FixedCount += wordTable.FixFlagRange(flagCorrection);
 
 						watch.Stop();
 						Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
-						secondaryContext.ExecuteVacuum();
+						secondaryContext.Vacuum();
 					}
 
 					Log.Information("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
@@ -127,158 +126,112 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// (지원되는 DBMS에 한해) Vacuum 작업을 실행합니다.
 		/// </summary>
-		private static void ExecuteVacuum(this PathDbContext connection)
+		private static void Vacuum(this PathDbContext context)
 		{
 			var watch = new Stopwatch();
 			Log.Information("Executing vacuum...");
 			watch.Restart();
-			connection.PerformVacuum();
+			context.ExecuteVacuum();
 			watch.Stop();
 			Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 		}
 
-		private static int FixFlag(this PathDbContext connection, Dictionary<string, (int, int)> FlagCorrection)
+		private static int FixFlagRange(this DbSet<WordModel> table, Dictionary<string, int> correctionRange)
 		{
-			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))
+			int counter = 0;
+			foreach (var correction in correctionRange)
 			{
-				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
-				command.AddParameters(connection.CreateParameter(CommonDatabaseType.SmallInt, "@flags", 0));
-				command.TryPrepare();
-
-				foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
-				{
-					command.UpdateParameter("@word", pair.Key);
-					command.UpdateParameter("@flags", pair.Value.Item2);
-
-					if (command.ExecuteNonQuery() > 0)
-					{
-						Log.Information("Fixed {column:l} of {word}: from {from} to {to}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
-						count++;
-					}
-				}
+				var elements = table.Where(w => string.Equals(w.Word, correction.Key)).ToList();
+				foreach (var element in elements)
+					element.Flags = correction.Value;
+				counter += elements.Count;
 			}
-
-			return count;
+			return counter;
 		}
 
-		private static int FixIndex(this CommonDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string>? correctIndexSupplier)
+		private static int FixWordIndexRange(this DbSet<WordModel> table, IDictionary<string, string> range, WordIndexType wordIndexType, Func<string, string>? indexSupplier)
 		{
-			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = @correctIndex WHERE {DatabaseConstants.WordColumnName} = @word;"))
+			int counter = 0;
+			foreach (var (word, wordIndex) in range)
 			{
-				var parameters = new CommonDatabaseParameter[2] {
-					connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"), connection.CreateParameter(CommonDatabaseType.Character, 1, "@correctIndex", 0)
-				};
-				if (indexColumnName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.OrdinalIgnoreCase))
-					parameters[1] = connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@correctIndex", 0);
-				command.AddParameters(parameters);
-				command.TryPrepare();
+				IList<WordModel> updateRange = table.Where(w => string.Equals(w.Word, word)).ToList();
 
-				foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
-				{
-					string correctWordIndex;
-					if (correctIndexSupplier == null)
-						correctWordIndex = pair.Value;
-					else
-						correctWordIndex = correctIndexSupplier(pair.Key);
-
-					command.UpdateParameter("@word", pair.Key);
-					command.UpdateParameter("@correctIndex", correctWordIndex);
-					if (command.ExecuteNonQuery() > 0)
-					{
-						if (correctIndexSupplier == null)
-							Log.Information("Fixed {column}: from {from} to {to}.", indexColumnName, pair.Key, correctWordIndex);
-						else
-							Log.Information("Fixed {column} of {word}: from {from} to {to}.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
-
-						count++;
-					}
-				}
+				foreach (WordModel element in updateRange)
+					element.SetWordIndex(wordIndexType, wordIndex);
+				Log.Information("{funcName}: Reset {wordIndexType} of {word} to {wordIndexValue}.", nameof(FixWordIndexRange), wordIndexType, word, wordIndex);
+				counter += updateRange.Count;
 			}
-
-			return count;
+			return counter;
 		}
 
-		private static int DeleteElements(this CommonDatabaseConnection connection, IEnumerable<string> DeletionList)
+		private static int DeleteWordRange(this DbSet<WordModel> table, IEnumerable<string> range)
 		{
-			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word"))
+			int counter = 0;
+			foreach (string word in range)
 			{
-				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
-				command.TryPrepare();
+				IList<WordModel> removalRange = table.Where(w => string.Equals(w.Word, word)).ToList();
+				table.RemoveRange(removalRange);
 
-				foreach (string word in DeletionList)
-				{
-					command.UpdateParameter("@word", word);
-					if (command.ExecuteNonQuery() > 0)
-					{
-						Log.Information("Removed {word} from database.", word);
-						count++;
-					}
-				}
+				Log.Information("{funcName}: Removed {word}", nameof(DeleteWordRange), word);
+				counter += removalRange.Count;
 			}
-
-			return count;
+			return counter;
 		}
 
-		private static void CheckFlagsColumn(DbDataReader reader, Dictionary<string, (int, int)> FlagCorrection)
+		private static void ValidateFlags(WordModel word, IDictionary<string, int> correctionRange)
 		{
-			string content = reader.GetString(reader.GetOrdinal(DatabaseConstants.WordColumnName));
-			WordDatabaseAttributes correctFlags = DatabaseUtils.GetFlags(content);
-			int _correctFlags = (int)correctFlags;
-			int currentFlags = reader.GetInt32(reader.GetOrdinal(DatabaseConstants.FlagsColumnName));
-			if (_correctFlags != currentFlags)
+			WordDbTypes calculatedFlags = DatabaseUtils.GetWordFlags(word.Word);
+			int calculatedFlagsInt = (int)calculatedFlags;
+			if (calculatedFlagsInt != word.Flags)
 			{
-				Log.Information("Invaild flags, will be fixed to {flags}.", correctFlags);
-				FlagCorrection.Add(content, (currentFlags, _correctFlags));
+				Log.Information("{funcName}: {word} has invalid flags {flags}, will be reset to {correctFlags}.", nameof(ValidateFlags), word.Word, (WordDbTypes)word.Flags, calculatedFlags, calculatedFlags);
+				correctionRange.Add(word.Word, calculatedFlagsInt);
 			}
 		}
 
-		private static void CheckIndexColumn(DbDataReader reader, string indexColumnName, Func<string, string> correctIndexSupplier, Dictionary<string, string> toBeCorrectedTo)
+		private static void ValidateWordIndex(WordModel word, WordIndexType type, Func<string, string> correctIndexSupplier, IDictionary<string, string> correctionRange)
 		{
-			string content = reader.GetString(reader.GetOrdinal(DatabaseConstants.WordColumnName));
-			string correctWordIndex = correctIndexSupplier(content);
-			string currentWordIndex = reader.GetString(reader.GetOrdinal(indexColumnName));
-			if (correctWordIndex != currentWordIndex)
+			string correctWordIndex = correctIndexSupplier(word.Word);
+			string wordIndex = word.GetWordIndex(type);
+			if (!string.Equals(correctWordIndex, wordIndex, StringComparison.OrdinalIgnoreCase))
 			{
-				Log.Information("Invaild {indexColumn} column, will be fixed to {correctIndex}.", indexColumnName, correctWordIndex);
-				toBeCorrectedTo.Add(content, currentWordIndex);
+				Log.Information("{funcName}: {word} has invalid word index {wordIndex} on {wordIndexType}, will be reset to {correctWordIndex}.", nameof(ValidateWordIndex), word.Word, wordIndex, type, correctWordIndex);
+				correctionRange.Add(word.Word, wordIndex);
 			}
 		}
 
 		/// <summary>
 		/// 단어가 올바른 단어인지, 유효하지 않은 문자를 포함하고 있진 않은지 검사합니다.
 		/// </summary>
-		/// <param name="content">검사할 단어</param>
+		/// <param name="word">검사할 단어</param>
 		/// <returns>단어가 유효할 시 false, 그렇지 않을 경우 true</returns>
-		private static bool IsInvalid(string content)
+		private static bool IsWordInvalid(string word)
 		{
-			if (content.Length == 1 || int.TryParse(content[0].ToString(), out int _))
+			if (word.Length == 1 || int.TryParse(word[0].ToString(), out int _))
 				return true;
 
-			char first = content[0];
+			char first = word[0];
 			if (first is '(' or '{' or '[' or '-' or '.')
 				return true;
 
-			char last = content.Last();
+			char last = word.Last();
 			if (last is ')' or '}' or ']')
 				return true;
 
-			return content.Contains(' ', StringComparison.Ordinal) || content.Contains(':', StringComparison.Ordinal);
+			return word.Contains(' ', StringComparison.Ordinal) || word.Contains(':', StringComparison.Ordinal);
 		}
 
 		/// <summary>
 		/// 단어 노드 목록들(한방 단어 노드 목록, 공격 단어 노드 목록 등)을 데이터베이스로부터 다시 로드합니다.
 		/// </summary>
-		private static void RefreshNodeLists(this CommonDatabaseConnection connection)
+		private static void RefreshNodeLists(this PathDbContext context)
 		{
 			var watch = new Stopwatch();
 			watch.Start();
 			Log.Information("Updating node lists...");
 			try
 			{
-				PathManager.UpdateNodeLists(connection);
+				PathManager.UpdateNodeLists(context);
 				watch.Stop();
 				Log.Information("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 			}
@@ -288,7 +241,7 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		private static int DeduplicateDatabaseAndGetCount(this CommonDatabaseConnection connection)
+		private static int DeduplicateDatabaseAndGetCount(this DbSet<WordModel> table)
 		{
 			int count = 0;
 			var watch = new Stopwatch();
@@ -296,7 +249,7 @@ namespace AutoKkutu.Utils
 			Log.Information("Deduplicating entries...");
 			try
 			{
-				count = connection.DeduplicateDatabase();
+				count = table.DeduplicateDatabase();
 				watch.Stop();
 				Log.Information("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 			}
@@ -305,20 +258,6 @@ namespace AutoKkutu.Utils
 				Log.Error(ex, "Deduplication failed");
 			}
 			return count;
-		}
-
-		/// <summary>
-		/// 끄투 사전 기능을 이용하여 단어가 해당 서버의 데이터베이스에 존재하는지 검사하고, 만약 존재하지 않는다면 데이터베이스에서 삭제합니다.
-		/// </summary>
-		/// <param name="word">검사할 단어</param>
-		/// <returns>해당 단어가 서버에서 사용할 수 있는지의 여부</returns>
-		private static bool CheckElementOnline(this CommonDatabaseConnection connection, string word)
-		{
-			bool result = BatchJobUtils.CheckOnline(word.Trim());
-			if (!result)
-				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
-
-			return result;
 		}
 	}
 }

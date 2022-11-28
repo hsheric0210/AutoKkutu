@@ -3,7 +3,7 @@
 namespace AutoKkutu.Constants
 {
 	[Flags]
-	public enum WordAttributes
+	public enum WordType
 	{
 		None = 0,
 		EndWord = 1 << 0,

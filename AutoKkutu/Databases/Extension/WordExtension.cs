@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace AutoKkutu.Databases.Extension
 {
-	public static class DatabaseWordExtension
+	public static class WordExtension
 	{
-		public static bool AddWord(this DbSet<WordModel> table, string word, WordDatabaseAttributes flags)
+		public static bool AddWord(this DbSet<WordModel> table, string word, WordDbTypes flags)
 		{
 			if (table == null)
 				throw new ArgumentNullException(nameof(table));

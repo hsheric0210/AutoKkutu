@@ -39,44 +39,44 @@ namespace AutoKkutu.Databases.Extension
 			switch (mode)
 			{
 				case GameMode.FirstAndLast:
-					endWordFlag = (int)WordDatabaseAttributes.ReverseEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.ReverseAttackWord;
+					endWordFlag = (int)WordDbTypes.ReverseEndWord;
+					attackWordFlag = (int)WordDbTypes.ReverseAttackWord;
 					return;
 
 				case GameMode.MiddleAndFirst:
-					endWordFlag = (int)WordDatabaseAttributes.MiddleEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.MiddleAttackWord;
+					endWordFlag = (int)WordDbTypes.MiddleEndWord;
+					attackWordFlag = (int)WordDbTypes.MiddleAttackWord;
 					return;
 
 				case GameMode.Kkutu:
-					endWordFlag = (int)WordDatabaseAttributes.KkutuEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.KkutuAttackWord;
+					endWordFlag = (int)WordDbTypes.KkutuEndWord;
+					attackWordFlag = (int)WordDbTypes.KkutuAttackWord;
 					return;
 
 				case GameMode.KungKungTta:
-					endWordFlag = (int)WordDatabaseAttributes.KKTEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.KKTAttackWord;
+					endWordFlag = (int)WordDbTypes.KKTEndWord;
+					attackWordFlag = (int)WordDbTypes.KKTAttackWord;
 					return;
 			}
-			endWordFlag = (int)WordDatabaseAttributes.EndWord;
-			attackWordFlag = (int)WordDatabaseAttributes.AttackWord;
+			endWordFlag = (int)WordDbTypes.EndWord;
+			attackWordFlag = (int)WordDbTypes.AttackWord;
 		}
 
-		private static WordAttributes GetPathObjectFlags(GetPathObjectFlagsInfo info, out int missionCharCount)
+		private static WordType GetPathObjectFlags(GetPathObjectFlagsInfo info, out int missionCharCount)
 		{
-			WordDatabaseAttributes WordDatabaseAttributes = info.WordDatabaseAttributes;
-			WordAttributes wordAttributes = WordAttributes.None;
+			WordDbTypes WordDatabaseAttributes = info.WordDatabaseAttributes;
+			WordType wordAttributes = WordType.None;
 			if (WordDatabaseAttributes.HasFlag(info.EndWordFlag))
-				wordAttributes |= WordAttributes.EndWord;
+				wordAttributes |= WordType.EndWord;
 			if (WordDatabaseAttributes.HasFlag(info.AttackWordFlag))
-				wordAttributes |= WordAttributes.AttackWord;
+				wordAttributes |= WordType.AttackWord;
 
 			string missionChar = info.MissionChar;
 			if (!string.IsNullOrWhiteSpace(missionChar))
 			{
 				missionCharCount = info.Word.Count(c => c == missionChar[0]);
 				if (missionCharCount > 0)
-					wordAttributes |= WordAttributes.MissionWord;
+					wordAttributes |= WordType.MissionWord;
 			}
 			else
 			{
@@ -106,10 +106,10 @@ namespace AutoKkutu.Databases.Extension
 			return new PathObject(word.Word, GetPathObjectFlags(new GetPathObjectFlagsInfo
 			{
 				Word = word.Word,
-				WordDatabaseAttributes = (WordDatabaseAttributes)word.Flags,
+				WordDatabaseAttributes = (WordDbTypes)word.Flags,
 				MissionChar = missionChar,
-				EndWordFlag = (WordDatabaseAttributes)endWordFlag,
-				AttackWordFlag = (WordDatabaseAttributes)attackWordFlag
+				EndWordFlag = (WordDbTypes)endWordFlag,
+				AttackWordFlag = (WordDbTypes)attackWordFlag
 			}, out int missionCharCount), missionCharCount);
 		}
 
@@ -137,7 +137,7 @@ namespace AutoKkutu.Databases.Extension
 					return false;
 
 				// KungKungTta
-				if (info.Mode == GameMode.KungKungTta && (word.Flags & (int)WordDatabaseAttributes.KKT3) == 0)
+				if (info.Mode == GameMode.KungKungTta && (word.Flags & (int)WordDbTypes.KKT3) == 0)
 					return false;
 
 				return true;
@@ -156,9 +156,9 @@ namespace AutoKkutu.Databases.Extension
 					priority = ctx.WordPriority(word.Flags,
 								 endWordFlag,
 								 attackWordFlag,
-								 GetAttributeOrdinal(wordPreference, WordAttributes.EndWord),
-								 GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord),
-								 GetAttributeOrdinal(wordPreference, WordAttributes.None));
+								 GetAttributeOrdinal(wordPreference, WordType.EndWord),
+								 GetAttributeOrdinal(wordPreference, WordType.AttackWord),
+								 GetAttributeOrdinal(wordPreference, WordType.None));
 				}
 				else
 				{
@@ -167,21 +167,21 @@ namespace AutoKkutu.Databases.Extension
 						missionWord,
 						endWordFlag,
 						attackWordFlag,
-						GetAttributeOrdinal(wordPreference, WordAttributes.EndWord | WordAttributes.MissionWord),
-						GetAttributeOrdinal(wordPreference, WordAttributes.EndWord),
-						GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord | WordAttributes.MissionWord),
-						GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord),
-						GetAttributeOrdinal(wordPreference, WordAttributes.MissionWord),
-						GetAttributeOrdinal(wordPreference, WordAttributes.None));
+						GetAttributeOrdinal(wordPreference, WordType.EndWord | WordType.MissionWord),
+						GetAttributeOrdinal(wordPreference, WordType.EndWord),
+						GetAttributeOrdinal(wordPreference, WordType.AttackWord | WordType.MissionWord),
+						GetAttributeOrdinal(wordPreference, WordType.AttackWord),
+						GetAttributeOrdinal(wordPreference, WordType.MissionWord),
+						GetAttributeOrdinal(wordPreference, WordType.None));
 				}
 
 				return word.Word.Length + priority;
 			};
 		}
 
-		private static int GetAttributeOrdinal(WordPreference preference, WordAttributes attributes)
+		private static int GetAttributeOrdinal(WordPreference preference, WordType attributes)
 		{
-			WordAttributes[] fullAttribs = preference.GetAttributes();
+			WordType[] fullAttribs = preference.GetAttributes();
 			int index = Array.IndexOf(fullAttribs, attributes);
 			return fullAttribs.Length - (index >= 0 ? index : fullAttribs.Length) - 1;
 		}
@@ -192,11 +192,11 @@ namespace AutoKkutu.Databases.Extension
 
 			public string MissionChar;
 
-			public WordDatabaseAttributes WordDatabaseAttributes;
+			public WordDbTypes WordDatabaseAttributes;
 
-			public WordDatabaseAttributes EndWordFlag;
+			public WordDbTypes EndWordFlag;
 
-			public WordDatabaseAttributes AttackWordFlag;
+			public WordDbTypes AttackWordFlag;
 		}
 	}
 }

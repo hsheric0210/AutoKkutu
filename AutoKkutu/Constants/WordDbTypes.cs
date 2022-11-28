@@ -2,8 +2,11 @@
 
 namespace AutoKkutu.Constants
 {
+	/// <summary>
+	/// Database word table flags column
+	/// </summary>
 	[Flags]
-	public enum WordDatabaseAttributes
+	public enum WordDbTypes
 	{
 		None = 0,
 

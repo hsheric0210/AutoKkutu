@@ -49,13 +49,13 @@ namespace AutoKkutu
 
 			if (config.ActiveWordPreference != null)
 			{
-				foreach (WordAttributes attr in config.ActiveWordPreference.GetAttributes())
+				foreach (WordType attr in config.ActiveWordPreference.GetAttributes())
 					PreferenceReorderList.AddActive(new PreferenceItem(attr, WordPreference.GetName(attr)));
 			}
 
 			if (config.InactiveWordPreference != null)
 			{
-				foreach (WordAttributes attr in config.InactiveWordPreference.GetAttributes())
+				foreach (WordType attr in config.InactiveWordPreference.GetAttributes())
 					PreferenceReorderList.AddInactive(new PreferenceItem(attr, WordPreference.GetName(attr)));
 			}
 		}
@@ -152,12 +152,12 @@ namespace AutoKkutu
 			get;
 		}
 
-		public WordAttributes NodeType
+		public WordType NodeType
 		{
 			get;
 		}
 
-		public PreferenceItem(WordAttributes nodeType, string name)
+		public PreferenceItem(WordType nodeType, string name)
 		{
 			NodeType = nodeType;
 			Name = name;

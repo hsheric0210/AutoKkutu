@@ -7,21 +7,21 @@ using System.Linq;
 
 namespace AutoKkutu.Databases.Extension
 {
-	public static class DatabaseNodeExtension
+	public static class NodeExtension
 	{
-		public static DbSet<WordIndexModel> GetWordIndexTable(this PathDbContext table, NodeDatabaseAttributes nodeType)
+		public static DbSet<WordIndexModel> GetWordIndexTable(this PathDbContext table, NodeTypes nodeType)
 		{
 			if (table is null)
 				throw new ArgumentNullException(nameof(table));
 
 			return nodeType switch
 			{
-				NodeDatabaseAttributes.EndWord or NodeDatabaseAttributes.KKTEndWord => table.EndWordIndex,
-				NodeDatabaseAttributes.AttackWord or NodeDatabaseAttributes.KKTAttackWord => table.AttackWordIndex,
-				NodeDatabaseAttributes.ReverseEndWord => table.ReverseEndWordIndex,
-				NodeDatabaseAttributes.ReverseAttackWord => table.ReverseAttackWordIndex,
-				NodeDatabaseAttributes.KkutuEndWord => table.KkutuEndWordIndex,
-				NodeDatabaseAttributes.KkutuAttackWord => table.KkutuAttackWordIndex,
+				NodeTypes.EndWord or NodeTypes.KKTEndWord => table.EndWordIndex,
+				NodeTypes.AttackWord or NodeTypes.KKTAttackWord => table.AttackWordIndex,
+				NodeTypes.ReverseEndWord => table.ReverseEndWordIndex,
+				NodeTypes.ReverseAttackWord => table.ReverseAttackWordIndex,
+				NodeTypes.KkutuEndWord => table.KkutuEndWordIndex,
+				NodeTypes.KkutuAttackWord => table.KkutuAttackWordIndex,
 				_ => throw new ArgumentException("node type must be specified.", nameof(nodeType)),
 			};
 		}
