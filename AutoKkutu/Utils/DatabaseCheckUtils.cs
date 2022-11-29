@@ -2,6 +2,7 @@
 using AutoKkutu.Databases;
 using AutoKkutu.Databases.Extension;
 using AutoKkutu.Modules;
+using Dapper;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,14 @@ using System.Windows;
 
 namespace AutoKkutu.Utils
 {
-	public static class DatabaseCheckUtils
+	public static partial class DatabaseCheckUtils
 	{
 
 		/// <summary>
 		/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
 		/// </summary>
 		/// <param name="UseOnlineDB">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
-		public static void CheckDB(this DatabaseWithDefaultConnection database, bool UseOnlineDB)
+		public static void CheckDB(this AbstractDatabase database, bool UseOnlineDB)
 		{
 			if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
 			{
@@ -37,14 +38,14 @@ namespace AutoKkutu.Utils
 				{
 					var watch = new Stopwatch();
 
-					int totalElementCount = Convert.ToInt32(database.DefaultConnection.RequireNotNull().ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}"), CultureInfo.InvariantCulture);
+					int totalElementCount = database.Connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}");
 					Log.Information("Database has Total {0} elements.", totalElementCount);
 
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
 
 					var deletionList = new List<string>();
 					Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
-					var flagCorrection = new Dictionary<string, (int, int)>();
+					var flagCorrection = new Dictionary<string, int>();
 
 					Log.Information("Opening auxiliary SQLite connection...");
 					using (AbstractDatabaseConnection auxiliaryConnection = database.OpenSecondaryConnection())
@@ -56,59 +57,53 @@ namespace AutoKkutu.Utils
 						auxiliaryConnection.RefreshNodeLists();
 
 						// Check for errorsd
-						using (CommonDatabaseCommand _command = auxiliaryConnection.CreateCommand($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+						Log.Information("Searching problems...");
+						watch.Start();
+						foreach (WordModel element in auxiliaryConnection.Query<WordModel>("SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 						{
-							using DbDataReader reader = _command.ExecuteReader();
-							Log.Information("Searching problems...");
+							currentElementIndex++;
+							string word = element.Word;
+							Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, word);
 
-							int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
-							watch.Start();
-							while (reader.Read())
+							// Check word validity
+							if (IsInvalid(word))
 							{
-								currentElementIndex++;
-								string content = reader.GetString(wordOrdinal);
-								Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, content);
-
-								// Check word validity
-								if (IsInvalid(content))
-								{
-									Log.Information("Not a valid word; Will be removed.");
-									deletionList.Add(content);
-									continue;
-								}
-
-								// Online verify
-								if (UseOnlineDB && !auxiliaryConnection.CheckElementOnline(content))
-								{
-									deletionList.Add(content);
-									continue;
-								}
-
-								// Check WordIndex tag
-								CheckIndexColumn(reader, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
-
-								// Check ReverseWordIndex tag
-								CheckIndexColumn(reader, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
-
-								// Check KkutuIndex tag
-								CheckIndexColumn(reader, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
-
-								// Check Flags
-								CheckFlagsColumn(reader, flagCorrection);
+								Log.Information("Not a valid word; Will be removed.");
+								deletionList.Add(word);
+								continue;
 							}
-							watch.Stop();
-							Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
+
+							// Online verify
+							if (UseOnlineDB && !BatchJobUtils.CheckOnline(word.Trim()))
+							{
+								deletionList.Add(word);
+								continue;
+							}
+
+							// Check WordIndex tag
+							VerifyWordIndexes(DatabaseConstants.WordIndexColumnName, word, element.WordIndex, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
+
+							// Check ReverseWordIndex tag
+							VerifyWordIndexes(DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
+
+							// Check KkutuIndex tag
+							VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
+
+							// Check Flags
+							VerifyWordFlags(word, element.Flags, flagCorrection);
 						}
+						watch.Stop();
+						Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
 						watch.Restart();
 
 						// Start fixing
-						RemovedCount += auxiliaryConnection.DeleteElements(deletionList);
-						FixedCount += auxiliaryConnection.FixIndex(wordFixList, DatabaseConstants.WordColumnName, null);
-						FixedCount += auxiliaryConnection.FixIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName, DatabaseUtils.GetLaFHeadNode);
-						FixedCount += auxiliaryConnection.FixIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName, DatabaseUtils.GetFaLHeadNode);
-						FixedCount += auxiliaryConnection.FixIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName, DatabaseUtils.GetKkutuHeadNode);
-						FixedCount += auxiliaryConnection.FixFlag(flagCorrection);
+						RemovedCount += auxiliaryConnection.DeleteWordRange(deletionList);
+						FixedCount += auxiliaryConnection.ResetWordIndex(wordFixList, DatabaseConstants.WordColumnName);
+						FixedCount += auxiliaryConnection.ResetWordIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName);
+						FixedCount += auxiliaryConnection.ResetWordIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName);
+						FixedCount += auxiliaryConnection.ResetWordIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName);
+						FixedCount += auxiliaryConnection.ResetWordFlag(flagCorrection);
 
 						watch.Stop();
 						Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
@@ -140,113 +135,82 @@ namespace AutoKkutu.Utils
 			Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 		}
 
-		private static int FixFlag(this AbstractDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
+		private static int ResetWordFlag(this AbstractDatabaseConnection connection, IDictionary<string, int> correction)
 		{
-			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))
+			int Counter = 0;
+
+			foreach (KeyValuePair<string, int> pair in correction)
 			{
-				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
-				command.AddParameters(connection.CreateParameter(CommonDatabaseType.SmallInt, "@flags", 0));
-				command.TryPrepare();
-
-				foreach (KeyValuePair<string, (int, int)> pair in FlagCorrection)
+				int affected = connection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET flags = @Flags WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 				{
-					command.UpdateParameter("@word", pair.Key);
-					command.UpdateParameter("@flags", pair.Value.Item2);
+					Flags = pair.Value,
+					Word = pair.Key
+				});
 
-					if (command.ExecuteNonQuery() > 0)
-					{
-						Log.Information("Fixed {column:l} of {word}: from {from} to {to}.", DatabaseConstants.FlagsColumnName, pair.Key, (WordDatabaseAttributes)pair.Value.Item1, (WordDatabaseAttributes)pair.Value.Item2);
-						count++;
-					}
+				if (affected > 0)
+				{
+					Log.Information("Reset flags of {word} to {to}.", pair.Key, (WordDbTypes)pair.Value);
+					Counter += affected;
 				}
 			}
-
-			return count;
+			return Counter;
 		}
 
-		private static int FixIndex(this AbstractDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string>? correctIndexSupplier)
+		private static int ResetWordIndex(this AbstractDatabaseConnection connection, IDictionary<string, string> correction, string indexColumnName)
 		{
-			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @correctIndex WHERE {DatabaseConstants.WordColumnName} = @word;"))
+			int counter = 0;
+			foreach (KeyValuePair<string, string> pair in correction)
 			{
-				var parameters = new CommonDatabaseParameter[2] {
-					connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"), connection.CreateParameter(CommonDatabaseType.Character, 1, "@correctIndex", 0)
-				};
-				if (indexColumnName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.OrdinalIgnoreCase))
-					parameters[1] = connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@correctIndex", 0);
-				command.AddParameters(parameters);
-				command.TryPrepare();
-
-				foreach (KeyValuePair<string, string> pair in WordIndexCorrection)
+				int affected = connection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 				{
-					string correctWordIndex;
-					if (correctIndexSupplier == null)
-						correctWordIndex = pair.Value;
-					else
-						correctWordIndex = correctIndexSupplier(pair.Key);
-
-					command.UpdateParameter("@word", pair.Key);
-					command.UpdateParameter("@correctIndex", correctWordIndex);
-					if (command.ExecuteNonQuery() > 0)
-					{
-						if (correctIndexSupplier == null)
-							Log.Information("Fixed {column}: from {from} to {to}.", indexColumnName, pair.Key, correctWordIndex);
-						else
-							Log.Information("Fixed {column} of {word}: from {from} to {to}.", indexColumnName, pair.Key, pair.Value, correctWordIndex);
-
-						count++;
-					}
+					WordIndex = pair.Value,
+					Word = pair.Key
+				});
+				if (affected > 0)
+				{
+					Log.Information("Reset {column} of {word} to {to}.", indexColumnName, pair.Key, pair.Value);
+					counter += affected;
 				}
 			}
-
-			return count;
+			return counter;
 		}
 
-		private static int DeleteElements(this AbstractDatabaseConnection connection, IEnumerable<string> DeletionList)
+		private static int DeleteWordRange(this AbstractDatabaseConnection connection, IEnumerable<string> range)
 		{
-			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @word"))
+			int counter = 0;
+			foreach (string word in range)
 			{
-				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
-				command.TryPrepare();
-
-				foreach (string word in DeletionList)
+				int affected = connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new
 				{
-					command.UpdateParameter("@word", word);
-					if (command.ExecuteNonQuery() > 0)
-					{
-						Log.Information("Removed {word} from database.", word);
-						count++;
-					}
+					Word = word
+				});
+				if (affected > 0)
+				{
+					Log.Information("Removed {word} from database.", word);
+					counter += affected;
 				}
 			}
-
-			return count;
+			return counter;
 		}
 
-		private static void CheckFlagsColumn(DbDataReader reader, Dictionary<string, (int, int)> FlagCorrection)
+		private static void VerifyWordFlags(string word, int currentFlags, IDictionary<string, int> correction)
 		{
-			string content = reader.GetString(reader.GetOrdinal(DatabaseConstants.WordColumnName));
-			WordDatabaseAttributes correctFlags = DatabaseUtils.GetFlags(content);
-			int _correctFlags = (int)correctFlags;
-			int currentFlags = reader.GetInt32(reader.GetOrdinal(DatabaseConstants.FlagsColumnName));
-			if (_correctFlags != currentFlags)
+			WordDbTypes correctFlags = DatabaseUtils.GetFlags(word);
+			int correctFlagsInt = (int)correctFlags;
+			if (correctFlagsInt != currentFlags)
 			{
-				Log.Information("Invaild flags, will be fixed to {flags}.", correctFlags);
-				FlagCorrection.Add(content, (currentFlags, _correctFlags));
+				Log.Information("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, currentFlags, correctFlags);
+				correction.Add(word, correctFlagsInt);
 			}
 		}
 
-		private static void CheckIndexColumn(DbDataReader reader, string indexColumnName, Func<string, string> correctIndexSupplier, Dictionary<string, string> toBeCorrectedTo)
+		private static void VerifyWordIndexes(string wordIndexName, string word, string currentWordIndex, Func<string, string> wordIndexSupplier, IDictionary<string, string> correction)
 		{
-			string content = reader.GetString(reader.GetOrdinal(DatabaseConstants.WordColumnName));
-			string correctWordIndex = correctIndexSupplier(content);
-			string currentWordIndex = reader.GetString(reader.GetOrdinal(indexColumnName));
+			string correctWordIndex = wordIndexSupplier(word);
 			if (correctWordIndex != currentWordIndex)
 			{
-				Log.Information("Invaild {indexColumn} column, will be fixed to {correctIndex}.", indexColumnName, correctWordIndex);
-				toBeCorrectedTo.Add(content, currentWordIndex);
+				Log.Information("Invaild {wordIndexName} column {currentWordIndex}, will be fixed to {correctWordIndex}.", wordIndexName, currentWordIndex, correctWordIndex);
+				correction.Add(word, correctWordIndex);
 			}
 		}
 
@@ -308,20 +272,6 @@ namespace AutoKkutu.Utils
 				Log.Error(ex, "Deduplication failed");
 			}
 			return count;
-		}
-
-		/// <summary>
-		/// 끄투 사전 기능을 이용하여 단어가 해당 서버의 데이터베이스에 존재하는지 검사하고, 만약 존재하지 않는다면 데이터베이스에서 삭제합니다.
-		/// </summary>
-		/// <param name="word">검사할 단어</param>
-		/// <returns>해당 단어가 서버에서 사용할 수 있는지의 여부</returns>
-		private static bool CheckElementOnline(this AbstractDatabaseConnection connection, string word)
-		{
-			bool result = BatchJobUtils.CheckOnline(word.Trim());
-			if (!result)
-				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
-
-			return result;
 		}
 	}
 }

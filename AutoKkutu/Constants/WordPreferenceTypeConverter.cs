@@ -17,13 +17,13 @@ namespace AutoKkutu.Constants
 			{
 				string[] pieces = text.Split(';');
 				int pieceCount = pieces.Length;
-				var attributes = new WordAttributes[pieceCount];
+				var attributes = new WordCategories[pieceCount];
 				for (int i = 0; i < pieceCount; i++)
 				{
 					string? piece = pieces[i];
 					if (!int.TryParse(piece, out int pieceInt))
 						throw new InvalidOperationException($"Failed to parse WordPreference: Failed to parse number '{piece}' at piece index {i}");
-					attributes[i] = (WordAttributes)pieceInt;
+					attributes[i] = (WordCategories)pieceInt;
 				}
 
 				return new WordPreference(attributes);

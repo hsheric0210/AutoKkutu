@@ -11,30 +11,29 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using AutoKkutu.Constants;
-using System.Globalization;
 
 namespace AutoKkutu
 {
 	public partial class DatabaseManagement : Window
 	{
 
-		private readonly DatabaseWithDefaultConnection Database;
+		private readonly AbstractDatabase Database;
 
-		public DatabaseManagement(DatabaseWithDefaultConnection database)
+		public DatabaseManagement(AbstractDatabase database)
 		{
 			Database = database;
 			InitializeComponent();
 			Title = "Data-base Management";
 		}
 
-		public static void BatchWordJob(DatabaseWithDefaultConnection database, string content, BatchWordJobOptions mode, WordDatabaseAttributes flags)
+		public static void BatchWordJob(AbstractDatabase database, string content, BatchWordJobOptions mode, WordDbTypes flags)
 		{
 			if (database == null || string.IsNullOrWhiteSpace(content))
 				return;
 
 			string[] wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-			AbstractDatabaseConnection connection = database.DefaultConnection;
+			AbstractDatabaseConnection connection = database.Connection;
 			if (mode.HasFlag(BatchWordJobOptions.Remove))
 				connection.BatchRemoveWord(wordlist);
 			else
@@ -53,7 +52,7 @@ namespace AutoKkutu
 				CheckFileExists = true
 			};
 			if (dialog.ShowDialog() ?? false)
-				SqliteDatabaseHelper.LoadFromExternalSQLite(Database.DefaultConnection, dialog.FileName);
+				SqliteDatabaseHelper.LoadFromExternalSQLite(Database.Connection, dialog.FileName);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -90,75 +89,75 @@ namespace AutoKkutu
 			}
 		}
 
-		private NodeDatabaseAttributes GetSelectedNodeTypes()
+		private NodeTypes GetSelectedNodeTypes()
 		{
-			var type = (NodeDatabaseAttributes)0;
+			var type = (NodeTypes)0;
 			if (Node_EndWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.EndWord;
+				type |= NodeTypes.EndWord;
 			if (Node_AttackWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.AttackWord;
+				type |= NodeTypes.AttackWord;
 			if (Node_Reverse_EndWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.ReverseEndWord;
+				type |= NodeTypes.ReverseEndWord;
 			if (Node_Reverse_AttackWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.ReverseAttackWord;
+				type |= NodeTypes.ReverseAttackWord;
 			if (Node_Kkutu_EndWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.KkutuEndWord;
+				type |= NodeTypes.KkutuEndWord;
 			if (Node_Kkutu_AttackWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.KkutuAttackWord;
+				type |= NodeTypes.KkutuAttackWord;
 			if (Node_KKT_EndWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.KKTEndWord;
+				type |= NodeTypes.KKTEndWord;
 			if (Node_KKT_AttackWord.IsChecked ?? false)
-				type |= NodeDatabaseAttributes.KKTAttackWord;
+				type |= NodeTypes.KKTAttackWord;
 			return type;
 		}
 
-		private void BatchAddNode(bool remove) => Database.DefaultConnection.BatchAddNode(Node_Input.Text, remove, GetSelectedNodeTypes());
+		private void BatchAddNode(bool remove) => Database.Connection.BatchAddNode(Node_Input.Text, remove, GetSelectedNodeTypes());
 
 		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked ?? false);
 
-		private WordDatabaseAttributes GetBatchAddWordDatabaseAttributes()
+		private WordDbTypes GetBatchAddWordDatabaseAttributes()
 		{
-			WordDatabaseAttributes flags = WordDatabaseAttributes.None;
+			WordDbTypes flags = WordDbTypes.None;
 
 			// 한방 단어
 			if (Batch_EndWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.EndWord;
+				flags |= WordDbTypes.EndWord;
 
 			// 공격 단어
 			if (Batch_AttackWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.AttackWord;
+				flags |= WordDbTypes.AttackWord;
 
 			// 앞말잇기 한방 단어
 			if (Batch_Reverse_EndWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.ReverseEndWord;
+				flags |= WordDbTypes.ReverseEndWord;
 
 			// 앞말잇기 공격 단어
 			if (Batch_Reverse_AttackWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.ReverseAttackWord;
+				flags |= WordDbTypes.ReverseAttackWord;
 
 			// 가운뎃말잇기 한방 단어
 			if (Batch_Middle_EndWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.MiddleEndWord;
+				flags |= WordDbTypes.MiddleEndWord;
 
 			// 가운뎃말잇기 공격 단어
 			if (Batch_Middle_AttackWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.MiddleAttackWord;
+				flags |= WordDbTypes.MiddleAttackWord;
 
 			// 끄투 한방 단어
 			if (Batch_Kkutu_EndWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.KkutuEndWord;
+				flags |= WordDbTypes.KkutuEndWord;
 
 			// 끄투 공격 단어
 			if (Batch_Kkutu_AttackWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.KkutuAttackWord;
+				flags |= WordDbTypes.KkutuAttackWord;
 
 			// 쿵쿵따 한방 단어
 			if (Batch_KKT_EndWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.KKTEndWord;
+				flags |= WordDbTypes.KKTEndWord;
 
 			// 쿵쿵따 공격 단어
 			if (Batch_KKT_AttackWord.IsChecked ?? false)
-				flags |= WordDatabaseAttributes.KKTAttackWord;
+				flags |= WordDbTypes.KKTAttackWord;
 
 			return flags;
 		}

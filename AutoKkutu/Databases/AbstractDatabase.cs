@@ -17,6 +17,10 @@ namespace AutoKkutu.Databases
 
 		public abstract string GetDBType();
 
+		public abstract string GetWordPriorityFuncName();
+
+		public abstract string GetMissionWordPriorityFuncName();
+
 		protected void Initialize(AbstractDatabaseConnection defaultConnection)
 		{
 			if (_baseConnection != null)

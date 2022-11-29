@@ -20,10 +20,10 @@ namespace AutoKkutu.Databases.PostgreSQL
 				var connection = new NpgsqlConnection(connectionString);
 				connection.Open();
 				Initialize(new PostgreSqlDatabaseConnection(connection));
-				Connection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
+				Connection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
 				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
-				Connection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE OR REPLACE FUNCTION {Connection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
+				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 BEGIN
 	IF ((flags & endWordFlag) != 0) THEN
@@ -38,7 +38,7 @@ $$ LANGUAGE plpgsql
 ");
 
 				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
-				Connection.TryExecuteNonQuery("register RearrangeMissionFunc", $@"CREATE OR REPLACE FUNCTION {Connection.GetRearrangeMissionFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
+				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {GetMissionWordPriorityFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 DECLARE
 	occurrence INTEGER;
@@ -83,18 +83,16 @@ $$ LANGUAGE plpgsql
 
 		public override string GetDBType() => "PostgreSQL";
 
-		public override void CheckConnectionType(AbstractDatabaseConnection connection)
-		{
-			if (connection is not null and not PostgreSqlDatabaseConnection)
-				throw new NotSupportedException($"Connection is not {nameof(NpgsqlConnection)}");
-		}
+		public override string GetWordPriorityFuncName() => "__AutoKkutu_Rearrange";
+
+		public override string GetMissionWordPriorityFuncName() => "__AutoKkutu_RearrangeMission";
 
 		public override AbstractDatabaseConnection OpenSecondaryConnection()
 		{
 			var connection = new NpgsqlConnection(ConnectionString);
 			connection.Open();
 			var wrappedConnection = new PostgreSqlDatabaseConnection(connection);
-			wrappedConnection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
+			wrappedConnection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 			return wrappedConnection;
 		}
 	}

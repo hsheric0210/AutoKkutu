@@ -33,7 +33,7 @@ namespace AutoKkutu
 			get; private set;
 		} = null!;
 
-		public static DatabaseWithDefaultConnection Database
+		public static AbstractDatabase Database
 		{
 			get; private set;
 		} = null!;

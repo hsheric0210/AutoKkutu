@@ -6,27 +6,27 @@ namespace AutoKkutu.Constants
 	[TypeConverter(typeof(WordPreferenceTypeConverter))]
 	public class WordPreference
 	{
-		private readonly WordAttributes[] Attributes;
+		private readonly WordCategories[] Attributes;
 
-		public WordPreference() : this(Array.Empty<WordAttributes>())
+		public WordPreference() : this(Array.Empty<WordCategories>())
 		{
 		}
 
-		public WordPreference(WordAttributes[] attributes)
+		public WordPreference(WordCategories[] attributes)
 		{
 			Attributes = attributes;
 		}
-		public WordAttributes[] GetAttributes() => Attributes;
+		public WordCategories[] GetAttributes() => Attributes;
 
-		public static string GetName(WordAttributes attr)
+		public static string GetName(WordCategories attr)
 		{
 			string name = "";
-			if (attr.HasFlag(WordAttributes.EndWord))
+			if (attr.HasFlag(WordCategories.EndWord))
 				name += "한방";
-			else if (attr.HasFlag(WordAttributes.AttackWord))
+			else if (attr.HasFlag(WordCategories.AttackWord))
 				name += "공격";
 
-			if (attr.HasFlag(WordAttributes.MissionWord))
+			if (attr.HasFlag(WordCategories.MissionWord))
 			{
 				if (string.IsNullOrEmpty(name))
 					name = "미션";
@@ -37,14 +37,14 @@ namespace AutoKkutu.Constants
 			return string.IsNullOrEmpty(name) ? "일반 단어" : $"{name} 단어";
 		}
 
-		public static WordAttributes[] GetDefault() => new WordAttributes[]
+		public static WordCategories[] GetDefault() => new WordCategories[]
 			{
-				WordAttributes.EndWord | WordAttributes.MissionWord,
-				WordAttributes.EndWord,
-				WordAttributes.AttackWord | WordAttributes.MissionWord,
-				WordAttributes.AttackWord,
-				WordAttributes.MissionWord,
-				WordAttributes.None
+				WordCategories.EndWord | WordCategories.MissionWord,
+				WordCategories.EndWord,
+				WordCategories.AttackWord | WordCategories.MissionWord,
+				WordCategories.AttackWord,
+				WordCategories.MissionWord,
+				WordCategories.None
 			};
 	}
 }

@@ -50,14 +50,6 @@ namespace AutoKkutu.Databases
 			GC.SuppressFinalize(this);
 		}
 
-		internal void ExecuteNonQuery(string v) => throw new NotImplementedException();
-
-
-		// TODO: move these to Database, not DatabaseConnection
-		public abstract string GetRearrangeFuncName();
-
-		public abstract string GetRearrangeMissionFuncName();
-
 		public abstract string GetWordListColumnOptions();
 
 		public abstract void DropWordListColumn(string columnName);

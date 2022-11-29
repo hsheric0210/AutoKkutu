@@ -35,10 +35,6 @@ namespace AutoKkutu.Databases.SQLite
 			return null;
 		}
 
-		public override string GetRearrangeFuncName() => "WordPriority";
-
-		public override string GetRearrangeMissionFuncName() => "MissionWordPriority";
-
 		public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
 		public override bool IsColumnExists(string tableName, string columnName)

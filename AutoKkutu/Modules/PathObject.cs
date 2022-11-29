@@ -77,25 +77,25 @@ namespace AutoKkutu.Modules
 		}
 
 
-		public PathObject(string content, WordAttributes flags, int missionCharCount)
+		public PathObject(string content, WordCategories flags, int missionCharCount)
 		{
 			AutoKkutuColorPreference colorPref = AutoKkutuMain.ColorPreference;
 
 			Content = content;
 			Title = content;
 
-			MakeEndAvailable = !flags.HasFlag(WordAttributes.EndWord);
-			MakeAttackAvailable = !flags.HasFlag(WordAttributes.AttackWord);
+			MakeEndAvailable = !flags.HasFlag(WordCategories.EndWord);
+			MakeAttackAvailable = !flags.HasFlag(WordCategories.AttackWord);
 			MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;
 
-			bool isMissionWord = flags.HasFlag(WordAttributes.MissionWord);
+			bool isMissionWord = flags.HasFlag(WordCategories.MissionWord);
 			string tooltipPrefix;
 
 			int i = isMissionWord ? 0 : 1;
 			Color? color = null;
-			if (flags.HasFlag(WordAttributes.EndWord))
+			if (flags.HasFlag(WordCategories.EndWord))
 				PrimaryImage = @"images\skull.png";
-			else if (flags.HasFlag(WordAttributes.AttackWord))
+			else if (flags.HasFlag(WordCategories.AttackWord))
 			{
 				PrimaryImage = @"images\attack.png";
 				i += 2;
