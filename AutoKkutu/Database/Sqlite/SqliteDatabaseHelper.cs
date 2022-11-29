@@ -7,11 +7,18 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Dapper;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace AutoKkutu.Database.SQLite
 {
 	public static class SqliteDatabaseHelper
 	{
+		static SqliteDatabaseHelper()
+		{
+			SqlMapper.SetTypeMap(typeof(CompatibleWordModel), new CustomPropertyTypeMap(typeof(CompatibleWordModel), (type, columnName) => Array.Find(type.GetProperties(), prop => prop.GetCustomAttributes(false).OfType<ColumnAttribute>().Any(attr => attr.Name == columnName))));
+		}
+
 		public static void LoadFromExternalSQLite(AbstractDatabaseConnection targetDatabase, string externalSQLiteFilePath)
 		{
 			if (!new FileInfo(externalSQLiteFilePath).Exists)
@@ -127,12 +134,20 @@ namespace AutoKkutu.Database.SQLite
 
 		private sealed class CompatibleWordModel
 		{
+			[Column(DatabaseConstants.WordColumnName)]
 			public string Word
 			{
 				get; set;
 			}
 
+			[Column(DatabaseConstants.FlagsColumnName)]
 			public int Flags
+			{
+				get; set;
+			}
+
+			[Column(DatabaseConstants.IsEndwordColumnName)]
+			public int IsEndWord
 			{
 				get; set;
 			}
