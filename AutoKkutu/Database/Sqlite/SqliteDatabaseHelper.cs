@@ -112,7 +112,7 @@ namespace AutoKkutu.Database.SQLite
 			else
 				columns = DatabaseConstants.WordColumnName + ", " + DatabaseConstants.FlagsColumnName;
 
-			foreach (CompatibleWordModel word in args.source.Query<CompatibleWordModel>($"SELECT ({columns}) FROM {DatabaseConstants.WordTableName}"))
+			foreach (CompatibleWordModel word in args.source.Query<CompatibleWordModel>($"SELECT {columns} FROM {DatabaseConstants.WordTableName}"))
 			{
 				if (hasIsEndwordColumn)
 					ImportSingleWordLegacy(args.destination, word.Word, word.Flags);

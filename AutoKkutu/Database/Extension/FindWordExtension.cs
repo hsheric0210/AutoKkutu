@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Modules;
 using Dapper;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -99,7 +100,9 @@ namespace AutoKkutu.Database.Extension
 			SelectWordEndAttackFlags(mode, out int endWordFlag, out int attackWordFlag);
 			FindQuery query = connection.CreateQuery(mode, word, missionChar, endWordFlag, attackWordFlag, preference, options);
 
-			foreach (FindResult q in connection.Query<FindResult>(query.Sql, query.Parameters))
+			Log.Debug("Using query: {query}", query.Sql);
+
+			foreach (FindResult q in connection.Query<FindResult>(query.Sql, new DynamicParameters(query.Parameters)))
 			{
 				string wordString = q.Word.Trim();
 				result.Add(new PathObject(wordString, QueryWordCategories(
@@ -107,8 +110,8 @@ namespace AutoKkutu.Database.Extension
 					(WordDbTypes)q.Flags,
 					missionChar,
 					(WordDbTypes)endWordFlag,
-					(WordDbTypes)attackWordFlag
-					, out int missionCharCount), missionCharCount));
+					(WordDbTypes)attackWordFlag,
+					out int missionCharCount), missionCharCount));
 			}
 
 			return result;
@@ -167,7 +170,7 @@ namespace AutoKkutu.Database.Extension
 			}
 			string orderPriority = $"({CreateWordPriorityFuncCall(connection, missionChar, preference, endWordFlag, attackWordFlag, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
-			return new FindQuery($"SELECT ({DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {DatabaseConstants.QueryResultLimit}", param);
+			return new FindQuery($"SELECT {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName} FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {DatabaseConstants.QueryResultLimit}", param);
 		}
 
 		private static string CreateWordPriorityFuncCall(

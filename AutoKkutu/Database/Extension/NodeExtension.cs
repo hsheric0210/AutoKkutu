@@ -62,7 +62,7 @@ namespace AutoKkutu.Database.Extension
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			List<string> result = connection.Query<string>($"SELECT ({DatabaseConstants.WordIndexColumnName}) FROM {tableName}").AsList();
+			List<string> result = connection.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM {tableName}").AsList();
 			Log.Information("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}

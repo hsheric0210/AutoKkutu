@@ -51,11 +51,7 @@ namespace AutoKkutu.Database.Extension
 			if (connection is null)
 				throw new ArgumentNullException(nameof(connection));
 
-			connection.Execute("CREATE INDEX IF NOT EXISTS @ColumnName ON @TableName (@ColumnName)", new
-			{
-				TableName = tableName,
-				ColumnName = columnName
-			});
+			connection.Execute($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
 		}
 	}
 }
