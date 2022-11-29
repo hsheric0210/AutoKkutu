@@ -34,7 +34,7 @@ namespace AutoKkutu
 
 			string[] wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-			CommonDatabaseConnection connection = database.DefaultConnection;
+			AbstractDatabaseConnection connection = database.DefaultConnection;
 			if (mode.HasFlag(BatchWordJobOptions.Remove))
 				connection.BatchRemoveWord(wordlist);
 			else

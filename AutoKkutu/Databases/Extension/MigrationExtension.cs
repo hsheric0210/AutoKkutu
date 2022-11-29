@@ -6,30 +6,30 @@ namespace AutoKkutu.Databases.Extension
 	public static class MigrationExtension
 	{
 
-		private static void AddInexistentColumns(this CommonDatabaseConnection connection)
+		private static void AddInexistentColumns(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.ReverseWordIndexColumnName))
+			if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName))
 			{
-				connection.TryExecuteNonQuery($"add {DatabaseConstants.ReverseWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
+				connection.TryExecuteNonQuery($"add {DatabaseConstants.ReverseWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
 				Log.Warning($"Added {DatabaseConstants.ReverseWordIndexColumnName} column.");
 			}
 
-			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName))
+			if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName))
 			{
-				connection.TryExecuteNonQuery($"add {DatabaseConstants.KkutuWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
+				connection.TryExecuteNonQuery($"add {DatabaseConstants.KkutuWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
 				Log.Warning($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
 			}
 		}
 
-		private static bool AddSequenceColumn(this CommonDatabaseConnection connection)
+		private static bool AddSequenceColumn(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.SequenceColumnName))
+			if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.SequenceColumnName))
 			{
 				try
 				{
@@ -46,7 +46,7 @@ namespace AutoKkutu.Databases.Extension
 			return false;
 		}
 
-		public static void CheckBackwardCompatibility(this CommonDatabaseConnection connection)
+		public static void CheckBackwardCompatibility(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -61,23 +61,23 @@ namespace AutoKkutu.Databases.Extension
 			if (needToCleanUp)
 			{
 				Log.Warning("Executing vacuum...");
-				connection.PerformVacuum();
+				connection.ExecuteVacuum();
 			}
 		}
 
-		private static bool DropIsEndWordColumn(this CommonDatabaseConnection connection)
+		private static bool DropIsEndWordColumn(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			if (connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.IsEndwordColumnName))
+			if (connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName))
 			{
 				try
 				{
-					if (!connection.IsColumnExists(DatabaseConstants.WordListTableName, DatabaseConstants.FlagsColumnName))
+					if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.FlagsColumnName))
 					{
-						connection.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
-						connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordListTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
+						connection.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
+						connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
 						Log.Warning($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
 					}
 
@@ -94,15 +94,15 @@ namespace AutoKkutu.Databases.Extension
 			return false;
 		}
 
-		private static bool UpdateKkutuIndexDataType(this CommonDatabaseConnection connection)
+		private static bool UpdateKkutuIndexDataType(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			string? kkutuindextype = connection.GetColumnType(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName);
+			string? kkutuindextype = connection.GetColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName);
 			if (kkutuindextype != null && (kkutuindextype.Equals("CHAR(2)", StringComparison.OrdinalIgnoreCase) || kkutuindextype.Equals("character", StringComparison.OrdinalIgnoreCase)))
 			{
-				connection.ChangeWordListColumnType(DatabaseConstants.WordListTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)");
+				connection.ChangeWordListColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)");
 				Log.Warning($"Changed type of '{DatabaseConstants.KkutuWordIndexColumnName}' from CHAR(2) to VARCHAR(2).");
 				return true;
 			}

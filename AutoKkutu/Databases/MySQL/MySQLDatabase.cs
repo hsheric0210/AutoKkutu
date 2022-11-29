@@ -54,23 +54,23 @@ BEGIN
 	SET occurrence = ROUND((LENGTH(word) - LENGTH(REPLACE(LOWER(word), LOWER(missionWord), ''))) / LENGTH(missionWord));
 	IF (flags & endWordFlag) != 0 THEN
 		IF occurrence > 0 THEN
-			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPriorityLength} + occurrence * 256;
 		ELSE
-			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPriorityLength};
 		END IF;
 	END IF;
 	IF (flags & attackWordFlag) != 0 THEN
 		IF occurrence > 0 THEN
-			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPriorityLength} + occurrence * 256;
 		ELSE
-			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPriorityLength};
 		END IF;
 	END IF;
 
 	IF occurrence > 0 THEN
-		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPriorityLength} + occurrence * 256;
 	ELSE
-		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPriorityLength};
 	END IF;
 END;
 ");
@@ -87,7 +87,7 @@ END;
 			}
 		}
 
-		public override void CheckConnectionType(CommonDatabaseConnection connection)
+		public override void CheckConnectionType(AbstractDatabaseConnection connection)
 		{
 			if (connection is not null and not MySqlDatabaseConnection)
 				throw new NotSupportedException($"Connection is not {nameof(MySqlConnection)}");
@@ -95,7 +95,7 @@ END;
 
 		public override string GetDBType() => "MySQL";
 
-		public override CommonDatabaseConnection OpenSecondaryConnection()
+		public override AbstractDatabaseConnection OpenSecondaryConnection()
 		{
 			var connection = new MySqlConnection(ConnectionString);
 			connection.Open();

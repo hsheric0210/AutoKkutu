@@ -6,21 +6,21 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
-	public partial class PostgreSqlDatabaseConnection : CommonDatabaseConnection
+	public partial class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
 	{
 		private readonly NpgsqlConnection Connection;
 
 		public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
 
-		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
+		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
 
 		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => this.ExecuteNonQuery($"ALTER TABLE {tableName} ALTER COLUMN {columnName} TYPE {newType}");
 
-		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP COLUMN {columnName}");
+		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} DROP COLUMN {columnName}");
 
 		public override string? GetColumnType(string tableName, string columnName)
 		{
-			tableName ??= DatabaseConstants.WordListTableName;
+			tableName ??= DatabaseConstants.WordTableName;
 			try
 			{
 				return this.ExecuteScalar("SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName))?.ToString();
@@ -40,7 +40,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public override bool IsColumnExists(string tableName, string columnName)
 		{
-			tableName ??= DatabaseConstants.WordListTableName;
+			tableName ??= DatabaseConstants.WordTableName;
 			try
 			{
 				return Convert.ToInt32(this.ExecuteScalar("SELECT COUNT(*) FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)), CultureInfo.InvariantCulture) > 0;
@@ -65,7 +65,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 		}
 
-		public override void PerformVacuum() => this.ExecuteNonQuery("VACUUM");
+		public override void ExecuteVacuum() => this.ExecuteNonQuery("VACUUM");
 
 		protected override void Dispose(bool disposing)
 		{

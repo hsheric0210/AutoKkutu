@@ -9,7 +9,7 @@ namespace AutoKkutu.Databases.Extension
 	public static class NodeExtension
 	{
 
-		public static bool AddNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
+		public static bool AddNode(this AbstractDatabaseConnection connection, string node, string? tableName = null)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -17,7 +17,7 @@ namespace AutoKkutu.Databases.Extension
 				throw new ArgumentNullException(nameof(node));
 
 			if (string.IsNullOrWhiteSpace(tableName))
-				tableName = DatabaseConstants.EndWordListTableName;
+				tableName = DatabaseConstants.EndNodeIndexTableName;
 
 			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @node;", connection.CreateParameter("@node", node[0])), CultureInfo.InvariantCulture) > 0)
 				return false;
@@ -32,7 +32,7 @@ namespace AutoKkutu.Databases.Extension
 			return true;
 		}
 
-		public static int DeleteNode(this CommonDatabaseConnection connection, string node, string? tableName = null)
+		public static int DeleteNode(this AbstractDatabaseConnection connection, string node, string? tableName = null)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -40,12 +40,12 @@ namespace AutoKkutu.Databases.Extension
 				throw new ArgumentNullException(nameof(node));
 
 			if (string.IsNullOrWhiteSpace(tableName))
-				tableName = DatabaseConstants.EndWordListTableName;
+				tableName = DatabaseConstants.EndNodeIndexTableName;
 
 			return connection.ExecuteNonQuery($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @index", connection.CreateParameter("@index", node));
 		}
 
-		public static ICollection<string> GetNodeList(this CommonDatabaseConnection connection, string tableName)
+		public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, string tableName)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));

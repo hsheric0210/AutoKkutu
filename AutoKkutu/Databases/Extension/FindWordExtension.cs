@@ -85,7 +85,7 @@ namespace AutoKkutu.Databases.Extension
 			return wordAttributes;
 		}
 
-		public static IList<PathObject> FindWord(this CommonDatabaseConnection connection, FindWordInfo info)
+		public static IList<PathObject> FindWord(this AbstractDatabaseConnection connection, FindWordInfo info)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
@@ -142,7 +142,7 @@ namespace AutoKkutu.Databases.Extension
 			return result;
 		}
 
-		private static Query CreateQuery(this CommonDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
+		private static Query CreateQuery(this AbstractDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
 		{
 			var paramList = new List<(string, object?)>();
 
@@ -182,10 +182,10 @@ namespace AutoKkutu.Databases.Extension
 			if (info.Mode == GameMode.All)
 				condition = opt.Condition = "";
 
-			return new Query($"SELECT * FROM {DatabaseConstants.WordListTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}", paramList.ToArray());
+			return new Query($"SELECT * FROM {DatabaseConstants.WordTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}", paramList.ToArray());
 		}
 
-		private static string CreateRearrangeCondition(this CommonDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag, ICollection<(string, object?)> paramList)
+		private static string CreateRearrangeCondition(this AbstractDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag, ICollection<(string, object?)> paramList)
 		{
 			if (string.IsNullOrWhiteSpace(missionChar))
 			{

@@ -9,47 +9,47 @@
 		/// <summary>
 		/// 단어 목록 테이블 이름
 		/// </summary>
-		public const string WordListTableName = "word_list";
+		public const string WordTableName = "word_list";
 
 		/// <summary>
 		/// 한방 단어 목록 테이블 이름
 		/// </summary>
-		public const string EndWordListTableName = "endword_list";
+		public const string EndNodeIndexTableName = "endword_list";
 
 		/// <summary>
 		/// 앞말잇기 한방 단어 목록 테이블 이름
 		/// </summary>
-		public const string ReverseEndWordListTableName = "reverse_endword_list";
+		public const string ReverseEndNodeIndexTableName = "reverse_endword_list";
 
 		/// <summary>
 		/// 끄투 한방 단어 목록 테이블 이름
 		/// </summary>
-		public const string KkutuEndWordListTableName = "kkutu_endword_list";
+		public const string KkutuEndNodeIndexTableName = "kkutu_endword_list";
 
 		/// <summary>
 		/// 쿵쿵따 한방 단어 목록 테이블 이름
 		/// </summary>
-		public const string KKTEndWordListTableName = "kkt_endword_list";
+		public const string KKTEndNodeIndexTableName = "kkt_endword_list";
 
 		/// <summary>
 		/// 공격 단어 목록 테이블 이름
 		/// </summary>
-		public const string AttackWordListTableName = "attackword_list";
+		public const string AttackNodeIndexTableName = "attackword_list";
 
 		/// <summary>
 		/// 앞말잇기 공격 단어 목록 테이블 이름
 		/// </summary>
-		public const string ReverseAttackWordListTableName = "reverse_attackword_list";
+		public const string ReverseAttackNodeIndexTableName = "reverse_attackword_list";
 
 		/// <summary>
 		/// 끄투 공격 단어 목록 테이블 이름
 		/// </summary>
-		public const string KkutuAttackWordListTableName = "kkutu_attackword_list";
+		public const string KkutuAttackNodeIndexTableName = "kkutu_attackword_list";
 
 		/// <summary>
 		/// 쿵쿵따 공격 단어 목록 테이블 이름
 		/// </summary>
-		public const string KKTAttackWordListTableName = "kkt_attackword_list";
+		public const string KKTAttackNodeIndexTableName = "kkt_attackword_list";
 
 		// Column names
 
@@ -94,7 +94,7 @@
 		public const int QueryResultLimit = 128;
 
 		// https://wiki.postgresql.org/wiki/Deleting_duplicates
-		public static readonly string DeduplicationQuery = $"DELETE FROM {WordListTableName} WHERE seq IN (SELECT seq FROM (SELECT seq, ROW_NUMBER() OVER w as rnum FROM {WordListTableName} WINDOW w AS (PARTITION BY word ORDER BY seq)) t WHERE t.rnum > 1);";
+		public static readonly string DeduplicationQuery = $"DELETE FROM {WordTableName} WHERE seq IN (SELECT seq FROM (SELECT seq, ROW_NUMBER() OVER w as rnum FROM {WordTableName} WINDOW w AS (PARTITION BY word ORDER BY seq)) t WHERE t.rnum > 1);";
 
 		// Error messages
 		// TODO: Move to resources
@@ -108,6 +108,6 @@
 		public const string ErrorGetColumnType = "Failed to get the data type of column '{0}' in table '{1}'";
 
 		public const int MaxWordLength = 256;
-		public const int MaxWordPlusMissionLength = 131072; // 256(Max db word length) * 256(Max mission char count per word) * 2(For correct result)
+		public const int MaxWordPriorityLength = 131072; // 256(Max db word length) * 256(Max mission char count per word) * 2(For correct result)
 	}
 }
