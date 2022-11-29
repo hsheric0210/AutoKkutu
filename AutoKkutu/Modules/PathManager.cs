@@ -175,7 +175,7 @@ namespace AutoKkutu.Modules
 
 			foreach (string word in listCopy)
 			{
-				WordDatabaseAttributes flags = DatabaseUtils.GetFlags(word);
+				WordDbTypes flags = DatabaseUtils.GetFlags(word);
 
 				try
 				{
@@ -226,7 +226,7 @@ namespace AutoKkutu.Modules
 
 		/* Other utility things */
 
-		public static bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDatabaseAttributes theFlag, ref WordDatabaseAttributes flags, bool tryAdd = false)
+		public static bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false)
 		{
 			if (tryAdd && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(item) || nodeList == null)
 				return false;

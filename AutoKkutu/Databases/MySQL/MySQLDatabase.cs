@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Databases.Extension;
+using Dapper;
 using MySqlConnector;
 using Serilog;
 using System;
@@ -6,7 +7,7 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.MySQL
 {
-	public partial class MySqlDatabase : DatabaseWithDefaultConnection
+	public partial class MySqlDatabase : AbstractDatabase
 	{
 		private readonly string ConnectionString;
 
@@ -27,10 +28,10 @@ namespace AutoKkutu.Databases.MySQL
 				Log.Information("Opening database connection...");
 				var connection = new MySqlConnection(connectionString);
 				connection.Open();
-				RegisterDefaultConnection(new MySqlDatabaseConnection(connection, DatabaseName));
+				Initialize(new MySqlDatabaseConnection(connection, DatabaseName));
 
-				DefaultConnection.TryExecuteNonQuery("drop existing RearrangeFunc", $"DROP FUNCTION IF EXISTS {DefaultConnection.GetRearrangeFuncName()};");
-				DefaultConnection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE FUNCTION {DefaultConnection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
+				Connection.TryExecute($"DROP FUNCTION IF EXISTS {GetWordPriorityFuncName()};");
+				Connection.TryExecute($@"CREATE FUNCTION {GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
 DETERMINISTIC
 NO SQL
 BEGIN
@@ -44,8 +45,8 @@ BEGIN
 END;
 ");
 
-				DefaultConnection.TryExecuteNonQuery("drop existing RearrangeMissionFunc", $"DROP FUNCTION IF EXISTS {DefaultConnection.GetRearrangeMissionFuncName()};");
-				DefaultConnection.TryExecuteNonQuery("register RearrangeMissionFunc", $@"CREATE FUNCTION {DefaultConnection.GetRearrangeMissionFuncName()}(word VARCHAR(256), flags INT, missionword VARCHAR(2), endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
+				Connection.TryExecute("drop existing RearrangeMissionFunc", $"DROP FUNCTION IF EXISTS {GetMissionWordPriorityFuncName()};");
+				Connection.TryExecute("register RearrangeMissionFunc", $@"CREATE FUNCTION {GetMissionWordPriorityFuncName()}(word VARCHAR(256), flags INT, missionword VARCHAR(2), endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
 DETERMINISTIC
 NO SQL
 BEGIN
@@ -76,7 +77,7 @@ END;
 ");
 
 				// Check the database tables
-				DefaultConnection.CheckTable();
+				Connection.CheckTable();
 
 				Log.Information("Successfully established database connection.");
 			}
@@ -87,13 +88,11 @@ END;
 			}
 		}
 
-		public override void CheckConnectionType(AbstractDatabaseConnection connection)
-		{
-			if (connection is not null and not MySqlDatabaseConnection)
-				throw new NotSupportedException($"Connection is not {nameof(MySqlConnection)}");
-		}
-
 		public override string GetDBType() => "MySQL";
+
+		public override string GetWordPriorityFuncName() => "__AutoKkutu_Rearrange";
+
+		public override string GetMissionWordPriorityFuncName() => "__AutoKkutu_RearrangeMission";
 
 		public override AbstractDatabaseConnection OpenSecondaryConnection()
 		{

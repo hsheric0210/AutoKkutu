@@ -63,7 +63,7 @@ namespace AutoKkutu.Utils
 			public int NewAttackNode;
 		}
 
-		public static void BatchAddWord(this AbstractDatabaseConnection connection, string[] wordlist, BatchWordJobOptions batchFlags, WordDatabaseAttributes WordDatabaseAttributes)
+		public static void BatchAddWord(this AbstractDatabaseConnection connection, string[] wordlist, BatchWordJobOptions batchFlags, WordDbTypes WordDatabaseAttributes)
 		{
 			if (wordlist == null)
 				throw new ArgumentNullException(nameof(wordlist));
@@ -147,7 +147,7 @@ namespace AutoKkutu.Utils
 
 		private struct AddWordInfo
 		{
-			public WordDatabaseAttributes WordDatabaseAttributes;
+			public WordDbTypes WordDatabaseAttributes;
 			public int NewEndNodeCount;
 			public int NewAttackNodeCount;
 		}
@@ -156,7 +156,7 @@ namespace AutoKkutu.Utils
 		{
 			try
 			{
-				WordDatabaseAttributes flags = info.WordDatabaseAttributes;
+				WordDbTypes flags = info.WordDatabaseAttributes;
 				int newEndNodeCount = 0, newAttackNodeCount = 0;
 				DatabaseUtils.CorrectFlags(word, ref flags, ref newEndNodeCount, ref newAttackNodeCount);
 
@@ -225,7 +225,7 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		public static void BatchAddNode(this AbstractDatabaseConnection connection, string content, bool remove, NodeDatabaseAttributes type)
+		public static void BatchAddNode(this AbstractDatabaseConnection connection, string content, bool remove, NodeTypes type)
 		{
 			if (connection == null || string.IsNullOrWhiteSpace(content))
 				return;
@@ -280,7 +280,7 @@ namespace AutoKkutu.Utils
 		/// <param name="node">추가할 노드</param>
 		/// <param name="types">추가할 노드의 속성들</param>
 		/// <returns>데이터베이스에 추가된 노드의 총 갯수</returns>
-		public static bool AddNode(this AbstractDatabaseConnection connection, string node, NodeDatabaseAttributes types)
+		public static bool AddNode(this AbstractDatabaseConnection connection, string node, NodeTypes types)
 		{
 			if (connection == null || string.IsNullOrWhiteSpace(node))
 				return false;
@@ -288,28 +288,28 @@ namespace AutoKkutu.Utils
 			bool result = false;
 
 			// 한방 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.EndWord) && connection.AddNode(node, DatabaseConstants.EndNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.EndWord) && connection.AddNode(node, DatabaseConstants.EndNodeIndexTableName);
 
 			// 공격 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.AttackWord) && connection.AddNode(node, DatabaseConstants.AttackNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.AttackWord) && connection.AddNode(node, DatabaseConstants.AttackNodeIndexTableName);
 
 			// 앞말잇기 한방 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.ReverseEndWord) && connection.AddNode(node, DatabaseConstants.ReverseEndNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.ReverseEndWord) && connection.AddNode(node, DatabaseConstants.ReverseEndNodeIndexTableName);
 
 			// 앞말잇기 공격 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.ReverseAttackWord) && connection.AddNode(node, DatabaseConstants.ReverseAttackNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.ReverseAttackWord) && connection.AddNode(node, DatabaseConstants.ReverseAttackNodeIndexTableName);
 
 			// 끄투 한방 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.KkutuEndWord) && connection.AddNode(node, DatabaseConstants.KkutuEndNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.KkutuEndWord) && connection.AddNode(node, DatabaseConstants.KkutuEndNodeIndexTableName);
 
 			// 끄투 공격 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.KkutuAttackWord) && connection.AddNode(node, DatabaseConstants.KkutuAttackNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.KkutuAttackWord) && connection.AddNode(node, DatabaseConstants.KkutuAttackNodeIndexTableName);
 
 			// 쿵쿵따 한방 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.KKTEndWord) && connection.AddNode(node, DatabaseConstants.KKTEndNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.KKTEndWord) && connection.AddNode(node, DatabaseConstants.KKTEndNodeIndexTableName);
 
 			// 쿵쿵따 공격 단어
-			result |= types.HasFlag(NodeDatabaseAttributes.KKTAttackWord) && connection.AddNode(node, DatabaseConstants.KKTAttackNodeIndexTableName);
+			result |= types.HasFlag(NodeTypes.KKTAttackWord) && connection.AddNode(node, DatabaseConstants.KKTAttackNodeIndexTableName);
 
 			return result;
 		}
@@ -320,7 +320,7 @@ namespace AutoKkutu.Utils
 		/// <param name="node">삭제할 노드</param>
 		/// <param name="types">삭제할 노드의 속성들</param>
 		/// <returns>데이터베이스에서 삭제된 노드의 총 갯수</returns>
-		public static int DeleteNode(this AbstractDatabaseConnection connection, string node, NodeDatabaseAttributes types)
+		public static int DeleteNode(this AbstractDatabaseConnection connection, string node, NodeTypes types)
 		{
 			if (connection == null || string.IsNullOrWhiteSpace(node))
 				return -1;
@@ -328,35 +328,35 @@ namespace AutoKkutu.Utils
 			int count = 0;
 
 			// 한방 단어
-			if (types.HasFlag(NodeDatabaseAttributes.EndWord))
+			if (types.HasFlag(NodeTypes.EndWord))
 				count += connection.DeleteNode(node, DatabaseConstants.EndNodeIndexTableName);
 
 			// 공격 단어
-			if (types.HasFlag(NodeDatabaseAttributes.AttackWord))
+			if (types.HasFlag(NodeTypes.AttackWord))
 				count += connection.DeleteNode(node, DatabaseConstants.AttackNodeIndexTableName);
 
 			// 앞말잇기 한방 단어
-			if (types.HasFlag(NodeDatabaseAttributes.ReverseEndWord))
+			if (types.HasFlag(NodeTypes.ReverseEndWord))
 				count += connection.DeleteNode(node, DatabaseConstants.ReverseEndNodeIndexTableName);
 
 			// 앞말잇기 공격 단어
-			if (types.HasFlag(NodeDatabaseAttributes.ReverseAttackWord))
+			if (types.HasFlag(NodeTypes.ReverseAttackWord))
 				count += connection.DeleteNode(node, DatabaseConstants.ReverseAttackNodeIndexTableName);
 
 			// 끄투 한방 단어
-			if (types.HasFlag(NodeDatabaseAttributes.KkutuEndWord))
+			if (types.HasFlag(NodeTypes.KkutuEndWord))
 				count += connection.DeleteNode(node, DatabaseConstants.KkutuEndNodeIndexTableName);
 
 			// 끄투 공격 단어
-			if (types.HasFlag(NodeDatabaseAttributes.KkutuAttackWord))
+			if (types.HasFlag(NodeTypes.KkutuAttackWord))
 				count += connection.DeleteNode(node, DatabaseConstants.KkutuAttackNodeIndexTableName);
 
 			// 쿵쿵따 한방 단어
-			if (types.HasFlag(NodeDatabaseAttributes.KKTEndWord))
+			if (types.HasFlag(NodeTypes.KKTEndWord))
 				count += connection.DeleteNode(node, DatabaseConstants.KKTEndNodeIndexTableName);
 
 			// 쿵쿵따 공격 단어
-			if (types.HasFlag(NodeDatabaseAttributes.KKTAttackWord))
+			if (types.HasFlag(NodeTypes.KKTAttackWord))
 				count += connection.DeleteNode(node, DatabaseConstants.KKTAttackNodeIndexTableName);
 
 			return count;

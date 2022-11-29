@@ -1,9 +1,8 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Modules;
-using Serilog;
+using Dapper;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 
@@ -12,12 +11,9 @@ namespace AutoKkutu.Databases.Extension
 	public static class FindWordExtension
 	{
 
-		private static CommonDatabaseCommand? CachedCommand;
-		private static string? PreviousQuery;
-
-		private static string GetIndexColumnName(FindWordInfo opts)
+		private static string GetIndexColumnName(GameMode mode, ResponsePresentedWord word)
 		{
-			switch (opts.Mode)
+			switch (mode)
 			{
 				case GameMode.FirstAndLast:
 					return DatabaseConstants.ReverseWordIndexColumnName;
@@ -25,7 +21,6 @@ namespace AutoKkutu.Databases.Extension
 				case GameMode.Kkutu:
 
 					// TODO: 세 글자용 인덱스도 만들기
-					ResponsePresentedWord word = opts.Word;
 					if (word.Content.Length == 2 || word.CanSubstitution && word.Substitution!.Length == 2)
 						return DatabaseConstants.KkutuWordIndexColumnName;
 					break;
@@ -33,228 +28,207 @@ namespace AutoKkutu.Databases.Extension
 			return DatabaseConstants.WordIndexColumnName;
 		}
 
-		public static void GetOptimalWordDatabaseAttributes(GameMode mode, out int endWordFlag, out int attackWordFlag)
+		public static void SelectWordEndAttackFlags(GameMode mode, out int endWordFlag, out int attackWordFlag)
 		{
 			switch (mode)
 			{
 				case GameMode.FirstAndLast:
-					endWordFlag = (int)WordDatabaseAttributes.ReverseEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.ReverseAttackWord;
+					endWordFlag = (int)WordDbTypes.ReverseEndWord;
+					attackWordFlag = (int)WordDbTypes.ReverseAttackWord;
 					return;
 
 				case GameMode.MiddleAndFirst:
-					endWordFlag = (int)WordDatabaseAttributes.MiddleEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.MiddleAttackWord;
+					endWordFlag = (int)WordDbTypes.MiddleEndWord;
+					attackWordFlag = (int)WordDbTypes.MiddleAttackWord;
 					return;
 
 				case GameMode.Kkutu:
-					endWordFlag = (int)WordDatabaseAttributes.KkutuEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.KkutuAttackWord;
+					endWordFlag = (int)WordDbTypes.KkutuEndWord;
+					attackWordFlag = (int)WordDbTypes.KkutuAttackWord;
 					return;
 
 				case GameMode.KungKungTta:
-					endWordFlag = (int)WordDatabaseAttributes.KKTEndWord;
-					attackWordFlag = (int)WordDatabaseAttributes.KKTAttackWord;
+					endWordFlag = (int)WordDbTypes.KKTEndWord;
+					attackWordFlag = (int)WordDbTypes.KKTAttackWord;
 					return;
 			}
-			endWordFlag = (int)WordDatabaseAttributes.EndWord;
-			attackWordFlag = (int)WordDatabaseAttributes.AttackWord;
+			endWordFlag = (int)WordDbTypes.EndWord;
+			attackWordFlag = (int)WordDbTypes.AttackWord;
 		}
 
-		private static WordAttributes GetPathObjectFlags(GetPathObjectFlagsInfo info, out int missionCharCount)
+		private static WordCategories QueryWordCategories(
+			string word,
+			WordDbTypes wordFlags,
+			string missionChar,
+			WordDbTypes endWordFlag,
+			WordDbTypes attackWordFlag,
+			out int missionCharCount)
 		{
-			WordDatabaseAttributes WordDatabaseAttributes = info.WordDatabaseAttributes;
-			WordAttributes wordAttributes = WordAttributes.None;
-			if (WordDatabaseAttributes.HasFlag(info.EndWordFlag))
-				wordAttributes |= WordAttributes.EndWord;
-			if (WordDatabaseAttributes.HasFlag(info.AttackWordFlag))
-				wordAttributes |= WordAttributes.AttackWord;
+			WordCategories category = WordCategories.None;
+			if (wordFlags.HasFlag(endWordFlag))
+				category |= WordCategories.EndWord;
+			if (wordFlags.HasFlag(attackWordFlag))
+				category |= WordCategories.AttackWord;
 
-			string missionChar = info.MissionChar;
 			if (!string.IsNullOrWhiteSpace(missionChar))
 			{
-				missionCharCount = info.Word.Count(c => c == missionChar[0]);
+				missionCharCount = word.Count(c => c == missionChar[0]);
 				if (missionCharCount > 0)
-					wordAttributes |= WordAttributes.MissionWord;
+					category |= WordCategories.MissionWord;
 			}
 			else
 			{
 				missionCharCount = 0;
 			}
 
-			return wordAttributes;
+			return category;
 		}
 
-		public static IList<PathObject> FindWord(this AbstractDatabaseConnection connection, FindWordInfo info)
+		public static IList<PathObject> FindWord(
+			this AbstractDatabaseConnection connection,
+			GameMode mode,
+			ResponsePresentedWord word,
+			string missionChar,
+			WordPreference preference,
+			PathFinderOptions options)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			var result = new List<PathObject>();
-			GetOptimalWordDatabaseAttributes(info.Mode, out int endWordFlag, out int attackWordFlag);
-			Query query = connection.CreateQuery(info, endWordFlag, attackWordFlag);
+			SelectWordEndAttackFlags(mode, out int endWordFlag, out int attackWordFlag);
+			FindQuery query = connection.CreateQuery(mode, word, missionChar, endWordFlag, attackWordFlag, preference, options);
 
-			if (CachedCommand == null || PreviousQuery?.Equals(query.Command, StringComparison.Ordinal) != true)
+			foreach (FindResult q in connection.Query<FindResult>(query.Sql, query.Parameters))
 			{
-				CachedCommand = connection.CreateCommand(query.Command);
-				Log.Debug("Query command : {command}", query.Command);
-
-				int paramCount = query.Parameters.Length;
-				var paramArray = new CommonDatabaseParameter[paramCount];
-				for (int i = 0; i < paramCount; i++)
-				{
-					(string paramName, object? paramValue) = query.Parameters[i];
-					paramArray[i] = connection.CreateParameter(paramName, paramValue);
-					Log.Debug("Query parameter : {paramName} = {paramValue}", paramName, paramValue);
-				}
-
-				CachedCommand.AddParameters(paramArray);
-				CachedCommand.TryPrepare();
-				PreviousQuery = query.Command;
-			}
-			else
-			{
-				foreach ((string paramName, object? paramValue) in query.Parameters)
-				{
-					CachedCommand.UpdateParameter(paramName, paramValue);
-					Log.Debug("Cached query with parameter : {paramName} = {paramValue}", paramName, paramValue);
-				}
-			}
-
-			using (DbDataReader reader = CachedCommand.ExecuteReader())
-			{
-				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
-				int flagsOrdinal = reader.GetOrdinal(DatabaseConstants.FlagsColumnName);
-				while (reader.Read())
-				{
-					string word = reader.GetString(wordOrdinal).Trim();
-					result.Add(new PathObject(word, GetPathObjectFlags(new GetPathObjectFlagsInfo
-					{
-						Word = word,
-						WordDatabaseAttributes = (WordDatabaseAttributes)reader.GetInt32(flagsOrdinal),
-						MissionChar = info.MissionChar,
-						EndWordFlag = (WordDatabaseAttributes)endWordFlag,
-						AttackWordFlag = (WordDatabaseAttributes)attackWordFlag
-					}, out int missionCharCount), missionCharCount));
-				}
+				string wordString = q.Word.Trim();
+				result.Add(new PathObject(wordString, QueryWordCategories(
+					 wordString,
+					(WordDbTypes)q.Flags,
+					missionChar,
+					(WordDbTypes)endWordFlag,
+					(WordDbTypes)attackWordFlag
+					, out int missionCharCount), missionCharCount));
 			}
 
 			return result;
 		}
 
-		private static Query CreateQuery(this AbstractDatabaseConnection connection, FindWordInfo info, int endWordFlag, int attackWordFlag)
+		private class FindResult
 		{
-			var paramList = new List<(string, object?)>();
-
-			string condition;
-			ResponsePresentedWord data = info.Word;
-			string indexColumnName = GetIndexColumnName(info);
-			paramList.Add(("@primaryWord", data.Content));
-			if (data.CanSubstitution)
+			public string Word
 			{
-				condition = $"WHERE ({indexColumnName} = @primaryWord OR {indexColumnName} = @secondaryWord)";
-				paramList.Add(("@secondaryWord", data.Substitution!));
-			}
-			else
-			{
-				condition = $"WHERE ({indexColumnName} = @primaryWord)";
+				get; set;
 			}
 
-			var opt = new PreferenceInfo
+			public int Flags
 			{
-				PathFinderFlags = info.PathFinderFlags,
-				WordPreference = info.WordPreference,
-				Condition = ""
-			};
-
-			// 한방 단어
-			ApplyFilter(PathFinderOptions.UseEndWord, endWordFlag, ref opt);
-
-			// 공격 단어
-			ApplyFilter(PathFinderOptions.UseAttackWord, attackWordFlag, ref opt);
-
-			// 쿵쿵따 모드에서는 쿵쿵따 전용 단어들만 추천
-			if (info.Mode == GameMode.KungKungTta)
-				condition += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordDatabaseAttributes.KKT3} != 0)";
-
-			string orderCondition = $"({CreateRearrangeCondition(connection, info.MissionChar, info.WordPreference, endWordFlag, attackWordFlag, paramList)} + LENGTH({DatabaseConstants.WordColumnName}))";
-
-			if (info.Mode == GameMode.All)
-				condition = opt.Condition = "";
-
-			return new Query($"SELECT * FROM {DatabaseConstants.WordTableName} {condition}{opt.Condition} ORDER BY {orderCondition} DESC LIMIT {DatabaseConstants.QueryResultLimit}", paramList.ToArray());
+				get; set;
+			}
 		}
 
-		private static string CreateRearrangeCondition(this AbstractDatabaseConnection connection, string missionChar, WordPreference wordPreference, int endWordFlag, int attackWordFlag, ICollection<(string, object?)> paramList)
+		private static FindQuery CreateQuery(
+			this AbstractDatabaseConnection connection,
+			GameMode mode,
+			ResponsePresentedWord word,
+			string missionChar,
+			int endWordFlag,
+			int attackWordFlag,
+			WordPreference preference,
+			PathFinderOptions options)
+		{
+			var param = new Dictionary<string, object>();
+
+			string filter = "";
+
+			if (mode != GameMode.All)
+			{
+				string wordIndexColumn = GetIndexColumnName(mode, word);
+				param.Add("@primaryWord", word.Content);
+				if (word.CanSubstitution)
+				{
+					filter = $" WHERE ({wordIndexColumn} = @primaryWord OR {wordIndexColumn} = @secondaryWord)";
+					param.Add("@secondaryWord", word.Substitution!);
+				}
+				else
+				{
+					filter = $" WHERE ({wordIndexColumn} = @primaryWord)";
+				}
+
+				// 한방 단어
+				ApplyFilter(options, PathFinderOptions.UseEndWord, endWordFlag, ref filter);
+
+				// 공격 단어
+				ApplyFilter(options, PathFinderOptions.UseAttackWord, attackWordFlag, ref filter);
+
+				// 쿵쿵따 모드에서는 쿵쿵따 전용 단어들만 추천
+				if (mode == GameMode.KungKungTta)
+					filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordDbTypes.KKT3} != 0)";
+			}
+			string orderPriority = $"({CreateWordPriorityFuncCall(connection, missionChar, preference, endWordFlag, attackWordFlag, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
+
+			return new FindQuery($"SELECT ({DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName}) FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {DatabaseConstants.QueryResultLimit}", param);
+		}
+
+		private static string CreateWordPriorityFuncCall(
+			this AbstractDatabaseConnection connection,
+			string missionChar,
+			WordPreference wordPreference,
+			int endWordFlag,
+			int attackWordFlag,
+			IDictionary<string, object> param)
 		{
 			if (string.IsNullOrWhiteSpace(missionChar))
 			{
+				// WordPriority
 				return string.Format(
 					CultureInfo.InvariantCulture,
 					"{0}({1}, {2}, {3}, {4}, {5}, {6})",
-					connection.GetRearrangeFuncName(),
+					connection.GetWordPriorityFuncName(),
 					DatabaseConstants.FlagsColumnName,
 					endWordFlag,
 					attackWordFlag,
-					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.None));
+					GetWordTypePriority(wordPreference, WordCategories.EndWord), // End word
+					GetWordTypePriority(wordPreference, WordCategories.AttackWord), // Attack word
+					GetWordTypePriority(wordPreference, WordCategories.None)); // Normal word
 			}
 			else
 			{
-				paramList.Add(("@missionChar", missionChar));
+				param.Add("@missionChar", missionChar);
 				return string.Format(
 					CultureInfo.InvariantCulture,
 					"{0}({1}, {2}, @missionChar, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})",
-					connection.GetRearrangeMissionFuncName(),
+					connection.GetMissionWordPriorityFuncName(),
 					DatabaseConstants.WordColumnName,
 					DatabaseConstants.FlagsColumnName,
 					endWordFlag,
 					attackWordFlag,
-					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord | WordAttributes.MissionWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.EndWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord | WordAttributes.MissionWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.AttackWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.MissionWord),
-					GetAttributeOrdinal(wordPreference, WordAttributes.None));
+					GetWordTypePriority(wordPreference, WordCategories.EndWord | WordCategories.MissionWord), // End mission word
+					GetWordTypePriority(wordPreference, WordCategories.EndWord), // End word
+					GetWordTypePriority(wordPreference, WordCategories.AttackWord | WordCategories.MissionWord), // Attack mission word
+					GetWordTypePriority(wordPreference, WordCategories.AttackWord), // Attack word
+					GetWordTypePriority(wordPreference, WordCategories.MissionWord), // Mission word
+					GetWordTypePriority(wordPreference, WordCategories.None)); // Normal word
 			}
 		}
 
-		private static int GetAttributeOrdinal(WordPreference preference, WordAttributes attributes)
+		private static int GetWordTypePriority(WordPreference preference, WordCategories attributes)
 		{
-			WordAttributes[] fullAttribs = preference.GetAttributes();
+			WordCategories[] fullAttribs = preference.GetAttributes();
 			int index = Array.IndexOf(fullAttribs, attributes);
 			return fullAttribs.Length - (index >= 0 ? index : fullAttribs.Length) - 1;
 		}
 
-		private static void ApplyFilter(PathFinderOptions targetFlag, int flag, ref PreferenceInfo info)
+		private static void ApplyFilter(
+			PathFinderOptions haystack,
+			PathFinderOptions needle,
+			int flag,
+			ref string filter)
 		{
-			if (!info.PathFinderFlags.HasFlag(targetFlag))
-				info.Condition += $" AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
+			if (!haystack.HasFlag(needle))
+				filter += $" AND ({DatabaseConstants.FlagsColumnName} & {flag} = 0)";
 		}
 
-		private sealed record Query(string Command, params (string, object?)[] Parameters);
-
-		private struct PreferenceInfo
-		{
-			public PathFinderOptions PathFinderFlags;
-
-			public WordPreference WordPreference;
-
-			public string Condition;
-		}
-
-		private struct GetPathObjectFlagsInfo
-		{
-			public string Word;
-
-			public string MissionChar;
-
-			public WordDatabaseAttributes WordDatabaseAttributes;
-
-			public WordDatabaseAttributes EndWordFlag;
-
-			public WordDatabaseAttributes AttackWordFlag;
-		}
+		private sealed record FindQuery(string Sql, IDictionary<string, object> Parameters);
 	}
 }

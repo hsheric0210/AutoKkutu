@@ -84,7 +84,7 @@ namespace AutoKkutu.Databases.SQLite
 		private static void ImportSingleWord(SQLiteImportArgs args, SqliteDataReader reader, string word)
 		{
 			int flags = Convert.ToInt32(reader[DatabaseConstants.FlagsColumnName], CultureInfo.InvariantCulture);
-			if (args.destination.AddWord(word, (WordDatabaseAttributes)flags))
+			if (args.destination.AddWord(word, (WordDbTypes)flags))
 				Log.Information("Imported word {word} with flags: {flags}", word, flags);
 			else
 				Log.Warning("Word {word} already exists in database.", word);
@@ -94,7 +94,7 @@ namespace AutoKkutu.Databases.SQLite
 		{
 			// Legacy support
 			bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName], CultureInfo.InvariantCulture));
-			if (args.destination.AddWord(word, isEndWord ? WordDatabaseAttributes.EndWord : WordDatabaseAttributes.None))
+			if (args.destination.AddWord(word, isEndWord ? WordDbTypes.EndWord : WordDbTypes.None))
 				Log.Information("Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
 			else
 				Log.Warning("Word {word} already exists in database.", word);

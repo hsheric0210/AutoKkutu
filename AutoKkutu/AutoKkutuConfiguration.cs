@@ -150,7 +150,7 @@ namespace AutoKkutu
 	{
 		public static AutoDBUpdateMode[] GetDBAutoUpdateModeValues() => (AutoDBUpdateMode[])Enum.GetValues(typeof(AutoDBUpdateMode));
 
-		public static WordAttributes[] GetWordPreferenceValues() => (WordAttributes[])Enum.GetValues(typeof(WordAttributes));
+		public static WordCategories[] GetWordPreferenceValues() => (WordCategories[])Enum.GetValues(typeof(WordCategories));
 
 		public static GameMode[] GetGameModeValues() => (GameMode[])Enum.GetValues(typeof(GameMode));
 

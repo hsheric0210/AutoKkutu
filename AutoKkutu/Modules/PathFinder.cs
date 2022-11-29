@@ -26,17 +26,16 @@ namespace AutoKkutu.Modules
 
 		public static event EventHandler<PathUpdatedEventArgs>? OnPathUpdated;
 
-		public static void FindPath(FindWordInfo info)
+		public static void FindPath(GameMode mode, ResponsePresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options)
 		{
-			if (ConfigEnums.IsFreeMode(info.Mode))
+			if (ConfigEnums.IsFreeMode(mode))
 			{
-				RandomPath(info);
+				RandomPath(mode, word, missionChar, options);
 				return;
 			}
 
-			ResponsePresentedWord wordCondition = info.Word;
-			string missionChar = info.MissionChar;
-			PathFinderOptions flags = info.PathFinderFlags;
+			ResponsePresentedWord wordCondition = word;
+			PathFinderOptions flags = options;
 			if (wordCondition.CanSubstitution)
 				Log.Information(I18n.PathFinder_FindPath_Substituation, wordCondition.Content, wordCondition.Substitution);
 			else
@@ -56,7 +55,7 @@ namespace AutoKkutu.Modules
 				IList<PathObject>? totalWordList = null;
 				try
 				{
-					totalWordList = AutoKkutuMain.Database.DefaultConnection.FindWord(info);
+					totalWordList = AutoKkutuMain.Database.Connection.FindWord(mode, word, missionChar, preference, options);
 					Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
@@ -95,22 +94,24 @@ namespace AutoKkutu.Modules
 			});
 		}
 
-		private static void RandomPath(FindWordInfo info)
+		private static void RandomPath(
+			GameMode mode,
+			ResponsePresentedWord word,
+			string missionChar,
+			PathFinderOptions options)
 		{
-			ResponsePresentedWord word = info.Word;
-			string missionChar = info.MissionChar;
-			string firstChar = info.Mode == GameMode.LastAndFirstFree ? word.Content : "";
+			string firstChar = mode == GameMode.LastAndFirstFree ? word.Content : "";
 
 			var watch = new Stopwatch();
 			watch.Start();
 			DisplayList = new List<PathObject>();
 			if (!string.IsNullOrWhiteSpace(missionChar))
-				DisplayList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordAttributes.None, 256));
+				DisplayList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordCategories.None, 256));
 			var random = new Random();
 			for (int i = 0; i < 10; i++)
-				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), WordAttributes.None, 256));
+				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), WordCategories.None, 256));
 			watch.Stop();
-			NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.Normal, DisplayList.Count, DisplayList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), info.PathFinderFlags));
+			NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.Normal, DisplayList.Count, DisplayList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), options));
 		}
 
 		private static void NotifyPathUpdate(PathUpdatedEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);

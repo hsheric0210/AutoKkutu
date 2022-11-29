@@ -3,6 +3,7 @@ using Serilog;
 using Npgsql;
 using System;
 using System.Globalization;
+using Dapper;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
@@ -12,18 +13,22 @@ namespace AutoKkutu.Databases.PostgreSQL
 
 		public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
 
-		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
+		public override void AddSequenceColumnToWordList() => this.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
 
-		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => this.ExecuteNonQuery($"ALTER TABLE {tableName} ALTER COLUMN {columnName} TYPE {newType}");
+		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => this.Execute($"ALTER TABLE {tableName} ALTER COLUMN {columnName} TYPE {newType}");
 
-		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} DROP COLUMN {columnName}");
+		public override void DropWordListColumn(string columnName) => this.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} DROP COLUMN {columnName}");
 
 		public override string? GetColumnType(string tableName, string columnName)
 		{
 			tableName ??= DatabaseConstants.WordTableName;
 			try
 			{
-				return this.ExecuteScalar("SELECT data_type FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName))?.ToString();
+				return this.ExecuteScalar<string>("SELECT data_type FROM information_schema.columns WHERE table_name=@TableName AND column_name=@ColumnName;", new
+				{
+					TableName = tableName,
+					ColumnName = columnName
+				});
 			}
 			catch (Exception ex)
 			{
@@ -32,10 +37,6 @@ namespace AutoKkutu.Databases.PostgreSQL
 			return null;
 		}
 
-		public override string GetRearrangeFuncName() => "__AutoKkutu_Rearrange";
-
-		public override string GetRearrangeMissionFuncName() => "__AutoKkutu_RearrangeMission";
-
 		public override string GetWordListColumnOptions() => "seq SERIAL PRIMARY KEY, word CHAR VARYING(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
 		public override bool IsColumnExists(string tableName, string columnName)
@@ -43,7 +44,11 @@ namespace AutoKkutu.Databases.PostgreSQL
 			tableName ??= DatabaseConstants.WordTableName;
 			try
 			{
-				return Convert.ToInt32(this.ExecuteScalar("SELECT COUNT(*) FROM information_schema.columns WHERE table_name=@tableName AND column_name=@columnName;", CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)), CultureInfo.InvariantCulture) > 0;
+				return this.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.columns WHERE table_name=@TableName AND column_name=@ColumnName;", new
+				{
+					TableName = tableName,
+					ColumnName = columnName
+				}) > 0;
 			}
 			catch (Exception ex)
 			{
@@ -56,7 +61,10 @@ namespace AutoKkutu.Databases.PostgreSQL
 		{
 			try
 			{
-				return Convert.ToInt32(this.ExecuteScalar("SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@tableName;", CreateParameter("@tableName", tablename)), CultureInfo.InvariantCulture) > 0;
+				return this.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@TableName;", new
+				{
+					TableName = tablename
+				}) > 0;
 			}
 			catch (Exception ex)
 			{
@@ -65,7 +73,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 		}
 
-		public override void ExecuteVacuum() => this.ExecuteNonQuery("VACUUM");
+		public override void ExecuteVacuum() => this.Execute("VACUUM;");
 
 		protected override void Dispose(bool disposing)
 		{

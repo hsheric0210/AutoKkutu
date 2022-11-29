@@ -3,7 +3,7 @@
 namespace AutoKkutu.Constants
 {
 	[Flags]
-	public enum WordDatabaseAttributes
+	public enum WordDbTypes
 	{
 		None = 0,
 

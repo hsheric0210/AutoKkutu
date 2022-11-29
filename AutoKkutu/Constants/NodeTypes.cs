@@ -3,7 +3,7 @@
 namespace AutoKkutu.Constants
 {
 	[Flags]
-	public enum NodeDatabaseAttributes
+	public enum NodeTypes
 	{
 		None = 0,
 
