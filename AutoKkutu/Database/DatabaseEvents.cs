@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AutoKkutu.Databases
+namespace AutoKkutu.Database
 {
 	public static class DatabaseEvents
 	{

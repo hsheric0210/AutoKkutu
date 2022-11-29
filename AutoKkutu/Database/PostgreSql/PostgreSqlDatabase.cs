@@ -1,9 +1,9 @@
-﻿using AutoKkutu.Databases.Extension;
+﻿using AutoKkutu.Database.Extension;
 using Npgsql;
 using System;
 using Serilog;
 
-namespace AutoKkutu.Databases.PostgreSQL
+namespace AutoKkutu.Database.PostgreSQL
 {
 	public partial class PostgreSqlDatabase : AbstractDatabase
 	{
@@ -23,7 +23,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 				Connection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
 				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
-				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
+				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 BEGIN
 	IF ((flags & endWordFlag) != 0) THEN
@@ -38,7 +38,7 @@ $$ LANGUAGE plpgsql
 ");
 
 				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
-				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {GetMissionWordPriorityFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
+				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetMissionWordPriorityFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 DECLARE
 	occurrence INTEGER;
@@ -82,10 +82,6 @@ $$ LANGUAGE plpgsql
 		}
 
 		public override string GetDBType() => "PostgreSQL";
-
-		public override string GetWordPriorityFuncName() => "__AutoKkutu_Rearrange";
-
-		public override string GetMissionWordPriorityFuncName() => "__AutoKkutu_RearrangeMission";
 
 		public override AbstractDatabaseConnection OpenSecondaryConnection()
 		{

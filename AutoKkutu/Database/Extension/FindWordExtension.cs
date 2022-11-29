@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace AutoKkutu.Databases.Extension
+namespace AutoKkutu.Database.Extension
 {
 	public static class FindWordExtension
 	{

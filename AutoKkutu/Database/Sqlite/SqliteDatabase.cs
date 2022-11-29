@@ -1,11 +1,11 @@
-﻿using AutoKkutu.Databases.Extension;
+﻿using AutoKkutu.Database.Extension;
 using Microsoft.Data.Sqlite;
 using Serilog;
 using System;
 using System.IO;
 using System.Linq;
 
-namespace AutoKkutu.Databases.SQLite
+namespace AutoKkutu.Database.SQLite
 {
 	public partial class SqliteDatabase : AbstractDatabase
 	{
@@ -45,7 +45,7 @@ namespace AutoKkutu.Databases.SQLite
 
 		// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
 		private void RegisterMissionWordPriorityFunc(SqliteConnection connection) =>
-			connection.CreateFunction(GetMissionWordPriorityFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
+			connection.CreateFunction(Connection.GetMissionWordPriorityFuncName(), (string word, int flags, string missionWord, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal) =>
 			{
 				char missionChar = char.ToUpperInvariant(missionWord[0]);
 				int missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
@@ -60,7 +60,7 @@ namespace AutoKkutu.Databases.SQLite
 
 		// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
 		private void RegisterWordPriorityFunc(SqliteConnection connection) =>
-			connection.CreateFunction(GetWordPriorityFuncName(), (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
+			connection.CreateFunction(Connection.GetWordPriorityFuncName(), (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
 			{
 				if ((flags & endWordFlag) != 0)
 					return endWordOrdinal * DatabaseConstants.MaxWordLength;
@@ -68,10 +68,6 @@ namespace AutoKkutu.Databases.SQLite
 					return attackWordOrdinal * DatabaseConstants.MaxWordLength;
 				return normalWordOrdinal * DatabaseConstants.MaxWordLength;
 			});
-
-		public override string GetWordPriorityFuncName() => "WordPriority";
-
-		public override string GetMissionWordPriorityFuncName() => "MissionWordPriority";
 
 		public override string GetDBType() => "SQLite";
 

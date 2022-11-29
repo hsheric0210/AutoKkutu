@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Utils;
 using System;
 
-namespace AutoKkutu.Databases
+namespace AutoKkutu.Database
 {
 	public abstract class AbstractDatabase : IDisposable
 	{
@@ -16,10 +16,6 @@ namespace AutoKkutu.Databases
 		public abstract AbstractDatabaseConnection OpenSecondaryConnection();
 
 		public abstract string GetDBType();
-
-		public abstract string GetWordPriorityFuncName();
-
-		public abstract string GetMissionWordPriorityFuncName();
 
 		protected void Initialize(AbstractDatabaseConnection defaultConnection)
 		{

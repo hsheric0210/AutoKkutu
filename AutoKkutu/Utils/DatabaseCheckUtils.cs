@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Databases;
-using AutoKkutu.Databases.Extension;
+using AutoKkutu.Database;
+using AutoKkutu.Database.Extension;
 using AutoKkutu.Modules;
 using Dapper;
 using Serilog;

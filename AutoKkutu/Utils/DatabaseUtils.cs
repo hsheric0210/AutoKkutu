@@ -1,9 +1,9 @@
 ﻿using AutoKkutu.ConfigFile;
 using AutoKkutu.Constants;
-using AutoKkutu.Databases;
-using AutoKkutu.Databases.MySQL;
-using AutoKkutu.Databases.PostgreSQL;
-using AutoKkutu.Databases.SQLite;
+using AutoKkutu.Database;
+using AutoKkutu.Database.MySQL;
+using AutoKkutu.Database.PostgreSQL;
+using AutoKkutu.Database.SQLite;
 using AutoKkutu.Modules;
 using Serilog;
 using System;
@@ -16,7 +16,7 @@ namespace AutoKkutu.Utils
 	public static class DatabaseUtils
 	{
 
-		public static DatabaseWithDefaultConnection CreateDatabase(Configuration config)
+		public static AbstractDatabase CreateDatabase(Configuration config)
 		{
 			if (config == null)
 				throw new ArgumentNullException(nameof(config));
@@ -24,14 +24,10 @@ namespace AutoKkutu.Utils
 			switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToUpperInvariant())
 			{
 				case "MYSQL":
+				case "MARIADB":
 					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
 					Log.Information("MySQL selected: {connString}", mysqlConnectionString);
 					return new MySqlDatabase(mysqlConnectionString);
-
-				case "MARIADB":
-					string mariadbConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
-					Log.Information("MariaDB selected: {connString}", mariadbConnectionString);
-					return new MariaDBDatabase(mariadbConnectionString);
 
 				case "POSTGRESQL":
 				case "PGSQL":

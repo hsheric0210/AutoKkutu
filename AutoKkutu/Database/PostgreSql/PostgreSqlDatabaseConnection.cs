@@ -1,17 +1,18 @@
-﻿using AutoKkutu.Databases.Extension;
+﻿using AutoKkutu.Database.Extension;
 using Serilog;
 using Npgsql;
 using System;
 using System.Globalization;
 using Dapper;
 
-namespace AutoKkutu.Databases.PostgreSQL
+namespace AutoKkutu.Database.PostgreSQL
 {
 	public partial class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
 	{
-		private readonly NpgsqlConnection Connection;
-
-		public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
+		public PostgreSqlDatabaseConnection(NpgsqlConnection connection)
+		{
+			Initialize(connection);
+		}
 
 		public override void AddSequenceColumnToWordList() => this.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
 
@@ -37,6 +38,10 @@ namespace AutoKkutu.Databases.PostgreSQL
 			return null;
 		}
 
+		public override string GetWordPriorityFuncName() => "__AutoKkutu_Rearrange";
+
+		public override string GetMissionWordPriorityFuncName() => "__AutoKkutu_RearrangeMission";
+
 		public override string GetWordListColumnOptions() => "seq SERIAL PRIMARY KEY, word CHAR VARYING(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
 		public override bool IsColumnExists(string tableName, string columnName)
@@ -57,29 +62,22 @@ namespace AutoKkutu.Databases.PostgreSQL
 			}
 		}
 
-		public override bool IsTableExists(string tablename)
+		public override bool IsTableExists(string tableName)
 		{
 			try
 			{
 				return this.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_name=@TableName;", new
 				{
-					TableName = tablename
+					TableName = tableName
 				}) > 0;
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, DatabaseConstants.ErrorIsTableExists, tablename);
+				Log.Error(ex, DatabaseConstants.ErrorIsTableExists, tableName);
 				return false;
 			}
 		}
 
 		public override void ExecuteVacuum() => this.Execute("VACUUM;");
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-				Connection.Dispose();
-			base.Dispose(disposing);
-		}
 	}
 }

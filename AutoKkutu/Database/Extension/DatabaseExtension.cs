@@ -3,7 +3,7 @@ using Serilog;
 using System;
 using System.Data;
 
-namespace AutoKkutu.Databases.Extension
+namespace AutoKkutu.Database.Extension
 {
 	public static class DatabaseExtension
 	{

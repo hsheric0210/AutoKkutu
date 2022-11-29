@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Databases;
+using AutoKkutu.Database;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
@@ -310,14 +310,13 @@ namespace AutoKkutu
 					SetupPathFinderInfo(ref flags);
 
 					// Enqueue search
-					PathFinder.FindPath(new FindWordInfo
-					{
-						Word = word,
-						MissionChar = Configuration.MissionAutoDetectionEnabled && missionChar != null ? missionChar : "",
-						WordPreference = Configuration.ActiveWordPreference,
-						Mode = mode,
-						PathFinderFlags = flags
-					});
+					PathFinder.FindPath(
+						mode,
+						word,
+						Configuration.MissionAutoDetectionEnabled && missionChar != null ? missionChar : "",
+						Configuration.ActiveWordPreference,
+						flags
+					);
 				}
 			}
 			catch (Exception ex)

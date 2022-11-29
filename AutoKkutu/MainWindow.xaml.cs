@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Databases;
+using AutoKkutu.Database;
 using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using CefSharp;
@@ -188,7 +188,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeAttack(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
+			((PathObject)currentSelected).MakeAttack(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.Connection);
 		}
 
 		private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -196,7 +196,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeEnd(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
+			((PathObject)currentSelected).MakeEnd(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.Connection);
 		}
 
 		private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -204,7 +204,7 @@ namespace AutoKkutu
 			object currentSelected = PathList.SelectedItem;
 			if (currentSelected is not PathObject)
 				return;
-			((PathObject)currentSelected).MakeNormal(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.DefaultConnection);
+			((PathObject)currentSelected).MakeNormal(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.Connection);
 		}
 
 		private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)

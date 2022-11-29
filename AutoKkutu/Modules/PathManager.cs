@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Databases;
-using AutoKkutu.Databases.Extension;
+using AutoKkutu.Database;
+using AutoKkutu.Database.Extension;
 using AutoKkutu.Utils;
 using Serilog;
 using System;
@@ -73,7 +73,7 @@ namespace AutoKkutu.Modules
 		{
 			try
 			{
-				UpdateNodeLists(AutoKkutuMain.Database.DefaultConnection);
+				UpdateNodeLists(AutoKkutuMain.Database.Connection);
 			}
 			catch (Exception ex)
 			{
@@ -180,7 +180,7 @@ namespace AutoKkutu.Modules
 				try
 				{
 					Log.Debug(I18n.PathFinder_AddPath, word, flags);
-					if (AutoKkutuMain.Database.DefaultConnection.AddWord(word, flags))
+					if (AutoKkutuMain.Database.Connection.AddWord(word, flags))
 					{
 						Log.Information(I18n.PathFinder_AddPath_Success, word);
 						count++;
@@ -213,7 +213,7 @@ namespace AutoKkutu.Modules
 			{
 				try
 				{
-					count += AutoKkutuMain.Database.DefaultConnection.RequireNotNull().DeleteWord(word);
+					count += AutoKkutuMain.Database.Connection.RequireNotNull().DeleteWord(word);
 				}
 				catch (Exception ex)
 				{
