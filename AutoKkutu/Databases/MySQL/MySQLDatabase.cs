@@ -6,13 +6,13 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.MySQL
 {
-	public partial class MySQLDatabase : DatabaseWithDefaultConnection
+	public partial class MySqlDatabase : DatabaseWithDefaultConnection
 	{
 		private readonly string ConnectionString;
 
 		private readonly string DatabaseName = "";
 
-		public MySQLDatabase(string connectionString)
+		public MySqlDatabase(string connectionString)
 		{
 			ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
 
@@ -27,7 +27,7 @@ namespace AutoKkutu.Databases.MySQL
 				Log.Information("Opening database connection...");
 				var connection = new MySqlConnection(connectionString);
 				connection.Open();
-				RegisterDefaultConnection(new MySQLDatabaseConnection(connection, DatabaseName));
+				RegisterDefaultConnection(new MySqlDatabaseConnection(connection, DatabaseName));
 
 				DefaultConnection.TryExecuteNonQuery("drop existing RearrangeFunc", $"DROP FUNCTION IF EXISTS {DefaultConnection.GetRearrangeFuncName()};");
 				DefaultConnection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE FUNCTION {DefaultConnection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
@@ -89,7 +89,7 @@ END;
 
 		public override void CheckConnectionType(CommonDatabaseConnection connection)
 		{
-			if (connection is not null and not MySQLDatabaseConnection)
+			if (connection is not null and not MySqlDatabaseConnection)
 				throw new NotSupportedException($"Connection is not {nameof(MySqlConnection)}");
 		}
 
@@ -99,7 +99,7 @@ END;
 		{
 			var connection = new MySqlConnection(ConnectionString);
 			connection.Open();
-			return new MySQLDatabaseConnection(connection, DatabaseName);
+			return new MySqlDatabaseConnection(connection, DatabaseName);
 		}
 	}
 }

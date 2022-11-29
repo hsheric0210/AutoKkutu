@@ -8,11 +8,11 @@ using System.Linq;
 
 namespace AutoKkutu.Databases.SQLite
 {
-	public partial class SQLiteDatabase : DatabaseWithDefaultConnection
+	public partial class SqliteDatabase : DatabaseWithDefaultConnection
 	{
 		private readonly string DatabaseFilePath;
 
-		public SQLiteDatabase(string fileName) : base()
+		public SqliteDatabase(string fileName) : base()
 		{
 			DatabaseFilePath = $"{Environment.CurrentDirectory}\\{fileName}";
 
@@ -27,8 +27,8 @@ namespace AutoKkutu.Databases.SQLite
 
 				// Open the connection
 				Log.Information("Opening database connection...");
-				SqliteConnection connection = SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath);
-				RegisterDefaultConnection(new SQLiteDatabaseConnection(connection));
+				SqliteConnection connection = SqliteDatabaseHelper.OpenConnection(DatabaseFilePath);
+				RegisterDefaultConnection(new SqliteDatabaseConnection(connection));
 				RegisterRearrangeFunc(connection);
 				RegisterRearrangeMissionFunc(connection);
 
@@ -78,6 +78,6 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override string GetDBType() => "SQLite";
 
-		public override CommonDatabaseConnection OpenSecondaryConnection() => new SQLiteDatabaseConnection(SQLiteDatabaseHelper.OpenConnection(DatabaseFilePath));
+		public override CommonDatabaseConnection OpenSecondaryConnection() => new SqliteDatabaseConnection(SqliteDatabaseHelper.OpenConnection(DatabaseFilePath));
 	}
 }

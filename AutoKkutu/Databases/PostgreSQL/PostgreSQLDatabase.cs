@@ -5,11 +5,11 @@ using Serilog;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
-	public partial class PostgreSQLDatabase : DatabaseWithDefaultConnection
+	public partial class PostgreSqlDatabase : DatabaseWithDefaultConnection
 	{
 		private readonly string ConnectionString;
 
-		public PostgreSQLDatabase(string connectionString) : base()
+		public PostgreSqlDatabase(string connectionString) : base()
 		{
 			ConnectionString = connectionString;
 
@@ -19,7 +19,7 @@ namespace AutoKkutu.Databases.PostgreSQL
 				Log.Information("Opening database connection...");
 				var connection = new NpgsqlConnection(connectionString);
 				connection.Open();
-				RegisterDefaultConnection(new PostgreSQLDatabaseConnection(connection));
+				RegisterDefaultConnection(new PostgreSqlDatabaseConnection(connection));
 				DefaultConnection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
 				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
@@ -85,7 +85,7 @@ $$ LANGUAGE plpgsql
 
 		public override void CheckConnectionType(CommonDatabaseConnection connection)
 		{
-			if (connection is not null and not PostgreSQLDatabaseConnection)
+			if (connection is not null and not PostgreSqlDatabaseConnection)
 				throw new NotSupportedException($"Connection is not {nameof(NpgsqlConnection)}");
 		}
 
@@ -93,7 +93,7 @@ $$ LANGUAGE plpgsql
 		{
 			var connection = new NpgsqlConnection(ConnectionString);
 			connection.Open();
-			var wrappedConnection = new PostgreSQLDatabaseConnection(connection);
+			var wrappedConnection = new PostgreSqlDatabaseConnection(connection);
 			wrappedConnection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 			return wrappedConnection;
 		}

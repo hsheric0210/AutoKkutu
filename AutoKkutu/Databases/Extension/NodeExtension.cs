@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.Extension
 {
-	public static class DatabaseNodeExtension
+	public static class NodeExtension
 	{
 
 		public static bool AddNode(this CommonDatabaseConnection connection, string node, string? tableName = null)

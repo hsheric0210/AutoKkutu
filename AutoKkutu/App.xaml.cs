@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using AutoKkutu.Utils;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
@@ -18,15 +19,19 @@ namespace AutoKkutu
 		{
 			try
 			{
+				// Initialize console output
+				ConsoleManager.Show();
+
+				// Initialize logger
 				Log.Logger = new LoggerConfiguration()
 					.MinimumLevel.Verbose()
-					.WriteTo.Console(outputTemplate: LoggingTemplate, theme: AnsiConsoleTheme.Code)
+					.WriteTo.Console(outputTemplate: LoggingTemplate, theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true)
 					.WriteTo.Async(c => c.File(path: "AutoKkutu.log", outputTemplate: LoggingTemplate, fileSizeLimitBytes: MaxSizeBytes, rollOnFileSizeLimit: true, buffered: true, flushToDiskInterval: FlushPeriod))
 					.CreateLogger();
 			}
 			catch (Exception e)
 			{
-				MessageBox.Show("Failed to initialize logger:" + e.ToString(), "Logger initialization failure", MessageBoxButton.OK, MessageBoxImage.Error);
+				MessageBox.Show("Failed to initialize logging system:\r\n" + e.ToString(), "Logger initialization failure", MessageBoxButton.OK, MessageBoxImage.Error);
 				Shutdown(); // Can't continue execution
 			}
 		}

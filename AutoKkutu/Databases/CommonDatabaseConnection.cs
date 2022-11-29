@@ -12,14 +12,6 @@ namespace AutoKkutu.Databases
 
 		public abstract void ChangeWordListColumnType(string tableName, string columnName, string newType);
 
-		public abstract CommonDatabaseParameter CreateParameter(string name, object?value);
-
-		public abstract CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, string name, object? value);
-
-		public abstract CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, byte precision, string name, object? value);
-
-		public abstract CommonDatabaseCommand CreateCommand(string command, bool noPrepare = false);
-
 		public void Dispose()
 		{
 			Dispose(true);

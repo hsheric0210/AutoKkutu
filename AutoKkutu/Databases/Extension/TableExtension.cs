@@ -2,7 +2,7 @@
 
 namespace AutoKkutu.Databases.Extension
 {
-	public static class DatabaseTableExtension
+	public static class TableExtension
 	{
 		public static void CheckTable(this CommonDatabaseConnection connection)
 		{
