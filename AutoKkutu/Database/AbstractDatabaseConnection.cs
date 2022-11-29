@@ -2,7 +2,7 @@
 using System;
 using System.Data;
 
-namespace AutoKkutu.Databases
+namespace AutoKkutu.Database
 {
 	public abstract class AbstractDatabaseConnection : IDbConnection
 	{
@@ -49,6 +49,10 @@ namespace AutoKkutu.Databases
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
+
+		public abstract string GetWordPriorityFuncName();
+
+		public abstract string GetMissionWordPriorityFuncName();
 
 		public abstract string GetWordListColumnOptions();
 

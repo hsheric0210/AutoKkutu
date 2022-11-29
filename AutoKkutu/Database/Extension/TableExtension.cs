@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Data;
 using System.Data.Common;
 
-namespace AutoKkutu.Databases.Extension
+namespace AutoKkutu.Database.Extension
 {
 	public static class TableExtension
 	{
@@ -15,8 +16,8 @@ namespace AutoKkutu.Databases.Extension
 			foreach (string tableName in new string[] { DatabaseConstants.EndNodeIndexTableName, DatabaseConstants.AttackNodeIndexTableName, DatabaseConstants.ReverseEndNodeIndexTableName, DatabaseConstants.ReverseAttackNodeIndexTableName, DatabaseConstants.KkutuEndNodeIndexTableName, DatabaseConstants.KkutuAttackNodeIndexTableName })
 				connection.MakeTableIfNotExists(tableName);
 
-			connection.MakeTableIfNotExists(DatabaseConstants.KKTEndNodeIndexTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTEndNodeIndexTableName} SELECT * FROM {DatabaseConstants.EndNodeIndexTableName}"));
-			connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackNodeIndexTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTAttackNodeIndexTableName} SELECT * FROM {DatabaseConstants.AttackNodeIndexTableName}"));
+			connection.MakeTableIfNotExists(DatabaseConstants.KKTEndNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTEndNodeIndexTableName} SELECT * FROM {DatabaseConstants.EndNodeIndexTableName}"));
+			connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTAttackNodeIndexTableName} SELECT * FROM {DatabaseConstants.AttackNodeIndexTableName}"));
 
 			// Create word list table
 			if (!connection.IsTableExists(DatabaseConstants.WordTableName))
@@ -40,7 +41,7 @@ namespace AutoKkutu.Databases.Extension
 				DatabaseConstants.KkutuEndNodeIndexTableName => $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL",
 				_ => $"{DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL",
 			};
-			connection.ExecuteNonQuery($"CREATE TABLE {tablename} ({columnOptions});");
+			connection.Execute($"CREATE TABLE {tablename} ({columnOptions});");
 		}
 
 		public static void MakeTableIfNotExists(this AbstractDatabaseConnection connection, string tableName, Action? callback = null)

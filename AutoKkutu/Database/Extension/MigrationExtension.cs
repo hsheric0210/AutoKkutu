@@ -1,7 +1,8 @@
-﻿using Serilog;
+﻿using Dapper;
+using Serilog;
 using System;
 
-namespace AutoKkutu.Databases.Extension
+namespace AutoKkutu.Database.Extension
 {
 	public static class MigrationExtension
 	{
@@ -13,13 +14,13 @@ namespace AutoKkutu.Databases.Extension
 
 			if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName))
 			{
-				connection.TryExecuteNonQuery($"add {DatabaseConstants.ReverseWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
+				connection.TryExecute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
 				Log.Warning($"Added {DatabaseConstants.ReverseWordIndexColumnName} column.");
 			}
 
 			if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName))
 			{
-				connection.TryExecuteNonQuery($"add {DatabaseConstants.KkutuWordIndexColumnName}", $"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
+				connection.TryExecute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
 				Log.Warning($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
 			}
 		}
@@ -76,8 +77,8 @@ namespace AutoKkutu.Databases.Extension
 				{
 					if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.FlagsColumnName))
 					{
-						connection.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
-						connection.ExecuteNonQuery($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
+						connection.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
+						connection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
 						Log.Warning($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
 					}
 

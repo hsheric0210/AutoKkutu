@@ -1,13 +1,14 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Databases.Extension;
+using AutoKkutu.Database.Extension;
 using Serilog;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Dapper;
 
-namespace AutoKkutu.Databases.SQLite
+namespace AutoKkutu.Database.SQLite
 {
 	public static class SqliteDatabaseHelper
 	{
@@ -23,10 +24,11 @@ namespace AutoKkutu.Databases.SQLite
 				try
 				{
 					Log.Information("Loading external SQLite database: {path}", externalSQLiteFilePath);
-					var externalSQLiteConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
-					externalSQLiteConnection.Open();
+					var sourceConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
+					sourceConnection.Open();
+					var sourceConnectionAbstr = new SqliteDatabaseConnection(sourceConnection);
 
-					var args = new SQLiteImportArgs { destination = targetDatabase, source = externalSQLiteConnection };
+					var args = new SQLiteImportArgs { destination = targetDatabase, source = sourceConnectionAbstr };
 					int WordCount = ImportWordsFromExternalSQLite(args);
 					int AttackWordCount = ImportNode(args, DatabaseConstants.AttackNodeIndexTableName);
 					int EndWordCount = ImportNode(args, DatabaseConstants.EndNodeIndexTableName);
@@ -61,40 +63,34 @@ namespace AutoKkutu.Databases.SQLite
 				return 0;
 			}
 
-			int count = 0;
-			using (var command = new SqliteCommand("SELECT * FROM @tableName", args.source))
+			int counter = 0;
+			foreach (string wordIndex in args.source.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM @TableName", new
 			{
-				command.Parameters.AddWithValue("@tableName", tableName);
-				using SqliteDataReader reader = command.ExecuteReader();
-				int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
-				while (reader.Read())
-				{
-					string wordIndex = reader.GetString(wordIndexOrdinal);
-					if (args.destination.AddNode(wordIndex))
-						Log.Information("Added {node} to {tableName}.", wordIndex, tableName);
-					else
-						Log.Warning("{node} in {tableName} already exists in database.", wordIndex, tableName);
-					count++;
-				}
+				TableName = tableName
+			}))
+			{
+				if (args.destination.AddNode(wordIndex))
+					Log.Information("Added {node} to {tableName}.", wordIndex, tableName);
+				else
+					Log.Warning("{node} in {tableName} already exists in database.", wordIndex, tableName);
+				counter++;
 			}
-
-			return count;
+			return counter;
 		}
 
-		private static void ImportSingleWord(SQLiteImportArgs args, SqliteDataReader reader, string word)
+		private static void ImportSingleWord(this AbstractDatabaseConnection destination, string word, int flags)
 		{
-			int flags = Convert.ToInt32(reader[DatabaseConstants.FlagsColumnName], CultureInfo.InvariantCulture);
-			if (args.destination.AddWord(word, (WordDbTypes)flags))
+			if (destination.AddWord(word, (WordDbTypes)flags))
 				Log.Information("Imported word {word} with flags: {flags}", word, flags);
 			else
 				Log.Warning("Word {word} already exists in database.", word);
 		}
 
-		private static void ImportSingleWordLegacy(SQLiteImportArgs args, SqliteDataReader reader, string word)
+		private static void ImportSingleWordLegacy(this AbstractDatabaseConnection destination, string word, int isEndWordInt)
 		{
 			// Legacy support
-			bool isEndWord = Convert.ToBoolean(Convert.ToInt32(reader[DatabaseConstants.IsEndwordColumnName], CultureInfo.InvariantCulture));
-			if (args.destination.AddWord(word, isEndWord ? WordDbTypes.EndWord : WordDbTypes.None))
+			bool isEndWord = Convert.ToBoolean(isEndWordInt);
+			if (destination.AddWord(word, isEndWord ? WordDbTypes.EndWord : WordDbTypes.None))
 				Log.Information("Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
 			else
 				Log.Warning("Word {word} already exists in database.", word);
@@ -102,35 +98,49 @@ namespace AutoKkutu.Databases.SQLite
 
 		private static int ImportWordsFromExternalSQLite(SQLiteImportArgs args)
 		{
-			if (!SqliteDatabaseHelper.IsTableExists(args.source, DatabaseConstants.WordTableName))
+			if (!args.source.IsTableExists(DatabaseConstants.WordTableName))
 			{
 				Log.Information($"External SQLite Database doesn't contain word list table {DatabaseConstants.WordTableName}");
 				return 0;
 			}
 
-			int count = 0;
-			bool hasIsEndwordColumn = IsColumnExists(args.source, DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName);
-			using (SqliteDataReader reader = ExecuteReader(args.source, $"SELECT * FROM {DatabaseConstants.WordTableName}"))
-			{
-				int wordOrdinal = reader.GetOrdinal(DatabaseConstants.WordColumnName);
-				while (reader.Read())
-				{
-					string word = reader.GetString(wordOrdinal).Trim();
-					if (hasIsEndwordColumn)
-						ImportSingleWordLegacy(args, reader, word);
-					else
-						ImportSingleWord(args, reader, word);
+			int counter = 0;
+			bool hasIsEndwordColumn = args.source.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName);
+			string columns;
+			if (hasIsEndwordColumn)
+				columns = DatabaseConstants.WordColumnName + ", " + DatabaseConstants.IsEndwordColumnName;
+			else
+				columns = DatabaseConstants.WordColumnName + ", " + DatabaseConstants.FlagsColumnName;
 
-					count++;
-				}
+			foreach (CompatibleWordModel word in args.source.Query<CompatibleWordModel>($"SELECT ({columns}) FROM {DatabaseConstants.WordTableName}"))
+			{
+				if (hasIsEndwordColumn)
+					ImportSingleWordLegacy(args.destination, word.Word, word.Flags);
+				else
+					ImportSingleWord(args.destination, word.Word, word.Flags);
+
+				counter++;
 			}
 
-			return count;
+			return counter;
+		}
+
+		private sealed class CompatibleWordModel
+		{
+			public string Word
+			{
+				get; set;
+			}
+
+			public int Flags
+			{
+				get; set;
+			}
 		}
 
 		private struct SQLiteImportArgs
 		{
-			public SqliteConnection source;
+			public AbstractDatabaseConnection source;
 			public AbstractDatabaseConnection destination;
 		}
 	}

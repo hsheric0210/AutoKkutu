@@ -1,10 +1,11 @@
-﻿using Serilog;
+﻿using Dapper;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 
-namespace AutoKkutu.Databases.Extension
+namespace AutoKkutu.Database.Extension
 {
 	public static class NodeExtension
 	{
@@ -19,16 +20,24 @@ namespace AutoKkutu.Databases.Extension
 			if (string.IsNullOrWhiteSpace(tableName))
 				tableName = DatabaseConstants.EndNodeIndexTableName;
 
-			if (Convert.ToInt32(connection.ExecuteScalar($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @node;", connection.CreateParameter("@node", node[0])), CultureInfo.InvariantCulture) > 0)
-				return false;
-
-			CommonDatabaseParameter parameter;
+			string nodeString;
 			if (tableName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.Ordinal))
-				parameter = connection.CreateParameter(CommonDatabaseType.CharacterVarying, 2, "@index", node[..2]);
+				nodeString = node[..2];
 			else
-				parameter = connection.CreateParameter(CommonDatabaseType.Character, 1, "@index", node[0]);
+				nodeString = node[0].ToString();
 
-			connection.ExecuteNonQuery($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@index)", parameter);
+			if (connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @node;", new
+			{
+				Node = nodeString
+			}) > 0)
+			{
+				return false;
+			}
+
+			connection.Execute($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@Node)", new
+			{
+				Node = nodeString
+			});
 			return true;
 		}
 
@@ -42,7 +51,10 @@ namespace AutoKkutu.Databases.Extension
 			if (string.IsNullOrWhiteSpace(tableName))
 				tableName = DatabaseConstants.EndNodeIndexTableName;
 
-			return connection.ExecuteNonQuery($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @index", connection.CreateParameter("@index", node));
+			return connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node", new
+			{
+				Node = node
+			});
 		}
 
 		public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, string tableName)
@@ -50,14 +62,7 @@ namespace AutoKkutu.Databases.Extension
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			var result = new List<string>();
-
-			using CommonDatabaseCommand _command = connection.CreateCommand($"SELECT * FROM {tableName}");
-			using DbDataReader reader = _command.ExecuteReader();
-			int wordIndexOrdinal = reader.GetOrdinal(DatabaseConstants.WordIndexColumnName);
-			while (reader.Read())
-				result.Add(reader.GetString(wordIndexOrdinal));
-
+			List<string> result = connection.Query<string>($"SELECT ({DatabaseConstants.WordIndexColumnName}) FROM {tableName}").AsList();
 			Log.Information("Found Total {0} nodes in {1}.", result.Count, tableName);
 			return result;
 		}

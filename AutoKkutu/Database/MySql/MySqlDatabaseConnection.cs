@@ -1,21 +1,20 @@
-﻿using AutoKkutu.Databases.Extension;
+﻿using AutoKkutu.Database.Extension;
 using Serilog;
 using MySqlConnector;
 using System;
 using System.Globalization;
 using Dapper;
 
-namespace AutoKkutu.Databases.MySQL
+namespace AutoKkutu.Database.MySQL
 {
-	public partial class MySqlDatabaseConnection : AbstractDatabaseConnection
+	public class MySqlDatabaseConnection : AbstractDatabaseConnection
 	{
-		private readonly MySqlConnection Connection;
 		private readonly string DatabaseName;
 
 		public MySqlDatabaseConnection(MySqlConnection connection, string dbName)
 		{
-			Connection = connection;
 			DatabaseName = dbName;
+			Initialize(connection);
 		}
 
 		public override void AddSequenceColumnToWordList() => this.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
@@ -40,6 +39,10 @@ namespace AutoKkutu.Databases.MySQL
 				return "";
 			}
 		}
+
+		public override string GetWordPriorityFuncName() => "__AutoKkutu_Rearrange";
+
+		public override string GetMissionWordPriorityFuncName() => "__AutoKkutu_RearrangeMission";
 
 		public override string GetWordListColumnOptions() => "seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
@@ -80,13 +83,6 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override void ExecuteVacuum()
 		{
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-				Connection.Dispose();
-			base.Dispose(disposing);
 		}
 	}
 }

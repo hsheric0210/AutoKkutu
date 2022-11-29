@@ -1,5 +1,5 @@
-﻿using AutoKkutu.Databases;
-using AutoKkutu.Databases.SQLite;
+﻿using AutoKkutu.Database;
+using AutoKkutu.Database.SQLite;
 using AutoKkutu.Utils;
 using Serilog;
 using Microsoft.Win32;

@@ -1,11 +1,11 @@
-﻿using AutoKkutu.Databases.Extension;
+﻿using AutoKkutu.Database.Extension;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Serilog;
 using System;
 using System.Linq;
 
-namespace AutoKkutu.Databases.SQLite
+namespace AutoKkutu.Database.SQLite
 {
 	public class SqliteDatabaseConnection : AbstractDatabaseConnection
 	{
@@ -34,6 +34,10 @@ namespace AutoKkutu.Databases.SQLite
 
 			return null;
 		}
+
+		public override string GetWordPriorityFuncName() => "WordPriority";
+
+		public override string GetMissionWordPriorityFuncName() => "MissionWordPriority";
 
 		public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
@@ -72,13 +76,6 @@ namespace AutoKkutu.Databases.SQLite
 		}
 
 		public override void ExecuteVacuum() => Connection.Execute("VACUUM;");
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-				Connection.Dispose();
-			base.Dispose(disposing);
-		}
 
 		private void RebuildWordList()
 		{
