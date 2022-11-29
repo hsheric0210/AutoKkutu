@@ -6,12 +6,12 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.MySQL
 {
-	public partial class MySQLDatabaseConnection : CommonDatabaseConnection
+	public partial class MySqlDatabaseConnection : CommonDatabaseConnection
 	{
-		private readonly MySqlConnection Connection;
+		private readonly MySqlConnection Connection; 
 		private readonly string DatabaseName;
 
-		public MySQLDatabaseConnection(MySqlConnection connection, string dbName)
+		public MySqlDatabaseConnection(MySqlConnection connection, string dbName)
 		{
 			Connection = connection;
 			DatabaseName = dbName;
@@ -20,14 +20,6 @@ namespace AutoKkutu.Databases.MySQL
 		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
 
 		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => this.ExecuteNonQuery($"ALTER TABLE {tableName} MODIFY {columnName} {newType}");
-
-		public override CommonDatabaseCommand CreateCommand(string command, bool noPrepare = false) => new MySQLDatabaseCommand(Connection, command, noPrepare);
-
-		public override CommonDatabaseParameter CreateParameter(string name, object? value) => new MySQLDatabaseParameter(name, value);
-
-		public override CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, string name, object? value) => new MySQLDatabaseParameter(dataType, name, value);
-
-		public override CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, byte precision, string name, object? value) => new MySQLDatabaseParameter(dataType, precision, name, value);
 
 		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP {columnName}");
 

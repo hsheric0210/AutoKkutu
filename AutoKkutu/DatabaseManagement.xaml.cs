@@ -53,7 +53,7 @@ namespace AutoKkutu
 				CheckFileExists = true
 			};
 			if (dialog.ShowDialog() ?? false)
-				SQLiteDatabaseHelper.LoadFromExternalSQLite(Database.DefaultConnection, dialog.FileName);
+				SqliteDatabaseHelper.LoadFromExternalSQLite(Database.DefaultConnection, dialog.FileName);
 		}
 
 		private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)

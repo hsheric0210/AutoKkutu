@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace AutoKkutu.Databases.SQLite
 {
-	public static class SQLiteDatabaseHelper
+	public static class SqliteDatabaseHelper
 	{
 
 		public static int ExecuteNonQuery(this SqliteConnection connection, string query, params SqliteParameter[] parameters)
@@ -203,7 +203,7 @@ namespace AutoKkutu.Databases.SQLite
 
 		private static int ImportWordsFromExternalSQLite(SQLiteImportArgs args)
 		{
-			if (!SQLiteDatabaseHelper.IsTableExists(args.externalSQLiteConnection, DatabaseConstants.WordListTableName))
+			if (!SqliteDatabaseHelper.IsTableExists(args.externalSQLiteConnection, DatabaseConstants.WordListTableName))
 			{
 				Log.Information($"External SQLite Database doesn't contain word list table {DatabaseConstants.WordListTableName}");
 				return 0;

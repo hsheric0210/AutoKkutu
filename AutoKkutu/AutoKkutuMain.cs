@@ -80,9 +80,6 @@ namespace AutoKkutu
 				// Initialize browser
 				InitializeBrowser();
 
-				// Initialize console output
-				InitializeConsole();
-
 				// Initialize database
 				InitializeDatabase();
 
@@ -181,8 +178,6 @@ namespace AutoKkutu
 
 			Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
 		}
-
-		private static void InitializeConsole() => ConsoleManager.Show();
 
 		private static void InitializeDatabase()
 		{

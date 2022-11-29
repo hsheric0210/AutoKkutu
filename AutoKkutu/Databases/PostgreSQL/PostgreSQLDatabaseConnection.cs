@@ -6,23 +6,15 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
-	public partial class PostgreSQLDatabaseConnection : CommonDatabaseConnection
+	public partial class PostgreSqlDatabaseConnection : CommonDatabaseConnection
 	{
 		private readonly NpgsqlConnection Connection;
 
-		public PostgreSQLDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
+		public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Connection = connection;
 
 		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
 
 		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => this.ExecuteNonQuery($"ALTER TABLE {tableName} ALTER COLUMN {columnName} TYPE {newType}");
-
-		public override CommonDatabaseCommand CreateCommand(string command, bool noPrepare = false) => new PostgreSQLDatabaseCommand(Connection, command, noPrepare);
-
-		public override CommonDatabaseParameter CreateParameter(string name, object? value) => new PostgreSQLDatabaseParameter(name, value);
-
-		public override CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, string name, object? value) => new PostgreSQLDatabaseParameter(dataType, name, value);
-
-		public override CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, byte precision, string name, object? value) => new PostgreSQLDatabaseParameter(dataType, precision, name, value);
 
 		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP COLUMN {columnName}");
 

@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.Extension
 {
-	public static class DatabaseWordExtension
+	public static class WordExtension
 	{
 		public static bool AddWord(this CommonDatabaseConnection connection, string word, WordDatabaseAttributes flags)
 		{

@@ -26,7 +26,7 @@ namespace AutoKkutu.Utils
 				case "MYSQL":
 					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
 					Log.Information("MySQL selected: {connString}", mysqlConnectionString);
-					return new MySQLDatabase(mysqlConnectionString);
+					return new MySqlDatabase(mysqlConnectionString);
 
 				case "MARIADB":
 					string mariadbConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
@@ -37,12 +37,12 @@ namespace AutoKkutu.Utils
 				case "PGSQL":
 					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
 					Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
-					return new PostgreSQLDatabase(pgsqlConnectionString);
+					return new PostgreSqlDatabase(pgsqlConnectionString);
 			}
 
 			string file = ((SQLiteSection)config.GetSection("sqlite")).File;
 			Log.Information("SQLite selected: File={file}", file);
-			return new SQLiteDatabase(file);
+			return new SqliteDatabase(file);
 		}
 
 		public static WordDatabaseAttributes GetFlags(string word)

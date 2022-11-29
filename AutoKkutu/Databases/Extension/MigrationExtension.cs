@@ -3,7 +3,7 @@ using System;
 
 namespace AutoKkutu.Databases.Extension
 {
-	public static class BackwardCompatibilityExtension
+	public static class MigrationExtension
 	{
 
 		private static void AddInexistentColumns(this CommonDatabaseConnection connection)

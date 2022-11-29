@@ -1,29 +1,60 @@
 ﻿using AutoKkutu.Databases.Extension;
+using Dapper;
 using Microsoft.Data.Sqlite;
+using Serilog;
+using System;
 
 namespace AutoKkutu.Databases.SQLite
 {
-	public class SQLiteDatabaseConnection : CommonDatabaseConnection
+	public class SqliteDatabaseConnection : CommonDatabaseConnection
 	{
 		private readonly SqliteConnection Connection;
 
-		public SQLiteDatabaseConnection(SqliteConnection connection) => Connection = connection;
+		public SqliteDatabaseConnection(SqliteConnection connection) => Connection = connection;
 
 		public override void AddSequenceColumnToWordList() => RebuildWordList();
 
 		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => RebuildWordList();
 
-		public override CommonDatabaseCommand CreateCommand(string command, bool noPrepare = false) => new SQLiteDatabaseCommand(Connection, command, noPrepare);
-
-		public override CommonDatabaseParameter CreateParameter(string name, object? value) => new SQLiteDatabaseParameter(name, value);
-
-		public override CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, string name, object? value) => new SQLiteDatabaseParameter(dataType, name, value);
-
-		public override CommonDatabaseParameter CreateParameter(CommonDatabaseType dataType, byte precision, string name, object? value) => new SQLiteDatabaseParameter(dataType, precision, name, value);
-
 		public override void DropWordListColumn(string columnName) => RebuildWordList();
 
-		public override string? GetColumnType(string tableName, string columnName) => SQLiteDatabaseHelper.GetColumnType(Connection, tableName ?? DatabaseConstants.WordListTableName, columnName);
+		public override string? GetColumnType(string tableName, string columnName)
+		{
+			if (tableName == null)
+				return DatabaseConstants.WordListTableName;
+
+			try
+			{
+				var tableInfo = Connection.Query<SqliteTableInfo>("SELECT * FROM pragma_table_info(@TableName);", new
+				{
+					TableName = tableName
+				});
+				while (reader.Read())
+				{
+					if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+						return reader.GetString(typeOrdinal);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, DatabaseConstants.ErrorGetColumnType, columnName, tableName);
+			}
+
+			return null;
+		}
+
+		private class SqliteTableInfo
+		{
+			public string Name
+			{
+				get; set;
+			}
+
+			public string Type
+			{
+				get; set;
+			}
+		}
 
 		public override string GetRearrangeFuncName() => "Rearrange";
 
@@ -31,9 +62,9 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
-		public override bool IsColumnExists(string tableName, string columnName) => SQLiteDatabaseHelper.IsColumnExists(Connection, tableName, columnName);
+		public override bool IsColumnExists(string tableName, string columnName) => SqliteDatabaseHelper.IsColumnExists(Connection, tableName, columnName);
 
-		public override bool IsTableExists(string tablename) => SQLiteDatabaseHelper.IsTableExists(Connection, tablename);
+		public override bool IsTableExists(string tablename) => SqliteDatabaseHelper.IsTableExists(Connection, tablename);
 
 		public override void PerformVacuum() => CreateCommand("VACUUM").ExecuteNonQuery();
 
