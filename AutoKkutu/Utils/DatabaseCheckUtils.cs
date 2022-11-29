@@ -59,16 +59,16 @@ namespace AutoKkutu.Utils
 						// Check for errorsd
 						Log.Information("Searching problems...");
 						watch.Start();
-						foreach (WordModel element in auxiliaryConnection.Query<WordModel>("SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+						foreach (WordModel element in auxiliaryConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 						{
 							currentElementIndex++;
 							string word = element.Word;
-							Log.Information("Total {0} of {1} ('{2}')", totalElementCount, currentElementIndex, word);
+							Log.Information("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
 
 							// Check word validity
 							if (IsInvalid(word))
 							{
-								Log.Information("Not a valid word; Will be removed.");
+								Log.Information("Invalid word {word}, will be removed.", word);
 								deletionList.Add(word);
 								continue;
 							}
@@ -232,8 +232,10 @@ namespace AutoKkutu.Utils
 			if (last is ')' or '}' or ']')
 				return true;
 
-			return content.Contains(' ', StringComparison.Ordinal) || content.Contains(':', StringComparison.Ordinal);
+			return InvalidChars.Any(ch => content.Contains(ch, StringComparison.Ordinal));
 		}
+
+		private static readonly char[] InvalidChars = new char[] { ' ', ':', ';', '?', '!' };
 
 		/// <summary>
 		/// 단어 노드 목록들(한방 단어 노드 목록, 공격 단어 노드 목록 등)을 데이터베이스로부터 다시 로드합니다.

@@ -1,5 +1,8 @@
 ﻿using AutoKkutu.Utils;
+using Dapper;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace AutoKkutu.Database
 {
@@ -8,6 +11,11 @@ namespace AutoKkutu.Database
 		private AbstractDatabaseConnection? _baseConnection;
 
 		public AbstractDatabaseConnection Connection => _baseConnection.RequireNotNull();
+
+		static AbstractDatabase()
+		{
+			SqlMapper.SetTypeMap(typeof(WordModel), new CustomPropertyTypeMap(typeof(WordModel), (type, columnName) => Array.Find(type.GetProperties(), prop => prop.GetCustomAttributes(false).OfType<ColumnAttribute>().Any(attr => attr.Name == columnName))));
+		}
 
 		protected AbstractDatabase()
 		{

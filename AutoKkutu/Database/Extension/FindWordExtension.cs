@@ -4,6 +4,7 @@ using Dapper;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
 
@@ -11,6 +12,10 @@ namespace AutoKkutu.Database.Extension
 {
 	public static class FindWordExtension
 	{
+		static FindWordExtension()
+		{
+			SqlMapper.SetTypeMap(typeof(FindResult), new CustomPropertyTypeMap(typeof(FindResult), (type, columnName) => Array.Find(type.GetProperties(), prop => prop.GetCustomAttributes(false).OfType<ColumnAttribute>().Any(attr => attr.Name == columnName))));
+		}
 
 		private static string GetIndexColumnName(GameMode mode, ResponsePresentedWord word)
 		{
@@ -100,8 +105,6 @@ namespace AutoKkutu.Database.Extension
 			SelectWordEndAttackFlags(mode, out int endWordFlag, out int attackWordFlag);
 			FindQuery query = connection.CreateQuery(mode, word, missionChar, endWordFlag, attackWordFlag, preference, options);
 
-			Log.Debug("Using query: {query}", query.Sql);
-
 			foreach (FindResult q in connection.Query<FindResult>(query.Sql, new DynamicParameters(query.Parameters)))
 			{
 				string wordString = q.Word.Trim();
@@ -119,11 +122,13 @@ namespace AutoKkutu.Database.Extension
 
 		private class FindResult
 		{
+			[Column(DatabaseConstants.WordColumnName)]
 			public string Word
 			{
 				get; set;
 			}
 
+			[Column(DatabaseConstants.FlagsColumnName)]
 			public int Flags
 			{
 				get; set;
