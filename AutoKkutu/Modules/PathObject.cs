@@ -154,7 +154,7 @@ namespace AutoKkutu.Modules
 });
 		}
 
-		public void MakeAttack(GameMode mode, CommonDatabaseConnection connection)
+		public void MakeAttack(GameMode mode, AbstractDatabaseConnection connection)
 		{
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetEndWordListTableName(mode));
@@ -164,7 +164,7 @@ namespace AutoKkutu.Modules
 				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
 		}
 
-		public void MakeEnd(GameMode mode, CommonDatabaseConnection connection)
+		public void MakeEnd(GameMode mode, AbstractDatabaseConnection connection)
 		{
 			string node = ToNode(mode);
 			connection.DeleteNode(node, GetAttackWordListTableName(mode));
@@ -174,7 +174,7 @@ namespace AutoKkutu.Modules
 				Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
 		}
 
-		public void MakeNormal(GameMode mode, CommonDatabaseConnection connection)
+		public void MakeNormal(GameMode mode, AbstractDatabaseConnection connection)
 		{
 			string node = ToNode(mode);
 			bool endWord = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
@@ -187,16 +187,16 @@ namespace AutoKkutu.Modules
 
 		private static string GetAttackWordListTableName(GameMode mode) => mode switch
 		{
-			GameMode.FirstAndLast => DatabaseConstants.ReverseAttackWordListTableName,
-			GameMode.Kkutu => DatabaseConstants.KkutuAttackWordListTableName,
-			_ => DatabaseConstants.AttackWordListTableName,
+			GameMode.FirstAndLast => DatabaseConstants.ReverseAttackNodeIndexTableName,
+			GameMode.Kkutu => DatabaseConstants.KkutuAttackNodeIndexTableName,
+			_ => DatabaseConstants.AttackNodeIndexTableName,
 		};
 
 		private static string GetEndWordListTableName(GameMode mode) => mode switch
 		{
-			GameMode.FirstAndLast => DatabaseConstants.ReverseEndWordListTableName,
-			GameMode.Kkutu => DatabaseConstants.KkutuEndWordListTableName,
-			_ => DatabaseConstants.EndWordListTableName,
+			GameMode.FirstAndLast => DatabaseConstants.ReverseEndNodeIndexTableName,
+			GameMode.Kkutu => DatabaseConstants.KkutuEndNodeIndexTableName,
+			_ => DatabaseConstants.EndNodeIndexTableName,
 		};
 
 		private string ToNode(GameMode mode)

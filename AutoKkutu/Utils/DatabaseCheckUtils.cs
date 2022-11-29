@@ -37,7 +37,7 @@ namespace AutoKkutu.Utils
 				{
 					var watch = new Stopwatch();
 
-					int totalElementCount = Convert.ToInt32(database.DefaultConnection.RequireNotNull().ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordListTableName}"), CultureInfo.InvariantCulture);
+					int totalElementCount = Convert.ToInt32(database.DefaultConnection.RequireNotNull().ExecuteScalar($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}"), CultureInfo.InvariantCulture);
 					Log.Information("Database has Total {0} elements.", totalElementCount);
 
 					int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
@@ -47,7 +47,7 @@ namespace AutoKkutu.Utils
 					var flagCorrection = new Dictionary<string, (int, int)>();
 
 					Log.Information("Opening auxiliary SQLite connection...");
-					using (CommonDatabaseConnection auxiliaryConnection = database.OpenSecondaryConnection())
+					using (AbstractDatabaseConnection auxiliaryConnection = database.OpenSecondaryConnection())
 					{
 						// Deduplicate
 						DeduplicatedCount = auxiliaryConnection.DeduplicateDatabaseAndGetCount();
@@ -56,7 +56,7 @@ namespace AutoKkutu.Utils
 						auxiliaryConnection.RefreshNodeLists();
 
 						// Check for errorsd
-						using (CommonDatabaseCommand _command = auxiliaryConnection.CreateCommand($"SELECT * FROM {DatabaseConstants.WordListTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+						using (CommonDatabaseCommand _command = auxiliaryConnection.CreateCommand($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 						{
 							using DbDataReader reader = _command.ExecuteReader();
 							Log.Information("Searching problems...");
@@ -113,7 +113,7 @@ namespace AutoKkutu.Utils
 						watch.Stop();
 						Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
-						auxiliaryConnection.ExecuteVacuum();
+						ExecuteVacuum(auxiliaryConnection);
 					}
 
 					Log.Information("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
@@ -130,20 +130,20 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// (지원되는 DBMS에 한해) Vacuum 작업을 실행합니다.
 		/// </summary>
-		private static void ExecuteVacuum(this CommonDatabaseConnection connection)
+		private static void ExecuteVacuum(this AbstractDatabaseConnection connection)
 		{
 			var watch = new Stopwatch();
 			Log.Information("Executing vacuum...");
 			watch.Restart();
-			connection.PerformVacuum();
+			connection.ExecuteVacuum();
 			watch.Stop();
 			Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 		}
 
-		private static int FixFlag(this CommonDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
+		private static int FixFlag(this AbstractDatabaseConnection connection, Dictionary<string, (int, int)> FlagCorrection)
 		{
 			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))
+			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordTableName} SET flags = @flags WHERE {DatabaseConstants.WordColumnName} = @word;"))
 			{
 				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
 				command.AddParameters(connection.CreateParameter(CommonDatabaseType.SmallInt, "@flags", 0));
@@ -165,10 +165,10 @@ namespace AutoKkutu.Utils
 			return count;
 		}
 
-		private static int FixIndex(this CommonDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string>? correctIndexSupplier)
+		private static int FixIndex(this AbstractDatabaseConnection connection, Dictionary<string, string> WordIndexCorrection, string indexColumnName, Func<string, string>? correctIndexSupplier)
 		{
 			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordListTableName} SET {indexColumnName} = @correctIndex WHERE {DatabaseConstants.WordColumnName} = @word;"))
+			using (CommonDatabaseCommand command = connection.CreateCommand($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @correctIndex WHERE {DatabaseConstants.WordColumnName} = @word;"))
 			{
 				var parameters = new CommonDatabaseParameter[2] {
 					connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"), connection.CreateParameter(CommonDatabaseType.Character, 1, "@correctIndex", 0)
@@ -203,10 +203,10 @@ namespace AutoKkutu.Utils
 			return count;
 		}
 
-		private static int DeleteElements(this CommonDatabaseConnection connection, IEnumerable<string> DeletionList)
+		private static int DeleteElements(this AbstractDatabaseConnection connection, IEnumerable<string> DeletionList)
 		{
 			int count = 0;
-			using (CommonDatabaseCommand command = connection.CreateCommand($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word"))
+			using (CommonDatabaseCommand command = connection.CreateCommand($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @word"))
 			{
 				command.AddParameters(connection.CreateParameter(CommonDatabaseType.CharacterVarying, byte.MaxValue, "@word", "_"));
 				command.TryPrepare();
@@ -274,7 +274,7 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// 단어 노드 목록들(한방 단어 노드 목록, 공격 단어 노드 목록 등)을 데이터베이스로부터 다시 로드합니다.
 		/// </summary>
-		private static void RefreshNodeLists(this CommonDatabaseConnection connection)
+		private static void RefreshNodeLists(this AbstractDatabaseConnection connection)
 		{
 			var watch = new Stopwatch();
 			watch.Start();
@@ -291,7 +291,7 @@ namespace AutoKkutu.Utils
 			}
 		}
 
-		private static int DeduplicateDatabaseAndGetCount(this CommonDatabaseConnection connection)
+		private static int DeduplicateDatabaseAndGetCount(this AbstractDatabaseConnection connection)
 		{
 			int count = 0;
 			var watch = new Stopwatch();
@@ -315,11 +315,11 @@ namespace AutoKkutu.Utils
 		/// </summary>
 		/// <param name="word">검사할 단어</param>
 		/// <returns>해당 단어가 서버에서 사용할 수 있는지의 여부</returns>
-		private static bool CheckElementOnline(this CommonDatabaseConnection connection, string word)
+		private static bool CheckElementOnline(this AbstractDatabaseConnection connection, string word)
 		{
 			bool result = BatchJobUtils.CheckOnline(word.Trim());
 			if (!result)
-				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordListTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
+				connection.ExecuteNonQuery($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @word", connection.CreateParameter("@word", word));
 
 			return result;
 		}

@@ -1,47 +1,49 @@
 ﻿using System;
+using System.Data;
+using System.Data.Common;
 
 namespace AutoKkutu.Databases.Extension
 {
 	public static class TableExtension
 	{
-		public static void CheckTable(this CommonDatabaseConnection connection)
+		public static void CheckTable(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			// Create node tables
-			foreach (string tableName in new string[] { DatabaseConstants.EndWordListTableName, DatabaseConstants.AttackWordListTableName, DatabaseConstants.ReverseEndWordListTableName, DatabaseConstants.ReverseAttackWordListTableName, DatabaseConstants.KkutuEndWordListTableName, DatabaseConstants.KkutuAttackWordListTableName })
+			foreach (string tableName in new string[] { DatabaseConstants.EndNodeIndexTableName, DatabaseConstants.AttackNodeIndexTableName, DatabaseConstants.ReverseEndNodeIndexTableName, DatabaseConstants.ReverseAttackNodeIndexTableName, DatabaseConstants.KkutuEndNodeIndexTableName, DatabaseConstants.KkutuAttackNodeIndexTableName })
 				connection.MakeTableIfNotExists(tableName);
 
-			connection.MakeTableIfNotExists(DatabaseConstants.KKTEndWordListTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTEndWordListTableName} SELECT * FROM {DatabaseConstants.EndWordListTableName}"));
-			connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackWordListTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTAttackWordListTableName} SELECT * FROM {DatabaseConstants.AttackWordListTableName}"));
+			connection.MakeTableIfNotExists(DatabaseConstants.KKTEndNodeIndexTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTEndNodeIndexTableName} SELECT * FROM {DatabaseConstants.EndNodeIndexTableName}"));
+			connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackNodeIndexTableName, () => connection.ExecuteNonQuery($"INSERT INTO {DatabaseConstants.KKTAttackNodeIndexTableName} SELECT * FROM {DatabaseConstants.AttackNodeIndexTableName}"));
 
 			// Create word list table
-			if (!connection.IsTableExists(DatabaseConstants.WordListTableName))
-				connection.MakeTable(DatabaseConstants.WordListTableName);
+			if (!connection.IsTableExists(DatabaseConstants.WordTableName))
+				connection.MakeTable(DatabaseConstants.WordTableName);
 			else
 				connection.CheckBackwardCompatibility();
 
 			// Create indexes
 			foreach (string columnName in new string[] { DatabaseConstants.WordIndexColumnName, DatabaseConstants.ReverseWordIndexColumnName, DatabaseConstants.KkutuWordIndexColumnName })
-				connection.CreateIndex(DatabaseConstants.WordListTableName, columnName);
+				connection.CreateIndex(DatabaseConstants.WordTableName, columnName);
 		}
 
-		public static void MakeTable(this CommonDatabaseConnection connection, string tablename)
+		public static void MakeTable(this AbstractDatabaseConnection connection, string tablename)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			string columnOptions = tablename switch
 			{
-				DatabaseConstants.WordListTableName => connection.GetWordListColumnOptions(),
-				DatabaseConstants.KkutuEndWordListTableName => $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL",
+				DatabaseConstants.WordTableName => connection.GetWordListColumnOptions(),
+				DatabaseConstants.KkutuEndNodeIndexTableName => $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL",
 				_ => $"{DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL",
 			};
 			connection.ExecuteNonQuery($"CREATE TABLE {tablename} ({columnOptions});");
 		}
 
-		public static void MakeTableIfNotExists(this CommonDatabaseConnection connection, string tableName, Action? callback = null)
+		public static void MakeTableIfNotExists(this AbstractDatabaseConnection connection, string tableName, Action? callback = null)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));

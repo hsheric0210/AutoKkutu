@@ -82,16 +82,16 @@ namespace AutoKkutu.Modules
 			}
 		}
 
-		public static void UpdateNodeLists(CommonDatabaseConnection connection)
+		public static void UpdateNodeLists(AbstractDatabaseConnection connection)
 		{
-			AttackWordList = connection.GetNodeList(DatabaseConstants.AttackWordListTableName);
-			EndWordList = connection.GetNodeList(DatabaseConstants.EndWordListTableName);
-			ReverseAttackWordList = connection.GetNodeList(DatabaseConstants.ReverseAttackWordListTableName);
-			ReverseEndWordList = connection.GetNodeList(DatabaseConstants.ReverseEndWordListTableName);
-			KkutuAttackWordList = connection.GetNodeList(DatabaseConstants.KkutuAttackWordListTableName);
-			KkutuEndWordList = connection.GetNodeList(DatabaseConstants.KkutuEndWordListTableName);
-			KKTAttackWordList = connection.GetNodeList(DatabaseConstants.KKTAttackWordListTableName);
-			KKTEndWordList = connection.GetNodeList(DatabaseConstants.KKTEndWordListTableName);
+			AttackWordList = connection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
+			EndWordList = connection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
+			ReverseAttackWordList = connection.GetNodeList(DatabaseConstants.ReverseAttackNodeIndexTableName);
+			ReverseEndWordList = connection.GetNodeList(DatabaseConstants.ReverseEndNodeIndexTableName);
+			KkutuAttackWordList = connection.GetNodeList(DatabaseConstants.KkutuAttackNodeIndexTableName);
+			KkutuEndWordList = connection.GetNodeList(DatabaseConstants.KkutuEndNodeIndexTableName);
+			KKTAttackWordList = connection.GetNodeList(DatabaseConstants.KKTAttackNodeIndexTableName);
+			KKTEndWordList = connection.GetNodeList(DatabaseConstants.KKTEndNodeIndexTableName);
 		}
 
 		/* Path-controlling */

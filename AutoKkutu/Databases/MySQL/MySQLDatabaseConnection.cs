@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace AutoKkutu.Databases.MySQL
 {
-	public partial class MySqlDatabaseConnection : CommonDatabaseConnection
+	public partial class MySqlDatabaseConnection : AbstractDatabaseConnection
 	{
 		private readonly MySqlConnection Connection; 
 		private readonly string DatabaseName;
@@ -17,11 +17,11 @@ namespace AutoKkutu.Databases.MySQL
 			DatabaseName = dbName;
 		}
 
-		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
+		public override void AddSequenceColumnToWordList() => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq NOT NULL AUTO_INCREMENT PRIMARY KEY;");
 
 		public override void ChangeWordListColumnType(string tableName, string columnName, string newType) => this.ExecuteNonQuery($"ALTER TABLE {tableName} MODIFY {columnName} {newType}");
 
-		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordListTableName} DROP {columnName}");
+		public override void DropWordListColumn(string columnName) => this.ExecuteNonQuery($"ALTER TABLE {DatabaseConstants.WordTableName} DROP {columnName}");
 
 		public override string? GetColumnType(string tableName, string columnName)
 		{
@@ -44,7 +44,7 @@ namespace AutoKkutu.Databases.MySQL
 
 		public override bool IsColumnExists(string tableName, string columnName)
 		{
-			tableName ??= DatabaseConstants.WordListTableName;
+			tableName ??= DatabaseConstants.WordTableName;
 			try
 			{
 				return Convert.ToInt32(this.ExecuteScalar("SELECT COUNT(*) FROM Information_schema.columns WHERE table_schema=@dbName AND table_name=@tableName AND column_name=@columnName;", CreateParameter("@dbName", DatabaseName), CreateParameter("@tableName", tableName), CreateParameter("@columnName", columnName)), CultureInfo.InvariantCulture) > 0;
@@ -69,7 +69,7 @@ namespace AutoKkutu.Databases.MySQL
 			}
 		}
 
-		public override void PerformVacuum()
+		public override void ExecuteVacuum()
 		{
 		}
 

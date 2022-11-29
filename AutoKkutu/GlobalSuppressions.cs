@@ -10,7 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Roslynator", "RCS1123")]
 [assembly: SuppressMessage("Minor Code Smell", "S3220")]
 
-[assembly: SuppressMessage("Major Code Smell", "S107", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SqliteDatabase.RegisterRearrangeMissionFunc(Microsoft.Data.Sqlite.SqliteConnection)")]
+[assembly: SuppressMessage("Major Code Smell", "S107", Scope = "member", Target = "~M:AutoKkutu.Databases.SQLite.SqliteDatabase.RegisterMissionWordPriorityFunc(Microsoft.Data.Sqlite.SqliteConnection)")]
 [assembly: SuppressMessage("Major Code Smell", "S1168", Scope = "member", Target = "~M:AutoKkutu.Databases.CommonDatabaseCommand.TryExecuteReader(System.String)~System.Data.Common.DbDataReader")]
 
 // SQL injection

@@ -5,7 +5,7 @@ using Serilog;
 
 namespace AutoKkutu.Databases.PostgreSQL
 {
-	public partial class PostgreSqlDatabase : DatabaseWithDefaultConnection
+	public partial class PostgreSqlDatabase : AbstractDatabase
 	{
 		private readonly string ConnectionString;
 
@@ -19,11 +19,11 @@ namespace AutoKkutu.Databases.PostgreSQL
 				Log.Information("Opening database connection...");
 				var connection = new NpgsqlConnection(connectionString);
 				connection.Open();
-				RegisterDefaultConnection(new PostgreSqlDatabaseConnection(connection));
-				DefaultConnection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
+				Initialize(new PostgreSqlDatabaseConnection(connection));
+				Connection.TryExecuteNonQuery("set application name", $"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
 				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
-				DefaultConnection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE OR REPLACE FUNCTION {DefaultConnection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
+				Connection.TryExecuteNonQuery("register RearrangeFunc", $@"CREATE OR REPLACE FUNCTION {Connection.GetRearrangeFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 BEGIN
 	IF ((flags & endWordFlag) != 0) THEN
@@ -38,7 +38,7 @@ $$ LANGUAGE plpgsql
 ");
 
 				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
-				DefaultConnection.TryExecuteNonQuery("register RearrangeMissionFunc", $@"CREATE OR REPLACE FUNCTION {DefaultConnection.GetRearrangeMissionFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
+				Connection.TryExecuteNonQuery("register RearrangeMissionFunc", $@"CREATE OR REPLACE FUNCTION {Connection.GetRearrangeMissionFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 DECLARE
 	occurrence INTEGER;
@@ -47,30 +47,30 @@ BEGIN
 
 	IF ((flags & endWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
-			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
+			RETURN endMissionWordOrdinal * {DatabaseConstants.MaxWordPriorityLength} + occurrence * 256;
 		ELSE
-			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+			RETURN endWordOrdinal * {DatabaseConstants.MaxWordPriorityLength};
 		END IF;
 	END IF;
 	IF ((flags & attackWordFlag) != 0) THEN
 		IF (occurrence > 0) THEN
-			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
+			RETURN attackMissionWordOrdinal * {DatabaseConstants.MaxWordPriorityLength} + occurrence * 256;
 		ELSE
-			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+			RETURN attackWordOrdinal * {DatabaseConstants.MaxWordPriorityLength};
 		END IF;
 	END IF;
 
 	IF occurrence > 0 THEN
-		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength} + occurrence * 256;
+		RETURN missionWordOrdinal * {DatabaseConstants.MaxWordPriorityLength} + occurrence * 256;
 	ELSE
-		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPlusMissionLength};
+		RETURN normalWordOrdinal * {DatabaseConstants.MaxWordPriorityLength};
 	END IF;
 END;
 $$ LANGUAGE plpgsql
 ");
 
 				// Check the database tables
-				DefaultConnection.CheckTable();
+				Connection.CheckTable();
 
 				Log.Information("Successfully established database connection.");
 			}
@@ -83,13 +83,13 @@ $$ LANGUAGE plpgsql
 
 		public override string GetDBType() => "PostgreSQL";
 
-		public override void CheckConnectionType(CommonDatabaseConnection connection)
+		public override void CheckConnectionType(AbstractDatabaseConnection connection)
 		{
 			if (connection is not null and not PostgreSqlDatabaseConnection)
 				throw new NotSupportedException($"Connection is not {nameof(NpgsqlConnection)}");
 		}
 
-		public override CommonDatabaseConnection OpenSecondaryConnection()
+		public override AbstractDatabaseConnection OpenSecondaryConnection()
 		{
 			var connection = new NpgsqlConnection(ConnectionString);
 			connection.Open();

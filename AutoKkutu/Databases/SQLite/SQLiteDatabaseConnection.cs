@@ -3,14 +3,13 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Serilog;
 using System;
+using System.Linq;
 
 namespace AutoKkutu.Databases.SQLite
 {
-	public class SqliteDatabaseConnection : CommonDatabaseConnection
+	public class SqliteDatabaseConnection : AbstractDatabaseConnection
 	{
-		private readonly SqliteConnection Connection;
-
-		public SqliteDatabaseConnection(SqliteConnection connection) => Connection = connection;
+		public SqliteDatabaseConnection(SqliteConnection connection) => Initialize(connection);
 
 		public override void AddSequenceColumnToWordList() => RebuildWordList();
 
@@ -20,20 +19,13 @@ namespace AutoKkutu.Databases.SQLite
 
 		public override string? GetColumnType(string tableName, string columnName)
 		{
-			if (tableName == null)
-				return DatabaseConstants.WordListTableName;
-
 			try
 			{
-				var tableInfo = Connection.Query<SqliteTableInfo>("SELECT * FROM pragma_table_info(@TableName);", new
+				return this.ExecuteScalar<string>("SELECT type FROM pragma_table_info(@TableName) WHERE name = @ColumnName;", new
 				{
-					TableName = tableName
+					TableName = tableName,
+					ColumnName = columnName
 				});
-				while (reader.Read())
-				{
-					if (reader.GetString(nameOrdinal).Equals(columnName, StringComparison.OrdinalIgnoreCase))
-						return reader.GetString(typeOrdinal);
-				}
 			}
 			catch (Exception ex)
 			{
@@ -43,30 +35,47 @@ namespace AutoKkutu.Databases.SQLite
 			return null;
 		}
 
-		private class SqliteTableInfo
-		{
-			public string Name
-			{
-				get; set;
-			}
+		public override string GetRearrangeFuncName() => "WordPriority";
 
-			public string Type
-			{
-				get; set;
-			}
-		}
-
-		public override string GetRearrangeFuncName() => "Rearrange";
-
-		public override string GetRearrangeMissionFuncName() => "Rearrange_Mission";
+		public override string GetRearrangeMissionFuncName() => "MissionWordPriority";
 
 		public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
 
-		public override bool IsColumnExists(string tableName, string columnName) => SqliteDatabaseHelper.IsColumnExists(Connection, tableName, columnName);
+		public override bool IsColumnExists(string tableName, string columnName)
+		{
+			try
+			{
+				return Connection.ExecuteScalar<int>("SELECT COUNT(name) FROM pragma_table_info(@TableName) WHERE name = @ColumnName;", new
+				{
+					TableName = tableName,
+					ColumnName = columnName
+				}) > 0;
+			}
+			catch (Exception ex)
+			{
+				Log.Warning(ex, DatabaseConstants.ErrorIsColumnExists, columnName, tableName);
+			}
 
-		public override bool IsTableExists(string tablename) => SqliteDatabaseHelper.IsTableExists(Connection, tablename);
+			return false;
+		}
 
-		public override void PerformVacuum() => CreateCommand("VACUUM").ExecuteNonQuery();
+		public override bool IsTableExists(string tableName)
+		{
+			try
+			{
+				return Connection.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE name=@TableName;", new
+				{
+					TableName = tableName
+				}) > 0;
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, DatabaseConstants.ErrorIsTableExists, tableName);
+			}
+			return false;
+		}
+
+		public override void ExecuteVacuum() => Connection.Execute("VACUUM;");
 
 		protected override void Dispose(bool disposing)
 		{
@@ -77,10 +86,10 @@ namespace AutoKkutu.Databases.SQLite
 
 		private void RebuildWordList()
 		{
-			CreateCommand($"ALTER TABLE {DatabaseConstants.WordListTableName} RENAME TO _{DatabaseConstants.WordListTableName};").ExecuteNonQuery();
-			this.MakeTable(DatabaseConstants.WordListTableName);
-			CreateCommand($"INSERT INTO {DatabaseConstants.WordListTableName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordListTableName};").ExecuteNonQuery();
-			CreateCommand($"DROP TABLE _{DatabaseConstants.WordListTableName};").ExecuteNonQuery();
+			Connection.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} RENAME TO _{DatabaseConstants.WordTableName};");
+			this.MakeTable(DatabaseConstants.WordTableName);
+			Connection.Execute($"INSERT INTO {DatabaseConstants.WordTableName} (word, word_index, reverse_word_index, kkutu_index, flags) SELECT word, word_index, reverse_word_index, kkutu_index, flags FROM _{DatabaseConstants.WordTableName};");
+			Connection.Execute($"DROP TABLE _{DatabaseConstants.WordTableName};");
 		}
 	}
 }
