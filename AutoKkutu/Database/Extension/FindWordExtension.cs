@@ -12,11 +12,6 @@ namespace AutoKkutu.Database.Extension
 {
 	public static class FindWordExtension
 	{
-		static FindWordExtension()
-		{
-			SqlMapper.SetTypeMap(typeof(FindResult), new CustomPropertyTypeMap(typeof(FindResult), (type, columnName) => Array.Find(type.GetProperties(), prop => prop.GetCustomAttributes(false).OfType<ColumnAttribute>().Any(attr => attr.Name == columnName))));
-		}
-
 		private static string GetIndexColumnName(GameMode mode, ResponsePresentedWord word)
 		{
 			switch (mode)
@@ -105,12 +100,12 @@ namespace AutoKkutu.Database.Extension
 			SelectWordEndAttackFlags(mode, out int endWordFlag, out int attackWordFlag);
 			FindQuery query = connection.CreateQuery(mode, word, missionChar, endWordFlag, attackWordFlag, preference, options);
 
-			foreach (FindResult q in connection.Query<FindResult>(query.Sql, new DynamicParameters(query.Parameters)))
+			foreach (WordModel found in connection.Query<WordModel>(query.Sql, new DynamicParameters(query.Parameters)))
 			{
-				string wordString = q.Word.Trim();
+				string wordString = found.Word.Trim();
 				result.Add(new PathObject(wordString, QueryWordCategories(
 					 wordString,
-					(WordDbTypes)q.Flags,
+					(WordDbTypes)found.Flags,
 					missionChar,
 					(WordDbTypes)endWordFlag,
 					(WordDbTypes)attackWordFlag,
@@ -118,21 +113,6 @@ namespace AutoKkutu.Database.Extension
 			}
 
 			return result;
-		}
-
-		private class FindResult
-		{
-			[Column(DatabaseConstants.WordColumnName)]
-			public string Word
-			{
-				get; set;
-			}
-
-			[Column(DatabaseConstants.FlagsColumnName)]
-			public int Flags
-			{
-				get; set;
-			}
 		}
 
 		private static FindQuery CreateQuery(
