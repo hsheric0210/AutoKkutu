@@ -12,7 +12,7 @@ namespace AutoKkutu
 	public partial class App : Application
 	{
 		private const int MaxSizeBytes = 8388608; // 64 MB
-		private const string LoggingTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.ffff} [{Level:u3}] <{ThreadName} #{ThreadId}> {Message:lj}{NewLine}{Exception}";
+		private const string LoggingTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.ffff} [{Level:u3}] <Thread#{ThreadId}> {Message:lj}{NewLine}{Exception}";
 		private readonly TimeSpan FlushPeriod = TimeSpan.FromSeconds(1);
 
 		public App()
@@ -27,6 +27,7 @@ namespace AutoKkutu
 					.MinimumLevel.Verbose()
 					.WriteTo.Console(outputTemplate: LoggingTemplate, theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true)
 					.WriteTo.Async(c => c.File(path: "AutoKkutu.log", outputTemplate: LoggingTemplate, fileSizeLimitBytes: MaxSizeBytes, rollOnFileSizeLimit: true, buffered: true, flushToDiskInterval: FlushPeriod))
+					.Enrich.WithThreadId()
 					.CreateLogger();
 			}
 			catch (Exception e)
