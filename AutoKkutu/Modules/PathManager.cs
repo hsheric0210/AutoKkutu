@@ -262,7 +262,7 @@ namespace AutoKkutu.Modules
 
 				case GameMode.MiddleAndFirst:
 					if (path.Length > 2 && path.Length % 2 == 1)
-						return path.GetMaFNode();
+						return path.GetMaFTailNode();
 					break;
 
 				case GameMode.Kkutu:

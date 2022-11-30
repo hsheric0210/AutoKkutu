@@ -208,7 +208,7 @@ namespace AutoKkutu.Modules
 
 				case GameMode.MiddleAndFirst:
 					if (Content.Length % 2 == 1)
-						return Content.GetMaFNode();
+						return Content.GetMaFTailNode();
 					break;
 
 				case GameMode.Kkutu:

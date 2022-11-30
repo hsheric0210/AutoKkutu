@@ -132,15 +132,15 @@ namespace AutoKkutu.Database.Extension
 			if (mode != GameMode.All)
 			{
 				string wordIndexColumn = GetIndexColumnName(mode, word);
-				param.Add("@primaryWord", word.Content);
+				param.Add("@PrimaryWord", word.Content);
 				if (word.CanSubstitution)
 				{
-					filter = $" WHERE ({wordIndexColumn} = @primaryWord OR {wordIndexColumn} = @secondaryWord)";
-					param.Add("@secondaryWord", word.Substitution!);
+					filter = $" WHERE ({wordIndexColumn} = @PrimaryWord OR {wordIndexColumn} = @SecondaryWord)";
+					param.Add("@SecondaryWord", word.Substitution!);
 				}
 				else
 				{
-					filter = $" WHERE ({wordIndexColumn} = @primaryWord)";
+					filter = $" WHERE ({wordIndexColumn} = @PrimaryWord)";
 				}
 
 				// 한방 단어
@@ -182,10 +182,10 @@ namespace AutoKkutu.Database.Extension
 			}
 			else
 			{
-				param.Add("@missionChar", missionChar);
+				param.Add("@MissionChar", missionChar);
 				return string.Format(
 					CultureInfo.InvariantCulture,
-					"{0}({1}, {2}, @missionChar, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})",
+					"{0}({1}, {2}, @MissionChar, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})",
 					connection.GetMissionWordPriorityFuncName(),
 					DatabaseConstants.WordColumnName,
 					DatabaseConstants.FlagsColumnName,

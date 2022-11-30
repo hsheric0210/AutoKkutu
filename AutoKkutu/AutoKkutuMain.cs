@@ -459,7 +459,7 @@ namespace AutoKkutu
 			UpdateSearchState(null, false);
 			ResetPathList();
 			PathManager.UnsupportedPathList.Clear();
-			if (Configuration.AutoDBUpdateMode == AutoDBUpdateMode.OnGameEnd)
+			if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnGameEnd)
 			{
 				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
 				string? result = PathManager.AutoDBUpdate();
@@ -537,7 +537,7 @@ namespace AutoKkutu
 
 		private static void OnRoundChange(object? sender, EventArgs e)
 		{
-			if (Configuration.AutoDBUpdateMode == AutoDBUpdateMode.OnRoundEnd)
+			if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnRoundEnd)
 				PathManager.AutoDBUpdate();
 		}
 

@@ -8,10 +8,10 @@ namespace AutoKkutu.Utils
 {
 	public static class StatusUtils
 	{
-		public static void UpdateStatusMessage(this MainWindow mainWindow, StatusMessage status, params object?[] formatterArgs)
+		public static void UpdateStatusMessage(this MainWindow window, StatusMessage status, params object?[] formatterArgs)
 		{
-			if (mainWindow == null)
-				throw new ArgumentNullException(nameof(mainWindow));
+			if (window == null)
+				throw new ArgumentNullException(nameof(window));
 
 			Color StatusColor;
 			string StatusContent;
@@ -109,15 +109,15 @@ namespace AutoKkutu.Utils
 					break;
 			}
 
-			mainWindow.Dispatcher.Invoke(() =>
+			window.Dispatcher.Invoke(() =>
 			{
-				mainWindow.StatusGrid.Background = new SolidColorBrush(StatusColor);
-				mainWindow.StatusLabel.Content = string.Format(CultureInfo.CurrentCulture, StatusContent, formatterArgs);
+				window.StatusGrid.Background = new SolidColorBrush(StatusColor);
+				window.StatusLabel.Content = string.Format(CultureInfo.CurrentCulture, StatusContent, formatterArgs);
 				var img = new BitmapImage();
 				img.BeginInit();
 				img.UriSource = new Uri($@"images\{ImageName}.png", UriKind.Relative);
 				img.EndInit();
-				mainWindow.StatusIcon.Source = img;
+				window.StatusIcon.Source = img;
 			});
 		}
 	}

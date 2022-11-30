@@ -15,10 +15,10 @@ namespace AutoKkutu
 			get; set;
 		} = true;
 
-		public AutoDBUpdateMode AutoDBUpdateMode
+		public DatabaseUpdateTiming AutoDBUpdateMode
 		{
 			get; set;
-		} = AutoDBUpdateMode.OnGameEnd;
+		} = DatabaseUpdateTiming.OnGameEnd;
 
 		public WordPreference ActiveWordPreference
 		{
@@ -148,16 +148,16 @@ namespace AutoKkutu
 
 	public static class ConfigEnums
 	{
-		public static AutoDBUpdateMode[] GetDBAutoUpdateModeValues() => (AutoDBUpdateMode[])Enum.GetValues(typeof(AutoDBUpdateMode));
+		public static DatabaseUpdateTiming[] GetDBAutoUpdateModeValues() => (DatabaseUpdateTiming[])Enum.GetValues(typeof(DatabaseUpdateTiming));
 
 		public static WordCategories[] GetWordPreferenceValues() => (WordCategories[])Enum.GetValues(typeof(WordCategories));
 
 		public static GameMode[] GetGameModeValues() => (GameMode[])Enum.GetValues(typeof(GameMode));
 
-		public static string? GetDBAutoUpdateModeName(AutoDBUpdateMode key) => key switch
+		public static string? GetDBAutoUpdateModeName(DatabaseUpdateTiming key) => key switch
 		{
-			AutoDBUpdateMode.OnGameEnd => I18n.AutoDBUpdate_OnGameEnd,
-			AutoDBUpdateMode.OnRoundEnd => I18n.AutoDBUpdate_OnRoundEnd,
+			DatabaseUpdateTiming.OnGameEnd => I18n.AutoDBUpdate_OnGameEnd,
+			DatabaseUpdateTiming.OnRoundEnd => I18n.AutoDBUpdate_OnRoundEnd,
 			_ => null,
 		};
 
