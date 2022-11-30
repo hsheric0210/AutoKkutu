@@ -101,6 +101,9 @@ namespace AutoKkutu
 			// TODO: Configurable CEF settings
 			using var settings = new CefSettings
 			{
+				LogFile = "CefSharp.log",
+				LogSeverity = LogSeverity.Default,
+				
 				CefCommandLineArgs =
 				{
 					{
@@ -111,7 +114,7 @@ namespace AutoKkutu
 					"enable-begin-frame-scheduling"
 				},
 				UserAgent = "Chrome",
-				CachePath = Environment.CurrentDirectory + "\\Cache"
+				CachePath = Environment.CurrentDirectory + "\\CefSharp"
 			};
 
 			try
