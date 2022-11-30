@@ -9,7 +9,6 @@ namespace AutoKkutu.Database.Extension
 {
 	public static class NodeExtension
 	{
-
 		public static bool AddNode(this AbstractDatabaseConnection connection, string node, string? tableName = null)
 		{
 			if (connection == null)

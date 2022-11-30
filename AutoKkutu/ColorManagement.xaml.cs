@@ -10,7 +10,6 @@ namespace AutoKkutu
 	/// </summary>
 	public partial class ColorManagement : Window
 	{
-
 		public ColorManagement(AutoKkutuColorPreference config)
 		{
 			if (config == null)

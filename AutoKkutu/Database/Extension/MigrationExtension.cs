@@ -6,7 +6,6 @@ namespace AutoKkutu.Database.Extension
 {
 	public static class MigrationExtension
 	{
-
 		private static void AddInexistentColumns(this AbstractDatabaseConnection connection)
 		{
 			if (connection == null)

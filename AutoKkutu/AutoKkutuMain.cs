@@ -17,7 +17,6 @@ namespace AutoKkutu
 {
 	public static class AutoKkutuMain
 	{
-
 		public static AutoKkutuConfiguration Configuration
 		{
 			get; set;
@@ -462,7 +461,7 @@ namespace AutoKkutu
 			if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnGameEnd)
 			{
 				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-				string? result = PathManager.AutoDBUpdate();
+				string? result = PathManager.UpdateDatabase();
 				if (string.IsNullOrEmpty(result))
 				{
 					UpdateStatusMessage(StatusMessage.Wait);
@@ -538,7 +537,7 @@ namespace AutoKkutu
 		private static void OnRoundChange(object? sender, EventArgs e)
 		{
 			if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnRoundEnd)
-				PathManager.AutoDBUpdate();
+				PathManager.UpdateDatabase();
 		}
 
 		private static void OnTypingWordPresented(object? sender, WordPresentEventArgs args)

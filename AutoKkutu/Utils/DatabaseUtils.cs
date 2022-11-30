@@ -15,7 +15,6 @@ namespace AutoKkutu.Utils
 {
 	public static class DatabaseUtils
 	{
-
 		public static AbstractDatabase CreateDatabase(Configuration config)
 		{
 			if (config == null)

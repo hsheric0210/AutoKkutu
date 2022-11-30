@@ -21,7 +21,6 @@ namespace AutoKkutu
 		// Succeed KKutu-Helper Release v5.6.8500
 		private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
 
-
 		public MainWindow()
 		{
 			// Visual components setup

@@ -16,7 +16,6 @@ namespace AutoKkutu
 {
 	public partial class DatabaseManagement : Window
 	{
-
 		private readonly AbstractDatabase Database;
 
 		public DatabaseManagement(AbstractDatabase database)

@@ -8,7 +8,6 @@ namespace AutoKkutu.Modules
 {
 	public static class InputSimulation
 	{
-
 		public static bool CanSimulateInput()
 		{
 			AutoKkutuConfiguration config = AutoKkutuMain.Configuration;
@@ -43,7 +42,9 @@ namespace AutoKkutu.Modules
 			}
 
 			if (aborted)
+			{
 				Log.Warning(I18n.Main_InputSimulationAborted, pathAttribute, content);
+			}
 			else
 			{
 				handler.ClickSubmitButton();

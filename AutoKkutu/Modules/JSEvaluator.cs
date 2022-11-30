@@ -8,18 +8,20 @@ namespace AutoKkutu.Modules
 {
 	public static class JSEvaluator
 	{
-
 		private static object? EvaluateJSInternal(string javaScript, object? defaultResult)
 		{
 			if (!AutoKkutuMain.Browser.CanExecuteJavascriptInMainFrame)
 				return defaultResult;
 
 			using (IFrame frame = AutoKkutuMain.Browser.GetMainFrame())
+			{
 				if (frame != null)
 				{
 					using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
 					return task.Result.Result ?? defaultResult;
 				}
+			}
+
 			return defaultResult;
 		}
 
@@ -38,17 +40,20 @@ namespace AutoKkutu.Modules
 			}
 
 			using (IFrame frame = AutoKkutuMain.Browser.GetMainFrame())
+			{
 				if (frame != null)
 				{
 					using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
 					error = task.Result.Message;
 					return !string.IsNullOrWhiteSpace(error);
 				}
+			}
+
 			error = "Main frame is null";
 			return true;
 		}
 
-		public static string EvaluateJS(string javaScript, string defaultResult = " ")
+		public static string EvaluateJS(string javaScript, string defaultResult = " ", string? errorMessage = null)
 		{
 			try
 			{
@@ -60,12 +65,12 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Failed to run script on site.");
+				Log.Error(ex, errorMessage ?? "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
 
-		public static int EvaluateJSInt(string javaScript, int defaultResult = -1)
+		public static int EvaluateJSInt(string javaScript, int defaultResult = -1, string? errorMessage = null)
 		{
 			try
 			{
@@ -80,12 +85,12 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Failed to run script on site.");
+				Log.Error(ex, errorMessage ?? "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
 
-		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false)
+		public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, string? errorMessage = null)
 		{
 			try
 			{
@@ -97,7 +102,7 @@ namespace AutoKkutu.Modules
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Failed to run script on site.");
+				Log.Error(ex, errorMessage ?? "Failed to run script on site.");
 				return defaultResult;
 			}
 		}
