@@ -113,7 +113,16 @@ namespace AutoKkutu
 				UserAgent = "Chrome",
 				CachePath = Environment.CurrentDirectory + "\\Cache"
 			};
-			Cef.Initialize(settings, true, (IApp?)null);
+
+			try
+			{
+				if (!Cef.Initialize(settings, true, (IApp?)null))
+					Log.Warning("CEF initialization failed.");
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "CEF initialization exception.");
+			}
 		}
 
 		private static void InitializeConfiguration()
