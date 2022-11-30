@@ -17,7 +17,6 @@ namespace AutoKkutu.Utils
 {
 	public static partial class DatabaseCheckUtils
 	{
-
 		/// <summary>
 		/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
 		/// </summary>
@@ -81,13 +80,13 @@ namespace AutoKkutu.Utils
 							}
 
 							// Check WordIndex tag
-							VerifyWordIndexes(DatabaseConstants.WordIndexColumnName, word, element.WordIndex, DatabaseUtils.GetLaFHeadNode, wordIndexCorrection);
+							VerifyWordIndexes(DatabaseConstants.WordIndexColumnName, word, element.WordIndex, WordNodeExtension.GetLaFHeadNode, wordIndexCorrection);
 
 							// Check ReverseWordIndex tag
-							VerifyWordIndexes(DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, DatabaseUtils.GetFaLHeadNode, reverseWordIndexCorrection);
+							VerifyWordIndexes(DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, WordNodeExtension.GetFaLHeadNode, reverseWordIndexCorrection);
 
 							// Check KkutuIndex tag
-							VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, DatabaseUtils.GetKkutuHeadNode, kkutuIndexCorrection);
+							VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, WordNodeExtension.GetKkutuHeadNode, kkutuIndexCorrection);
 
 							// Check Flags
 							VerifyWordFlags(word, element.Flags, flagCorrection);

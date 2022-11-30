@@ -435,7 +435,7 @@ namespace AutoKkutu
 			{
 				primary = content;
 			}
-			else  // 가끔가다가 서버 랙때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 넘어오는 경우가 있음
+			else  // 가끔가다가 서버 렉때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 그대로 넘어오는 경우가 왕왕 있음. 특히 양쪽이 오토 켜놓고 대결할 때.
 			{
 				var converted = PathManager.ConvertToPresentedWord(content);
 				if (converted == null)
@@ -448,11 +448,11 @@ namespace AutoKkutu
 
 		protected static bool EvaluateJSReturnError(string javaScript, out string error) => JSEvaluator.EvaluateJSReturnError(javaScript, out error);
 
-		protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult);
+		protected static string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JSEvaluator.EvaluateJS(javaScript, defaultResult);
 
-		protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => JSEvaluator.EvaluateJSInt(javaScript, defaultResult);
+		protected static int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => JSEvaluator.EvaluateJSInt(javaScript, defaultResult);
 
-		protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => JSEvaluator.EvaluateJSBool(javaScript, defaultResult);
+		protected static bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => JSEvaluator.EvaluateJSBool(javaScript, defaultResult);
 
 		protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
 		{
@@ -463,9 +463,9 @@ namespace AutoKkutu
 			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
 			{
 				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
-					Log.Error("Failed to register JavaScript function {funcName} : {error:l}", funcName, error);
+					Log.Error("Failed to register JavaScript function {funcName} : {error}", funcName, error);
 				else
-					Log.Information("Registered JavaScript function {funcName} : {realFuncName:l}()", funcName, realFuncName);
+					Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", funcName, realFuncName);
 			}
 		}
 

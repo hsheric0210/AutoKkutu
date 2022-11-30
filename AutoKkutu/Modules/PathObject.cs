@@ -76,7 +76,6 @@ namespace AutoKkutu.Modules
 			get; set;
 		}
 
-
 		public PathObject(string content, WordCategories flags, int missionCharCount)
 		{
 			AutoKkutuColorPreference colorPref = AutoKkutuMain.ColorPreference;
@@ -94,7 +93,9 @@ namespace AutoKkutu.Modules
 			int i = isMissionWord ? 0 : 1;
 			Color? color = null;
 			if (flags.HasFlag(WordCategories.EndWord))
+			{
 				PrimaryImage = @"images\skull.png";
+			}
 			else if (flags.HasFlag(WordCategories.AttackWord))
 			{
 				PrimaryImage = @"images\attack.png";

@@ -19,7 +19,9 @@ namespace AutoKkutu.Database.Extension
 			{
 				Word = word
 			}) > 0)
+			{
 				return false;
+			}
 
 			connection.Execute(
 				$"INSERT INTO {DatabaseConstants.WordTableName}({DatabaseConstants.WordColumnName}, {DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES(@Word, @LaFHead, @FaLHead, @KkutuHead, @Flags)",

@@ -12,7 +12,6 @@ namespace AutoKkutu.Modules
 {
 	public static class PathManager
 	{
-
 		/* Word lists */
 
 		public static ICollection<string>? AttackWordList
@@ -122,7 +121,7 @@ namespace AutoKkutu.Modules
 
 		/* AutoDatabaseUpdate */
 
-		public static string? AutoDBUpdate()
+		public static string? UpdateDatabase()
 		{
 			if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
 				return null;

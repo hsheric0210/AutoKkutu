@@ -11,7 +11,6 @@ namespace AutoKkutu.Modules
 {
 	public static class AutoEnter
 	{
-
 		public static event EventHandler<EnterDelayingEventArgs>? EnterDelaying;
 		public static event EventHandler? PathNotFound;
 		public static event EventHandler<AutoEnteredEventArgs>? AutoEntered;
@@ -48,8 +47,10 @@ namespace AutoKkutu.Modules
 				});
 			}
 			else
+			{
 				// Enter immediately
 				PerformAutoEnterImmediately(content, args);
+			}
 		}
 
 		public static void PerformAutoFix()
@@ -72,7 +73,9 @@ namespace AutoKkutu.Modules
 					Task.Run(async () => await AutoEnterTask(content, delay, null, I18n.Main_Next));
 				}
 				else
+				{
 					PerformAutoEnterImmediately(content, null, I18n.Main_Next);
+				}
 			}
 			catch (Exception ex)
 			{

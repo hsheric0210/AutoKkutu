@@ -13,7 +13,6 @@ namespace AutoKkutu.Modules
 {
 	public static class PathFinder
 	{
-
 		public static IList<PathObject> DisplayList
 		{
 			get; private set;
@@ -28,6 +27,9 @@ namespace AutoKkutu.Modules
 
 		public static void FindPath(GameMode mode, ResponsePresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options)
 		{
+			if (word is null)
+				throw new ArgumentNullException(nameof(word));
+
 			if (ConfigEnums.IsFreeMode(mode))
 			{
 				RandomPath(mode, word, missionChar, options);
