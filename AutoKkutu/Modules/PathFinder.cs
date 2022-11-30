@@ -107,12 +107,14 @@ namespace AutoKkutu.Modules
 			var watch = new Stopwatch();
 			watch.Start();
 			DisplayList = new List<PathObject>();
-			if (!string.IsNullOrWhiteSpace(missionChar))
-				DisplayList.Add(new PathObject(firstChar + new string(missionChar[0], 256), WordCategories.None, 256));
 			var random = new Random();
+			int len = random.Next(64, 256);
+			if (!string.IsNullOrWhiteSpace(missionChar))
+				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random) + new string(missionChar[0], len) + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random), WordCategories.None, len));
 			for (int i = 0; i < 10; i++)
-				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(256, false, random), WordCategories.None, 256));
+				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(len, false, random), WordCategories.None, 0));
 			watch.Stop();
+			QualifiedList = new List<PathObject>(DisplayList);
 			NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.Normal, DisplayList.Count, DisplayList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), options));
 		}
 
