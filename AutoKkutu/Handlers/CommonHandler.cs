@@ -142,10 +142,10 @@ namespace AutoKkutu
 				_mainWatchdogTask.Start();
 
 				Task.Run(async () => await WatchdogAssistant("History", GetPreviousWord, token));
-				Task.Run(async () => await WatchdogAssistant("Round", GetCurrentRound,  token));
-				Task.Run(async () => await WatchdogAssistant("Mission word", GetCurrentMissionWord,  token));
-				Task.Run(async () => await WatchdogAssistant("Unsupported word", CheckUnsupportedWord,  token));
-				Task.Run(async () => await WatchdogAssistant("Example word", CheckExample,  token));
+				Task.Run(async () => await WatchdogAssistant("Round", GetCurrentRound, token));
+				Task.Run(async () => await WatchdogAssistant("Mission word", GetCurrentMissionWord, token));
+				Task.Run(async () => await WatchdogAssistant("Unsupported word", CheckUnsupportedWord, token));
+				Task.Run(async () => await WatchdogAssistant("Example word", CheckExample, token));
 				Task.Run(async () => await WatchdogGameMode(token));
 				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckGameTurn(), token));
 				Task.Run(async () => await WatchdogPresentWord(token));
@@ -273,7 +273,15 @@ namespace AutoKkutu
 			else if (!_isMyTurn)
 			{
 				_isMyTurn = true;
+
+				if (GetCurrentGameMode() == GameMode.Free)
+				{
+					MyTurn?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord("", false), CurrentMissionChar));
+					return;
+				}
+
 				ResponsePresentedWord? presentedWord = GetPresentedWord();
+
 				if (presentedWord == null)
 					return;
 
