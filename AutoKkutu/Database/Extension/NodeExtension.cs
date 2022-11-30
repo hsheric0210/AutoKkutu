@@ -26,7 +26,7 @@ namespace AutoKkutu.Database.Extension
 			else
 				nodeString = node[0].ToString();
 
-			if (connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @node;", new
+			if (connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new
 			{
 				Node = nodeString
 			}) > 0)

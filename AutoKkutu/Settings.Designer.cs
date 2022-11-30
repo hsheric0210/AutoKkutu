@@ -50,9 +50,9 @@ namespace AutoKkutu {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("OnGameEnd")]
-        public global::AutoKkutu.Constants.AutoDBUpdateMode AutoDBUpdateMode {
+        public global::AutoKkutu.Constants.DatabaseUpdateTiming AutoDBUpdateMode {
             get {
-                return ((global::AutoKkutu.Constants.AutoDBUpdateMode)(this["AutoDBUpdateMode"]));
+                return ((global::AutoKkutu.Constants.DatabaseUpdateTiming)(this["AutoDBUpdateMode"]));
             }
             set {
                 this["AutoDBUpdateMode"] = value;

@@ -1,6 +1,6 @@
 ﻿namespace AutoKkutu.Constants
 {
-	public enum AutoDBUpdateMode
+	public enum DatabaseUpdateTiming
 	{
 		OnGameEnd,
 		OnRoundEnd

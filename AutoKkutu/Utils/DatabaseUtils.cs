@@ -23,13 +23,15 @@ namespace AutoKkutu.Utils
 
 			switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToUpperInvariant())
 			{
-				case "MYSQL":
 				case "MARIADB":
+				case "MYSQL":
 					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
 					Log.Information("MySQL selected: {connString}", mysqlConnectionString);
 					return new MySqlDatabase(mysqlConnectionString);
 
 				case "POSTGRESQL":
+				case "POSTGRES":
+				case "POSTGRE":
 				case "PGSQL":
 					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
 					Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
@@ -87,10 +89,10 @@ namespace AutoKkutu.Utils
 				if (wordLength % 2 == 1)
 				{
 					// 가운뎃말잇기 한방 노드
-					PathManager.CheckNodePresence(null, word.GetMaFNode(), PathManager.EndWordList, WordDbTypes.MiddleEndWord, ref flags);
+					PathManager.CheckNodePresence(null, word.GetMaFTailNode(), PathManager.EndWordList, WordDbTypes.MiddleEndWord, ref flags);
 
 					// 가운뎃말잇기 공격 노드
-					PathManager.CheckNodePresence(null, word.GetMaFNode(), PathManager.AttackWordList, WordDbTypes.MiddleAttackWord, ref flags);
+					PathManager.CheckNodePresence(null, word.GetMaFTailNode(), PathManager.AttackWordList, WordDbTypes.MiddleAttackWord, ref flags);
 				}
 			}
 			return flags;
@@ -141,58 +143,12 @@ namespace AutoKkutu.Utils
 				if (wordLength % 2 == 1)
 				{
 					// 가운뎃말잇기 한방 노드
-					NewEndNode += Convert.ToInt32(PathManager.CheckNodePresence("middle end", word.GetMaFNode(), PathManager.EndWordList, WordDbTypes.MiddleEndWord, ref flags, true));
+					NewEndNode += Convert.ToInt32(PathManager.CheckNodePresence("middle end", word.GetMaFTailNode(), PathManager.EndWordList, WordDbTypes.MiddleEndWord, ref flags, true));
 
 					// 가운뎃말잇기 공격 노드
-					NewAttackNode += Convert.ToInt32(PathManager.CheckNodePresence("middle attack", word.GetMaFNode(), PathManager.AttackWordList, WordDbTypes.MiddleAttackWord, ref flags, true));
+					NewAttackNode += Convert.ToInt32(PathManager.CheckNodePresence("middle attack", word.GetMaFTailNode(), PathManager.AttackWordList, WordDbTypes.MiddleAttackWord, ref flags, true));
 				}
 			}
-		}
-
-		public static string GetLaFHeadNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
-
-			return word[0].ToString();
-		}
-
-		public static string GetFaLHeadNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
-
-			return word.Last().ToString();
-		}
-
-		public static string GetKkutuHeadNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
-
-			if (word.Length >= 4)
-				return word[..2];
-			return word.Length >= 3 ? word[0].ToString() : "";
-		}
-
-		public static string GetLaFTailNode(this string word) => GetFaLHeadNode(word);
-
-		public static string GetFaLTailNode(this string word) => GetLaFHeadNode(word);
-
-		public static string GetKkutuTailNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
-
-			return word.Length >= 4 ? word.Substring(word.Length - 3, 2) : word.Last().ToString();
-		}
-
-		public static string GetMaFNode(this string word)
-		{
-			if (word == null)
-				throw new ArgumentNullException(nameof(word));
-
-			return word[(word.Length - 1) / 2].ToString();
 		}
 	}
 }
