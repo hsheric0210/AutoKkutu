@@ -2,6 +2,9 @@
 
 namespace AutoKkutu.Constants
 {
+	/// <summary>
+	/// 'flags' column of word entry in database
+	/// </summary>
 	[Flags]
 	public enum WordDbTypes
 	{

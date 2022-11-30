@@ -16,7 +16,7 @@ namespace AutoKkutu.Database.SQLite
 	{
 		static SqliteDatabaseHelper()
 		{
-			SqlMapper.SetTypeMap(typeof(CompatibleWordModel), new CustomPropertyTypeMap(typeof(CompatibleWordModel), (type, columnName) => Array.Find(type.GetProperties(), prop => prop.GetCustomAttributes(false).OfType<ColumnAttribute>().Any(attr => attr.Name == columnName))));
+			typeof(CompatibleWordModel).RegisterMapping();
 		}
 
 		public static void LoadFromExternalSQLite(AbstractDatabaseConnection targetDatabase, string externalSQLiteFilePath)
@@ -138,7 +138,7 @@ namespace AutoKkutu.Database.SQLite
 			public string Word
 			{
 				get; set;
-			}
+			} = "";
 
 			[Column(DatabaseConstants.FlagsColumnName)]
 			public int Flags

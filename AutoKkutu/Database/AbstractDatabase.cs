@@ -1,8 +1,6 @@
-﻿using AutoKkutu.Utils;
-using Dapper;
+﻿using AutoKkutu.Database.Extension;
+using AutoKkutu.Utils;
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 
 namespace AutoKkutu.Database
 {
@@ -14,7 +12,7 @@ namespace AutoKkutu.Database
 
 		static AbstractDatabase()
 		{
-			SqlMapper.SetTypeMap(typeof(WordModel), new CustomPropertyTypeMap(typeof(WordModel), (type, columnName) => Array.Find(type.GetProperties(), prop => prop.GetCustomAttributes(false).OfType<ColumnAttribute>().Any(attr => attr.Name == columnName))));
+			typeof(WordModel).RegisterMapping();
 		}
 
 		protected AbstractDatabase()

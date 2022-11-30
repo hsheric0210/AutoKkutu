@@ -303,7 +303,14 @@ namespace AutoKkutu
 		private void OnWindowClose(object? sender, CancelEventArgs e)
 		{
 			Log.Information(I18n.Main_ClosingDBConnection);
-			AutoKkutuMain.Database.Dispose();
+			try
+			{
+				AutoKkutuMain.Database.Dispose();
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Failed to dispose database object.");
+			}
 			Log.CloseAndFlush();
 		}
 
