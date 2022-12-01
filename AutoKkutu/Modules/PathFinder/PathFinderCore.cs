@@ -5,34 +5,93 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules
+namespace AutoKkutu.Modules.PathFinder
 {
-	public static class PathFinder
+	public class PathFinderCore : IPathFinder
 	{
-		public static IList<PathObject> DisplayList
+		public IList<PathObject> DisplayList
 		{
 			get; private set;
 		} = new List<PathObject>();
 
-		public static IList<PathObject> QualifiedList
+		public IList<PathObject> QualifiedList
 		{
 			get; private set;
 		} = new List<PathObject>();
 
-		public static event EventHandler<PathUpdatedEventArgs>? OnPathUpdated;
+		public event EventHandler<PathUpdatedEventArgs>? OnPathUpdated;
 
-		public static void FindPath(GameMode mode, ResponsePresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options)
+		[Obsolete("Get rid of this method calls as much as possible")]
+		private Func<AutoKkutuConfiguration> GetConfig;
+
+		public PathFinderCore(Func<AutoKkutuConfiguration> configSupplier)
+		{
+			GetConfig = configSupplier;
+		}
+
+		// TODO: Remove
+		private void ApplyWordFilterFlags(ref PathFinderOptions flags)
+		{
+			// Setup flag
+			if (GetConfig().EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathManager.PreviousPath.Count > 0))  // 첫 턴 한방 방지
+				flags |= PathFinderOptions.UseEndWord;
+			else
+				flags &= ~PathFinderOptions.UseEndWord;
+			if (GetConfig().AttackWordAllowed)
+				flags |= PathFinderOptions.UseAttackWord;
+			else
+				flags &= ~PathFinderOptions.UseAttackWord;
+		}
+
+		public void Find(GameMode mode, ResponsePresentedWord? word, string? missionChar, WordPreference pref, PathFinderOptions flags)
+		{
+			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderOptions.ManualSearch))
+				return;
+
+			try
+			{
+				if (!ConfigEnums.IsFreeMode(mode) && PathFindings.GetEndWordList(mode)?.Contains(word.Content) == true && (!word.CanSubstitution || PathFindings.GetEndWordList(mode)?.Contains(word.Substitution!) == true))
+				{
+					Log.Warning(I18n.PathFinderFailed_Endword);
+					// AutoKkutuMain.ResetPathList();
+					AutoKkutuMain.UpdateSearchState(null, true);
+					AutoKkutuMain.UpdateStatusMessage(StatusMessage.EndWord);
+				}
+				else
+				{
+					AutoKkutuMain.UpdateStatusMessage(StatusMessage.Searching);
+
+					// These two codes could be handled by CALLER, not PathFinder
+					ApplyWordFilterFlags(ref flags);
+					string missionFixChar = GetConfig().MissionAutoDetectionEnabled && missionChar != null ? missionChar : "";
+
+					// Enqueue search
+					FindInternal(
+						mode,
+						word,
+						missionFixChar,
+						pref,
+						flags
+					);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, I18n.PathFinderFailed_Exception);
+			}
+		}
+
+		public void FindInternal(GameMode mode, ResponsePresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options)
 		{
 			if (word is null)
 				throw new ArgumentNullException(nameof(word));
 
 			if (ConfigEnums.IsFreeMode(mode))
 			{
-				RandomPath(mode, word, missionChar, options);
+				GenerateRandomPath(mode, word, missionChar, options);
 				return;
 			}
 
@@ -95,7 +154,7 @@ namespace AutoKkutu.Modules
 			});
 		}
 
-		private static void RandomPath(
+		public void GenerateRandomPath(
 			GameMode mode,
 			ResponsePresentedWord word,
 			string missionChar,
@@ -117,57 +176,8 @@ namespace AutoKkutu.Modules
 			NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.Normal, DisplayList.Count, DisplayList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), options));
 		}
 
-		private static void NotifyPathUpdate(PathUpdatedEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);
+		private void NotifyPathUpdate(PathUpdatedEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);
 
-		public static void ResetFinalList() => DisplayList = new List<PathObject>();
-	}
-
-	public class PathUpdatedEventArgs : EventArgs
-	{
-		public int CalcWordCount
-		{
-			get;
-		}
-
-		public PathFinderOptions Flags
-		{
-			get;
-		}
-
-		public string MissionChar
-		{
-			get;
-		}
-
-		public PathFinderResult Result
-		{
-			get;
-		}
-
-		public int Time
-		{
-			get;
-		}
-
-		public int TotalWordCount
-		{
-			get;
-		}
-
-		public ResponsePresentedWord Word
-		{
-			get;
-		}
-
-		public PathUpdatedEventArgs(ResponsePresentedWord word, string missionChar, PathFinderResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, PathFinderOptions flags = PathFinderOptions.None)
-		{
-			Word = word;
-			MissionChar = missionChar;
-			Result = arg;
-			TotalWordCount = totalWordCount;
-			CalcWordCount = calcWordCount;
-			Time = time;
-			Flags = flags;
-		}
+		public void ResetFinalList() => DisplayList = new List<PathObject>();
 	}
 }

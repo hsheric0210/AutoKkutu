@@ -8,71 +8,71 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 
-namespace AutoKkutu.Modules
+namespace AutoKkutu.Modules.PathManager
 {
-	public static class PathManager
+	public class PathManagerCore
 	{
 		/* Word lists */
 
-		public static ICollection<string>? AttackWordList
+		// TODO: Rename these from *WordList to *Nodes
+		public ICollection<string>? AttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? EndWordList
+		public ICollection<string>? EndWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? KKTAttackWordList
+		public ICollection<string>? KKTAttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? KKTEndWordList
+		public ICollection<string>? KKTEndWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? KkutuAttackWordList
+		public ICollection<string>? KkutuAttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? KkutuEndWordList
+		public ICollection<string>? KkutuEndWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? ReverseAttackWordList
+		public ICollection<string>? ReverseAttackWordList
 		{
 			get; private set;
 		}
 
-		public static ICollection<string>? ReverseEndWordList
+		public ICollection<string>? ReverseEndWordList
 		{
 			get; private set;
 		}
 
 		/* Path lists */
 
-		public static ICollection<string> InexistentPathList { get; } = new HashSet<string>();
+		public ICollection<string> InexistentPathList { get; } = new HashSet<string>();
 
-		public static ICollection<string> NewPathList { get; } = new HashSet<string>();
+		public ICollection<string> NewPathList { get; } = new HashSet<string>();
 
-		public static ICollection<string> PreviousPath { get; } = new HashSet<string>();
+		public ICollection<string> PreviousPath { get; } = new HashSet<string>();
 
-		public static ICollection<string> UnsupportedPathList { get; } = new HashSet<string>();
+		public ICollection<string> UnsupportedPathList { get; } = new HashSet<string>();
 
-		public static readonly ReaderWriterLockSlim PathListLock = new();
+		public readonly ReaderWriterLockSlim PathListLock = new();
 
-		/* Initialization */
 
-		public static void Initialize()
+		public PathManagerCore(AbstractDatabaseConnection connection)
 		{
 			try
 			{
-				UpdateNodeLists(AutoKkutuMain.Database.Connection);
+				UpdateNodeLists(connection);
 			}
 			catch (Exception ex)
 			{
@@ -81,7 +81,7 @@ namespace AutoKkutu.Modules
 			}
 		}
 
-		public static void UpdateNodeLists(AbstractDatabaseConnection connection)
+		public void UpdateNodeLists(AbstractDatabaseConnection connection)
 		{
 			AttackWordList = connection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
 			EndWordList = connection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
@@ -95,16 +95,15 @@ namespace AutoKkutu.Modules
 
 		/* Path-controlling */
 
-		public static void AddPreviousPath(string word)
+		public void AddPreviousPath(string word)
 		{
 			if (!string.IsNullOrWhiteSpace(word))
 				PreviousPath.Add(word);
 		}
 
-		public static void AddToUnsupportedWord(string word, bool isNonexistent)
+		public void AddToUnsupportedWord(string word, bool isNonexistent)
 		{
 			if (!string.IsNullOrWhiteSpace(word))
-			{
 				try
 				{
 					PathListLock.EnterWriteLock();
@@ -116,12 +115,11 @@ namespace AutoKkutu.Modules
 				{
 					PathListLock.ExitWriteLock();
 				}
-			}
 		}
 
 		/* AutoDatabaseUpdate */
 
-		public static string? UpdateDatabase()
+		public string? UpdateDatabase()
 		{
 			if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
 				return null;
@@ -133,9 +131,7 @@ namespace AutoKkutu.Modules
 				int NewPathCount = NewPathList.Count;
 				int InexistentPathCount = InexistentPathList.Count;
 				if (NewPathCount + InexistentPathCount == 0)
-				{
 					Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
-				}
 				else
 				{
 					Log.Debug(I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
@@ -158,7 +154,7 @@ namespace AutoKkutu.Modules
 			return null;
 		}
 
-		private static int AddNewPaths()
+		private int AddNewPaths()
 		{
 			int count = 0;
 			var listCopy = new List<string>(NewPathList);
@@ -194,7 +190,7 @@ namespace AutoKkutu.Modules
 			return count;
 		}
 
-		private static int RemoveInexistentPaths()
+		private int RemoveInexistentPaths()
 		{
 			int count = 0;
 			var listCopy = new List<string>(InexistentPathList);
@@ -209,7 +205,6 @@ namespace AutoKkutu.Modules
 			}
 
 			foreach (string word in listCopy)
-			{
 				try
 				{
 					count += AutoKkutuMain.Database.Connection.RequireNotNull().DeleteWord(word);
@@ -218,23 +213,20 @@ namespace AutoKkutu.Modules
 				{
 					Log.Error(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
 				}
-			}
 
 			return count;
 		}
 
 		/* Other utility things */
 
-		public static bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false)
+		public bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false)
 		{
 			if (tryAdd && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(item) || nodeList == null)
 				return false;
 
 			bool exists = nodeList.Contains(item);
 			if (exists)
-			{
 				flags |= theFlag;
-			}
 			else if (tryAdd && flags.HasFlag(theFlag))
 			{
 				nodeList.Add(item);
@@ -244,7 +236,8 @@ namespace AutoKkutu.Modules
 			return false;
 		}
 
-		public static string? ConvertToPresentedWord(string path)
+		// TODO: Move to extension
+		public string? ConvertToPresentedWord(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
 				throw new ArgumentException("Parameter is null or blank", nameof(path));
@@ -280,14 +273,13 @@ namespace AutoKkutu.Modules
 			return null;
 		}
 
-		public static IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList)
+		public IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList)
 		{
 			if (wordList is null)
 				throw new ArgumentNullException(nameof(wordList));
 
 			var qualifiedList = new List<PathObject>();
 			foreach (PathObject word in wordList)
-			{
 				try
 				{
 					PathListLock.EnterReadLock();
@@ -304,11 +296,10 @@ namespace AutoKkutu.Modules
 				{
 					PathListLock.ExitReadLock();
 				}
-			}
 
 			return qualifiedList;
 		}
 
-		public static void ResetPreviousPath() => PreviousPath.Clear();
+		public void ResetPreviousPath() => PreviousPath.Clear();
 	}
 }

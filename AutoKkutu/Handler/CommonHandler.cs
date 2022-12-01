@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Handlers;
 using AutoKkutu.Modules;
+using AutoKkutu.Modules.AutoEnter.HangulProcessing;
 using AutoKkutu.Utils;
 using Serilog;
 using System;
@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AutoKkutu
+namespace AutoKkutu.Handler
 {
 	public abstract class CommonHandler : IDisposable
 	{

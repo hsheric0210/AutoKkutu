@@ -1,10 +1,13 @@
-﻿using AutoKkutu.Utils;
+﻿using AutoKkutu.Handler;
+using AutoKkutu.Modules.AutoEnter.HangulProcessing;
+using AutoKkutu.Modules.PathFinder;
+using AutoKkutu.Utils;
 using Serilog;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules
+namespace AutoKkutu.Modules.AutoEnter
 {
 	public static class InputSimulation
 	{
@@ -42,9 +45,7 @@ namespace AutoKkutu.Modules
 			}
 
 			if (aborted)
-			{
 				Log.Warning(I18n.Main_InputSimulationAborted, pathAttribute, content);
-			}
 			else
 			{
 				handler.ClickSubmitButton();

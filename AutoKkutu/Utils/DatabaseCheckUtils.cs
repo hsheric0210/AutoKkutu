@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
 using AutoKkutu.Database.Extension;
-using AutoKkutu.Modules;
+using AutoKkutu.Modules.PathManager;
 using Dapper;
 using Serilog;
 using System;

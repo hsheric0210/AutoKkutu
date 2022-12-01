@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Reliability", "CA2007")]
 [assembly: SuppressMessage("Roslynator", "RCS1123")]
 [assembly: SuppressMessage("Minor Code Smell", "S3220")]
+[assembly: SuppressMessage("Major Securiy Hotspot", "S2077")]
 
 [assembly: SuppressMessage("Major Code Smell", "S107", Scope = "member", Target = "~M:AutoKkutu.Database.SQLite.SqliteDatabase.RegisterMissionWordPriorityFunc(Microsoft.Data.Sqlite.SqliteConnection)")]
 [assembly: SuppressMessage("Major Code Smell", "S1168", Scope = "member", Target = "~M:AutoKkutu.Database.CommonDatabaseCommand.TryExecuteReader(System.String)~System.Data.Common.DbDataReader")]

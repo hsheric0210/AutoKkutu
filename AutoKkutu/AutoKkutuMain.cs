@@ -1,6 +1,8 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
 using AutoKkutu.Modules;
+using AutoKkutu.Modules.AutoEnter;
+using AutoKkutu.Modules.PathFinder;
 using AutoKkutu.Utils;
 using CefSharp;
 using CefSharp.Wpf;
@@ -276,119 +278,12 @@ namespace AutoKkutu
 			handler.StopWatchdog();
 		}
 
-		/* Status-related */
-
-		public static void UpdateSearchState(PathUpdatedEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
-
-		public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
-
-		/* Path-related */
-
-		public static bool CheckPathIsValid(ResponsePresentedWord word, string missionChar, PathFinderOptions flags)
-		{
-			if (word is null || Handler is null || flags.HasFlag(PathFinderOptions.ManualSearch))
-				return true;
-
-			bool differentWord = Handler.CurrentPresentedWord != null && !word.Equals(Handler.CurrentPresentedWord);
-			bool differentMissionChar = Configuration?.MissionAutoDetectionEnabled != false && !string.IsNullOrWhiteSpace(Handler.CurrentMissionChar) && !string.Equals(missionChar, Handler.CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
-			if (Handler.IsMyTurn && (differentWord || differentMissionChar))
-			{
-				Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
-				StartPathFinding(Handler.CurrentPresentedWord, Handler.CurrentMissionChar, flags);
-				return false;
-			}
-			return true;
-		}
-
-		public static void StartPathFinding(ResponsePresentedWord? word, string? missionChar, PathFinderOptions flags)
-		{
-			GameMode mode = Configuration.GameMode;
-			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderOptions.ManualSearch))
-				return;
-
-			try
-			{
-				if (!ConfigEnums.IsFreeMode(mode) && GetEndWordList(mode)?.Contains(word.Content) == true && (!word.CanSubstitution || GetEndWordList(mode)?.Contains(word.Substitution!) == true))
-				{
-					Log.Warning(I18n.PathFinderFailed_Endword);
-					ResetPathList();
-					UpdateSearchState(null, true);
-					UpdateStatusMessage(StatusMessage.EndWord);
-				}
-				else
-				{
-					UpdateStatusMessage(StatusMessage.Searching);
-					SetupPathFinderInfo(ref flags);
-
-					// Enqueue search
-					PathFinder.FindPath(
-						mode,
-						word,
-						Configuration.MissionAutoDetectionEnabled && missionChar != null ? missionChar : "",
-						Configuration.ActiveWordPreference,
-						flags
-					);
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, I18n.PathFinderFailed_Exception);
-			}
-		}
-
-		private static void SetupPathFinderInfo(ref PathFinderOptions flags)
-		{
-			// Setup flag
-			if (Configuration.EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathManager.PreviousPath.Count > 0))  // 첫 턴 한방 방지
-				flags |= PathFinderOptions.UseEndWord;
-			else
-				flags &= ~PathFinderOptions.UseEndWord;
-			if (Configuration.AttackWordAllowed)
-				flags |= PathFinderOptions.UseAttackWord;
-			else
-				flags &= ~PathFinderOptions.UseAttackWord;
-		}
-
+		// is this really required?
 		private static void ResetPathList()
 		{
 			Log.Information(I18n.Main_ResetPathList);
 			PathFinder.ResetFinalList();
 			PathListUpdated?.Invoke(null, EventArgs.Empty);
-		}
-
-		private static ICollection<string>? GetEndWordList(GameMode mode) => mode switch
-		{
-			GameMode.FirstAndLast => PathManager.ReverseEndWordList,
-			GameMode.Kkutu => PathManager.KkutuEndWordList,
-			_ => PathManager.EndWordList,
-		};
-
-		/// <summary>
-		/// Warning: Shouldn't use this method to send message directly as it applies undiscriminating delay any time.
-		/// </summary>
-		/// <param name="message"></param>
-		public static void SendMessage(string message, bool direct = false)
-		{
-			CommonHandler handler = Handler.RequireNotNull();
-			if (!direct && InputSimulation.CanSimulateInput())
-			{
-				Task.Run(async () => await InputSimulation.PerformInputSimulation(message));
-			}
-			else
-			{
-				handler.UpdateChat(message);
-				handler.ClickSubmitButton();
-			}
-			InputStopwatch.Restart();
-		}
-
-		/* Others */
-
-		public static void ToggleFeature(Func<AutoKkutuConfiguration, bool> toggleFunc, StatusMessage displayStatus)
-		{
-			if (toggleFunc is null)
-				throw new ArgumentNullException(nameof(toggleFunc));
-			UpdateStatusMessage(displayStatus, toggleFunc(Configuration) ? I18n.Enabled : I18n.Disabled);
 		}
 
 		/* EVENTS: Browser */
@@ -416,6 +311,17 @@ namespace AutoKkutu
 			{
 				Log.Warning(I18n.Main_UnsupportedURL, url);
 			}
+		}
+
+		public static void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdatedEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
+
+		public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
+
+		public static void ToggleFeature(AutoKkutuConfiguration config, Func<AutoKkutuConfiguration, bool> toggleFunc, StatusMessage displayStatus)
+		{
+			if (toggleFunc is null)
+				throw new ArgumentNullException(nameof(toggleFunc));
+			UpdateStatusMessage(displayStatus, toggleFunc(config) ? I18n.Enabled : I18n.Disabled);
 		}
 
 		/* EVENTS: PathFinder */
@@ -468,7 +374,7 @@ namespace AutoKkutu
 		private static void OnGameEnded(object? sender, EventArgs e)
 		{
 			UpdateSearchState(null, false);
-			ResetPathList();
+			// ResetPathList();
 			PathManager.UnsupportedPathList.Clear();
 			if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnGameEnd)
 			{

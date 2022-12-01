@@ -1,4 +1,5 @@
 ﻿using AutoKkutu.Constants;
+using AutoKkutu.Modules.PathFinder;
 using AutoKkutu.Utils;
 using Serilog;
 using System;
@@ -7,24 +8,24 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules
+namespace AutoKkutu.Modules.AutoEnter
 {
-	public static class AutoEnter
+	public class AutoEnterCore
 	{
-		public static event EventHandler<EnterDelayingEventArgs>? EnterDelaying;
-		public static event EventHandler? PathNotFound;
-		public static event EventHandler<AutoEnteredEventArgs>? AutoEntered;
+		public event EventHandler<EnterDelayingEventArgs>? EnterDelaying;
+		public event EventHandler? PathNotFound;
+		public event EventHandler<AutoEnteredEventArgs>? AutoEntered;
 
 		/* PUBLIC API  */
 
-		public static int WordIndex
+		public int WordIndex
 		{
 			get; private set;
 		}
 
-		public static void ResetWordIndex() => WordIndex = 0;
+		public void ResetWordIndex() => WordIndex = 0;
 
-		public static void PerformAutoEnter(string content, PathUpdatedEventArgs? args, string? pathAttribute = null)
+		public void PerformAutoEnter(string content, PathUpdatedEventArgs? args, string? pathAttribute = null)
 		{
 			if (content is null)
 				throw new ArgumentNullException(nameof(content));
@@ -35,7 +36,7 @@ namespace AutoKkutu.Modules
 			if (AutoKkutuMain.Configuration.DelayEnabled && args?.Flags.HasFlag(PathFinderOptions.AutoFixed) != true)
 			{
 				int delay = GetDelay(content);
-				EnterDelaying?.Invoke(null, new EnterDelayingEventArgs(delay, pathAttribute));
+				EnterDelaying?.Invoke(this, new EnterDelayingEventArgs(delay, pathAttribute));
 				Log.Debug(I18n.Main_WaitingSubmit, delay);
 
 				Task.Run(async () =>
@@ -47,17 +48,15 @@ namespace AutoKkutu.Modules
 				});
 			}
 			else
-			{
 				// Enter immediately
-				PerformAutoEnterImmediately(content, args);
-			}
+				PerformAutoEnterInternal(content, args);
 		}
 
-		public static void PerformAutoFix()
+		public void PerformAutoFix(IList<PathObject> paths, bool delayPerCharEnabled, int delayPerChar, int? remainingTurnTime = null)
 		{
 			try
 			{
-				string? content = ApplyTimeFilter(PathFinder.QualifiedList, ++WordIndex);
+				string? content = ApplyTimeFilter(delayPerCharEnabled, delayPerChar, paths, ++WordIndex, remainingTurnTime);
 				if (content is null)
 				{
 					Log.Warning(I18n.Main_NoMorePathAvailable);
@@ -73,9 +72,7 @@ namespace AutoKkutu.Modules
 					Task.Run(async () => await AutoEnterTask(content, delay, null, I18n.Main_Next));
 				}
 				else
-				{
-					PerformAutoEnterImmediately(content, null, I18n.Main_Next);
-				}
+					PerformAutoEnterInternal(content, null, I18n.Main_Next);
 			}
 			catch (Exception ex)
 			{
@@ -83,11 +80,10 @@ namespace AutoKkutu.Modules
 			}
 		}
 
-		public static bool CanPerformAutoEnterNow(PathUpdatedEventArgs? args) => AutoKkutuMain.Handler.RequireNotNull().IsGameStarted && AutoKkutuMain.Handler.IsMyTurn && (args == null || AutoKkutuMain.CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed));
+		// extmodules: Handler
+		public bool CanPerformAutoEnterNow(PathUpdatedEventArgs? args) => AutoKkutuMain.Handler.RequireNotNull().IsGameStarted && AutoKkutuMain.Handler.IsMyTurn && (args == null || AutoKkutuMain.CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed));
 
-		/* INTERNAL-USE API */
-
-		private static void PerformAutoEnterImmediately(string content, PathUpdatedEventArgs? args, string? pathAttribute = null)
+		private void PerformAutoEnterInternal(string content, PathUpdatedEventArgs? args, string? pathAttribute = null)
 		{
 			if (pathAttribute == null)
 				pathAttribute = I18n.Main_Optimal;
@@ -100,17 +96,18 @@ namespace AutoKkutu.Modules
 			AutoEntered?.Invoke(null, new AutoEnteredEventArgs(content));
 		}
 
-		private static async Task AutoEnterTask(string content, int delay, PathUpdatedEventArgs? args, string? pathAttributes = null)
+		private async Task AutoEnterTask(string content, int delay, PathUpdatedEventArgs? args, string? pathAttributes = null)
 		{
 			await Task.Delay(delay);
 
 			if (InputSimulation.CanSimulateInput())
 				await InputSimulation.PerformAutoEnterInputSimulation(content, args, delay / content.Length, pathAttributes);
 			else
-				PerformAutoEnterImmediately(content, args, pathAttributes);
+				PerformAutoEnterInternal(content, args, pathAttributes);
 		}
 
-		private static async Task AutoEnterInputTimerTask(string content, int delay, PathUpdatedEventArgs? args, string? pathAttribute = null)
+		// ExtModules: InputSimulation
+		private async Task AutoEnterInputTimerTask(string content, int delay, PathUpdatedEventArgs? args, string? pathAttribute = null)
 		{
 			int _delay = 0;
 			if (AutoKkutuMain.InputStopwatch.ElapsedMilliseconds <= delay)
@@ -122,10 +119,10 @@ namespace AutoKkutu.Modules
 			if (InputSimulation.CanSimulateInput())
 				await InputSimulation.PerformAutoEnterInputSimulation(content, args, _delay / content.Length, pathAttribute);
 			else
-				PerformAutoEnterImmediately(content, args, pathAttribute);
+				PerformAutoEnterInternal(content, args, pathAttribute);
 		}
 
-		private static int GetDelay(string content)
+		private int GetDelay(string content)
 		{
 			int delay = AutoKkutuMain.Configuration.DelayInMillis;
 			if (AutoKkutuMain.Configuration.DelayPerCharEnabled)
@@ -133,7 +130,7 @@ namespace AutoKkutu.Modules
 			return delay;
 		}
 
-		private static int GetFixDelay(string content)
+		private int GetFixDelay(string content)
 		{
 			int delay = AutoKkutuMain.Configuration.FixDelayInMillis;
 			if (AutoKkutuMain.Configuration.FixDelayPerCharEnabled)
@@ -141,15 +138,15 @@ namespace AutoKkutu.Modules
 			return delay;
 		}
 
-		public static string? ApplyTimeFilter(IList<PathObject> qualifiedWordList, int wordIndex = 0)
+		// ExtModules: Handler
+		private string? ApplyTimeFilter(bool enabled, int delay, IList<PathObject> qualifiedWordList, int wordIndex = 0, int? remainingTurnTime = null)
 		{
 			if (qualifiedWordList is null)
 				throw new ArgumentNullException(nameof(qualifiedWordList));
 
-			if (AutoKkutuMain.Configuration.DelayPerCharEnabled)
+			if (enabled)
 			{
-				int remain = Math.Max(300, AutoKkutuMain.Handler?.TurnTimeMillis ?? int.MaxValue);
-				int delay = AutoKkutuMain.Configuration.DelayInMillis;
+				int remain = Math.Max(300, remainingTurnTime ?? int.MaxValue);
 				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
 				string? word = arr.Length - 1 >= wordIndex ? arr[wordIndex].Content : null;
 				if (word == null)
@@ -160,38 +157,6 @@ namespace AutoKkutu.Modules
 			}
 
 			return qualifiedWordList.Count - 1 >= wordIndex ? qualifiedWordList[wordIndex].Content : null;
-		}
-	}
-
-	public class EnterDelayingEventArgs : EventArgs
-	{
-		public int Delay
-		{
-			get;
-		}
-
-		public string? PathAttributes
-		{
-			get;
-		}
-
-		public EnterDelayingEventArgs(int delay, string? pathAttributes = null)
-		{
-			Delay = delay;
-			PathAttributes = pathAttributes;
-		}
-	}
-
-	public class AutoEnteredEventArgs : EventArgs
-	{
-		public string Content
-		{
-			get;
-		}
-
-		public AutoEnteredEventArgs(string content)
-		{
-			Content = content;
 		}
 	}
 }

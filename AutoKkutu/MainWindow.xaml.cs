@@ -1,6 +1,9 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
 using AutoKkutu.Modules;
+using AutoKkutu.Modules.AutoEnter;
+using AutoKkutu.Modules.PathFinder;
+using AutoKkutu.Modules.PathManager;
 using AutoKkutu.Utils;
 using CefSharp;
 using Serilog;

@@ -1,4 +1,4 @@
-﻿namespace AutoKkutu.Handlers
+﻿namespace AutoKkutu.Handler
 {
 	internal partial class KkutuOrgHandler : CommonHandler
 	{

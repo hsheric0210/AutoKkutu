@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules
+namespace AutoKkutu.Utils
 {
 	public static class JSEvaluator
 	{

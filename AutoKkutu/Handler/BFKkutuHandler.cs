@@ -1,19 +1,19 @@
-﻿namespace AutoKkutu.Handlers
+﻿namespace AutoKkutu.Handler
 {
-	internal partial class KkutuCoKrHandler : CommonHandler
+	internal partial class BFKkutuHandler : CommonHandler
 	{
-		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?kkutu\\.co\\.kr\\/.*\\/game.*$";
+		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?bfkkutu\\.kr\\/.*$";
 
-		public override string GetHandlerName() => "Kkutu.co.kr Handler";
+		public override string GetHandlerName() => "BFKkutu.kr Handler";
 
 		protected override void UpdateChatInternal(string input)
 		{
 			RegisterJSFunction(WriteInputFunc, "input", @"
-var userMessages = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
-var maxIndex = userMessages.length, index = 0;
+var chatFields = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
+var maxIndex = chatFields.length, index = 0;
 while (index < maxIndex) {{
-    if (window.getComputedStyle(userMessages[index]).display != 'none') {{
-		userMessages[index].value = input;
+    if (window.getComputedStyle(chatFields[index]).display != 'none') {{
+		chatFields[index].value = input;
         break;
     }}
 	index++;

@@ -4,7 +4,7 @@ using AutoKkutu.Database;
 using AutoKkutu.Database.MySQL;
 using AutoKkutu.Database.PostgreSQL;
 using AutoKkutu.Database.SQLite;
-using AutoKkutu.Modules;
+using AutoKkutu.Modules.PathManager;
 using Serilog;
 using System;
 using System.Configuration;
