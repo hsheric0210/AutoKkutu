@@ -36,18 +36,17 @@ namespace AutoKkutu.Modules
 				return;
 			}
 
-			ResponsePresentedWord wordCondition = word;
 			PathFinderOptions flags = options;
-			if (wordCondition.CanSubstitution)
-				Log.Information(I18n.PathFinder_FindPath_Substituation, wordCondition.Content, wordCondition.Substitution);
+			if (word.CanSubstitution)
+				Log.Information(I18n.PathFinder_FindPath_Substituation, word.Content, word.Substitution);
 			else
-				Log.Information(I18n.PathFinder_FindPath, wordCondition.Content);
+				Log.Information(I18n.PathFinder_FindPath, word.Content);
 
 			// Prevent watchdog thread from being blocked
 			Task.Run(() =>
 			{
-				var watch = new Stopwatch();
-				watch.Start();
+				var stopWatch = new Stopwatch();
+				stopWatch.Start();
 
 				// Flush previous search result
 				DisplayList = new List<PathObject>();
@@ -62,9 +61,9 @@ namespace AutoKkutu.Modules
 				}
 				catch (Exception e)
 				{
-					watch.Stop();
+					stopWatch.Stop();
 					Log.Error(e, I18n.PathFinder_FindPath_Error);
-					NotifyPathUpdate(new PathUpdatedEventArgs(wordCondition, missionChar, PathFinderResult.Error, 0, 0, 0, flags));
+					NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.Error, 0, 0, 0, flags));
 					return;
 				}
 
@@ -81,18 +80,18 @@ namespace AutoKkutu.Modules
 				// If there's no word found (or all words was filtered out)
 				if (qualifiedWordList.Count == 0)
 				{
-					watch.Stop();
+					stopWatch.Stop();
 					Log.Warning(I18n.PathFinder_FindPath_NotFound);
-					NotifyPathUpdate(new PathUpdatedEventArgs(wordCondition, missionChar, PathFinderResult.None, totalWordCount, 0, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+					NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.None, totalWordCount, 0, Convert.ToInt32(stopWatch.ElapsedMilliseconds), flags));
 					return;
 				}
 
 				// Update final lists
 				QualifiedList = qualifiedWordList;
 
-				watch.Stop();
-				Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, watch.ElapsedMilliseconds);
-				NotifyPathUpdate(new PathUpdatedEventArgs(wordCondition, missionChar, PathFinderResult.Normal, totalWordCount, QualifiedList.Count, Convert.ToInt32(watch.ElapsedMilliseconds), flags));
+				stopWatch.Stop();
+				Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, stopWatch.ElapsedMilliseconds);
+				NotifyPathUpdate(new PathUpdatedEventArgs(word, missionChar, PathFinderResult.Normal, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopWatch.ElapsedMilliseconds), flags));
 			});
 		}
 
