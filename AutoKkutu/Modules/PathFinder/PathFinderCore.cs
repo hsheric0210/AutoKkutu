@@ -128,7 +128,7 @@ namespace AutoKkutu.Modules.PathFinder
 				{
 					stopwatch.Stop();
 					Log.Error(e, I18n.PathFinder_FindPath_Error);
-					NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathType.Error, 0, 0, 0, flags));
+					NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.Error, 0, 0, 0, flags));
 					return;
 				}
 
@@ -148,7 +148,7 @@ namespace AutoKkutu.Modules.PathFinder
 				if (qualifiedWordList.Count == 0)
 				{
 					Log.Warning(I18n.PathFinder_FindPath_NotFound);
-					NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathType.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds), flags));
+					NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds), flags));
 					return;
 				}
 
@@ -156,7 +156,7 @@ namespace AutoKkutu.Modules.PathFinder
 				QualifiedList = qualifiedWordList;
 
 				Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, stopwatch.ElapsedMilliseconds);
-				NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathType.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds), flags));
+				NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds), flags));
 			});
 		}
 
@@ -179,7 +179,7 @@ namespace AutoKkutu.Modules.PathFinder
 				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(len, false, random), WordCategories.None, 0));
 			stopwatch.Stop();
 			QualifiedList = new List<PathObject>(DisplayList);
-			NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathType.Found, DisplayList.Count, DisplayList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds), options));
+			NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.Found, DisplayList.Count, DisplayList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds), options));
 		}
 
 		private void NotifyPathUpdate(PathUpdateEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);

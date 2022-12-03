@@ -284,7 +284,7 @@ namespace AutoKkutu.Modules.HandlerManager
 		}
 		#endregion
 
-		public bool IsValidPath(PathFound path)
+		public bool IsValidPath(PathFinderParameters path)
 		{
 			if (path.Options.HasFlag(PathFinderOptions.ManualSearch))
 				return true;

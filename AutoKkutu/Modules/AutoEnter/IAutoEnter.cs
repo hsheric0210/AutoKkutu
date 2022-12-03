@@ -1,7 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AutoKkutu.Modules.AutoEnter
 {
@@ -16,9 +15,10 @@ namespace AutoKkutu.Modules.AutoEnter
 		event EventHandler<InputDelayEventArgs>? InputDelayApply;
 		event EventHandler? NoPathAvailable;
 
-		bool CanPerformAutoEnterNow([NotNull] PathFound path);
-		void PerformAutoEnter(string content, PathFound path, string? pathAttribute = null);
-		void PerformAutoFix(IList<PathObject> paths, bool delayPerCharEnabled, int delayPerChar, int? remainingTurnTime = null);
+		bool CanPerformAutoEnterNow(PathFinderParameters? path);
+		string? GetWordByIndex(IList<PathObject> qualifiedWordList, bool delayPerChar, int delay, int remainingTurnTime, int wordIndex = 0);
+		void PerformAutoEnter(string content, PathFinderParameters path, string? pathAttribute = null);
+		void PerformAutoFix(IList<PathObject> paths, bool delayPerCharEnabled, int delayPerChar, int remainingTurnTime);
 		void ResetWordIndex();
 	}
 }

@@ -1,12 +1,15 @@
-﻿namespace AutoKkutu.Modules.HandlerManager.Handler
+﻿using System;
+using System.Collections.Generic;
+
+namespace AutoKkutu.Modules.HandlerManager.Handler
 {
-	internal partial class BFKkutuHandler : HandlerCore
+	internal class BFKkutuHandler : AbstractHandler
 	{
-		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?bfkkutu\\.kr\\/.*$";
+		public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://bfkkutu.kr/") };
 
-		public override string GetHandlerName() => "BFKkutu.kr Handler";
+		public override string HandlerName => "BFKkutu.kr Handler";
 
-		protected override void UpdateChatInternal(string input)
+		public override void UpdateChat(string input)
 		{
 			RegisterJSFunction(WriteInputFunc, "input", @"
 var chatFields = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
@@ -23,7 +26,7 @@ while (index < maxIndex) {{
 			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
 		}
 
-		protected override void ClickSubmitButtonInternal()
+		public override void ClickSubmit()
 		{
 			RegisterJSFunction(ClickSubmitFunc, "", @"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button')

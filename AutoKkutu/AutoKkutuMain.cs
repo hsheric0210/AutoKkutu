@@ -12,7 +12,6 @@ using Serilog;
 using System;
 using System.Configuration;
 using System.Diagnostics;
-using System.IO;
 
 namespace AutoKkutu
 {
@@ -311,11 +310,26 @@ namespace AutoKkutu
 
 		public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
 
-		public static void ToggleFeature(AutoKkutuConfiguration config, Func<AutoKkutuConfiguration, bool> toggleFunc, StatusMessage displayStatus)
+		public static void SendMessage(string message)
+		{
+			CommonHandler handler = Handler.RequireNotNull();
+			if (InputSimulationCore.CanSimulateInput())
+			{
+				Task.Run(async () => await InputSimulationCore.PerformInputSimulation(message));
+			}
+			else
+			{
+				handler.UpdateChat(message);
+				handler.ClickSubmitButton();
+			}
+			InputStopwatch.Restart();
+		}
+
+		public static void ToggleFeature(Func<AutoKkutuConfiguration, bool> toggleFunc, StatusMessage displayStatus)
 		{
 			if (toggleFunc is null)
 				throw new ArgumentNullException(nameof(toggleFunc));
-			UpdateStatusMessage(displayStatus, toggleFunc(config) ? I18n.Enabled : I18n.Disabled);
+			UpdateStatusMessage(displayStatus, toggleFunc(Configuration) ? I18n.Enabled : I18n.Disabled);
 		}
 
 		/* EVENTS: PathFinder */
@@ -323,13 +337,13 @@ namespace AutoKkutu
 		private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 		{
 			Log.Information(I18n.Main_PathUpdateReceived);
-			PathFound path = args.Result;
+			PathFinderParameters path = args.Result;
 
 			bool autoEnter = Configuration.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderOptions.ManualSearch);
 
-			if (args.ResultType == PathType.NotFound && !path.Options.HasFlag(PathFinderOptions.ManualSearch))
+			if (args.ResultType == PathFindResult.NotFound && !path.Options.HasFlag(PathFinderOptions.ManualSearch))
 				UpdateStatusMessage(StatusMessage.NotFound); // Not found
-			else if (args.ResultType == PathType.Error)
+			else if (args.ResultType == PathFindResult.Error)
 				UpdateStatusMessage(StatusMessage.Error); // Error occurred
 			else if (!autoEnter)
 				UpdateStatusMessage(StatusMessage.Normal);
@@ -343,22 +357,22 @@ namespace AutoKkutu
 
 			if (autoEnter)
 			{
-				if (args.ResultType == PathType.NotFound)
+				if (args.ResultType == PathFindResult.NotFound)
 				{
 					Log.Warning(I18n.Auto_NoMorePathAvailable);
 					UpdateStatusMessage(StatusMessage.NotFound);
 				}
 				else
 				{
-					string? content = AutoEnter.ApplyTimeFilter(PathFinder.QualifiedList);
-					if (content == null)
+					string? wordToEnter = AutoEnter.GetWordByIndex(PathFinder.QualifiedList, Configuration.DelayEnabled && Configuration.DelayPerCharEnabled, Configuration.DelayInMillis, Handler.TurnTimeMillis);
+					if (string.IsNullOrEmpty(wordToEnter))
 					{
 						Log.Warning(I18n.Auto_TimeOver);
 						UpdateStatusMessage(StatusMessage.NotFound);
 					}
 					else
 					{
-						AutoEnter.PerformAutoEnter(content, path);
+						AutoEnter.PerformAutoEnter(wordToEnter, path);
 					}
 				}
 			}
@@ -404,7 +418,6 @@ namespace AutoKkutu
 		{
 			UpdateStatusMessage(StatusMessage.Normal);
 			AutoEnter.ResetWordIndex();
-			InputStopwatch.Restart();
 		}
 
 		private static void OnMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)

@@ -40,7 +40,7 @@ namespace AutoKkutu.Modules.HandlerManager
 		void AppendChat(Func<string, string> appender);
 		void ClickSubmitButton();
 		string GetID();
-		bool IsValidPath(PathFound path);
+		bool IsValidPath(PathFinderParameters path);
 		void Start();
 		void Stop();
 		void UpdateChat(string input);

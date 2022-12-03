@@ -1,11 +1,11 @@
 ﻿namespace AutoKkutu.Constants
 {
-	public enum PathType
+	public enum PathFindResult
 	{
 		Found,
 		NotFound,
 		Error
 	}
 
-	public sealed record PathFound(PresentedWord Word, string MissionChar, PathFinderOptions Options);
+	public sealed record PathFinderParameters(PresentedWord Word, string MissionChar, PathFinderOptions Options);
 }

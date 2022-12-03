@@ -350,13 +350,13 @@ namespace AutoKkutu
 			string SpecialFilterText = "";
 			string FindResult;
 			string ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.TimeMillis);
-			if (arg.ResultType == PathType.Found)
+			if (arg.ResultType == PathFindResult.Found)
 			{
 				FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
 			}
 			else
 			{
-				if (arg.ResultType == PathType.NotFound)
+				if (arg.ResultType == PathFindResult.NotFound)
 					FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
 				else
 					FindResult = I18n.PathFinderError;

@@ -175,7 +175,7 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 				RegisteredFunctionNames[funcName] = $"__{RandomUtils.GenerateRandomString(64, true)}";
 
 			string realFuncName = RegisteredFunctionNames[funcName];
-			if (EvaluateJSBool($"typeof {realFuncName} != 'function'"))
+			if (EvaluateJSBool($"typeof {realFuncName} != 'function'")) // check if already registered
 				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
 					Log.Error("Failed to register JavaScript function {funcName} : {error}", funcName, error);
 				else

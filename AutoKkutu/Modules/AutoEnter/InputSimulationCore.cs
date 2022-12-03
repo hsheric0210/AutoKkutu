@@ -1,8 +1,6 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Modules.AutoEnter.HangulProcessing;
 using AutoKkutu.Modules.HandlerManager;
-using AutoKkutu.Modules.PathFinder;
-using AutoKkutu.Utils;
 using Serilog;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,12 +8,12 @@ using System.Threading.Tasks;
 namespace AutoKkutu.Modules.AutoEnter
 {
 	[ModuleDependency(typeof(IHandlerManager))]
-	public class InputSimulation
+	public class InputSimulationCore : IInputSimulation
 	{
 		private readonly IAutoEnter AutoEnter;
 		private readonly IHandlerManager Handler;
 
-		public InputSimulation(IAutoEnter autoenter, IHandlerManager handler)
+		public InputSimulationCore(IAutoEnter autoenter, IHandlerManager handler)
 		{
 			AutoEnter = autoenter;
 			Handler = handler;
@@ -27,7 +25,7 @@ namespace AutoKkutu.Modules.AutoEnter
 			return config is not null && config.DelayEnabled && config.DelayPerCharEnabled && config.InputSimulate;
 		}
 
-		public async Task PerformAutoEnterInputSimulation(string content, PathFound path, int delay, string? pathAttribute = null)
+		public async Task PerformAutoEnterInputSimulation(string content, PathFinderParameters? path, int delay, string? pathAttribute = null)
 		{
 			if (pathAttribute is null)
 				pathAttribute = I18n.Main_Optimal;
@@ -61,7 +59,6 @@ namespace AutoKkutu.Modules.AutoEnter
 				Log.Information(I18n.Main_InputSimulationFinished, pathAttribute, content);
 			}
 			Handler.UpdateChat("");
-			AutoEnter.AutoEntered?.Invoke();
 		}
 
 		public async Task PerformInputSimulation(string message, int delay)

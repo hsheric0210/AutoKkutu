@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Modules.PathFinder;
 using System;
+using System.Collections.Generic;
 
 namespace AutoKkutu.Modules.AutoEnter
 {
@@ -29,10 +29,12 @@ namespace AutoKkutu.Modules.AutoEnter
 
 		public static void ResetWordIndex() => Impl.ResetWordIndex();
 
-		public static void PerformAutoEnter(string content, PathFound path , string? pathAttribute = null) => Impl.PerformAutoEnter(content, path, pathAttribute);
+		public static void PerformAutoEnter(string content, PathFinderParameters path , string? pathAttribute = null) => Impl.PerformAutoEnter(content, path, pathAttribute);
 
-		public static void PerformAutoFix() => Impl.PerformAutoFix(PathFinder.PathFinder.QualifiedList, AutoKkutuMain.Configuration.DelayPerCharEnabled, AutoKkutuMain.Configuration.DelayInMillis, AutoKkutuMain.Handler?.TurnTimeMillis);
+		public static void PerformAutoFix() => Impl.PerformAutoFix(PathFinder.PathFinder.QualifiedList, AutoKkutuMain.Configuration.DelayPerCharEnabled, AutoKkutuMain.Configuration.DelayInMillis, AutoKkutuMain.Handler?.TurnTimeMillis ?? 150000);
 
-		public static bool CanPerformAutoEnterNow(PathFound path) => Impl.CanPerformAutoEnterNow(path);
+		public static bool CanPerformAutoEnterNow(PathFinderParameters path) => Impl.CanPerformAutoEnterNow(path);
+
+		public static string? GetWordByIndex(IList<PathObject> qualifiedWordList, bool delayPerChar, int delay, int remainingTurnTime, int wordIndex = 0) => Impl.GetWordByIndex(qualifiedWordList, delayPerChar, delay, remainingTurnTime, wordIndex);
 	}
 }

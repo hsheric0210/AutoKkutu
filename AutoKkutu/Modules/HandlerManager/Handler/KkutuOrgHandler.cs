@@ -1,13 +1,16 @@
-﻿namespace AutoKkutu.Modules.HandlerManager.Handler
+﻿using System;
+using System.Collections.Generic;
+
+namespace AutoKkutu.Modules.HandlerManager.Handler
 {
-	internal partial class KkutuOrgHandler : HandlerCore
+	internal partial class KkutuOrgHandler : AbstractHandler
 	{
-		protected override void UpdateChatInternal(string input) => EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
+		public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://kkutu.org/") };
 
-		protected override void ClickSubmitButtonInternal() => EvaluateJS("document.getElementById('ChatBtn').click()");
+		public override string HandlerName => "Kkutu.org Handler";
 
-		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?kkutu\\.org.*$";
+		public override void UpdateChat(string input) => EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
 
-		public override string GetHandlerName() => "Kkutu.org Handler";
+		public override void ClickSubmit() => EvaluateJS("document.getElementById('ChatBtn').click()");
 	}
 }
