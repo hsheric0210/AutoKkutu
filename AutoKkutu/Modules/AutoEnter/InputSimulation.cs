@@ -1,6 +1,6 @@
-﻿using AutoKkutu.Modules.AutoEnter.HangulProcessing;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Modules.AutoEnter.HangulProcessing;
 using AutoKkutu.Modules.HandlerManager;
-using AutoKkutu.Modules.HandlerManager.Handler;
 using AutoKkutu.Modules.PathFinder;
 using AutoKkutu.Utils;
 using Serilog;
@@ -12,9 +12,14 @@ namespace AutoKkutu.Modules.AutoEnter
 	[ModuleDependency(typeof(IHandlerManager))]
 	public class InputSimulation
 	{
+		private readonly IAutoEnter AutoEnter;
 		private readonly IHandlerManager Handler;
 
-		public InputSimulation(IHandlerManager handler) => Handler = handler;
+		public InputSimulation(IAutoEnter autoenter, IHandlerManager handler)
+		{
+			AutoEnter = autoenter;
+			Handler = handler;
+		}
 
 		public bool CanSimulateInput()
 		{
@@ -22,7 +27,7 @@ namespace AutoKkutu.Modules.AutoEnter
 			return config is not null && config.DelayEnabled && config.DelayPerCharEnabled && config.InputSimulate;
 		}
 
-		public async Task PerformAutoEnterInputSimulation(string content, PathUpdateEventArgs? args, int delay, string? pathAttribute = null)
+		public async Task PerformAutoEnterInputSimulation(string content, PathFound path, int delay, string? pathAttribute = null)
 		{
 			if (pathAttribute is null)
 				pathAttribute = I18n.Main_Optimal;
@@ -39,12 +44,12 @@ namespace AutoKkutu.Modules.AutoEnter
 			Handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
-				if (!AutoEnter.CanPerformAutoEnterNow(args))
+				if (!AutoEnter.CanPerformAutoEnterNow(path))
 				{
 					aborted = true; // Abort
 					break;
 				}
-				Handler.AppendChat(type, ch);
+				Handler.AppendChat(s => s.AppendChar(type, ch));
 				await Task.Delay(delay);
 			}
 
@@ -56,10 +61,10 @@ namespace AutoKkutu.Modules.AutoEnter
 				Log.Information(I18n.Main_InputSimulationFinished, pathAttribute, content);
 			}
 			Handler.UpdateChat("");
-			AutoKkutuMain.UpdateStatusMessage(StatusMessage.AutoEntered, content);
+			AutoEnter.AutoEntered?.Invoke();
 		}
 
-		public async Task PerformInputSimulation(string message)
+		public async Task PerformInputSimulation(string message, int delay)
 		{
 			if (message is null || Handler is null)
 				return;
@@ -72,8 +77,8 @@ namespace AutoKkutu.Modules.AutoEnter
 			Handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
-				Handler.append(type, ch);
-				await Task.Delay(AutoKkutuMain.Configuration.DelayInMillis);
+				Handler.AppendChat(s => s.AppendChar(type, ch));
+				await Task.Delay(delay);
 			}
 			Handler.ClickSubmitButton();
 			Handler.UpdateChat("");

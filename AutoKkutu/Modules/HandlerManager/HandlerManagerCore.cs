@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 namespace AutoKkutu.Modules.HandlerManager
 {
 	[ModuleDependency(typeof(IPathManager))]
-	public class HandlerManagerCore : IDisposable, IHandlerManager
+	public class HandlerManagerCore : IHandlerManager
 	{
 		#region External-use properties
-		public ResponsePresentedWord? CurrentPresentedWord
+		public PresentedWord? CurrentPresentedWord
 		{
 			get; private set;
 		}
@@ -70,7 +70,7 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		public event EventHandler? GameEnded;
 
-		public event EventHandler<WordPresentEventArgs>? OnMyBegan;
+		public event EventHandler<WordPresentEventArgs>? MyWordPresented;
 
 		public event EventHandler? MyTurnEnded;
 
@@ -108,8 +108,8 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		public string GetID() => $"{Handler.HandlerName} - #{(_mainHandlerManagerTask == null ? "Global" : _mainHandlerManagerTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
-		#region HandlerManager proc.
-		public void StartHandlerManager()
+		#region Watchdog proc.
+		public void Start()
 		{
 			if (!_isHandlerManagerStarted)
 			{
@@ -134,7 +134,7 @@ namespace AutoKkutu.Modules.HandlerManager
 			}
 		}
 
-		public void StopHandlerManager()
+		public void Stop()
 		{
 			if (_isHandlerManagerStarted)
 			{
@@ -255,11 +255,11 @@ namespace AutoKkutu.Modules.HandlerManager
 
 					if (Handler.GameMode == GameMode.Free)
 					{
-						OnMyBegan?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord("", false), CurrentMissionChar));
+						MyWordPresented?.Invoke(this, new WordPresentEventArgs(new PresentedWord("", false), CurrentMissionChar));
 						return;
 					}
 
-					ResponsePresentedWord? presentedWord = UpdatePresentedWord();
+					PresentedWord? presentedWord = UpdatePresentedWord();
 
 					if (presentedWord == null)
 						return;
@@ -269,7 +269,7 @@ namespace AutoKkutu.Modules.HandlerManager
 					else
 						Log.Information("My turn arrived, presented word is {word}.", presentedWord.Content);
 					CurrentPresentedWord = presentedWord;
-					OnMyBegan?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
+					MyWordPresented?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
 				}
 
 				return;
@@ -283,6 +283,22 @@ namespace AutoKkutu.Modules.HandlerManager
 			MyTurnEnded?.Invoke(this, EventArgs.Empty);
 		}
 		#endregion
+
+		public bool IsValidPath(PathFound path)
+		{
+			if (path.Options.HasFlag(PathFinderOptions.ManualSearch))
+				return true;
+
+			bool differentWord = CurrentPresentedWord != null && !path.Word.Equals(CurrentPresentedWord);
+			bool differentMissionChar = path.Options.HasFlag(PathFinderOptions.MissionWord) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+			if (IsMyTurn && (differentWord || differentMissionChar))
+			{
+				Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
+				MyWordPresented?.Invoke(this, new WordPresentEventArgs(CurrentPresentedWord, CurrentMissionChar));
+				return false;
+			}
+			return true;
+		}
 
 		#region Update game status
 		private void UpdateWordHistory()
@@ -387,7 +403,7 @@ namespace AutoKkutu.Modules.HandlerManager
 				return;
 			_currentPresentedWordCache = word;
 			Log.Information("Word detected : {word}", word);
-			TypingWordPresented?.Invoke(this, new WordPresentEventArgs(new ResponsePresentedWord(word, false), ""));
+			TypingWordPresented?.Invoke(this, new WordPresentEventArgs(new PresentedWord(word, false), ""));
 		}
 
 		private void UpdateGameMode()
@@ -400,7 +416,7 @@ namespace AutoKkutu.Modules.HandlerManager
 			GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 		}
 
-		private ResponsePresentedWord? UpdatePresentedWord()
+		private PresentedWord? UpdatePresentedWord()
 		{
 			string content = Handler.PresentedWord;
 
@@ -429,7 +445,7 @@ namespace AutoKkutu.Modules.HandlerManager
 				primary = converted;
 			}
 
-			return new ResponsePresentedWord(primary, hasSecondary, secondary);
+			return new PresentedWord(primary, hasSecondary, secondary);
 		}
 
 		public void UpdateChat(string input)

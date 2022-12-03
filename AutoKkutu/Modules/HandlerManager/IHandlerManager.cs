@@ -3,13 +3,13 @@ using System;
 
 namespace AutoKkutu.Modules.HandlerManager
 {
-	public interface IHandlerManager
+	public interface IHandlerManager : IDisposable
 	{
 		string? CurrentMissionChar
 		{
 			get;
 		}
-		ResponsePresentedWord? CurrentPresentedWord
+		PresentedWord? CurrentPresentedWord
 		{
 			get;
 		}
@@ -32,17 +32,17 @@ namespace AutoKkutu.Modules.HandlerManager
 		event EventHandler? GameStarted;
 		event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
 		event EventHandler? MyTurnEnded;
-		event EventHandler<WordPresentEventArgs>? OnMyBegan;
+		event EventHandler<WordPresentEventArgs>? MyWordPresented;
 		event EventHandler? RoundChanged;
 		event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 		event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 
 		void AppendChat(Func<string, string> appender);
 		void ClickSubmitButton();
-		void Dispose();
 		string GetID();
-		void StartHandlerManager();
-		void StopHandlerManager();
+		bool IsValidPath(PathFound path);
+		void Start();
+		void Stop();
 		void UpdateChat(string input);
 	}
 }

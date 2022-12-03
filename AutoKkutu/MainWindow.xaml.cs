@@ -349,14 +349,14 @@ namespace AutoKkutu
 			string FilterText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview, filter);
 			string SpecialFilterText = "";
 			string FindResult;
-			string ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.Time);
-			if (arg.Result == PathFinderResult.Found)
+			string ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.TimeMillis);
+			if (arg.ResultType == PathType.Found)
 			{
 				FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
 			}
 			else
 			{
-				if (arg.Result == PathFinderResult.NotFound)
+				if (arg.ResultType == PathType.NotFound)
 					FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
 				else
 					FindResult = I18n.PathFinderError;
@@ -383,7 +383,7 @@ namespace AutoKkutu
 		{
 			if (!string.IsNullOrWhiteSpace(SearchField.Text))
 			{
-				AutoKkutuMain.StartPathFinding(new ResponsePresentedWord(SearchField.Text, false), AutoKkutuMain.Handler?.CurrentMissionChar ?? string.Empty, PathFinderOptions.ManualSearch);
+				AutoKkutuMain.StartPathFinding(new PresentedWord(SearchField.Text, false), AutoKkutuMain.Handler?.CurrentMissionChar ?? string.Empty, PathFinderOptions.ManualSearch);
 				SearchField.Text = "";
 			}
 		}

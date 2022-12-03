@@ -18,9 +18,9 @@ namespace AutoKkutu.Modules.PathFinder
 			get;
 		}
 
-		void Find(GameMode mode, ResponsePresentedWord? word, string? missionChar, WordPreference pref, PathFinderOptions flags);
-		void FindInternal(GameMode mode, ResponsePresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options);
-		void GenerateRandomPath(GameMode mode, ResponsePresentedWord word, string missionChar, PathFinderOptions options);
+		void Find(GameMode mode, PresentedWord? word, string? missionChar, WordPreference pref, PathFinderOptions flags);
+		void FindInternal(GameMode mode, PresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options);
+		void GenerateRandomPath(GameMode mode, PresentedWord word, string missionChar, PathFinderOptions options);
 		void ResetFinalList();
 	}
 }

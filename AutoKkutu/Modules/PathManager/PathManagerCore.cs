@@ -2,6 +2,7 @@
 using AutoKkutu.Database;
 using AutoKkutu.Database.Extension;
 using AutoKkutu.Utils;
+using AutoKkutu.Utils.Extension;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -15,42 +16,42 @@ namespace AutoKkutu.Modules.PathManager
 		/* Word lists */
 
 		// TODO: Rename these from *WordList to *Nodes
-		public ICollection<string>? AttackWordList
+		public ICollection<string> AttackNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? EndWordList
+		public ICollection<string> EndNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? KKTAttackWordList
+		public ICollection<string> KKTAttackNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? KKTEndWordList
+		public ICollection<string> KKTEndNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? KkutuAttackWordList
+		public ICollection<string> KkutuAttackNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? KkutuEndWordList
+		public ICollection<string> KkutuEndNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? ReverseAttackWordList
+		public ICollection<string> ReverseAttackNodes
 		{
 			get; private set;
 		}
 
-		public ICollection<string>? ReverseEndWordList
+		public ICollection<string> ReverseEndNodes
 		{
 			get; private set;
 		}
@@ -78,19 +79,20 @@ namespace AutoKkutu.Modules.PathManager
 			{
 				Log.Error(ex, I18n.PathFinder_Init_Error);
 				DatabaseEvents.TriggerDatabaseError();
+				throw;
 			}
 		}
 
 		public void UpdateNodeLists(AbstractDatabaseConnection connection)
 		{
-			AttackWordList = connection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
-			EndWordList = connection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
-			ReverseAttackWordList = connection.GetNodeList(DatabaseConstants.ReverseAttackNodeIndexTableName);
-			ReverseEndWordList = connection.GetNodeList(DatabaseConstants.ReverseEndNodeIndexTableName);
-			KkutuAttackWordList = connection.GetNodeList(DatabaseConstants.KkutuAttackNodeIndexTableName);
-			KkutuEndWordList = connection.GetNodeList(DatabaseConstants.KkutuEndNodeIndexTableName);
-			KKTAttackWordList = connection.GetNodeList(DatabaseConstants.KKTAttackNodeIndexTableName);
-			KKTEndWordList = connection.GetNodeList(DatabaseConstants.KKTEndNodeIndexTableName);
+			AttackNodes = connection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
+			EndNodes = connection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
+			ReverseAttackNodes = connection.GetNodeList(DatabaseConstants.ReverseAttackNodeIndexTableName);
+			ReverseEndNodes = connection.GetNodeList(DatabaseConstants.ReverseEndNodeIndexTableName);
+			KkutuAttackNodes = connection.GetNodeList(DatabaseConstants.KkutuAttackNodeIndexTableName);
+			KkutuEndNodes = connection.GetNodeList(DatabaseConstants.KkutuEndNodeIndexTableName);
+			KKTAttackNodes = connection.GetNodeList(DatabaseConstants.KKTAttackNodeIndexTableName);
+			KKTEndNodes = connection.GetNodeList(DatabaseConstants.KKTEndNodeIndexTableName);
 		}
 
 		/* Path-controlling */
@@ -301,5 +303,12 @@ namespace AutoKkutu.Modules.PathManager
 		}
 
 		public void ResetPreviousPath() => PreviousPath.Clear();
+
+		public ICollection<string> GetEndNodeForMode(GameMode mode) => mode switch
+		{
+			GameMode.FirstAndLast => ReverseEndNodes,
+			GameMode.Kkutu => KkutuEndNodes,
+			_ => EndNodes,
+		};
 	}
 }

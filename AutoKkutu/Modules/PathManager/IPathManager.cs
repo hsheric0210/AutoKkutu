@@ -6,11 +6,11 @@ namespace AutoKkutu.Modules.PathManager
 {
 	public interface IPathManager
 	{
-		ICollection<string>? AttackWordList
+		ICollection<string>? AttackNodes
 		{
 			get;
 		}
-		ICollection<string>? EndWordList
+		ICollection<string>? EndNodes
 		{
 			get;
 		}
@@ -18,19 +18,19 @@ namespace AutoKkutu.Modules.PathManager
 		{
 			get;
 		}
-		ICollection<string>? KKTAttackWordList
+		ICollection<string>? KKTAttackNodes
 		{
 			get;
 		}
-		ICollection<string>? KKTEndWordList
+		ICollection<string>? KKTEndNodes
 		{
 			get;
 		}
-		ICollection<string>? KkutuAttackWordList
+		ICollection<string>? KkutuAttackNodes
 		{
 			get;
 		}
-		ICollection<string>? KkutuEndWordList
+		ICollection<string>? KkutuEndNodes
 		{
 			get;
 		}
@@ -42,11 +42,11 @@ namespace AutoKkutu.Modules.PathManager
 		{
 			get;
 		}
-		ICollection<string>? ReverseAttackWordList
+		ICollection<string>? ReverseAttackNodes
 		{
 			get;
 		}
-		ICollection<string>? ReverseEndWordList
+		ICollection<string>? ReverseEndNodes
 		{
 			get;
 		}
@@ -60,6 +60,7 @@ namespace AutoKkutu.Modules.PathManager
 		bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false);
 		string? ConvertToPresentedWord(string path);
 		IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList);
+		ICollection<string> GetEndNodeForMode(GameMode mode);
 		void ResetPreviousPath();
 		string? UpdateDatabase();
 		void UpdateNodeLists(AbstractDatabaseConnection connection);

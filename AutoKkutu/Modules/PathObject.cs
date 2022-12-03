@@ -2,6 +2,7 @@
 using AutoKkutu.Database;
 using AutoKkutu.Database.Extension;
 using AutoKkutu.Utils;
+using AutoKkutu.Utils.Extension;
 using Serilog;
 using System.Globalization;
 using System.Windows.Media;

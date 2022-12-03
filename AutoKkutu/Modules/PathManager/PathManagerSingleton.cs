@@ -2,6 +2,7 @@
 using AutoKkutu.Database;
 using AutoKkutu.Database.Extension;
 using AutoKkutu.Utils;
+using AutoKkutu.Utils.Extension;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -17,14 +18,14 @@ namespace AutoKkutu.Modules.PathManager
 
 		/* Word lists */
 
-		public static ICollection<string>? AttackWordList => Impl.AttackWordList;
-		public static ICollection<string>? EndWordList => Impl.EndWordList;
-		public static ICollection<string>? KKTAttackWordList => Impl.KKTAttackWordList;
-		public static ICollection<string>? KKTEndWordList => Impl.KKTEndWordList;
-		public static ICollection<string>? KkutuAttackWordList => Impl.KkutuAttackWordList;
-		public static ICollection<string>? KkutuEndWordList => Impl.KkutuEndWordList;
-		public static ICollection<string>? ReverseAttackWordList => Impl.ReverseAttackWordList;
-		public static ICollection<string>? ReverseEndWordList => Impl.ReverseEndWordList;
+		public static ICollection<string>? AttackWordList => Impl.AttackNodes;
+		public static ICollection<string>? EndWordList => Impl.EndNodes;
+		public static ICollection<string>? KKTAttackWordList => Impl.KKTAttackNodes;
+		public static ICollection<string>? KKTEndWordList => Impl.KKTEndNodes;
+		public static ICollection<string>? KkutuAttackWordList => Impl.KkutuAttackNodes;
+		public static ICollection<string>? KkutuEndWordList => Impl.KkutuEndNodes;
+		public static ICollection<string>? ReverseAttackWordList => Impl.ReverseAttackNodes;
+		public static ICollection<string>? ReverseEndWordList => Impl.ReverseEndNodes;
 
 		/* Path lists */
 

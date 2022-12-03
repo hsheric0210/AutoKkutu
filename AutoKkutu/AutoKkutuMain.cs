@@ -1,8 +1,11 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
 using AutoKkutu.Modules.AutoEnter;
+using AutoKkutu.Modules.HandlerManager;
 using AutoKkutu.Modules.PathFinder;
+using AutoKkutu.Modules.PathManager;
 using AutoKkutu.Utils;
+using AutoKkutu.Utils.Extension;
 using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
@@ -35,7 +38,7 @@ namespace AutoKkutu
 			get; private set;
 		} = null!;
 
-		public static CommonHandler? Handler
+		public static IHandlerManager? Handler
 		{
 			get; private set;
 		}
@@ -56,11 +59,6 @@ namespace AutoKkutu
 		public static event EventHandler? ChatUpdated;
 
 		/* Misc. variables */
-
-		public static Stopwatch InputStopwatch
-		{
-			get;
-		} = new();
 
 		/* Initialization-related */
 
@@ -234,21 +232,21 @@ namespace AutoKkutu
 
 		/* Handler-related */
 
-		private static void LoadHandler(CommonHandler handler)
+		private static void LoadHandler(IHandlerManager handler)
 		{
 			Log.Information(I18n.Main_CEFFrameLoadEnd);
 
 			handler.GameStarted += OnGameStarted;
 			handler.GameEnded += OnGameEnded;
-			handler.MyTurn += OnMyTurn;
+			handler.MyWordPresented += OnMyTurn;
 			handler.MyTurnEnded += OnMyTurnEnded;
 			handler.UnsupportedWordEntered += OnUnsupportedWordEntered;
 			handler.MyPathIsUnsupported += OnMyPathIsUnsupported;
-			handler.RoundChange += OnRoundChange;
-			handler.GameModeChange += OnGameModeChange;
+			handler.RoundChanged += OnRoundChange;
+			handler.GameModeChanged += OnGameModeChange;
 			handler.TypingWordPresented += OnTypingWordPresented;
 			handler.ChatUpdated += OnChatUpdated;
-			handler.StartWatchdog();
+			handler.Start();
 
 			Log.Information(I18n.Main_UseHandler, handler.GetID());
 			RemoveAd();
@@ -256,22 +254,22 @@ namespace AutoKkutu
 			HandlerRegistered?.Invoke(null, EventArgs.Empty);
 		}
 
-		private static void UnloadHandler(CommonHandler handler)
+		private static void UnloadHandler(IHandlerManager handler)
 		{
 			Log.Information(I18n.HandlerRegistry_Unregistered, handler.GetID());
 
 			// Unregister previous handler
 			handler.GameStarted -= OnGameStarted;
 			handler.GameEnded -= OnGameEnded;
-			handler.MyTurn -= OnMyTurn;
+			handler.MyWordPresented -= OnMyTurn;
 			handler.MyTurnEnded -= OnMyTurnEnded;
 			handler.UnsupportedWordEntered -= OnUnsupportedWordEntered;
 			handler.MyPathIsUnsupported -= OnMyPathIsUnsupported;
-			handler.RoundChange -= OnRoundChange;
-			handler.GameModeChange -= OnGameModeChange;
+			handler.RoundChanged -= OnRoundChange;
+			handler.GameModeChanged -= OnGameModeChange;
 			handler.TypingWordPresented -= OnTypingWordPresented;
 			handler.ChatUpdated -= OnChatUpdated;
-			handler.StopWatchdog();
+			handler.Stop();
 		}
 
 		// is this really required?
@@ -325,18 +323,19 @@ namespace AutoKkutu
 		private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 		{
 			Log.Information(I18n.Main_PathUpdateReceived);
+			PathFound path = args.Result;
 
-			if (!CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.None))
-				return;
+			bool autoEnter = Configuration.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderOptions.ManualSearch);
 
-			bool autoEnter = Configuration.AutoEnterEnabled && !args.Flags.HasFlag(PathFinderOptions.ManualSearch);
-
-			if (args.Result == PathFinderResult.NotFound && !args.Flags.HasFlag(PathFinderOptions.ManualSearch))
+			if (args.ResultType == PathType.NotFound && !path.Options.HasFlag(PathFinderOptions.ManualSearch))
 				UpdateStatusMessage(StatusMessage.NotFound); // Not found
-			else if (args.Result == PathFinderResult.Error)
+			else if (args.ResultType == PathType.Error)
 				UpdateStatusMessage(StatusMessage.Error); // Error occurred
 			else if (!autoEnter)
 				UpdateStatusMessage(StatusMessage.Normal);
+
+			if (!Handler.IsValidPath(path))
+				return;
 
 			UpdateSearchState(args);
 
@@ -344,7 +343,7 @@ namespace AutoKkutu
 
 			if (autoEnter)
 			{
-				if (args.Result == PathFinderResult.NotFound)
+				if (args.ResultType == PathType.NotFound)
 				{
 					Log.Warning(I18n.Auto_NoMorePathAvailable);
 					UpdateStatusMessage(StatusMessage.NotFound);
@@ -359,7 +358,7 @@ namespace AutoKkutu
 					}
 					else
 					{
-						AutoEnter.PerformAutoEnter(content, args);
+						AutoEnter.PerformAutoEnter(content, path);
 					}
 				}
 			}
@@ -382,18 +381,6 @@ namespace AutoKkutu
 				}
 				else
 				{
-					if (new FileInfo("GameResult.txt").Exists)
-					{
-						try
-						{
-							File.AppendAllText("GameResult.txt", $"[{Handler.RequireNotNull().GetRoomInfo()}] {result}{Environment.NewLine}");
-						}
-						catch (Exception ex)
-						{
-							Log.Warning(ex, I18n.Main_GameResultWriteException);
-						}
-					}
-
 					UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);
 				}
 			}
@@ -435,7 +422,7 @@ namespace AutoKkutu
 			AutoEnter.ResetWordIndex();
 		}
 
-		private static void OnMyTurn(object? sender, WordPresentEventArgs args) => StartPathFinding(args.Word, args.MissionChar, PathFinderOptions.None);
+		private static void OnMyTurn(object? sender, WordPresentEventArgs args) => PathFinder.StartPathFinding(Configuration, args.Word, args.MissionChar, PathFinderOptions.None);
 
 		private static void OnUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)
 		{
@@ -458,7 +445,6 @@ namespace AutoKkutu
 		{
 			string word = args.Word.Content;
 
-			Handler.RequireNotNull();
 			if (!Configuration.AutoEnterEnabled)
 				return;
 

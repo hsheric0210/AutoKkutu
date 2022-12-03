@@ -2,7 +2,7 @@
 
 namespace AutoKkutu.Constants
 {
-	public class ResponsePresentedWord
+	public class PresentedWord
 	{
 		public string Content
 		{
@@ -19,7 +19,7 @@ namespace AutoKkutu.Constants
 			get;
 		}
 
-		public ResponsePresentedWord(string content, bool canSubsitution, string substituation = "")
+		public PresentedWord(string content, bool canSubsitution, string substituation = "")
 		{
 			Content = content;
 			CanSubstitution = canSubsitution;
@@ -28,7 +28,7 @@ namespace AutoKkutu.Constants
 			Substitution = substituation;
 		}
 
-		public override bool Equals(object? obj) => obj is ResponsePresentedWord other
+		public override bool Equals(object? obj) => obj is PresentedWord other
 			&& string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase)
 			&& Substitution == other.Substitution
 			&& (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.OrdinalIgnoreCase));

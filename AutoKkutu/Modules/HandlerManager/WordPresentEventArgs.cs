@@ -5,17 +5,17 @@ namespace AutoKkutu.Modules.HandlerManager
 {
 	public class WordPresentEventArgs : EventArgs
 	{
-		public ResponsePresentedWord Word
+		public PresentedWord Word
 		{
 			get;
 		}
 
-		public string? MissionChar
+		public string MissionChar
 		{
 			get;
 		}
 
-		public WordPresentEventArgs(ResponsePresentedWord word, string? missionChar)
+		public WordPresentEventArgs(PresentedWord word, string missionChar)
 		{
 			Word = word;
 			MissionChar = missionChar;

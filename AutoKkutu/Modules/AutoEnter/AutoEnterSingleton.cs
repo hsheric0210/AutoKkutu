@@ -1,4 +1,5 @@
-﻿using AutoKkutu.Modules.PathFinder;
+﻿using AutoKkutu.Constants;
+using AutoKkutu.Modules.PathFinder;
 using System;
 
 namespace AutoKkutu.Modules.AutoEnter
@@ -20,18 +21,18 @@ namespace AutoKkutu.Modules.AutoEnter
 		}
 		public static event EventHandler<AutoEnterEventArgs>? AutoEntered
 		{
-			add => Impl.AutoEnter += value;
-			remove => Impl.AutoEnter -= value;
+			add => Impl.AutoEntered += value;
+			remove => Impl.AutoEntered -= value;
 		}
 
 		public static int WordIndex => Impl.WordIndex;
 
 		public static void ResetWordIndex() => Impl.ResetWordIndex();
 
-		public static void PerformAutoEnter(string content, PathUpdateEventArgs? args, string? pathAttribute = null) => Impl.PerformAutoEnter(content, args, pathAttribute);
+		public static void PerformAutoEnter(string content, PathFound path , string? pathAttribute = null) => Impl.PerformAutoEnter(content, path, pathAttribute);
 
 		public static void PerformAutoFix() => Impl.PerformAutoFix(PathFinder.PathFinder.QualifiedList, AutoKkutuMain.Configuration.DelayPerCharEnabled, AutoKkutuMain.Configuration.DelayInMillis, AutoKkutuMain.Handler?.TurnTimeMillis);
 
-		public static bool CanPerformAutoEnterNow(PathUpdateEventArgs? args) => Impl.CanPerformAutoEnterNow(args);
+		public static bool CanPerformAutoEnterNow(PathFound path) => Impl.CanPerformAutoEnterNow(path);
 	}
 }

@@ -19,9 +19,9 @@ namespace AutoKkutu.Modules.PathFinder
 			remove => Impl.OnPathUpdated -= value;
 		}
 
-		public static void StartPathFinding(AutoKkutuConfiguration config, ResponsePresentedWord? word, string? missionChar, PathFinderOptions flags) => Impl.Find(config.GameMode, word, missionChar, config.ActiveWordPreference, flags);
+		public static void StartPathFinding(AutoKkutuConfiguration config, PresentedWord? word, string? missionChar, PathFinderOptions flags) => Impl.Find(config.GameMode, word, missionChar, config.ActiveWordPreference, flags);
 
-		public static void FindPath(GameMode mode, ResponsePresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options) => Impl.FindInternal(mode, word, missionChar, preference, options);
+		public static void FindPath(GameMode mode, PresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options) => Impl.FindInternal(mode, word, missionChar, preference, options);
 
 		//  might going to be deleted..?
 		public static void ResetFinalList() => Impl.ResetFinalList();

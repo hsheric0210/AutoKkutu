@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace AutoKkutu.Utils
+namespace AutoKkutu.Utils.Extension
 {
 	public static class WordNodeExtension
 	{
@@ -43,12 +43,12 @@ namespace AutoKkutu.Utils
 		/// <summary>
 		/// 끝말잇기 단어 <paramref name="word"/>의 TAIL 노드/인덱스
 		/// </summary>
-		public static string GetLaFTailNode(this string word) => GetFaLHeadNode(word);
+		public static string GetLaFTailNode(this string word) => word.GetFaLHeadNode();
 
 		/// <summary>
 		/// 앞말잇기 단어 <paramref name="word"/>의 TAIL 노드/인덱스
 		/// </summary>
-		public static string GetFaLTailNode(this string word) => GetLaFHeadNode(word);
+		public static string GetFaLTailNode(this string word) => word.GetLaFHeadNode();
 
 		/// <summary>
 		/// 끄투 단어 <paramref name="word"/>의 TAIL 노드/인덱스

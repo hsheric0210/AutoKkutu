@@ -9,6 +9,7 @@ namespace AutoKkutu.Constants
 		UseEndWord = 1 << 0,
 		UseAttackWord = 1 << 1,
 		AutoFixed = 1 << 2,
-		ManualSearch = 1 << 3
+		ManualSearch = 1 << 3,
+		MissionWord = 1 << 4
 	}
 }

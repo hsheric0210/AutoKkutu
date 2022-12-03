@@ -10,7 +10,7 @@ namespace AutoKkutu.Database.Extension
 {
 	public static class FindWordExtension
 	{
-		private static string GetIndexColumnName(GameMode mode, ResponsePresentedWord word)
+		private static string GetIndexColumnName(GameMode mode, PresentedWord word)
 		{
 			switch (mode)
 			{
@@ -86,7 +86,7 @@ namespace AutoKkutu.Database.Extension
 		public static IList<PathObject> FindWord(
 			this AbstractDatabaseConnection connection,
 			GameMode mode,
-			ResponsePresentedWord word,
+			PresentedWord word,
 			string missionChar,
 			WordPreference preference,
 			PathFinderOptions options)
@@ -116,7 +116,7 @@ namespace AutoKkutu.Database.Extension
 		private static FindQuery CreateQuery(
 			this AbstractDatabaseConnection connection,
 			GameMode mode,
-			ResponsePresentedWord word,
+			PresentedWord word,
 			string missionChar,
 			int endWordFlag,
 			int attackWordFlag,

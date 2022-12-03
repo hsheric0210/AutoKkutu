@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Utils;
+using AutoKkutu.Utils.Extension;
 using Dapper;
 using System;
 

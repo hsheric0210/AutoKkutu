@@ -11,22 +11,17 @@ namespace AutoKkutu.Modules.PathFinder
 			get;
 		}
 
-		public PathFinderOptions Flags
+		public PathType ResultType
 		{
 			get;
 		}
 
-		public string MissionChar
+		public PathFound Result
 		{
 			get;
 		}
 
-		public PathFinderResult Result
-		{
-			get;
-		}
-
-		public int Time
+		public int TimeMillis
 		{
 			get;
 		}
@@ -36,20 +31,13 @@ namespace AutoKkutu.Modules.PathFinder
 			get;
 		}
 
-		public ResponsePresentedWord Word
+		public PathUpdateEventArgs(PathFound result, PathType arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0)
 		{
-			get;
-		}
-
-		public PathUpdateEventArgs(ResponsePresentedWord word, string missionChar, PathFinderResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0, PathFinderOptions flags = PathFinderOptions.None)
-		{
-			Word = word;
-			MissionChar = missionChar;
-			Result = arg;
+			Result = result;
+			ResultType = arg;
 			TotalWordCount = totalWordCount;
 			CalcWordCount = calcWordCount;
-			Time = time;
-			Flags = flags;
+			TimeMillis = time;
 		}
 	}
 }
