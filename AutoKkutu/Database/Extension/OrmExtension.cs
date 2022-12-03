@@ -1,5 +1,4 @@
-﻿using AutoKkutu.Constants;
-using Dapper;
+﻿using Dapper;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;

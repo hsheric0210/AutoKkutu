@@ -1,6 +1,5 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
-using AutoKkutu.Modules;
 using AutoKkutu.Modules.AutoEnter;
 using AutoKkutu.Modules.PathFinder;
 using AutoKkutu.Utils;
@@ -8,12 +7,9 @@ using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace AutoKkutu
 {
@@ -313,7 +309,7 @@ namespace AutoKkutu
 			}
 		}
 
-		public static void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdatedEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
+		public static void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdateEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
 
 		public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
 
@@ -326,7 +322,7 @@ namespace AutoKkutu
 
 		/* EVENTS: PathFinder */
 
-		private static void OnPathUpdated(object? sender, PathUpdatedEventArgs args)
+		private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 		{
 			Log.Information(I18n.Main_PathUpdateReceived);
 
@@ -335,7 +331,7 @@ namespace AutoKkutu
 
 			bool autoEnter = Configuration.AutoEnterEnabled && !args.Flags.HasFlag(PathFinderOptions.ManualSearch);
 
-			if (args.Result == PathFinderResult.None && !args.Flags.HasFlag(PathFinderOptions.ManualSearch))
+			if (args.Result == PathFinderResult.NotFound && !args.Flags.HasFlag(PathFinderOptions.ManualSearch))
 				UpdateStatusMessage(StatusMessage.NotFound); // Not found
 			else if (args.Result == PathFinderResult.Error)
 				UpdateStatusMessage(StatusMessage.Error); // Error occurred
@@ -348,7 +344,7 @@ namespace AutoKkutu
 
 			if (autoEnter)
 			{
-				if (args.Result == PathFinderResult.None)
+				if (args.Result == PathFinderResult.NotFound)
 				{
 					Log.Warning(I18n.Auto_NoMorePathAvailable);
 					UpdateStatusMessage(StatusMessage.NotFound);
@@ -474,7 +470,7 @@ namespace AutoKkutu
 
 	public class SearchStateChangedEventArgs : EventArgs
 	{
-		public PathUpdatedEventArgs? Arguments
+		public PathUpdateEventArgs? Arguments
 		{
 			get;
 		}
@@ -484,7 +480,7 @@ namespace AutoKkutu
 			get;
 		}
 
-		public SearchStateChangedEventArgs(PathUpdatedEventArgs? arguments, bool isEndWord = false)
+		public SearchStateChangedEventArgs(PathUpdateEventArgs? arguments, bool isEndWord = false)
 		{
 			Arguments = arguments;
 			IsEndWord = isEndWord;

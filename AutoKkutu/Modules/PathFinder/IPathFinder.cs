@@ -6,7 +6,7 @@ namespace AutoKkutu.Modules.PathFinder
 {
 	public interface IPathFinder
 	{
-		event EventHandler<PathUpdatedEventArgs>? OnPathUpdated;
+		event EventHandler<PathUpdateEventArgs>? OnPathUpdated;
 
 		IList<PathObject> DisplayList
 		{

@@ -1,7 +1,6 @@
 ﻿using AutoKkutu.Database;
 using System;
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
 namespace AutoKkutu.Utils

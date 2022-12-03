@@ -1,29 +1,33 @@
-﻿using AutoKkutu.Handler;
-using AutoKkutu.Modules.AutoEnter.HangulProcessing;
+﻿using AutoKkutu.Modules.AutoEnter.HangulProcessing;
+using AutoKkutu.Modules.HandlerManager;
+using AutoKkutu.Modules.HandlerManager.Handler;
 using AutoKkutu.Modules.PathFinder;
 using AutoKkutu.Utils;
 using Serilog;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace AutoKkutu.Modules.AutoEnter
 {
-	public static class InputSimulation
+	[ModuleDependency(typeof(IHandlerManager))]
+	public class InputSimulation
 	{
-		public static bool CanSimulateInput()
+		private readonly IHandlerManager Handler;
+
+		public InputSimulation(IHandlerManager handler) => Handler = handler;
+
+		public bool CanSimulateInput()
 		{
 			AutoKkutuConfiguration config = AutoKkutuMain.Configuration;
 			return config is not null && config.DelayEnabled && config.DelayPerCharEnabled && config.InputSimulate;
 		}
 
-		public static async Task PerformAutoEnterInputSimulation(string content, PathUpdatedEventArgs? args, int delay, string? pathAttribute = null)
+		public async Task PerformAutoEnterInputSimulation(string content, PathUpdateEventArgs? args, int delay, string? pathAttribute = null)
 		{
 			if (pathAttribute is null)
 				pathAttribute = I18n.Main_Optimal;
 
-			CommonHandler? handler = AutoKkutuMain.Handler;
-			if (content is null || handler is null)
+			if (content is null || Handler is null)
 				return;
 
 			bool aborted = false;
@@ -32,7 +36,7 @@ namespace AutoKkutu.Modules.AutoEnter
 				list.AddRange(ch.SplitConsonants().Serialize());
 
 			Log.Information(I18n.Main_InputSimulating, pathAttribute, content);
-			handler.UpdateChat("");
+			Handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
 				if (!AutoEnter.CanPerformAutoEnterNow(args))
@@ -40,7 +44,7 @@ namespace AutoKkutu.Modules.AutoEnter
 					aborted = true; // Abort
 					break;
 				}
-				handler.AppendChat(type, ch);
+				Handler.AppendChat(type, ch);
 				await Task.Delay(delay);
 			}
 
@@ -48,17 +52,16 @@ namespace AutoKkutu.Modules.AutoEnter
 				Log.Warning(I18n.Main_InputSimulationAborted, pathAttribute, content);
 			else
 			{
-				handler.ClickSubmitButton();
+				Handler.ClickSubmitButton();
 				Log.Information(I18n.Main_InputSimulationFinished, pathAttribute, content);
 			}
-			handler.UpdateChat("");
+			Handler.UpdateChat("");
 			AutoKkutuMain.UpdateStatusMessage(StatusMessage.AutoEntered, content);
 		}
 
-		public static async Task PerformInputSimulation(string message)
+		public async Task PerformInputSimulation(string message)
 		{
-			CommonHandler? handler = AutoKkutuMain.Handler;
-			if (message is null || handler is null)
+			if (message is null || Handler is null)
 				return;
 
 			var list = new List<(JamoType, char)>();
@@ -66,15 +69,14 @@ namespace AutoKkutu.Modules.AutoEnter
 				list.AddRange(ch.SplitConsonants().Serialize());
 
 			Log.Information(I18n.Main_InputSimulating, "Input", message);
-			handler.UpdateChat("");
+			Handler.UpdateChat("");
 			foreach ((JamoType type, char ch) in list)
 			{
-				handler.AppendChat(type, ch);
+				Handler.append(type, ch);
 				await Task.Delay(AutoKkutuMain.Configuration.DelayInMillis);
 			}
-
-			handler.ClickSubmitButton();
-			handler.UpdateChat("");
+			Handler.ClickSubmitButton();
+			Handler.UpdateChat("");
 			Log.Information(I18n.Main_InputSimulationFinished, "Input ", message);
 		}
 	}

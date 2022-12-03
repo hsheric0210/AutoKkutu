@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-// Copyright PLOG (@ plog2012.blogspot.com) All rights reserved
-// Original source available at https://plog2012.blogspot.com/2012/11/c.html
 namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 {
 	public static class HangulProcessing
@@ -93,7 +91,6 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 						{
 							InitialConsonant = charToAppend
 						});
-
 					break;
 
 				case JamoType.Medial:
@@ -102,7 +99,6 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 						{
 							Medial = charToAppend
 						});
-
 					break;
 
 				case JamoType.Final:
@@ -123,6 +119,7 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 
 		/// <summary>
 		/// 주어진 문자에 대한 초성ㆍ중성ㆍ종성을 추출합니다.
+		/// Original source available at https://plog2012.blogspot.com/2012/11/c.html
 		/// </summary>
 		/// <param name="character">초성ㆍ중성ㆍ종성을 추출할 문자입니다.</param>
 		/// <returns>만약 입력된 문자가 한글이라면 추출된 초성ㆍ중성ㆍ종성을 <c>HangulSplitted</c> 의 형태로 반환하고, 한글이 아니라면 null을 반환합니다.</returns>

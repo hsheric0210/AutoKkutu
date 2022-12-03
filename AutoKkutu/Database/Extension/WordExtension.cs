@@ -2,7 +2,6 @@
 using AutoKkutu.Utils;
 using Dapper;
 using System;
-using System.Globalization;
 
 namespace AutoKkutu.Database.Extension
 {

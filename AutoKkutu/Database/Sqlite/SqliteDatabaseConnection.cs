@@ -3,7 +3,6 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Serilog;
 using System;
-using System.Linq;
 
 namespace AutoKkutu.Database.SQLite
 {

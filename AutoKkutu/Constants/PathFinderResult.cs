@@ -2,8 +2,8 @@
 {
 	public enum PathFinderResult
 	{
-		Normal,
-		None,
+		Found,
+		NotFound,
 		Error
 	}
 }

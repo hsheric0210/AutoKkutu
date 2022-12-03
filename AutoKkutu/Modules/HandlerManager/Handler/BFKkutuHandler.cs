@@ -1,6 +1,6 @@
-﻿namespace AutoKkutu.Handler
+﻿namespace AutoKkutu.Modules.HandlerManager.Handler
 {
-	internal partial class BFKkutuHandler : CommonHandler
+	internal partial class BFKkutuHandler : HandlerCore
 	{
 		public override string GetSitePattern() => "(http:|https:)?(\\/\\/)?bfkkutu\\.kr\\/.*$";
 

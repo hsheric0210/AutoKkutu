@@ -1,5 +1,4 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Handler;
 using System;
 using System.Collections.Generic;
 
@@ -14,7 +13,7 @@ namespace AutoKkutu.Modules.PathFinder
 
 		public static IList<PathObject> QualifiedList => Impl.QualifiedList;
 
-		public static event EventHandler<PathUpdatedEventArgs>? OnPathUpdated
+		public static event EventHandler<PathUpdateEventArgs>? OnPathUpdated
 		{
 			add => Impl.OnPathUpdated += value;
 			remove => Impl.OnPathUpdated -= value;

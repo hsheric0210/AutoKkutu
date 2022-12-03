@@ -1,11 +1,9 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
 using AutoKkutu.Database.Extension;
-using AutoKkutu.Modules;
 using AutoKkutu.Utils;
 using Serilog;
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;

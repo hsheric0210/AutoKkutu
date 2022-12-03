@@ -1,8 +1,6 @@
-﻿using AutoKkutu.Database.Extension;
-using Serilog;
+﻿using Serilog;
 using Npgsql;
 using System;
-using System.Globalization;
 using Dapper;
 
 namespace AutoKkutu.Database.PostgreSQL

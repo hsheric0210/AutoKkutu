@@ -3,12 +3,10 @@ using AutoKkutu.Database.Extension;
 using Serilog;
 using Microsoft.Data.Sqlite;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Dapper;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 
 namespace AutoKkutu.Database.SQLite
 {

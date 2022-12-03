@@ -1,7 +1,5 @@
 ﻿using Dapper;
 using System;
-using System.Data;
-using System.Data.Common;
 
 namespace AutoKkutu.Database.Extension
 {

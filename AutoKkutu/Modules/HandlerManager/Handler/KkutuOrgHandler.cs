@@ -1,6 +1,6 @@
-﻿namespace AutoKkutu.Handler
+﻿namespace AutoKkutu.Modules.HandlerManager.Handler
 {
-	internal partial class KkutuOrgHandler : CommonHandler
+	internal partial class KkutuOrgHandler : HandlerCore
 	{
 		protected override void UpdateChatInternal(string input) => EvaluateJS($"document.querySelectorAll('[id*=\"Talk\"]')[0].value='{input.Trim()}'");
 

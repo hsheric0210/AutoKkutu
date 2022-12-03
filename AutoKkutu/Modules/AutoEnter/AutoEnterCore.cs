@@ -4,7 +4,6 @@ using AutoKkutu.Utils;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,9 +11,9 @@ namespace AutoKkutu.Modules.AutoEnter
 {
 	public class AutoEnterCore
 	{
-		public event EventHandler<EnterDelayingEventArgs>? EnterDelaying;
-		public event EventHandler? PathNotFound;
-		public event EventHandler<AutoEnteredEventArgs>? AutoEntered;
+		public event EventHandler<InputDelayEventArgs>? InputDelayApply;
+		public event EventHandler? NoPathAvailable;
+		public event EventHandler<AutoEnterEventArgs>? AutoEnter;
 
 		/* PUBLIC API  */
 
@@ -25,7 +24,7 @@ namespace AutoKkutu.Modules.AutoEnter
 
 		public void ResetWordIndex() => WordIndex = 0;
 
-		public void PerformAutoEnter(string content, PathUpdatedEventArgs? args, string? pathAttribute = null)
+		public void PerformAutoEnter(string content, PathUpdateEventArgs? args, string? pathAttribute = null)
 		{
 			if (content is null)
 				throw new ArgumentNullException(nameof(content));
@@ -36,7 +35,7 @@ namespace AutoKkutu.Modules.AutoEnter
 			if (AutoKkutuMain.Configuration.DelayEnabled && args?.Flags.HasFlag(PathFinderOptions.AutoFixed) != true)
 			{
 				int delay = GetDelay(content);
-				EnterDelaying?.Invoke(this, new EnterDelayingEventArgs(delay, pathAttribute));
+				InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, pathAttribute));
 				Log.Debug(I18n.Main_WaitingSubmit, delay);
 
 				Task.Run(async () =>
@@ -60,14 +59,14 @@ namespace AutoKkutu.Modules.AutoEnter
 				if (content is null)
 				{
 					Log.Warning(I18n.Main_NoMorePathAvailable);
-					PathNotFound?.Invoke(null, EventArgs.Empty);
+					NoPathAvailable?.Invoke(this, EventArgs.Empty);
 					return;
 				}
 
 				if (AutoKkutuMain.Configuration.FixDelayEnabled)
 				{
 					int delay = GetFixDelay(content);
-					EnterDelaying?.Invoke(null, new EnterDelayingEventArgs(delay, I18n.Main_Next));
+					InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, I18n.Main_Next));
 					Log.Debug(I18n.Main_WaitingSubmitNext, delay);
 					Task.Run(async () => await AutoEnterTask(content, delay, null, I18n.Main_Next));
 				}
@@ -81,9 +80,9 @@ namespace AutoKkutu.Modules.AutoEnter
 		}
 
 		// extmodules: Handler
-		public bool CanPerformAutoEnterNow(PathUpdatedEventArgs? args) => AutoKkutuMain.Handler.RequireNotNull().IsGameStarted && AutoKkutuMain.Handler.IsMyTurn && (args == null || AutoKkutuMain.CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed));
+		public bool CanPerformAutoEnterNow(PathUpdateEventArgs? args) => AutoKkutuMain.Handler.RequireNotNull().IsGameStarted && AutoKkutuMain.Handler.IsMyTurn && (args == null || AutoKkutuMain.CheckPathIsValid(args.Word, args.MissionChar, PathFinderOptions.AutoFixed));
 
-		private void PerformAutoEnterInternal(string content, PathUpdatedEventArgs? args, string? pathAttribute = null)
+		private void PerformAutoEnterInternal(string content, PathUpdateEventArgs? args, string? pathAttribute = null)
 		{
 			if (pathAttribute == null)
 				pathAttribute = I18n.Main_Optimal;
@@ -92,11 +91,12 @@ namespace AutoKkutu.Modules.AutoEnter
 				return;
 
 			Log.Information(I18n.Main_AutoEnter, pathAttribute, content);
-			AutoKkutuMain.SendMessage(content, true);
-			AutoEntered?.Invoke(null, new AutoEnteredEventArgs(content));
+			// FIXME: This module call should be handled with event 'AutoEnter' instead.
+			// AutoKkutuMain.SendMessage(content, true);
+			AutoEnter?.Invoke(this, new AutoEnterEventArgs(content));
 		}
 
-		private async Task AutoEnterTask(string content, int delay, PathUpdatedEventArgs? args, string? pathAttributes = null)
+		private async Task AutoEnterTask(string content, int delay, PathUpdateEventArgs? args, string? pathAttributes = null)
 		{
 			await Task.Delay(delay);
 
@@ -107,7 +107,7 @@ namespace AutoKkutu.Modules.AutoEnter
 		}
 
 		// ExtModules: InputSimulation
-		private async Task AutoEnterInputTimerTask(string content, int delay, PathUpdatedEventArgs? args, string? pathAttribute = null)
+		private async Task AutoEnterInputTimerTask(string content, int delay, PathUpdateEventArgs? args, string? pathAttribute = null)
 		{
 			int _delay = 0;
 			if (AutoKkutuMain.InputStopwatch.ElapsedMilliseconds <= delay)

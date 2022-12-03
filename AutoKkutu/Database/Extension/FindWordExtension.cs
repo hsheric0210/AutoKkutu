@@ -1,10 +1,8 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Modules;
 using Dapper;
-using Serilog;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
 

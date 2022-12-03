@@ -1,10 +1,10 @@
-﻿namespace AutoKkutu.Handler
+﻿namespace AutoKkutu.Modules.HandlerManager.Handler
 {
 	// TODO: Detected by their cheat detection
 	// 단어를 '글자 별로 하나하나' 입력하는 기능(CEF의 KeyEvent 활용), 딜레이 강제 적용(한 글자 당 100ms 이상)을 해야지만 제대로 우회할 수 있다.
 	// https://github.com/horyu1234/KKuTu/blob/91118d0db5a2cc35147c86bdac7ca8df9bdf0f4f/Server/lib/Web/lib/kkutu/body.js#L95
 
-	internal partial class KkutuIoHandler : CommonHandler
+	internal partial class KkutuIoHandler : HandlerCore
 	{
 		private const string ParseExtraVisibilityStyleTagsFunc = "ParseExtraVisibilityStyleTagsFunc";
 

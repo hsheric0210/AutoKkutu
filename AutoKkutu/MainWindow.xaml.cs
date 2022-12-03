@@ -54,11 +54,11 @@ namespace AutoKkutu
 
 		/* EVENTS: AutoEnter */
 
-		private void OnEnterDelaying(object? sender, EnterDelayingEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
+		private void OnEnterDelaying(object? sender, InputDelayEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
 
 		private void OnPathNotFound(object? sender, EventArgs args) => this.UpdateStatusMessage(StatusMessage.NotFound);
 
-		private void OnAutoEntered(object? sender, AutoEnteredEventArgs args) => this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
+		private void OnAutoEntered(object? sender, AutoEnterEventArgs args) => this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
 
 		/* EVENTS: AutoKkutu */
 
@@ -322,7 +322,7 @@ namespace AutoKkutu
 				SubmitSearch_Click(sender, e);
 		}
 
-		private void UpdateSearchState(PathUpdatedEventArgs? arg, bool IsEnd = false)
+		private void UpdateSearchState(PathUpdateEventArgs? arg, bool IsEnd = false)
 		{
 			string Result;
 			if (arg == null)
@@ -339,7 +339,7 @@ namespace AutoKkutu
 			Dispatcher.Invoke(() => SearchResult.Text = Result);
 		}
 
-		private static string CreatePathResultExplain(PathUpdatedEventArgs arg)
+		private static string CreatePathResultExplain(PathUpdateEventArgs arg)
 		{
 			string filter = $"'{arg.Word.Content}'";
 			if (arg.Word.CanSubstitution)
@@ -350,13 +350,13 @@ namespace AutoKkutu
 			string SpecialFilterText = "";
 			string FindResult;
 			string ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.Time);
-			if (arg.Result == PathFinderResult.Normal)
+			if (arg.Result == PathFinderResult.Found)
 			{
 				FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
 			}
 			else
 			{
-				if (arg.Result == PathFinderResult.None)
+				if (arg.Result == PathFinderResult.NotFound)
 					FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
 				else
 					FindResult = I18n.PathFinderError;

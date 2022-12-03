@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace AutoKkutu.Modules.PathManager
 {
-	public class PathManagerCore
+	public class PathManagerCore : IPathManager
 	{
 		/* Word lists */
 

@@ -1,9 +1,7 @@
 ﻿using AutoKkutu.Database.Extension;
-using Dapper;
 using MySqlConnector;
 using Serilog;
 using System;
-using System.Globalization;
 
 namespace AutoKkutu.Database.MySQL
 {
