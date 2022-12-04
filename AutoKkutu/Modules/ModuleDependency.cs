@@ -1,18 +1,17 @@
 ﻿using System;
 
-namespace AutoKkutu.Modules
-{
-	/// <summary>
-	/// Marker annotation for module dependencies
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class)]
-	public sealed class ModuleDependencyAttribute : Attribute
-	{
-		public Type[] Dependencies
-		{
-			get;
-		}
+namespace AutoKkutu.Modules;
 
-		public ModuleDependencyAttribute(params Type[] dependencies) => Dependencies = dependencies;
+/// <summary>
+/// Marker annotation for module dependencies
+/// </summary>
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class ModuleDependencyAttribute : Attribute
+{
+	public Type[] Dependencies
+	{
+		get;
 	}
+
+	public ModuleDependencyAttribute(params Type[] dependencies) => Dependencies = dependencies;
 }

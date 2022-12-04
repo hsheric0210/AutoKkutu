@@ -1,23 +1,22 @@
 ﻿using System;
 
-namespace AutoKkutu.Modules.HandlerManagement
+namespace AutoKkutu.Modules.HandlerManagement;
+
+public class RoundChangeEventArgs : EventArgs
 {
-	public class RoundChangeEventArgs : EventArgs
+	public int RoundIndex
 	{
-		public int RoundIndex
-		{
-			get;
-		}
+		get;
+	}
 
-		public string RoundWord
-		{
-			get;
-		}
+	public string RoundWord
+	{
+		get;
+	}
 
-		public RoundChangeEventArgs(int roundIndex, string roundWord)
-		{
-			RoundIndex = roundIndex;
-			RoundWord = roundWord;
-		}
+	public RoundChangeEventArgs(int roundIndex, string roundWord)
+	{
+		RoundIndex = roundIndex;
+		RoundWord = roundWord;
 	}
 }

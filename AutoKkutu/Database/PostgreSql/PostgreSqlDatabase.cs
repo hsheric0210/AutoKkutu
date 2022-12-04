@@ -3,27 +3,27 @@ using Npgsql;
 using System;
 using Serilog;
 
-namespace AutoKkutu.Database.PostgreSQL
+namespace AutoKkutu.Database.PostgreSQL;
+
+public partial class PostgreSqlDatabase : AbstractDatabase
 {
-	public partial class PostgreSqlDatabase : AbstractDatabase
+	private readonly string ConnectionString;
+
+	public PostgreSqlDatabase(string connectionString) : base()
 	{
-		private readonly string ConnectionString;
+		ConnectionString = connectionString;
 
-		public PostgreSqlDatabase(string connectionString) : base()
+		try
 		{
-			ConnectionString = connectionString;
+			// Open the connection
+			Log.Information("Opening database connection...");
+			var connection = new NpgsqlConnection(connectionString);
+			connection.Open();
+			Initialize(new PostgreSqlDatabaseConnection(connection));
+			Connection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
 
-			try
-			{
-				// Open the connection
-				Log.Information("Opening database connection...");
-				var connection = new NpgsqlConnection(connectionString);
-				connection.Open();
-				Initialize(new PostgreSqlDatabaseConnection(connection));
-				Connection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
-
-				// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
-				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
+			// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
+			Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 BEGIN
 	IF ((flags & endWordFlag) != 0) THEN
@@ -37,8 +37,8 @@ END;
 $$ LANGUAGE plpgsql
 ");
 
-				// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
-				Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetMissionWordPriorityFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
+			// Rearrange_Mission(string word, int flags, string missionword, int endWordFlag, int attackWordFlag, int endMissionWordOrdinal, int endWordOrdinal, int attackMissionWordOrdinal, int attackWordOrdinal, int missionWordOrdinal, int normalWordOrdinal)
+			Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetMissionWordPriorityFuncName()}(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
 DECLARE
 	occurrence INTEGER;
@@ -69,27 +69,26 @@ END;
 $$ LANGUAGE plpgsql
 ");
 
-				// Check the database tables
-				Connection.CheckTable();
+			// Check the database tables
+			Connection.CheckTable();
 
-				Log.Information("Successfully established database connection.");
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, DatabaseConstants.ErrorConnect);
-				DatabaseEvents.TriggerDatabaseError();
-			}
+			Log.Information("Successfully established database connection.");
 		}
-
-		public override string GetDBType() => "PostgreSQL";
-
-		public override AbstractDatabaseConnection OpenSecondaryConnection()
+		catch (Exception ex)
 		{
-			var connection = new NpgsqlConnection(ConnectionString);
-			connection.Open();
-			var wrappedConnection = new PostgreSqlDatabaseConnection(connection);
-			wrappedConnection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
-			return wrappedConnection;
+			Log.Error(ex, DatabaseConstants.ErrorConnect);
+			DatabaseEvents.TriggerDatabaseError();
 		}
+	}
+
+	public override string GetDBType() => "PostgreSQL";
+
+	public override AbstractDatabaseConnection OpenSecondaryConnection()
+	{
+		var connection = new NpgsqlConnection(ConnectionString);
+		connection.Open();
+		var wrappedConnection = new PostgreSqlDatabaseConnection(connection);
+		wrappedConnection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
+		return wrappedConnection;
 	}
 }

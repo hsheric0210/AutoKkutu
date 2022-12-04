@@ -3,33 +3,33 @@ using MySqlConnector;
 using Serilog;
 using System;
 
-namespace AutoKkutu.Database.MySQL
+namespace AutoKkutu.Database.MySQL;
+
+public partial class MySqlDatabase : AbstractDatabase
 {
-	public partial class MySqlDatabase : AbstractDatabase
+	private readonly string ConnectionString;
+
+	private readonly string DatabaseName = "";
+
+	public MySqlDatabase(string connectionString)
 	{
-		private readonly string ConnectionString;
+		ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
 
-		private readonly string DatabaseName = "";
-
-		public MySqlDatabase(string connectionString)
+		try
 		{
-			ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+			var databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;
+			var databaseNameIndexEnd = connectionString.IndexOf(';', databaseNameIndex) - databaseNameIndex;
+			DatabaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
+			Log.Information("MySQL database name is {databaseName}.", DatabaseName);
 
-			try
-			{
-				int databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;
-				int databaseNameIndexEnd = connectionString.IndexOf(';', databaseNameIndex) - databaseNameIndex;
-				DatabaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
-				Log.Information("MySQL database name is {databaseName}.", DatabaseName);
+			// Open the connection
+			Log.Information("Opening database connection...");
+			var connection = new MySqlConnection(connectionString);
+			connection.Open();
+			Initialize(new MySqlDatabaseConnection(connection, DatabaseName));
 
-				// Open the connection
-				Log.Information("Opening database connection...");
-				var connection = new MySqlConnection(connectionString);
-				connection.Open();
-				Initialize(new MySqlDatabaseConnection(connection, DatabaseName));
-
-				Connection.TryExecute($"DROP FUNCTION IF EXISTS {Connection.GetWordPriorityFuncName()};");
-				Connection.TryExecute($@"CREATE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
+			Connection.TryExecute($"DROP FUNCTION IF EXISTS {Connection.GetWordPriorityFuncName()};");
+			Connection.TryExecute($@"CREATE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
 DETERMINISTIC
 NO SQL
 BEGIN
@@ -43,8 +43,8 @@ BEGIN
 END;
 ");
 
-				Connection.TryExecute($"DROP FUNCTION IF EXISTS {Connection.GetMissionWordPriorityFuncName()};");
-				Connection.TryExecute($@"CREATE FUNCTION {Connection.GetMissionWordPriorityFuncName()}(word VARCHAR(256), flags INT, missionword VARCHAR(2), endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
+			Connection.TryExecute($"DROP FUNCTION IF EXISTS {Connection.GetMissionWordPriorityFuncName()};");
+			Connection.TryExecute($@"CREATE FUNCTION {Connection.GetMissionWordPriorityFuncName()}(word VARCHAR(256), flags INT, missionword VARCHAR(2), endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
 DETERMINISTIC
 NO SQL
 BEGIN
@@ -74,25 +74,24 @@ BEGIN
 END;
 ");
 
-				// Check the database tables
-				Connection.CheckTable();
+			// Check the database tables
+			Connection.CheckTable();
 
-				Log.Information("Successfully established database connection.");
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, DatabaseConstants.ErrorConnect);
-				DatabaseEvents.TriggerDatabaseError();
-			}
+			Log.Information("Successfully established database connection.");
 		}
-
-		public override string GetDBType() => "MySQL";
-
-		public override AbstractDatabaseConnection OpenSecondaryConnection()
+		catch (Exception ex)
 		{
-			var connection = new MySqlConnection(ConnectionString);
-			connection.Open();
-			return new MySqlDatabaseConnection(connection, DatabaseName);
+			Log.Error(ex, DatabaseConstants.ErrorConnect);
+			DatabaseEvents.TriggerDatabaseError();
 		}
+	}
+
+	public override string GetDBType() => "MySQL";
+
+	public override AbstractDatabaseConnection OpenSecondaryConnection()
+	{
+		var connection = new MySqlConnection(ConnectionString);
+		connection.Open();
+		return new MySqlDatabaseConnection(connection, DatabaseName);
 	}
 }

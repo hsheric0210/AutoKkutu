@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoKkutu.Modules.Handlers
+namespace AutoKkutu.Modules.Handlers;
+
+internal class BFKkutuHandler : AbstractHandler
 {
-	internal class BFKkutuHandler : AbstractHandler
+	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://bfkkutu.kr/") };
+
+	public override string HandlerName => "BFKkutu.kr Handler";
+
+	public override void UpdateChat(string input)
 	{
-		public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://bfkkutu.kr/") };
-
-		public override string HandlerName => "BFKkutu.kr Handler";
-
-		public override void UpdateChat(string input)
-		{
-			RegisterJSFunction(WriteInputFunc, "input", @"
+		RegisterJSFunction(WriteInputFunc, "input", @"
 var chatFields = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
 var maxIndex = chatFields.length, index = 0;
 while (index < maxIndex) {{
@@ -23,12 +23,12 @@ while (index < maxIndex) {{
 }}
 ");
 
-			EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
-		}
+		EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
+	}
 
-		public override void ClickSubmit()
-		{
-			RegisterJSFunction(ClickSubmitFunc, "", @"
+	public override void ClickSubmit()
+	{
+		RegisterJSFunction(ClickSubmitFunc, "", @"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button')
 var maxIndex = buttons.length, index = 0;
 while (index < maxIndex) {{
@@ -40,7 +40,6 @@ while (index < maxIndex) {{
 }}
 ");
 
-			EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
-		}
+		EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
 	}
 }

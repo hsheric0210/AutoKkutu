@@ -1,24 +1,22 @@
 ﻿using System;
 
-namespace AutoKkutu.Modules.AutoEntering
+namespace AutoKkutu.Modules.AutoEntering;
+
+public class InputDelayEventArgs : EventArgs
 {
-
-	public class InputDelayEventArgs : EventArgs
+	public int Delay
 	{
-		public int Delay
-		{
-			get;
-		}
+		get;
+	}
 
-		public int WordIndex
-		{
-			get;
-		}
+	public int WordIndex
+	{
+		get;
+	}
 
-		public InputDelayEventArgs(int delay, int wordIndex)
-		{
-			Delay = delay;
-			WordIndex = wordIndex;
-		}
+	public InputDelayEventArgs(int delay, int wordIndex)
+	{
+		Delay = delay;
+		WordIndex = wordIndex;
 	}
 }

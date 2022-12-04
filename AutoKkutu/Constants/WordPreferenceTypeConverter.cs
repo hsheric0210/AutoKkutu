@@ -3,44 +3,43 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
-namespace AutoKkutu.Constants
+namespace AutoKkutu.Constants;
+
+public class WordPreferenceTypeConverter : TypeConverter
 {
-	public class WordPreferenceTypeConverter : TypeConverter
+	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+
+	public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
+
+	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
-
-		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
-
-		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+		if (value is string text)
 		{
-			if (value is string text)
+			var pieces = text.Split(';');
+			var pieceCount = pieces.Length;
+			var attributes = new WordCategories[pieceCount];
+			for (var i = 0; i < pieceCount; i++)
 			{
-				string[] pieces = text.Split(';');
-				int pieceCount = pieces.Length;
-				var attributes = new WordCategories[pieceCount];
-				for (int i = 0; i < pieceCount; i++)
-				{
-					string? piece = pieces[i];
-					if (!int.TryParse(piece, out int pieceInt))
-						throw new InvalidOperationException($"Failed to parse WordPreference: Failed to parse number '{piece}' at piece index {i}");
-					attributes[i] = (WordCategories)pieceInt;
-				}
-
-				return new WordPreference(attributes);
+				var piece = pieces[i];
+				if (!int.TryParse(piece, out var pieceInt))
+					throw new InvalidOperationException($"Failed to parse WordPreference: Failed to parse number '{piece}' at piece index {i}");
+				attributes[i] = (WordCategories)pieceInt;
 			}
 
-			return base.ConvertFrom(context, culture, value);
+			return new WordPreference(attributes);
 		}
 
-		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
-		{
-			if (destinationType == null)
-				throw new ArgumentNullException(nameof(destinationType));
+		return base.ConvertFrom(context, culture, value);
+	}
 
-			if (value is WordPreference pref && CanConvertTo(context, destinationType))
-				return string.Join(";", from attrib in pref.GetAttributes() select (int)attrib);
+	public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+	{
+		if (destinationType == null)
+			throw new ArgumentNullException(nameof(destinationType));
 
-			return base.ConvertTo(context, culture, value, destinationType);
-		}
+		if (value is WordPreference pref && CanConvertTo(context, destinationType))
+			return string.Join(";", from attrib in pref.GetAttributes() select (int)attrib);
+
+		return base.ConvertTo(context, culture, value, destinationType);
 	}
 }

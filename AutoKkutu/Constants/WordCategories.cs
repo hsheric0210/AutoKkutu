@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace AutoKkutu.Constants
+namespace AutoKkutu.Constants;
+
+[Flags]
+public enum WordCategories
 {
-	[Flags]
-	public enum WordCategories
-	{
-		None = 0,
-		EndWord = 1 << 0,
-		AttackWord = 1 << 1,
-		MissionWord = 1 << 2
-	}
+	None = 0,
+	EndWord = 1 << 0,
+	AttackWord = 1 << 1,
+	MissionWord = 1 << 2
 }

@@ -10,35 +10,34 @@ using Serilog;
 using System;
 using System.Configuration;
 
-namespace AutoKkutu.Utils
+namespace AutoKkutu.Utils;
+
+public static class DatabaseUtils
 {
-	public static class DatabaseUtils
+	public static AbstractDatabase CreateDatabase(Configuration config)
 	{
-		public static AbstractDatabase CreateDatabase(Configuration config)
+		if (config == null)
+			throw new ArgumentNullException(nameof(config));
+
+		switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToUpperInvariant())
 		{
-			if (config == null)
-				throw new ArgumentNullException(nameof(config));
+			case "MARIADB":
+			case "MYSQL":
+				var mysqlConnectionString = ((MySqlSection)config.GetSection("mysql")).ConnectionString;
+				Log.Information("MySQL selected: {connString}", mysqlConnectionString);
+				return new MySqlDatabase(mysqlConnectionString);
 
-			switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToUpperInvariant())
-			{
-				case "MARIADB":
-				case "MYSQL":
-					string mysqlConnectionString = ((MySQLSection)config.GetSection("mysql")).ConnectionString;
-					Log.Information("MySQL selected: {connString}", mysqlConnectionString);
-					return new MySqlDatabase(mysqlConnectionString);
-
-				case "POSTGRESQL":
-				case "POSTGRES":
-				case "POSTGRE":
-				case "PGSQL":
-					string pgsqlConnectionString = ((PostgreSQLSection)config.GetSection("postgresql")).ConnectionString;
-					Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
-					return new PostgreSqlDatabase(pgsqlConnectionString);
-			}
-
-			string file = ((SQLiteSection)config.GetSection("sqlite")).File;
-			Log.Information("SQLite selected: File={file}", file);
-			return new SqliteDatabase(file);
+			case "POSTGRESQL":
+			case "POSTGRES":
+			case "POSTGRE":
+			case "PGSQL":
+				var pgsqlConnectionString = ((PostgreSqlSection)config.GetSection("postgresql")).ConnectionString;
+				Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
+				return new PostgreSqlDatabase(pgsqlConnectionString);
 		}
+
+		var file = ((SqliteSection)config.GetSection("sqlite")).File;
+		Log.Information("SQLite selected: File={file}", file);
+		return new SqliteDatabase(file);
 	}
 }

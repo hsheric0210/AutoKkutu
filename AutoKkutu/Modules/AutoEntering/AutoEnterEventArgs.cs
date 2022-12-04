@@ -1,18 +1,16 @@
 ﻿using System;
 
-namespace AutoKkutu.Modules.AutoEntering
+namespace AutoKkutu.Modules.AutoEntering;
+
+public class AutoEnterEventArgs : EventArgs
 {
-
-	public class AutoEnterEventArgs : EventArgs
+	public string Content
 	{
-		public string Content
-		{
-			get;
-		}
+		get;
+	}
 
-		public AutoEnterEventArgs(string content)
-		{
-			Content = content;
-		}
+	public AutoEnterEventArgs(string content)
+	{
+		Content = content;
 	}
 }

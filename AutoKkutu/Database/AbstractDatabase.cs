@@ -2,44 +2,43 @@
 using AutoKkutu.Utils;
 using System;
 
-namespace AutoKkutu.Database
+namespace AutoKkutu.Database;
+
+public abstract class AbstractDatabase : IDisposable
 {
-	public abstract class AbstractDatabase : IDisposable
+	private AbstractDatabaseConnection? _baseConnection;
+
+	public AbstractDatabaseConnection Connection => _baseConnection.RequireNotNull();
+
+	static AbstractDatabase()
 	{
-		private AbstractDatabaseConnection? _baseConnection;
+		typeof(WordModel).RegisterMapping();
+	}
 
-		public AbstractDatabaseConnection Connection => _baseConnection.RequireNotNull();
+	protected AbstractDatabase()
+	{
+	}
 
-		static AbstractDatabase()
-		{
-			typeof(WordModel).RegisterMapping();
-		}
+	public abstract AbstractDatabaseConnection OpenSecondaryConnection();
 
-		protected AbstractDatabase()
-		{
-		}
+	public abstract string GetDBType();
 
-		public abstract AbstractDatabaseConnection OpenSecondaryConnection();
+	protected void Initialize(AbstractDatabaseConnection defaultConnection)
+	{
+		if (_baseConnection != null)
+			throw new InvalidOperationException($"{nameof(Connection)} is already initialized");
+		_baseConnection = defaultConnection;
+	}
 
-		public abstract string GetDBType();
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+			Connection.Dispose();
+	}
 
-		protected void Initialize(AbstractDatabaseConnection defaultConnection)
-		{
-			if (_baseConnection != null)
-				throw new InvalidOperationException($"{nameof(Connection)} is already initialized");
-			_baseConnection = defaultConnection;
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-				Connection.Dispose();
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 }

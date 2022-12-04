@@ -1,20 +1,13 @@
 ﻿using System.Configuration;
 
-namespace AutoKkutu.ConfigFile
+namespace AutoKkutu.ConfigFile;
+
+public class SqliteSection : ConfigurationSection
 {
-	public class SQLiteSection : ConfigurationSection
+	[ConfigurationProperty("file")]
+	public string File
 	{
-		[ConfigurationProperty("file")]
-		public string File
-		{
-			get
-			{
-				return (string)base["file"];
-			}
-			set
-			{
-				base["file"] = value;
-			}
-		}
+		get => (string)base["file"];
+		set => base["file"] = value;
 	}
 }

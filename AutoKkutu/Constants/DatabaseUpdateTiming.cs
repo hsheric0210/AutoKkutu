@@ -1,8 +1,7 @@
-﻿namespace AutoKkutu.Constants
+﻿namespace AutoKkutu.Constants;
+
+public enum DatabaseUpdateTiming
 {
-	public enum DatabaseUpdateTiming
-	{
-		OnGameEnd,
-		OnRoundEnd
-	}
+	OnGameEnd,
+	OnRoundEnd
 }

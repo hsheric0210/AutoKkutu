@@ -1,23 +1,22 @@
 ﻿using System;
 
-namespace AutoKkutu.Modules.HandlerManagement
+namespace AutoKkutu.Modules.HandlerManagement;
+
+public class UnsupportedWordEventArgs : EventArgs
 {
-	public class UnsupportedWordEventArgs : EventArgs
+	public string Word
 	{
-		public string Word
-		{
-			get;
-		}
+		get;
+	}
 
-		public bool IsExistingWord
-		{
-			get;
-		}
+	public bool IsExistingWord
+	{
+		get;
+	}
 
-		public UnsupportedWordEventArgs(string word, bool isExistingWord)
-		{
-			Word = word;
-			IsExistingWord = isExistingWord;
-		}
+	public UnsupportedWordEventArgs(string word, bool isExistingWord)
+	{
+		Word = word;
+		IsExistingWord = isExistingWord;
 	}
 }
