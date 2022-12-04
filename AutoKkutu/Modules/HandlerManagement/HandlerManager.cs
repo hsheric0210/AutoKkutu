@@ -1,6 +1,6 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Modules.HandlerManager.Handler;
-using AutoKkutu.Modules.PathManager;
+using AutoKkutu.Modules.Handlers;
+using AutoKkutu.Modules.Path;
 using AutoKkutu.Utils.Extension;
 using Serilog;
 using System;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules.HandlerManager
+namespace AutoKkutu.Modules.HandlerManagement
 {
 	[ModuleDependency(typeof(IPathManager))]
 	public class HandlerManager : IHandlerManager
@@ -290,8 +290,8 @@ namespace AutoKkutu.Modules.HandlerManager
 			if (path.Options.HasFlag(PathFinderOptions.ManualSearch))
 				return true;
 
-			bool differentWord = CurrentPresentedWord != null && !path.Word.Equals(CurrentPresentedWord);
-			bool differentMissionChar = path.Options.HasFlag(PathFinderOptions.MissionWordExists) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+			var differentWord = CurrentPresentedWord != null && !path.Word.Equals(CurrentPresentedWord);
+			var differentMissionChar = path.Options.HasFlag(PathFinderOptions.MissionWordExists) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
 			if (IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
@@ -307,18 +307,18 @@ namespace AutoKkutu.Modules.HandlerManager
 			if (ConfigEnums.IsFreeMode(AutoKkutuMain.Configuration.GameMode))
 				return;
 
-			string[] tmpWordCache = new string[6];
+			var tmpWordCache = new string[6];
 
-			for (int index = 0; index < 6; index++)
+			for (var index = 0; index < 6; index++)
 			{
-				string previousWord = Handler.GetWordInHistory(index);
+				var previousWord = Handler.GetWordInHistory(index);
 				if (!string.IsNullOrWhiteSpace(previousWord) && previousWord.Contains('<', StringComparison.Ordinal))
 					tmpWordCache[index] = previousWord[..previousWord.IndexOf('<', StringComparison.Ordinal)].Trim();
 			}
 
-			for (int index = 0; index < 6; index++)
+			for (var index = 0; index < 6; index++)
 			{
-				string word = tmpWordCache[index];
+				var word = tmpWordCache[index];
 				if (!string.IsNullOrWhiteSpace(word) && !_wordCache.Contains(word))
 				{
 					Log.Information("Found previous word : {word}", word);
@@ -338,7 +338,7 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		private void UpdateMissionWord()
 		{
-			string missionWord = Handler.MissionChar;
+			var missionWord = Handler.MissionChar;
 			if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, CurrentMissionChar, StringComparison.Ordinal))
 				return;
 			Log.Information("Mission word change detected : {word}", missionWord);
@@ -347,11 +347,11 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		private void UpdateRound()
 		{
-			int roundIndex = Handler.RoundIndex;
+			var roundIndex = Handler.RoundIndex;
 			if (roundIndex == _roundIndexCache) // Detect round change by round index
 				return;
 
-			string roundText = Handler.RoundText;
+			var roundText = Handler.RoundText;
 			if (string.IsNullOrWhiteSpace(roundText))
 				return;
 
@@ -366,11 +366,11 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		private void UpdateUnsupportedWord()
 		{
-			string unsupportedWord = Handler.UnsupportedWord;
+			var unsupportedWord = Handler.UnsupportedWord;
 			if (string.IsNullOrWhiteSpace(unsupportedWord) || string.Equals(unsupportedWord, _unsupportedWordCache, StringComparison.OrdinalIgnoreCase) || unsupportedWord.Contains("T.T", StringComparison.OrdinalIgnoreCase))
 				return;
 
-			bool isExistingWord = unsupportedWord.Contains(':', StringComparison.Ordinal); // '첫 턴 한방 금지: ', '한방 단어: ' 등등...
+			var isExistingWord = unsupportedWord.Contains(':', StringComparison.Ordinal); // '첫 턴 한방 금지: ', '한방 단어: ' 등등...
 			_unsupportedWordCache = unsupportedWord;
 
 			UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
@@ -383,7 +383,7 @@ namespace AutoKkutu.Modules.HandlerManager
 		/// </summary>
 		private void UpdateExample()
 		{
-			string example = Handler.ExampleWord;
+			var example = Handler.ExampleWord;
 			if (string.IsNullOrWhiteSpace(example) || example.StartsWith("게임 끝", StringComparison.Ordinal))
 				return;
 			if (string.Equals(example, _exampleWordCache, StringComparison.OrdinalIgnoreCase))
@@ -395,7 +395,7 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		private void UpdateTypingWord()
 		{
-			string word = Handler.PresentedWord;
+			var word = Handler.PresentedWord;
 			if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝", StringComparison.InvariantCultureIgnoreCase))
 				return;
 			if (word.Contains(' ', StringComparison.Ordinal))
@@ -419,18 +419,18 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		private PresentedWord? UpdatePresentedWord()
 		{
-			string content = Handler.PresentedWord;
+			var content = Handler.PresentedWord;
 
 			if (string.IsNullOrEmpty(content))
 				return null;
 
 			string primary;
-			string secondary = string.Empty;
-			bool hasSecondary = content.Contains('(', StringComparison.Ordinal) && content.Last() == ')';
+			var secondary = string.Empty;
+			var hasSecondary = content.Contains('(', StringComparison.Ordinal) && content.Last() == ')';
 			if (hasSecondary)
 			{
-				int parentheseStartIndex = content.IndexOf('(', StringComparison.Ordinal);
-				int parentheseEndIndex = content.IndexOf(')', StringComparison.Ordinal);
+				var parentheseStartIndex = content.IndexOf('(', StringComparison.Ordinal);
+				var parentheseEndIndex = content.IndexOf(')', StringComparison.Ordinal);
 				primary = content[..parentheseStartIndex];
 				secondary = content.Substring(parentheseStartIndex + 1, parentheseEndIndex - parentheseStartIndex - 1);
 			}

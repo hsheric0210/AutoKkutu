@@ -3,7 +3,7 @@ using AutoKkutu.Database;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace AutoKkutu.Modules.PathManager;
+namespace AutoKkutu.Modules.Path;
 public interface IPathManager
 {
 	ICollection<string> AttackNodes { get; }

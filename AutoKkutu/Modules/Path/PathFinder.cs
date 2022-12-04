@@ -1,6 +1,5 @@
 using AutoKkutu.Constants;
 using AutoKkutu.Database.Extension;
-using AutoKkutu.Modules.PathManager;
 using AutoKkutu.Utils;
 using Serilog;
 using System;
@@ -10,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace AutoKkutu.Modules.PathFinder
+namespace AutoKkutu.Modules.Path
 {
 	[ModuleDependency(typeof(IPathManager))]
 	public class PathFinder : IPathFinder
@@ -104,10 +103,10 @@ namespace AutoKkutu.Modules.PathFinder
 					return;
 				}
 
-				int totalWordCount = totalWordList.Count;
+				var totalWordCount = totalWordList.Count;
 
 				// Limit the word list size
-				int maxCount = AutoKkutuMain.Configuration.MaxDisplayedWordCount;
+				var maxCount = AutoKkutuMain.Configuration.MaxDisplayedWordCount;
 				if (totalWordList.Count > maxCount)
 					totalWordList = totalWordList.Take(maxCount).ToList();
 				stopwatch.Stop();
@@ -136,16 +135,16 @@ namespace AutoKkutu.Modules.PathFinder
 			GameMode mode,
 			PathFinderParameter param)
 		{
-			string firstChar = mode == GameMode.LastAndFirstFree ? param.Word.Content : "";
+			var firstChar = mode == GameMode.LastAndFirstFree ? param.Word.Content : "";
 
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 			DisplayList = new List<PathObject>();
 			var random = new Random();
-			int len = random.Next(64, 256);
+			var len = random.Next(64, 256);
 			if (!string.IsNullOrWhiteSpace(param.MissionChar))
 				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random) + new string(param.MissionChar[0], len) + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random), WordCategories.None, len));
-			for (int i = 0; i < 10; i++)
+			for (var i = 0; i < 10; i++)
 				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(len, false, random), WordCategories.None, 0));
 			stopwatch.Stop();
 			QualifiedList = new List<PathObject>(DisplayList);

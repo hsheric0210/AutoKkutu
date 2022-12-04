@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoKkutu.Modules.HandlerManager.Handler
+namespace AutoKkutu.Modules.Handlers
 {
 	internal class BFKkutuHandler : AbstractHandler
 	{

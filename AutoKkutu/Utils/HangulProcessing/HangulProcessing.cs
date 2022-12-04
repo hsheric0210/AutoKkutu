@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
+namespace AutoKkutu.Utils.HangulProcessing
 {
 	public static class HangulProcessing
 	{
@@ -30,7 +30,7 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 			if (str is null)
 				throw new ArgumentNullException(nameof(str));
 			HangulSplitted? lastSplit = str.Length == 0 ? null : str.Last().SplitConsonants();
-			char result = ch;
+			var result = ch;
 			if (lastSplit?.IsHangul == true)
 				return CombineHangulSebeol(str, type, ch, lastSplit);
 			return str + ch;
@@ -38,8 +38,8 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 
 		private static string CombineHangulDubeol(string str, JamoType appendCharType, char charToAppend, HangulSplitted lastSplit)
 		{
-			char result = charToAppend;
-			bool isFull = lastSplit.IsFull;
+			var result = charToAppend;
+			var isFull = lastSplit.IsFull;
 			if (appendCharType == JamoType.Medial)
 			{
 			}
@@ -81,8 +81,8 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 
 		private static string CombineHangulSebeol(string str, JamoType appendCharType, char charToAppend, HangulSplitted lastSplit)
 		{
-			char result = charToAppend;
-			bool isFull = lastSplit.IsFull;
+			var result = charToAppend;
+			var isFull = lastSplit.IsFull;
 			switch (appendCharType)
 			{
 				case JamoType.Initial:
@@ -126,10 +126,10 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 		public static HangulSplitted SplitConsonants(this char character)
 		{
 			int initialIndex, medialIndex, finalIndex;
-			ushort unicodeIndex = Convert.ToUInt16(character);
+			var unicodeIndex = Convert.ToUInt16(character);
 			if (unicodeIndex.IsHangulSyllable())
 			{
-				int delta = unicodeIndex - HangulConstants.HangulSyllablesOrigin;
+				var delta = unicodeIndex - HangulConstants.HangulSyllablesOrigin;
 				initialIndex = delta / 588;
 				delta %= 588;
 				medialIndex = delta / 28;
@@ -153,7 +153,7 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 		/// <param name="character">검사할 문자.</param>
 		public static bool HasFinalConsonant(this char character)
 		{
-			ushort unicodeIndex = Convert.ToUInt16(character);
+			var unicodeIndex = Convert.ToUInt16(character);
 			return unicodeIndex.IsHangulSyllable() && (unicodeIndex - HangulConstants.HangulSyllablesOrigin) % 588 % 28 > 0 || unicodeIndex.IsHangulJamoJongseong();
 		}
 
@@ -164,7 +164,7 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 		/// <returns>만약 입력된 문자가 한글이라면 추출된 초성, 한글이 아니라면 원 문자를 그대로 반환합니다.</returns>
 		public static char ExtractInitialConsonant(this char character)
 		{
-			ushort unicodeIndex = Convert.ToUInt16(character);
+			var unicodeIndex = Convert.ToUInt16(character);
 			if (unicodeIndex.IsHangulSyllable())
 				return HangulConstants.InitialConsonantTable[(unicodeIndex - HangulConstants.HangulSyllablesOrigin) / 588];
 			// 자모는 굳이 처리해야 할 필요 X
@@ -215,8 +215,8 @@ namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
 				default:
 					var filtered = consonants.Where(ch => !char.IsWhiteSpace(ch)).ToArray();
 					// TODO: 어두자음군 지원
-					char ch = filtered[0];
-					foreach (char consonant in filtered.Skip(1))
+					var ch = filtered[0];
+					foreach (var consonant in filtered.Skip(1))
 						if (!HangulConstants.ConsonantClusterTable.TryGetValue(ch, out IDictionary<char, char>? combination) || !combination.TryGetValue(consonant, out ch))
 							throw new InvalidOperationException($"Unsupported combination: {ch} + {consonant}");
 

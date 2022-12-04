@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AutoKkutu.Modules.AutoEnter
+namespace AutoKkutu.Modules.AutoEntering
 {
 
 	public class InputDelayEventArgs : EventArgs

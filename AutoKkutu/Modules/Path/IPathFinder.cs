@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AutoKkutu.Modules.PathFinder;
+namespace AutoKkutu.Modules.Path;
 public interface IPathFinder
 {
 	IList<PathObject> DisplayList { get; }

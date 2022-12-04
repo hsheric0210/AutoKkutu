@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 // Original source available at https://plog2012.blogspot.com/2012/11/c.html
-namespace AutoKkutu.Modules.AutoEnter.HangulProcessing
+namespace AutoKkutu.Utils.HangulProcessing
 {
 	// TODO: 중세 자음, 모음 지원
 	public static class HangulConstants

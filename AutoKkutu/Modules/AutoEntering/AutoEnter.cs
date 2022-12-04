@@ -1,5 +1,5 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Modules.HandlerManager;
+using AutoKkutu.Modules.HandlerManagement;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules.AutoEnter
+namespace AutoKkutu.Modules.AutoEntering
 {
 	[ModuleDependency(typeof(IHandlerManager))]
 	public class AutoEnter : IAutoEnter
@@ -38,9 +38,9 @@ namespace AutoKkutu.Modules.AutoEnter
 
 			if (delayPerChar)
 			{
-				int remain = Math.Max(300, remainingTurnTime);
+				var remain = Math.Max(300, remainingTurnTime);
 				PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
-				string? word = arr.Length <= wordIndex ? null : arr[wordIndex].Content;
+				var word = arr.Length <= wordIndex ? null : arr[wordIndex].Content;
 				if (word == null)
 					Log.Debug(I18n.TimeFilter_TimeOver, remain);
 				else
@@ -63,7 +63,7 @@ namespace AutoKkutu.Modules.AutoEnter
 
 			if (parameter.DelayEnabled && !parameter.PathFinderParams.Options.HasFlag(PathFinderOptions.AutoFixed))
 			{
-				int delay = parameter.RealDelay;
+				var delay = parameter.RealDelay;
 				InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, parameter.WordIndex));
 				Log.Debug(I18n.Main_WaitingSubmit, delay);
 
@@ -90,7 +90,7 @@ namespace AutoKkutu.Modules.AutoEnter
 			try
 			{
 				// TODO: move WordIndex incremental code out
-				string? content = GetWordByIndex(availablePaths, parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
+				var content = GetWordByIndex(availablePaths, parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
 				if (content is null)
 				{
 					Log.Warning(I18n.Main_NoMorePathAvailable);
@@ -101,7 +101,7 @@ namespace AutoKkutu.Modules.AutoEnter
 				var contentParameter = parameter with { Content = content };
 				if (AutoKkutuMain.Configuration.FixDelayEnabled)
 				{
-					int delay = contentParameter.RealDelay;
+					var delay = contentParameter.RealDelay;
 					InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, parameter.WordIndex));
 					Log.Debug(I18n.Main_WaitingSubmitNext, delay);
 					Task.Run(async () => await AutoEnterTask(contentParameter));
@@ -150,8 +150,8 @@ namespace AutoKkutu.Modules.AutoEnter
 		// ExtModules: InputSimulation
 		private async Task AutoEnterInputTimerTask(AutoEnterParameter parameter)
 		{
-			int delay = parameter.RealDelay;
-			int _delay = 0;
+			var delay = parameter.RealDelay;
+			var _delay = 0;
 			if (InputStopwatch.ElapsedMilliseconds <= delay)
 			{
 				_delay = (int)(delay - InputStopwatch.ElapsedMilliseconds);

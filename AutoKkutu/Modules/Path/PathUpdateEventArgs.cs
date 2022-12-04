@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using System;
 
-namespace AutoKkutu.Modules.PathFinder
+namespace AutoKkutu.Modules.Path
 {
 
 	public class PathUpdateEventArgs : EventArgs

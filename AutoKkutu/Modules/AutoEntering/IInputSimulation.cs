@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules.AutoEnter;
+namespace AutoKkutu.Modules.AutoEntering;
 public interface IInputSimulation
 {
 	bool CanSimulateInput();

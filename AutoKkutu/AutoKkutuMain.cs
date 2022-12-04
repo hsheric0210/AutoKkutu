@@ -1,10 +1,9 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Database;
-using AutoKkutu.Modules.AutoEnter;
-using AutoKkutu.Modules.HandlerManager;
+using AutoKkutu.Modules.AutoEntering;
+using AutoKkutu.Modules.HandlerManagement;
 using AutoKkutu.Modules.HandlerManager.Handler;
-using AutoKkutu.Modules.PathFinder;
-using AutoKkutu.Modules.PathManager;
+using AutoKkutu.Modules.Path;
 using AutoKkutu.Utils;
 using AutoKkutu.Utils.Extension;
 using CefSharp;

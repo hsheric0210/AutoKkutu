@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AutoKkutu.Modules.AutoEnter;
+namespace AutoKkutu.Modules.AutoEntering;
 public interface IAutoEnter
 {
 	event EventHandler<AutoEnterEventArgs>? AutoEntered;

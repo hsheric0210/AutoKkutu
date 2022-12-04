@@ -1,11 +1,11 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Modules.AutoEnter.HangulProcessing;
-using AutoKkutu.Modules.HandlerManager;
+using AutoKkutu.Modules.HandlerManagement;
+using AutoKkutu.Utils.HangulProcessing;
 using Serilog;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules.AutoEnter
+namespace AutoKkutu.Modules.AutoEntering
 {
 	[ModuleDependency(typeof(IHandlerManager))]
 	public class InputSimulation
@@ -24,16 +24,16 @@ namespace AutoKkutu.Modules.AutoEnter
 			if (parameter is null)
 				return;
 
-			string content = parameter.Content;
-			int wordIndex = parameter.WordIndex;
-			bool aborted = false;
+			var content = parameter.Content;
+			var wordIndex = parameter.WordIndex;
+			var aborted = false;
 			var list = new List<(JamoType, char)>();
 			foreach (var ch in content)
 				list.AddRange(ch.SplitConsonants().Serialize());
 
 			Log.Information(I18n.Main_InputSimulating, wordIndex, content);
 			handlerManager.UpdateChat("");
-			foreach ((JamoType type, char ch) in list)
+			foreach ((JamoType type, var ch) in list)
 			{
 				if (!autoEnter.CanPerformAutoEnterNow(parameter.PathFinderParams))
 				{
@@ -65,7 +65,7 @@ namespace AutoKkutu.Modules.AutoEnter
 
 			Log.Information(I18n.Main_InputSimulating, "Input", message);
 			handlerManager.UpdateChat("");
-			foreach ((JamoType type, char ch) in list)
+			foreach ((JamoType type, var ch) in list)
 			{
 				handlerManager.AppendChat(s => s.AppendChar(type, ch));
 				await Task.Delay(delay);

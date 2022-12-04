@@ -1,7 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using System;
 
-namespace AutoKkutu.Modules.HandlerManager
+namespace AutoKkutu.Modules.HandlerManagement
 {
 	public class GameModeChangeEventArgs : EventArgs
 	{

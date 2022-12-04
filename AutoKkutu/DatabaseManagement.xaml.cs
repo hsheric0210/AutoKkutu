@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using AutoKkutu.Constants;
-using AutoKkutu.Modules.PathManager;
+using AutoKkutu.Modules.Path;
 
 namespace AutoKkutu
 {

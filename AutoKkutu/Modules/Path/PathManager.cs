@@ -10,7 +10,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AutoKkutu.Modules.PathManager
+namespace AutoKkutu.Modules.Path
 {
 	public class PathManager : IPathManager
 	{
@@ -147,19 +147,19 @@ namespace AutoKkutu.Modules.PathManager
 			try
 			{
 				PathListLock.EnterUpgradeableReadLock();
-				int NewPathCount = NewPathList.Count;
-				int InexistentPathCount = InexistentPathList.Count;
+				var NewPathCount = NewPathList.Count;
+				var InexistentPathCount = InexistentPathList.Count;
 				if (NewPathCount + InexistentPathCount == 0)
 					Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
 				else
 				{
 					Log.Debug(I18n.PathFinder_AutoDBUpdate_New, NewPathCount);
-					int AddedPathCount = AddNewPaths();
+					var AddedPathCount = AddNewPaths();
 
 					Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, InexistentPathCount);
 
-					int RemovedPathCount = RemoveInexistentPaths();
-					string result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddedPathCount, NewPathCount, RemovedPathCount, InexistentPathCount);
+					var RemovedPathCount = RemoveInexistentPaths();
+					var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddedPathCount, NewPathCount, RemovedPathCount, InexistentPathCount);
 
 					Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
 					return result;
@@ -175,7 +175,7 @@ namespace AutoKkutu.Modules.PathManager
 
 		private int AddNewPaths()
 		{
-			int count = 0;
+			var count = 0;
 			var listCopy = new List<string>(NewPathList);
 			try
 			{
@@ -187,7 +187,7 @@ namespace AutoKkutu.Modules.PathManager
 				PathListLock.ExitWriteLock();
 			}
 
-			foreach (string word in listCopy)
+			foreach (var word in listCopy)
 			{
 				WordFlags flags = CalcWordFlags(word);
 
@@ -211,7 +211,7 @@ namespace AutoKkutu.Modules.PathManager
 
 		private int RemoveInexistentPaths()
 		{
-			int count = 0;
+			var count = 0;
 			var listCopy = new List<string>(InexistentPathList);
 			try
 			{
@@ -223,7 +223,7 @@ namespace AutoKkutu.Modules.PathManager
 				PathListLock.ExitWriteLock();
 			}
 
-			foreach (string word in listCopy)
+			foreach (var word in listCopy)
 				try
 				{
 					count += DbConnection.RequireNotNull().DeleteWord(word);
@@ -261,11 +261,9 @@ namespace AutoKkutu.Modules.PathManager
 			// 앞말잇기 공격 노드
 			CheckNodePresence(null, word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags);
 
-			int wordLength = word.Length;
+			var wordLength = word.Length;
 			if (wordLength == 2)
-			{
 				flags |= WordFlags.KKT2;
-			}
 			if (wordLength > 2)
 			{
 				// 끄투 한방 노드
@@ -318,11 +316,9 @@ namespace AutoKkutu.Modules.PathManager
 			// 앞말잇기 공격 노드
 			NewAttackNode += Convert.ToInt32(CheckNodePresence("reverse attack", word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags, true));
 
-			int wordLength = word.Length;
+			var wordLength = word.Length;
 			if (word.Length == 2)
-			{
 				flags |= WordFlags.KKT2;
-			}
 			else if (wordLength > 2)
 			{
 				// 끄투 한방 노드
@@ -360,11 +356,9 @@ namespace AutoKkutu.Modules.PathManager
 			if (addIfInexistent && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(node) || nodeList == null)
 				return false;
 
-			bool exists = nodeList.Contains(node);
+			var exists = nodeList.Contains(node);
 			if (exists)
-			{
 				flags |= targetFlag;
-			}
 			else if (addIfInexistent && flags.HasFlag(targetFlag))
 			{
 				nodeList.Add(node);
@@ -478,15 +472,13 @@ namespace AutoKkutu.Modules.PathManager
 			if (wordList == null)
 				throw new ArgumentNullException(nameof(wordList));
 
-			bool onlineVerify = batchOptions.HasFlag(BatchJobOptions.VerifyBeforeAdd);
+			var onlineVerify = batchOptions.HasFlag(BatchJobOptions.VerifyBeforeAdd);
 			if (onlineVerify && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
-			{
 				// FIXME: Replace with event
 				// MessageBox.Show("끄투 사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", _namespace, MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
-			}
 
-			DatabaseEvents.TriggerDatabaseImportStart(new DatabaseImportEventArgs("Batch Add Words"));
+			new DatabaseImportEventArgs("Batch Add Words").TriggerDatabaseImportStart();
 
 			Log.Information("{0} elements queued.", wordList.Length);
 
@@ -494,16 +486,16 @@ namespace AutoKkutu.Modules.PathManager
 			{
 				BatchResult result = PerformBatchAddWord(wordList, onlineVerify);
 
-				string message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
+				var message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
 				Log.Information("Database Operation Complete: {0}", message);
-				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Add Word", message));
+				new DatabaseImportEventArgs("Batch Add Word", message).TriggerDatabaseImportDone();
 			});
 		}
 
 		private BatchResult PerformBatchAddWord(string[] wordlist, bool onlineVerify)
 		{
 			var result = new BatchResult();
-			foreach (string word in wordlist)
+			foreach (var word in wordlist)
 			{
 				if (string.IsNullOrWhiteSpace(word))
 					continue;
@@ -547,16 +539,16 @@ namespace AutoKkutu.Modules.PathManager
 			if (DbConnection == null || string.IsNullOrWhiteSpace(content))
 				return;
 
-			string[] NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
+			var NodeList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-			int SuccessCount = 0;
-			int DuplicateCount = 0;
-			int FailedCount = 0;
+			var SuccessCount = 0;
+			var DuplicateCount = 0;
+			var FailedCount = 0;
 
-			DatabaseEvents.TriggerDatabaseImportStart(new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node"));
+			new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node").TriggerDatabaseImportStart();
 
 			Log.Information("{0} elements queued.", NodeList.Length);
-			foreach (string node in NodeList)
+			foreach (var node in NodeList)
 			{
 				if (string.IsNullOrWhiteSpace(node))
 					continue;
@@ -564,9 +556,7 @@ namespace AutoKkutu.Modules.PathManager
 				try
 				{
 					if (remove)
-					{
 						SuccessCount += DeleteNode(node, type);
-					}
 					else if (AddNode(node, type))
 					{
 						Log.Information("Successfully add node {node}!", node[0]);
@@ -585,9 +575,9 @@ namespace AutoKkutu.Modules.PathManager
 				}
 			}
 
-			string message = $"{SuccessCount} succeed / {DuplicateCount} duplicated / {FailedCount} failed";
+			var message = $"{SuccessCount} succeed / {DuplicateCount} duplicated / {FailedCount} failed";
 			Log.Information("Database Operation Complete: {0}", message);
-			DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node", message));
+			new DatabaseImportEventArgs(remove ? "Batch Remove Node" : "Batch Add Node", message).TriggerDatabaseImportDone();
 		}
 
 		public void BatchRemoveWord(string[] wordlist)
@@ -595,14 +585,14 @@ namespace AutoKkutu.Modules.PathManager
 			if (wordlist == null)
 				throw new ArgumentNullException(nameof(wordlist));
 
-			DatabaseEvents.TriggerDatabaseImportStart(new DatabaseImportEventArgs("Batch Remove Word"));
+			new DatabaseImportEventArgs("Batch Remove Word").TriggerDatabaseImportStart();
 
 			Log.Information("{0} elements queued.", wordlist.Length);
 
 			Task.Run(() =>
 			{
 				int SuccessCount = 0, FailedCount = 0;
-				foreach (string word in wordlist)
+				foreach (var word in wordlist)
 				{
 					if (RemoveSingleWord(word))
 						SuccessCount++;
@@ -610,9 +600,9 @@ namespace AutoKkutu.Modules.PathManager
 						FailedCount++;
 				}
 
-				string message = $"{SuccessCount} deleted / {FailedCount} failed";
+				var message = $"{SuccessCount} deleted / {FailedCount} failed";
 				Log.Information("Batch remove operation complete: {0}", message);
-				DatabaseEvents.TriggerDatabaseImportDone(new DatabaseImportEventArgs("Batch Remove Word", message));
+				new DatabaseImportEventArgs("Batch Remove Word", message).TriggerDatabaseImportDone();
 
 				// FIXME: Replace with event
 				// MessageBox.Show($"성공적으로 작업을 수행했습니다. \n{message}", _namespace, MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -632,7 +622,7 @@ namespace AutoKkutu.Modules.PathManager
 			if (DbConnection == null || string.IsNullOrWhiteSpace(node))
 				return false;
 
-			bool result = false;
+			var result = false;
 
 			// 한방 단어
 			result |= types.HasFlag(NodeTypes.EndWord) && DbConnection.AddNode(node, DatabaseConstants.EndNodeIndexTableName);
@@ -672,7 +662,7 @@ namespace AutoKkutu.Modules.PathManager
 			if (DbConnection == null || string.IsNullOrWhiteSpace(node))
 				return -1;
 
-			int count = 0;
+			var count = 0;
 
 			// 한방 단어
 			if (types.HasFlag(NodeTypes.EndWord))

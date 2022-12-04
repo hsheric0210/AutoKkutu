@@ -1,7 +1,7 @@
 ﻿using System;
 using AutoKkutu.Constants;
 
-namespace AutoKkutu.Modules.AutoEnter
+namespace AutoKkutu.Modules.AutoEntering
 {
 	public sealed record AutoEnterParameter(bool DelayEnabled, int DelayInMillis, bool DelayPerCharEnabled, bool SimulateInput, PathFinderParameter PathFinderParams, string Content = "", int WordIndex = 0)
 	{

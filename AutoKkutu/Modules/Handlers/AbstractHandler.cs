@@ -4,7 +4,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 
-namespace AutoKkutu.Modules.HandlerManager.Handler
+namespace AutoKkutu.Modules.Handlers
 {
 	public abstract class AbstractHandler
 	{
@@ -35,8 +35,8 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				string display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", nameof(IsGameInProgress));
-				string height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", nameof(IsGameInProgress));
+				var display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", nameof(IsGameInProgress));
+				var height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", nameof(IsGameInProgress));
 				return string.IsNullOrWhiteSpace(display) ? !string.IsNullOrWhiteSpace(height) : !display.Equals("none", StringComparison.OrdinalIgnoreCase);
 			}
 		}
@@ -45,11 +45,11 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				string element = EvaluateJS("document.getElementsByClassName('game-input')[0]", nameof(IsMyTurn));
+				var element = EvaluateJS("document.getElementsByClassName('game-input')[0]", nameof(IsMyTurn));
 				if (string.Equals(element, "undefined", StringComparison.Ordinal))
 					return false;
 
-				string displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", nameof(IsMyTurn));
+				var displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", nameof(IsMyTurn));
 				return !string.IsNullOrWhiteSpace(displayOpt) && !displayOpt.Equals("none", StringComparison.Ordinal);
 			}
 		}
@@ -66,10 +66,10 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				string roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent", nameof(GameMode));
+				var roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent", nameof(GameMode));
 				if (!string.IsNullOrWhiteSpace(roomMode))
 				{
-					string trimmed = roomMode.Split('/')[0].Trim();
+					var trimmed = roomMode.Split('/')[0].Trim();
 					switch (trimmed[(trimmed.IndexOf(' ', StringComparison.Ordinal) + 1)..])
 					{
 						case "앞말잇기":
@@ -105,10 +105,10 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				string roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent", nameof(RoomInfo));
-				string roomLimit = EvaluateJS("document.getElementsByClassName('room-head-limit')[0].textContent", nameof(RoomInfo));
-				string roomRounds = EvaluateJS("document.getElementsByClassName('room-head-round')[0].textContent", nameof(RoomInfo));
-				string roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent", nameof(RoomInfo));
+				var roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent", nameof(RoomInfo));
+				var roomLimit = EvaluateJS("document.getElementsByClassName('room-head-limit')[0].textContent", nameof(RoomInfo));
+				var roomRounds = EvaluateJS("document.getElementsByClassName('room-head-round')[0].textContent", nameof(RoomInfo));
+				var roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent", nameof(RoomInfo));
 				return $"{roomMode} | {roomLimit} | {roomRounds} | {roomTime}"; // TODO: Change this to struct or record
 			}
 		}
@@ -117,7 +117,7 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				if (float.TryParse(EvaluateJS("document.querySelector('[class=\"graph jjo-turn-time\"] > [class=\"graph-bar\"]').textContent", nameof(TurnTime)).TrimEnd('초'), out float time))
+				if (float.TryParse(EvaluateJS("document.querySelector('[class=\"graph jjo-turn-time\"] > [class=\"graph-bar\"]').textContent", nameof(TurnTime)).TrimEnd('초'), out var time))
 					return time;
 				return 150;
 			}
@@ -127,7 +127,7 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				if (float.TryParse(EvaluateJS("document.querySelector('[class=\"graph jjo-round-time\"] > [class=\"graph-bar round-extreme\"]').textContent", nameof(RoundTime)).TrimEnd('초'), out float time))
+				if (float.TryParse(EvaluateJS("document.querySelector('[class=\"graph jjo-round-time\"] > [class=\"graph-bar round-extreme\"]').textContent", nameof(RoundTime)).TrimEnd('초'), out var time))
 					return time;
 				return 150;
 			}
@@ -137,8 +137,8 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 		{
 			get
 			{
-				string innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML", nameof(ExampleWord));
-				string content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(ExampleWord));
+				var innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML", nameof(ExampleWord));
+				var content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(ExampleWord));
 				return innerHTML.Contains("label", StringComparison.OrdinalIgnoreCase)
 					&& innerHTML.Contains("color", StringComparison.OrdinalIgnoreCase)
 					&& innerHTML.Contains("170,", StringComparison.Ordinal)
@@ -174,9 +174,9 @@ namespace AutoKkutu.Modules.HandlerManager.Handler
 			if (!RegisteredFunctionNames.ContainsKey(funcName))
 				RegisteredFunctionNames[funcName] = $"__{RandomUtils.GenerateRandomString(64, true)}";
 
-			string realFuncName = RegisteredFunctionNames[funcName];
+			var realFuncName = RegisteredFunctionNames[funcName];
 			if (EvaluateJSBool($"typeof {realFuncName} != 'function'")) // check if already registered
-				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out string error))
+				if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out var error))
 					Log.Error("Failed to register JavaScript function {funcName} : {error}", funcName, error);
 				else
 					Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", funcName, realFuncName);
