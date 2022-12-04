@@ -7,7 +7,7 @@ namespace AutoKkutu.Database.Extension
 {
 	public static class WordExtension
 	{
-		public static bool AddWord(this AbstractDatabaseConnection connection, string word, WordDbTypes flags)
+		public static bool AddWord(this AbstractDatabaseConnection connection, string word, WordFlags flags)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));

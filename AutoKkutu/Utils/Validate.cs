@@ -7,13 +7,6 @@ namespace AutoKkutu.Utils
 {
 	public static class Validate
 	{
-		public static CommonHandler RequireNotNull([NotNull] this CommonHandler? handler)
-		{
-			if (handler == null)
-				throw new InvalidOperationException(I18n.Validate_Handler);
-			return handler;
-		}
-
 		public static AbstractDatabaseConnection RequireNotNull([NotNull] this AbstractDatabaseConnection? handler)
 		{
 			if (handler == null)

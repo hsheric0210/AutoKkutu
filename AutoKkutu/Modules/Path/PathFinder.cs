@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace AutoKkutu.Modules.PathFinder
 {
 	[ModuleDependency(typeof(IPathManager))]
-	public class PathFinderCore
+	public class PathFinder : IPathFinder
 	{
 		private readonly IPathManager PathManager;
 
@@ -29,34 +29,20 @@ namespace AutoKkutu.Modules.PathFinder
 
 		public event EventHandler<PathUpdateEventArgs>? OnPathUpdated;
 
-		public PathFinderCore(IPathManager pathManager)
+		public PathFinder(IPathManager pathManager)
 		{
 			PathManager = pathManager;
 		}
 
-		// TODO: This method should located in caller site, not in this module
-		private void ApplyWordFilterFlags(ref PathFinderOptions flags)
+		public void Find(GameMode gameMode, PathFinderParameter parameter, WordPreference preference)
 		{
-			// Setup flag
-			if (GetConfig().EndWordEnabled && (flags.HasFlag(PathFinderOptions.ManualSearch) || PathManager.PreviousPath.Count > 0))  // 첫 턴 한방 방지
-				flags |= PathFinderOptions.UseEndWord;
-			else
-				flags &= ~PathFinderOptions.UseEndWord;
-			if (GetConfig().AttackWordAllowed)
-				flags |= PathFinderOptions.UseAttackWord;
-			else
-				flags &= ~PathFinderOptions.UseAttackWord;
-		}
-
-		public void Find(GameMode mode, PathFinderParameters param, WordPreference pref)
-		{
-			if (mode == GameMode.TypingBattle && !param.Options.HasFlag(PathFinderOptions.ManualSearch))
+			if (gameMode == GameMode.TypingBattle && !parameter.Options.HasFlag(PathFinderOptions.ManualSearch))
 				return;
 
 			try
 			{
-				PresentedWord word = param.Word;
-				if (!ConfigEnums.IsFreeMode(mode) && PathManager.GetEndNodeForMode(mode).Contains(word.Content) && (!word.CanSubstitution || PathManager.GetEndNodeForMode(mode).Contains(word.Substitution!)))
+				PresentedWord word = parameter.Word;
+				if (!ConfigEnums.IsFreeMode(gameMode) && PathManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || PathManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
 				{
 					// 진퇴양난
 					Log.Warning(I18n.PathFinderFailed_Endword);
@@ -68,12 +54,8 @@ namespace AutoKkutu.Modules.PathFinder
 				{
 					AutoKkutuMain.UpdateStatusMessage(StatusMessage.Searching);
 
-					// These two codes could be handled by CALLER, not PathFinder
-					ApplyWordFilterFlags(ref flags);
-					string missionFixChar = GetConfig().MissionAutoDetectionEnabled && missionChar != null ? missionChar : "";
-
 					// Enqueue search
-					FindInternal(word, mode, missionFixChar, pref, flags);
+					FindInternal(gameMode, parameter, preference);
 				}
 			}
 			catch (Exception ex)
@@ -82,7 +64,7 @@ namespace AutoKkutu.Modules.PathFinder
 			}
 		}
 
-		public void FindInternal(GameMode mode, PathFinderParameters param, WordPreference preference)
+		public void FindInternal(GameMode mode, PathFinderParameter param, WordPreference preference)
 		{
 			if (ConfigEnums.IsFreeMode(mode))
 			{
@@ -111,7 +93,7 @@ namespace AutoKkutu.Modules.PathFinder
 				IList<PathObject>? totalWordList = null;
 				try
 				{
-					totalWordList = DbConnection.FindWord(mode, param, preference);
+					totalWordList = PathManager.DbConnection.FindWord(mode, param, preference);
 					Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
@@ -152,7 +134,7 @@ namespace AutoKkutu.Modules.PathFinder
 
 		public void GenerateRandomPath(
 			GameMode mode,
-			PathFinderParameters param)
+			PathFinderParameter param)
 		{
 			string firstChar = mode == GameMode.LastAndFirstFree ? param.Word.Content : "";
 

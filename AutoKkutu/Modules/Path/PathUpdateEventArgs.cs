@@ -16,7 +16,7 @@ namespace AutoKkutu.Modules.PathFinder
 			get;
 		}
 
-		public PathFinderParameters Result
+		public PathFinderParameter Result
 		{
 			get;
 		}
@@ -31,7 +31,7 @@ namespace AutoKkutu.Modules.PathFinder
 			get;
 		}
 
-		public PathUpdateEventArgs(PathFinderParameters result, PathFindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0)
+		public PathUpdateEventArgs(PathFinderParameter result, PathFindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0)
 		{
 			Result = result;
 			ResultType = arg;

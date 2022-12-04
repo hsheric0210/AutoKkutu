@@ -72,7 +72,7 @@ namespace AutoKkutu.Utils
 							}
 
 							// Online verify
-							if (UseOnlineDB && !BatchJobUtils.CheckOnline(word.Trim()))
+							if (UseOnlineDB && !OnlineVerifyExtension.VerifyWordOnline(word.Trim()))
 							{
 								deletionList.Add(word);
 								continue;
@@ -147,7 +147,7 @@ namespace AutoKkutu.Utils
 
 				if (affected > 0)
 				{
-					Log.Information("Reset flags of {word} to {to}.", pair.Key, (WordDbTypes)pair.Value);
+					Log.Information("Reset flags of {word} to {to}.", pair.Key, (WordFlags)pair.Value);
 					Counter += affected;
 				}
 			}
@@ -193,7 +193,7 @@ namespace AutoKkutu.Utils
 
 		private static void VerifyWordFlags(string word, int currentFlags, IDictionary<string, int> correction)
 		{
-			WordDbTypes correctFlags = DatabaseUtils.GetFlags(word);
+			WordFlags correctFlags = DatabaseUtils.GetWordFlags(word);
 			int correctFlagsInt = (int)correctFlags;
 			if (correctFlagsInt != currentFlags)
 			{
@@ -245,7 +245,7 @@ namespace AutoKkutu.Utils
 			Log.Information("Updating node lists...");
 			try
 			{
-				PathManager.UpdateNodeLists(connection);
+				PathManager.LoadNodeLists(connection);
 				watch.Stop();
 				Log.Information("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 			}

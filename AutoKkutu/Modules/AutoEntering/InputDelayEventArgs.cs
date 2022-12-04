@@ -10,15 +10,15 @@ namespace AutoKkutu.Modules.AutoEnter
 			get;
 		}
 
-		public string? PathAttributes
+		public int WordIndex
 		{
 			get;
 		}
 
-		public InputDelayEventArgs(int delay, string? pathAttributes = null)
+		public InputDelayEventArgs(int delay, int wordIndex)
 		{
 			Delay = delay;
-			PathAttributes = pathAttributes;
+			WordIndex = wordIndex;
 		}
 	}
 }

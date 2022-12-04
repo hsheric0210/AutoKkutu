@@ -6,7 +6,7 @@ namespace AutoKkutu.Constants
 	/// 'flags' column of word entry in database
 	/// </summary>
 	[Flags]
-	public enum WordDbTypes
+	public enum WordFlags
 	{
 		None = 0,
 

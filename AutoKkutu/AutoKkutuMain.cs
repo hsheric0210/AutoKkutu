@@ -315,7 +315,7 @@ namespace AutoKkutu
 		{
 			if (InputSimulation.CanSimulateInput())
 			{
-				Task.Run(async () => await InputSimulationCore.PerformInputSimulation(message));
+				Task.Run(async () => await InputSimulation.PerformInputSimulation(message));
 			}
 			else
 			{
@@ -337,7 +337,7 @@ namespace AutoKkutu
 		private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 		{
 			Log.Information(I18n.Main_PathUpdateReceived);
-			PathFinderParameters path = args.Result;
+			PathFinderParameter path = args.Result;
 
 			bool autoEnter = Configuration.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderOptions.ManualSearch);
 

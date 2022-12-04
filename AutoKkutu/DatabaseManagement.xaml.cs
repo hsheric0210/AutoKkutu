@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using AutoKkutu.Constants;
+using AutoKkutu.Modules.PathManager;
 
 namespace AutoKkutu
 {
@@ -25,7 +26,7 @@ namespace AutoKkutu
 			Title = "Data-base Management";
 		}
 
-		public static void BatchWordJob(AbstractDatabase database, string content, BatchWordJobOptions mode, WordDbTypes flags)
+		public static void BatchWordJob(AbstractDatabase database, string content, BatchJobOptions mode, WordFlags flags)
 		{
 			if (database == null || string.IsNullOrWhiteSpace(content))
 				return;
@@ -33,7 +34,7 @@ namespace AutoKkutu
 			string[] wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 			AbstractDatabaseConnection connection = database.Connection;
-			if (mode.HasFlag(BatchWordJobOptions.Remove))
+			if (mode.HasFlag(BatchJobOptions.Remove))
 				connection.BatchRemoveWord(wordlist);
 			else
 				connection.BatchAddWord(wordlist, mode, flags);
@@ -114,64 +115,64 @@ namespace AutoKkutu
 
 		private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked ?? false);
 
-		private WordDbTypes GetBatchAddWordDatabaseAttributes()
+		private WordFlags GetBatchAddWordDatabaseAttributes()
 		{
-			WordDbTypes flags = WordDbTypes.None;
+			WordFlags flags = WordFlags.None;
 
 			// 한방 단어
 			if (Batch_EndWord.IsChecked ?? false)
-				flags |= WordDbTypes.EndWord;
+				flags |= WordFlags.EndWord;
 
 			// 공격 단어
 			if (Batch_AttackWord.IsChecked ?? false)
-				flags |= WordDbTypes.AttackWord;
+				flags |= WordFlags.AttackWord;
 
 			// 앞말잇기 한방 단어
 			if (Batch_Reverse_EndWord.IsChecked ?? false)
-				flags |= WordDbTypes.ReverseEndWord;
+				flags |= WordFlags.ReverseEndWord;
 
 			// 앞말잇기 공격 단어
 			if (Batch_Reverse_AttackWord.IsChecked ?? false)
-				flags |= WordDbTypes.ReverseAttackWord;
+				flags |= WordFlags.ReverseAttackWord;
 
 			// 가운뎃말잇기 한방 단어
 			if (Batch_Middle_EndWord.IsChecked ?? false)
-				flags |= WordDbTypes.MiddleEndWord;
+				flags |= WordFlags.MiddleEndWord;
 
 			// 가운뎃말잇기 공격 단어
 			if (Batch_Middle_AttackWord.IsChecked ?? false)
-				flags |= WordDbTypes.MiddleAttackWord;
+				flags |= WordFlags.MiddleAttackWord;
 
 			// 끄투 한방 단어
 			if (Batch_Kkutu_EndWord.IsChecked ?? false)
-				flags |= WordDbTypes.KkutuEndWord;
+				flags |= WordFlags.KkutuEndWord;
 
 			// 끄투 공격 단어
 			if (Batch_Kkutu_AttackWord.IsChecked ?? false)
-				flags |= WordDbTypes.KkutuAttackWord;
+				flags |= WordFlags.KkutuAttackWord;
 
 			// 쿵쿵따 한방 단어
 			if (Batch_KKT_EndWord.IsChecked ?? false)
-				flags |= WordDbTypes.KKTEndWord;
+				flags |= WordFlags.KKTEndWord;
 
 			// 쿵쿵따 공격 단어
 			if (Batch_KKT_AttackWord.IsChecked ?? false)
-				flags |= WordDbTypes.KKTAttackWord;
+				flags |= WordFlags.KKTAttackWord;
 
 			return flags;
 		}
 
-		private BatchWordJobOptions GetBatchWordJobFlags()
+		private BatchJobOptions GetBatchWordJobFlags()
 		{
-			BatchWordJobOptions mode = BatchWordJobOptions.None;
+			BatchJobOptions mode = BatchJobOptions.None;
 
 			// Remove
 			if (Batch_Remove.IsChecked ?? false)
-				mode |= BatchWordJobOptions.Remove;
+				mode |= BatchJobOptions.Remove;
 
 			// Verify-before-Add
 			if (Batch_Verify.IsChecked ?? false)
-				mode |= BatchWordJobOptions.VerifyBeforeAdd;
+				mode |= BatchJobOptions.VerifyBeforeAdd;
 
 			return mode;
 		}

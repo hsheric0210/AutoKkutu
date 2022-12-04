@@ -1,6 +1,7 @@
 ﻿using AutoKkutu.Constants;
 using AutoKkutu.Modules.HandlerManager.Handler;
 using AutoKkutu.Modules.PathManager;
+using AutoKkutu.Utils.Extension;
 using Serilog;
 using System;
 using System.Globalization;
@@ -11,9 +12,9 @@ using System.Threading.Tasks;
 namespace AutoKkutu.Modules.HandlerManager
 {
 	[ModuleDependency(typeof(IPathManager))]
-	public class HandlerManagerCore : IHandlerManager
+	public class HandlerManager : IHandlerManager
 	{
-		#region External-use properties
+		#region Game status properties
 		public PresentedWord? CurrentPresentedWord
 		{
 			get; private set;
@@ -23,6 +24,11 @@ namespace AutoKkutu.Modules.HandlerManager
 		{
 			get; private set;
 		}
+
+		public GameMode CurrentGameMode
+		{
+			get; private set;
+		} = GameMode.LastAndFirst;
 
 		public bool IsGameStarted
 		{
@@ -35,37 +41,32 @@ namespace AutoKkutu.Modules.HandlerManager
 		}
 
 		public int TurnTimeMillis => (int)(Math.Min(Handler.TurnTime, Handler.RoundTime) * 1000);
+
+		public bool ReturnMode
+		{
+			get; set;
+		}
 		#endregion
 
-		#region Internal-use fields
 		private AbstractHandler Handler = null!;
 
-		private Task? _mainHandlerManagerTask;
+		private Task? _primaryWatchdogTask;
 
 		private CancellationTokenSource? cancelTokenSrc;
 
+		#region Game state cache fields
 		private readonly int _checkgame_interval = 3000;
-
 		private readonly int _ingame_interval = 1;
-
-		private bool _isHandlerManagerStarted;
-
+		private bool _isWatchdogWokeUp;
 		private readonly string[] _wordCache = new string[6];
-
 		private int _roundIndexCache;
-
 		private string _unsupportedWordCache = "";
-
 		private string _exampleWordCache = "";
-
 		private string _currentPresentedWordCache = "";
-
-		private GameMode _gameModeCache = GameMode.LastAndFirst;
-
 		private string LastChat = "";
 		#endregion
 
-		#region Events
+		#region Game events
 		public event EventHandler? GameStarted;
 
 		public event EventHandler? GameEnded;
@@ -89,7 +90,7 @@ namespace AutoKkutu.Modules.HandlerManager
 
 		private readonly IPathManager PathManager;
 
-		public HandlerManagerCore(IPathManager pathManager, AbstractHandler handler)
+		public HandlerManager(IPathManager pathManager, AbstractHandler handler)
 		{
 			PathManager = pathManager;
 			Handler = handler;
@@ -106,45 +107,11 @@ namespace AutoKkutu.Modules.HandlerManager
 		// 	return null;
 		// }
 
-		public string GetID() => $"{Handler.HandlerName} - #{(_mainHandlerManagerTask == null ? "Global" : _mainHandlerManagerTask.Id.ToString(CultureInfo.InvariantCulture))}";
+		public string GetID() => $"{Handler.HandlerName} - #{(_primaryWatchdogTask == null ? "Global" : _primaryWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
-		#region Watchdog proc.
-		public void Start()
-		{
-			if (!_isHandlerManagerStarted)
-			{
-				_isHandlerManagerStarted = true;
+		#region Watchdog proc. helper methods
 
-				cancelTokenSrc = new CancellationTokenSource();
-				CancellationToken token = cancelTokenSrc.Token;
-
-				_mainHandlerManagerTask = new Task(async () => await HandlerManagerPrimary(token), token);
-				_mainHandlerManagerTask.Start();
-
-				Task.Run(async () => await HandlerManagerAssistant("History", UpdateWordHistory, token));
-				Task.Run(async () => await HandlerManagerAssistant("Round", UpdateRound, token));
-				Task.Run(async () => await HandlerManagerAssistant("Mission word", UpdateMissionWord, token));
-				Task.Run(async () => await HandlerManagerAssistant("Unsupported word", UpdateUnsupportedWord, token));
-				Task.Run(async () => await HandlerManagerAssistant("Example word", UpdateExample, token));
-				Task.Run(async () => await HandlerManagerGameMode(token));
-				Task.Run(async () => await AssistantHandlerManager("My turn", () => CheckTurn(), token));
-				Task.Run(async () => await HandlerManagerPresentWord(token));
-
-				Log.Information("HandlerManager threads are started.");
-			}
-		}
-
-		public void Stop()
-		{
-			if (_isHandlerManagerStarted)
-			{
-				Log.Information("HandlerManager stop requested.");
-				cancelTokenSrc?.Cancel();
-				_isHandlerManagerStarted = false;
-			}
-		}
-
-		private static async Task HandlerManager(Func<Task> repeatTask, Action<Exception> onException, CancellationToken cancelToken)
+		private static async Task WatchdogProc(Func<Task> repeatTask, Action<Exception> onException, CancellationToken cancelToken)
 		{
 			try
 			{
@@ -164,45 +131,81 @@ namespace AutoKkutu.Modules.HandlerManager
 					onException(ex);
 			}
 		}
-
-		private async Task HandlerManagerPrimary(CancellationToken cancelToken)
+		private async Task AssistantWatchdog(string watchdogName, Action action, CancellationToken cancelToken)
 		{
-			await HandlerManager(async () =>
+			await WatchdogProc(async () =>
+			{
+				if (IsGameStarted)
+				{
+					action();
+					await Task.Delay(_ingame_interval, cancelToken);
+				}
+				else
+				{
+					await Task.Delay(_checkgame_interval, cancelToken);
+				}
+			}, ex => Log.Error(ex, "{0}-watchdog task interrupted.", watchdogName), cancelToken);
+		}
+		#endregion
+
+		#region Watchdog proc.
+		public void Start()
+		{
+			if (!_isWatchdogWokeUp)
+			{
+				_isWatchdogWokeUp = true;
+
+				cancelTokenSrc = new CancellationTokenSource();
+				CancellationToken token = cancelTokenSrc.Token;
+
+				_primaryWatchdogTask = new Task(async () => await PrimaryWatchdog(token), token);
+				_primaryWatchdogTask.Start();
+
+				Task.Run(async () => await AssistantWatchdog("History", UpdateWordHistory, token));
+				Task.Run(async () => await AssistantWatchdog("Round", UpdateRound, token));
+				Task.Run(async () => await AssistantWatchdog("Mission word", UpdateMissionWord, token));
+				Task.Run(async () => await AssistantWatchdog("Unsupported word", UpdateUnsupportedWord, token));
+				Task.Run(async () => await AssistantWatchdog("Example word", UpdateExample, token));
+				Task.Run(async () => await GameModeWatchdog(token));
+				Task.Run(async () => await AssistantWatchdog("My turn", () => CheckTurn(), token));
+				Task.Run(async () => await PresentedWordGameMode(token));
+
+				Log.Information("Watchdog threads are started.");
+			}
+		}
+
+		public void Stop()
+		{
+			if (_isWatchdogWokeUp)
+			{
+				Log.Information("Watchdog stop requested.");
+				cancelTokenSrc?.Cancel();
+				_isWatchdogWokeUp = false;
+			}
+		}
+
+		private async Task PrimaryWatchdog(CancellationToken cancelToken)
+		{
+			await WatchdogProc(async () =>
 			{
 				CheckGameStarted();
 				await Task.Delay(IsGameStarted ? _ingame_interval : _checkgame_interval, cancelToken);
-			}, ex => Log.Error(ex, "Main HandlerManager task interrupted."), cancelToken);
+			}, ex => Log.Error(ex, "Primary watchdog task interrupted."), cancelToken);
 		}
 
-		private async Task AssistantHandlerManager(string HandlerManagerName, Action action, CancellationToken cancelToken)
+		private async Task GameModeWatchdog(CancellationToken cancelToken)
 		{
-			await HandlerManager(async () =>
-				{
-					if (IsGameStarted)
-					{
-						action();
-						await Task.Delay(_ingame_interval, cancelToken);
-					}
-					else
-					{
-						await Task.Delay(_checkgame_interval, cancelToken);
-					}
-				}, ex => Log.Error(ex, "{0} HandlerManager task interrupted.", HandlerManagerName), cancelToken);
-		}
-
-		private async Task HandlerManagerGameMode(CancellationToken cancelToken)
-		{
-			await HandlerManager(async () =>
+			await WatchdogProc(async () =>
 				{
 					UpdateGameMode();
 					await Task.Delay(_checkgame_interval, cancelToken);
-				}, ex => Log.Error(ex, "GameMode HandlerManager task interrupted."), cancelToken);
+				}, ex => Log.Error(ex, "GameMode watchdog task interrupted."), cancelToken);
 		}
 
 		// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
-		private async Task HandlerManagerPresentWord(CancellationToken cancelToken)
+		private async Task PresentedWordGameMode(CancellationToken cancelToken)
 		{
-			await HandlerManager(async () =>
+			await WatchdogProc(async () =>
 				{
 					if (AutoKkutuMain.Configuration.GameMode == GameMode.TypingBattle && IsGameStarted)
 					{
@@ -214,10 +217,8 @@ namespace AutoKkutu.Modules.HandlerManager
 					{
 						await Task.Delay(_checkgame_interval, cancelToken);
 					}
-				}, ex => Log.Error(ex, "Present word HandlerManager task interrupted."), cancelToken);
+				}, ex => Log.Error(ex, "Presented-word watchdog task interrupted."), cancelToken);
 		}
-
-		private async Task HandlerManagerAssistant(string HandlerManagerName, Action task, CancellationToken cancelToken) => await AssistantHandlerManager(HandlerManagerName, () => task.Invoke(), cancelToken);
 		#endregion
 
 		#region Game status update
@@ -284,13 +285,13 @@ namespace AutoKkutu.Modules.HandlerManager
 		}
 		#endregion
 
-		public bool IsValidPath(PathFinderParameters path)
+		public bool IsValidPath(PathFinderParameter path)
 		{
 			if (path.Options.HasFlag(PathFinderOptions.ManualSearch))
 				return true;
 
 			bool differentWord = CurrentPresentedWord != null && !path.Word.Equals(CurrentPresentedWord);
-			bool differentMissionChar = path.Options.HasFlag(PathFinderOptions.MissionWord) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+			bool differentMissionChar = path.Options.HasFlag(PathFinderOptions.MissionWordExists) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
 			if (IsMyTurn && (differentWord || differentMissionChar))
 			{
 				Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
@@ -322,12 +323,13 @@ namespace AutoKkutu.Modules.HandlerManager
 				{
 					Log.Information("Found previous word : {word}", word);
 
-					// This code could move to 'OnGameEnd'
 					if (!PathManager.NewPathList.Contains(word))
 						PathManager.NewPathList.Add(word);
-					//
 
-					PathManager.AddPreviousPath(word);
+					if (ReturnMode)
+						PathManager.ResetPreviousPath();
+					else
+						PathManager.AddPreviousPath(word);
 				}
 			}
 
@@ -379,7 +381,6 @@ namespace AutoKkutu.Modules.HandlerManager
 		/// <summary>
 		/// 라운드가 끝났을 때, 회색으로 옅게 제시되는 예시 단어를 읽어들입니다.
 		/// </summary>
-		/// <param name="HandlerManagerID">현재 와치독 스레드의 ID</param>
 		private void UpdateExample()
 		{
 			string example = Handler.ExampleWord;
@@ -409,9 +410,9 @@ namespace AutoKkutu.Modules.HandlerManager
 		private void UpdateGameMode()
 		{
 			GameMode gameMode = Handler.GameMode;
-			if (gameMode == _gameModeCache)
+			if (gameMode == CurrentGameMode)
 				return;
-			_gameModeCache = gameMode;
+			CurrentGameMode = gameMode;
 			Log.Information("Game mode change detected : {gameMode}", ConfigEnums.GetGameModeName(gameMode));
 			GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 		}
@@ -439,7 +440,7 @@ namespace AutoKkutu.Modules.HandlerManager
 			}
 			else  // 가끔가다가 서버 렉때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 그대로 넘어오는 경우가 왕왕 있음. 특히 양쪽이 오토 켜놓고 대결할 때.
 			{
-				var converted = PathManager.ConvertToPresentedWord(content);
+				var converted = CurrentGameMode.ConvertToPresentedWord(content);
 				if (converted == null)
 					return null;
 				primary = converted;
@@ -482,7 +483,7 @@ namespace AutoKkutu.Modules.HandlerManager
 			if (disposing)
 			{
 				cancelTokenSrc?.Dispose();
-				_mainHandlerManagerTask?.Dispose();
+				_primaryWatchdogTask?.Dispose();
 			}
 		}
 	}

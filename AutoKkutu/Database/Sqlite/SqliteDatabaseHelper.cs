@@ -85,7 +85,7 @@ namespace AutoKkutu.Database.SQLite
 
 		private static void ImportSingleWord(this AbstractDatabaseConnection destination, string word, int flags)
 		{
-			if (destination.AddWord(word, (WordDbTypes)flags))
+			if (destination.AddWord(word, (WordFlags)flags))
 				Log.Information("Imported word {word} with flags: {flags}", word, flags);
 			else
 				Log.Warning("Word {word} already exists in database.", word);
@@ -95,7 +95,7 @@ namespace AutoKkutu.Database.SQLite
 		{
 			// Legacy support
 			bool isEndWord = Convert.ToBoolean(isEndWordInt);
-			if (destination.AddWord(word, isEndWord ? WordDbTypes.EndWord : WordDbTypes.None))
+			if (destination.AddWord(word, isEndWord ? WordFlags.EndWord : WordFlags.None))
 				Log.Information("Imported word {word} {flags:l}", word, isEndWord ? "(EndWord)" : "");
 			else
 				Log.Warning("Word {word} already exists in database.", word);

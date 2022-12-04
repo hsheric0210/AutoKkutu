@@ -32,35 +32,35 @@ namespace AutoKkutu.Database.Extension
 			switch (mode)
 			{
 				case GameMode.FirstAndLast:
-					endWordFlag = (int)WordDbTypes.ReverseEndWord;
-					attackWordFlag = (int)WordDbTypes.ReverseAttackWord;
+					endWordFlag = (int)WordFlags.ReverseEndWord;
+					attackWordFlag = (int)WordFlags.ReverseAttackWord;
 					return;
 
 				case GameMode.MiddleAndFirst:
-					endWordFlag = (int)WordDbTypes.MiddleEndWord;
-					attackWordFlag = (int)WordDbTypes.MiddleAttackWord;
+					endWordFlag = (int)WordFlags.MiddleEndWord;
+					attackWordFlag = (int)WordFlags.MiddleAttackWord;
 					return;
 
 				case GameMode.Kkutu:
-					endWordFlag = (int)WordDbTypes.KkutuEndWord;
-					attackWordFlag = (int)WordDbTypes.KkutuAttackWord;
+					endWordFlag = (int)WordFlags.KkutuEndWord;
+					attackWordFlag = (int)WordFlags.KkutuAttackWord;
 					return;
 
 				case GameMode.KungKungTta:
-					endWordFlag = (int)WordDbTypes.KKTEndWord;
-					attackWordFlag = (int)WordDbTypes.KKTAttackWord;
+					endWordFlag = (int)WordFlags.KKTEndWord;
+					attackWordFlag = (int)WordFlags.KKTAttackWord;
 					return;
 			}
-			endWordFlag = (int)WordDbTypes.EndWord;
-			attackWordFlag = (int)WordDbTypes.AttackWord;
+			endWordFlag = (int)WordFlags.EndWord;
+			attackWordFlag = (int)WordFlags.AttackWord;
 		}
 
 		private static WordCategories QueryWordCategories(
 			string word,
-			WordDbTypes wordFlags,
+			WordFlags wordFlags,
 			string missionChar,
-			WordDbTypes endWordFlag,
-			WordDbTypes attackWordFlag,
+			WordFlags endWordFlag,
+			WordFlags attackWordFlag,
 			out int missionCharCount)
 		{
 			WordCategories category = WordCategories.None;
@@ -86,27 +86,25 @@ namespace AutoKkutu.Database.Extension
 		public static IList<PathObject> FindWord(
 			this AbstractDatabaseConnection connection,
 			GameMode mode,
-			PresentedWord word,
-			string missionChar,
-			WordPreference preference,
-			PathFinderOptions options)
+			PathFinderParameter parameter,
+			WordPreference preference)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			var result = new List<PathObject>();
 			SelectWordEndAttackFlags(mode, out int endWordFlag, out int attackWordFlag);
-			FindQuery query = connection.CreateQuery(mode, word, missionChar, endWordFlag, attackWordFlag, preference, options);
+			FindQuery query = connection.CreateQuery(mode, parameter.Word, parameter.MissionChar, endWordFlag, attackWordFlag, preference, parameter.Options);
 
 			foreach (WordModel found in connection.Query<WordModel>(query.Sql, new DynamicParameters(query.Parameters)))
 			{
 				string wordString = found.Word.Trim();
 				result.Add(new PathObject(wordString, QueryWordCategories(
 					 wordString,
-					(WordDbTypes)found.Flags,
-					missionChar,
-					(WordDbTypes)endWordFlag,
-					(WordDbTypes)attackWordFlag,
+					(WordFlags)found.Flags,
+					parameter.MissionChar,
+					(WordFlags)endWordFlag,
+					(WordFlags)attackWordFlag,
 					out int missionCharCount), missionCharCount));
 			}
 
@@ -149,7 +147,7 @@ namespace AutoKkutu.Database.Extension
 
 				// 쿵쿵따 모드에서는 쿵쿵따 전용 단어들만 추천
 				if (mode == GameMode.KungKungTta)
-					filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordDbTypes.KKT3} != 0)";
+					filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordFlags.KKT3} != 0)";
 			}
 			string orderPriority = $"({CreateWordPriorityFuncCall(connection, missionChar, preference, endWordFlag, attackWordFlag, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
