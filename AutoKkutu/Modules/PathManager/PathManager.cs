@@ -11,50 +11,49 @@ using System.Threading;
 
 namespace AutoKkutu.Modules.PathManager
 {
-	public class PathManagerCore : IPathManager
+	public class PathManager : IPathManager
 	{
-		/* Word lists */
+		private readonly AbstractDatabaseConnection DbConnection;
 
-		// TODO: Rename these from *WordList to *Nodes
 		public ICollection<string> AttackNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> EndNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> KKTAttackNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> KKTEndNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> KkutuAttackNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> KkutuEndNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> ReverseAttackNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		public ICollection<string> ReverseEndNodes
 		{
 			get; private set;
-		}
+		} = null!;
 
 		/* Path lists */
 
@@ -66,14 +65,19 @@ namespace AutoKkutu.Modules.PathManager
 
 		public ICollection<string> UnsupportedPathList { get; } = new HashSet<string>();
 
-		public readonly ReaderWriterLockSlim PathListLock = new();
-
-
-		public PathManagerCore(AbstractDatabaseConnection connection)
+		public ReaderWriterLockSlim PathListLock
 		{
+			get;
+		} = new();
+
+
+		public PathManager(AbstractDatabaseConnection connection)
+		{
+			this.DbConnection = connection;
+
 			try
 			{
-				UpdateNodeLists(connection);
+				UpdateNodeLists();
 			}
 			catch (Exception ex)
 			{
@@ -83,20 +87,21 @@ namespace AutoKkutu.Modules.PathManager
 			}
 		}
 
-		public void UpdateNodeLists(AbstractDatabaseConnection connection)
+		public void UpdateNodeLists()
 		{
-			AttackNodes = connection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
-			EndNodes = connection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
-			ReverseAttackNodes = connection.GetNodeList(DatabaseConstants.ReverseAttackNodeIndexTableName);
-			ReverseEndNodes = connection.GetNodeList(DatabaseConstants.ReverseEndNodeIndexTableName);
-			KkutuAttackNodes = connection.GetNodeList(DatabaseConstants.KkutuAttackNodeIndexTableName);
-			KkutuEndNodes = connection.GetNodeList(DatabaseConstants.KkutuEndNodeIndexTableName);
-			KKTAttackNodes = connection.GetNodeList(DatabaseConstants.KKTAttackNodeIndexTableName);
-			KKTEndNodes = connection.GetNodeList(DatabaseConstants.KKTEndNodeIndexTableName);
+			AttackNodes = DbConnection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
+			EndNodes = DbConnection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
+			ReverseAttackNodes = DbConnection.GetNodeList(DatabaseConstants.ReverseAttackNodeIndexTableName);
+			ReverseEndNodes = DbConnection.GetNodeList(DatabaseConstants.ReverseEndNodeIndexTableName);
+			KkutuAttackNodes = DbConnection.GetNodeList(DatabaseConstants.KkutuAttackNodeIndexTableName);
+			KkutuEndNodes = DbConnection.GetNodeList(DatabaseConstants.KkutuEndNodeIndexTableName);
+			KKTAttackNodes = DbConnection.GetNodeList(DatabaseConstants.KKTAttackNodeIndexTableName);
+			KKTEndNodes = DbConnection.GetNodeList(DatabaseConstants.KKTEndNodeIndexTableName);
 		}
 
 		/* Path-controlling */
 
+		// TODO: perform '리턴 모드' check by caller
 		public void AddPreviousPath(string word)
 		{
 			if (!string.IsNullOrWhiteSpace(word))
@@ -123,8 +128,9 @@ namespace AutoKkutu.Modules.PathManager
 
 		public string? UpdateDatabase()
 		{
-			if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
-				return null;
+			// fixme: this check should be performed by caller, not here.
+			//if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
+			//	return null;
 
 			Log.Debug(I18n.PathFinder_AutoDBUpdate);
 			try
@@ -177,7 +183,7 @@ namespace AutoKkutu.Modules.PathManager
 				try
 				{
 					Log.Debug(I18n.PathFinder_AddPath, word, flags);
-					if (AutoKkutuMain.Database.Connection.AddWord(word, flags))
+					if (DbConnection.AddWord(word, flags))
 					{
 						Log.Information(I18n.PathFinder_AddPath_Success, word);
 						count++;
@@ -209,7 +215,7 @@ namespace AutoKkutu.Modules.PathManager
 			foreach (string word in listCopy)
 				try
 				{
-					count += AutoKkutuMain.Database.Connection.RequireNotNull().DeleteWord(word);
+					count += DbConnection.RequireNotNull().DeleteWord(word);
 				}
 				catch (Exception ex)
 				{
@@ -221,30 +227,33 @@ namespace AutoKkutu.Modules.PathManager
 
 		/* Other utility things */
 
-		public bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false)
+		// TODO: Remove 'noteType' parameter, replace it with enum instead.
+		public bool CheckNodePresence(string? nodeType, string node, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false)
 		{
-			if (tryAdd && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(item) || nodeList == null)
+			if (tryAdd && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(node) || nodeList == null)
 				return false;
 
-			bool exists = nodeList.Contains(item);
+			bool exists = nodeList.Contains(node);
 			if (exists)
+			{
 				flags |= theFlag;
+			}
 			else if (tryAdd && flags.HasFlag(theFlag))
 			{
-				nodeList.Add(item);
-				Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, item));
+				nodeList.Add(node);
+				Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, node));
 				return true;
 			}
 			return false;
 		}
 
 		// TODO: Move to extension
-		public string? ConvertToPresentedWord(string path)
+		public string? ConvertToPresentedWord(GameMode mode, string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
 				throw new ArgumentException("Parameter is null or blank", nameof(path));
 
-			switch (AutoKkutuMain.Configuration.GameMode)
+			switch (mode)
 			{
 				case GameMode.LastAndFirst:
 				case GameMode.KungKungTta:
@@ -275,7 +284,8 @@ namespace AutoKkutu.Modules.PathManager
 			return null;
 		}
 
-		public IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList)
+		// 리턴 모드 검사를 여기서 하지 말고, PreviousPath에 단어들을 집어넣는 단계에서 행하는 것이 PreviousPath를 채우지 않기에 메모리 상으로도 더 이득이다.
+		public IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList/*, bool returnMode*/)
 		{
 			if (wordList is null)
 				throw new ArgumentNullException(nameof(wordList));
@@ -289,7 +299,7 @@ namespace AutoKkutu.Modules.PathManager
 						word.RemoveQueued = true;
 					if (UnsupportedPathList.Contains(word.Content))
 						word.Excluded = true;
-					else if (!AutoKkutuMain.Configuration.ReturnModeEnabled && PreviousPath.Contains(word.Content))
+					else if (PreviousPath.Contains(word.Content))
 						word.AlreadyUsed = true;
 					else
 						qualifiedList.Add(word);

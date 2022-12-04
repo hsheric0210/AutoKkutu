@@ -2,6 +2,7 @@
 using AutoKkutu.Modules.AutoEnter.HangulProcessing;
 using AutoKkutu.Modules.HandlerManager;
 using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,8 +11,8 @@ namespace AutoKkutu.Modules.AutoEnter
 	[ModuleDependency(typeof(IHandlerManager))]
 	public static class InputSimulation
 	{
-		private readonly IAutoEnter AutoEnter;
-		private readonly IHandlerManager Handler;
+		private static readonly Lazy<InputSimulationCore> _impl = new Lazy<InputSimulationCore>(() => new InputSimulationCore(AutoEnter.Instance, HandlerManager.Impl));
+		private static IInputSimulation Impl => _impl.Value;
 
 		public InputSimulationCore(IAutoEnter autoenter, IHandlerManager handler)
 		{

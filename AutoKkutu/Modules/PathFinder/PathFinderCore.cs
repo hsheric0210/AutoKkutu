@@ -1,4 +1,4 @@
-﻿using AutoKkutu.Constants;
+using AutoKkutu.Constants;
 using AutoKkutu.Database.Extension;
 using AutoKkutu.Modules.PathManager;
 using AutoKkutu.Utils;
@@ -13,12 +13,9 @@ using System.Threading.Tasks;
 namespace AutoKkutu.Modules.PathFinder
 {
 	[ModuleDependency(typeof(IPathManager))]
-	public class PathFinderCore : IPathFinder
+	public class PathFinderCore
 	{
 		private readonly IPathManager PathManager;
-
-		[Obsolete("Get rid of this method calls as much as possible")]
-		private Func<AutoKkutuConfiguration> GetConfig;
 
 		public IList<PathObject> DisplayList
 		{
@@ -32,10 +29,9 @@ namespace AutoKkutu.Modules.PathFinder
 
 		public event EventHandler<PathUpdateEventArgs>? OnPathUpdated;
 
-		public PathFinderCore(IPathManager pathManager, Func<AutoKkutuConfiguration> configSupplier)
+		public PathFinderCore(IPathManager pathManager)
 		{
 			PathManager = pathManager;
-			GetConfig = configSupplier;
 		}
 
 		// TODO: This method should located in caller site, not in this module
@@ -52,15 +48,17 @@ namespace AutoKkutu.Modules.PathFinder
 				flags &= ~PathFinderOptions.UseAttackWord;
 		}
 
-		public void Find(GameMode mode, PresentedWord? word, string? missionChar, WordPreference pref, PathFinderOptions flags)
+		public void Find(GameMode mode, PathFinderParameters param, WordPreference pref)
 		{
-			if (word == null || mode == GameMode.TypingBattle && !flags.HasFlag(PathFinderOptions.ManualSearch))
+			if (mode == GameMode.TypingBattle && !param.Options.HasFlag(PathFinderOptions.ManualSearch))
 				return;
 
 			try
 			{
-				if (!ConfigEnums.IsFreeMode(mode) && PathFindings.GetEndWordList(mode)?.Contains(word.Content) == true && (!word.CanSubstitution || PathFindings.GetEndWordList(mode)?.Contains(word.Substitution!) == true))
+				PresentedWord word = param.Word;
+				if (!ConfigEnums.IsFreeMode(mode) && PathManager.GetEndNodeForMode(mode).Contains(word.Content) && (!word.CanSubstitution || PathManager.GetEndNodeForMode(mode).Contains(word.Substitution!)))
 				{
+					// 진퇴양난
 					Log.Warning(I18n.PathFinderFailed_Endword);
 					// AutoKkutuMain.ResetPathList();
 					AutoKkutuMain.UpdateSearchState(null, true);
@@ -75,13 +73,7 @@ namespace AutoKkutu.Modules.PathFinder
 					string missionFixChar = GetConfig().MissionAutoDetectionEnabled && missionChar != null ? missionChar : "";
 
 					// Enqueue search
-					FindInternal(
-						mode,
-						word,
-						missionFixChar,
-						pref,
-						flags
-					);
+					FindInternal(word, mode, missionFixChar, pref, flags);
 				}
 			}
 			catch (Exception ex)
@@ -90,18 +82,16 @@ namespace AutoKkutu.Modules.PathFinder
 			}
 		}
 
-		public void FindInternal(GameMode mode, PresentedWord word, string missionChar, WordPreference preference, PathFinderOptions options)
+		public void FindInternal(GameMode mode, PathFinderParameters param, WordPreference preference)
 		{
-			if (word is null)
-				throw new ArgumentNullException(nameof(word));
-
 			if (ConfigEnums.IsFreeMode(mode))
 			{
-				GenerateRandomPath(mode, word, missionChar, options);
+				GenerateRandomPath(mode, param);
 				return;
 			}
 
-			PathFinderOptions flags = options;
+			PathFinderOptions flags = param.Options;
+			PresentedWord word = param.Word;
 			if (word.CanSubstitution)
 				Log.Information(I18n.PathFinder_FindPath_Substituation, word.Content, word.Substitution);
 			else
@@ -121,14 +111,14 @@ namespace AutoKkutu.Modules.PathFinder
 				IList<PathObject>? totalWordList = null;
 				try
 				{
-					totalWordList = AutoKkutuMain.Database.Connection.FindWord(mode, word, missionChar, preference, options);
+					totalWordList = DbConnection.FindWord(mode, param, preference);
 					Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 				}
 				catch (Exception e)
 				{
 					stopwatch.Stop();
 					Log.Error(e, I18n.PathFinder_FindPath_Error);
-					NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.Error, 0, 0, 0, flags));
+					NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Error, 0, 0, 0));
 					return;
 				}
 
@@ -148,7 +138,7 @@ namespace AutoKkutu.Modules.PathFinder
 				if (qualifiedWordList.Count == 0)
 				{
 					Log.Warning(I18n.PathFinder_FindPath_NotFound);
-					NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds), flags));
+					NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 					return;
 				}
 
@@ -156,30 +146,28 @@ namespace AutoKkutu.Modules.PathFinder
 				QualifiedList = qualifiedWordList;
 
 				Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, stopwatch.ElapsedMilliseconds);
-				NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds), flags));
+				NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 			});
 		}
 
 		public void GenerateRandomPath(
 			GameMode mode,
-			PresentedWord word,
-			string missionChar,
-			PathFinderOptions options)
+			PathFinderParameters param)
 		{
-			string firstChar = mode == GameMode.LastAndFirstFree ? word.Content : "";
+			string firstChar = mode == GameMode.LastAndFirstFree ? param.Word.Content : "";
 
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 			DisplayList = new List<PathObject>();
 			var random = new Random();
 			int len = random.Next(64, 256);
-			if (!string.IsNullOrWhiteSpace(missionChar))
-				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random) + new string(missionChar[0], len) + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random), WordCategories.None, len));
+			if (!string.IsNullOrWhiteSpace(param.MissionChar))
+				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random) + new string(param.MissionChar[0], len) + RandomUtils.GenerateRandomString(random.Next(16, 64), false, random), WordCategories.None, len));
 			for (int i = 0; i < 10; i++)
 				DisplayList.Add(new PathObject(firstChar + RandomUtils.GenerateRandomString(len, false, random), WordCategories.None, 0));
 			stopwatch.Stop();
 			QualifiedList = new List<PathObject>(DisplayList);
-			NotifyPathUpdate(new PathUpdateEventArgs(word, missionChar, PathFindResult.Found, DisplayList.Count, DisplayList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds), options));
+			NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Found, DisplayList.Count, DisplayList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 		}
 
 		private void NotifyPathUpdate(PathUpdateEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);

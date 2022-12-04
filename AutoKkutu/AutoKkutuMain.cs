@@ -2,6 +2,7 @@
 using AutoKkutu.Database;
 using AutoKkutu.Modules.AutoEnter;
 using AutoKkutu.Modules.HandlerManager;
+using AutoKkutu.Modules.HandlerManager.Handler;
 using AutoKkutu.Modules.PathFinder;
 using AutoKkutu.Modules.PathManager;
 using AutoKkutu.Utils;
@@ -312,15 +313,14 @@ namespace AutoKkutu
 
 		public static void SendMessage(string message)
 		{
-			CommonHandler handler = Handler.RequireNotNull();
-			if (InputSimulationCore.CanSimulateInput())
+			if (InputSimulation.CanSimulateInput())
 			{
 				Task.Run(async () => await InputSimulationCore.PerformInputSimulation(message));
 			}
 			else
 			{
-				handler.UpdateChat(message);
-				handler.ClickSubmitButton();
+				Handler.UpdateChat(message);
+				Handler.ClickSubmitButton();
 			}
 			InputStopwatch.Restart();
 		}

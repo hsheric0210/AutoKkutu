@@ -1,16 +1,16 @@
 ﻿using AutoKkutu.Constants;
-using AutoKkutu.Database;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace AutoKkutu.Modules.PathManager
 {
 	public interface IPathManager
 	{
-		ICollection<string>? AttackNodes
+		ICollection<string> AttackNodes
 		{
 			get;
 		}
-		ICollection<string>? EndNodes
+		ICollection<string> EndNodes
 		{
 			get;
 		}
@@ -18,19 +18,19 @@ namespace AutoKkutu.Modules.PathManager
 		{
 			get;
 		}
-		ICollection<string>? KKTAttackNodes
+		ICollection<string> KKTAttackNodes
 		{
 			get;
 		}
-		ICollection<string>? KKTEndNodes
+		ICollection<string> KKTEndNodes
 		{
 			get;
 		}
-		ICollection<string>? KkutuAttackNodes
+		ICollection<string> KkutuAttackNodes
 		{
 			get;
 		}
-		ICollection<string>? KkutuEndNodes
+		ICollection<string> KkutuEndNodes
 		{
 			get;
 		}
@@ -38,15 +38,19 @@ namespace AutoKkutu.Modules.PathManager
 		{
 			get;
 		}
+		ReaderWriterLockSlim PathListLock
+		{
+			get;
+		}
 		ICollection<string> PreviousPath
 		{
 			get;
 		}
-		ICollection<string>? ReverseAttackNodes
+		ICollection<string> ReverseAttackNodes
 		{
 			get;
 		}
-		ICollection<string>? ReverseEndNodes
+		ICollection<string> ReverseEndNodes
 		{
 			get;
 		}
@@ -57,12 +61,12 @@ namespace AutoKkutu.Modules.PathManager
 
 		void AddPreviousPath(string word);
 		void AddToUnsupportedWord(string word, bool isNonexistent);
-		bool CheckNodePresence(string? nodeType, string item, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false);
-		string? ConvertToPresentedWord(string path);
+		bool CheckNodePresence(string? nodeType, string node, ICollection<string>? nodeList, WordDbTypes theFlag, ref WordDbTypes flags, bool tryAdd = false);
+		string? ConvertToPresentedWord(GameMode mode, string path);
 		IList<PathObject> CreateQualifiedWordList(IList<PathObject> wordList);
 		ICollection<string> GetEndNodeForMode(GameMode mode);
 		void ResetPreviousPath();
 		string? UpdateDatabase();
-		void UpdateNodeLists(AbstractDatabaseConnection connection);
+		void UpdateNodeLists();
 	}
 }
