@@ -1,9 +1,4 @@
 ﻿using AutoKkutuLib.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib.Utils.Extension;
 public static class GameModeExtension
@@ -43,4 +38,6 @@ public static class GameModeExtension
 
 		return null;
 	}
+
+	public static bool IsFreeMode(this GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
 }

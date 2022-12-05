@@ -1,7 +1,4 @@
 ﻿using AutoKkutuLib.Constants;
-using AutoKkutuLib.Modules;
-using System;
-using System.Collections.Generic;
 
 namespace AutoKkutuLib.Modules.AutoEntering;
 public interface IAutoEnter

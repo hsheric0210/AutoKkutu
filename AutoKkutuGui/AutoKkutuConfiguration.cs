@@ -175,5 +175,4 @@ public static class ConfigEnums
 		_ => null,
 	};
 
-	public static bool IsFreeMode(GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AutoKkutuLib.Utils.Hangul;
+﻿namespace AutoKkutuLib.Utils.Hangul;
 
 public sealed record HangulSplitted(bool IsHangul, char? InitialConsonant = null, char? Medial = null, char FinalConsonant = ' ')
 {

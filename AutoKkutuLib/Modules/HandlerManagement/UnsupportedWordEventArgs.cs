@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Modules.HandlerManagement;
+﻿namespace AutoKkutuLib.Modules.HandlerManagement;
 
 public class UnsupportedWordEventArgs : EventArgs
 {

@@ -5,12 +5,7 @@ using AutoKkutuLib.Modules.Path;
 using AutoKkutuLib.Utils.Extension;
 using Dapper;
 using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace AutoKkutuLib.Utils;
 
@@ -79,13 +74,13 @@ public static partial class DatabaseCheckUtils
 						}
 
 						// Check WordIndex tag
-						VerifyWordIndexes(DatabaseConstants.WordIndexColumnName, word, element.WordIndex, WordNodeExtension.GetLaFHeadNode, wordIndexCorrection);
+						VerifyWordIndexes(DatabaseConstants.WordIndexColumnName, word, element.WordIndex, WordToNodeExtension.GetLaFHeadNode, wordIndexCorrection);
 
 						// Check ReverseWordIndex tag
-						VerifyWordIndexes(DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, WordNodeExtension.GetFaLHeadNode, reverseWordIndexCorrection);
+						VerifyWordIndexes(DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, WordToNodeExtension.GetFaLHeadNode, reverseWordIndexCorrection);
 
 						// Check KkutuIndex tag
-						VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, WordNodeExtension.GetKkutuHeadNode, kkutuIndexCorrection);
+						VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, WordToNodeExtension.GetKkutuHeadNode, kkutuIndexCorrection);
 
 						// Check Flags
 						VerifyWordFlags(word, element.Flags, flagCorrection);
@@ -245,7 +240,7 @@ public static partial class DatabaseCheckUtils
 		Log.Information("Updating node lists...");
 		try
 		{
-			PathManager.LoadNodeLists(connection);
+			WordBatchJob.LoadNodeLists(connection);
 			watch.Stop();
 			Log.Information("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 		}

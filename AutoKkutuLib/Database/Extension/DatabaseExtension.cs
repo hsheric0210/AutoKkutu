@@ -1,7 +1,5 @@
-﻿using AutoKkutuLib.Database;
-using Dapper;
+﻿using Dapper;
 using Serilog;
-using System;
 using System.Data;
 
 namespace AutoKkutuLib.Database.Extension;

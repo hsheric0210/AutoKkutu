@@ -1,5 +1,4 @@
-﻿using AutoKkutu.Modules.HandlerManager.Handler;
-using AutoKkutuLib.Constants;
+﻿using AutoKkutuLib.Constants;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Modules.AutoEntering;
 using AutoKkutuLib.Modules.HandlerManagement;
@@ -197,7 +196,7 @@ public static class AutoKkutuMain
 			Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 			watch.Restart();
-			PathManager.Initialize();
+			WordBatchJob.Initialize();
 			Log.Information(I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
 
 			watch.Stop();
@@ -381,11 +380,11 @@ public static class AutoKkutuMain
 	{
 		UpdateSearchState(null, false);
 		// ResetPathList();
-		PathManager.UnsupportedPathList.Clear();
+		WordBatchJob.UnsupportedPathList.Clear();
 		if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnGameEnd)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-			var result = PathManager.UpdateDatabase();
+			var result = WordBatchJob.UpdateDatabase();
 			if (string.IsNullOrEmpty(result))
 				UpdateStatusMessage(StatusMessage.Wait);
 			else
@@ -440,13 +439,13 @@ public static class AutoKkutuMain
 			Log.Warning(I18n.Main_UnsupportedWord_Inexistent, word);
 		else
 			Log.Warning(I18n.Main_UnsupportedWord_Existent, word);
-		PathManager.AddToUnsupportedWord(word, isInexistent);
+		WordBatchJob.AddToUnsupportedWord(word, isInexistent);
 	}
 
 	private static void OnRoundChange(object? sender, EventArgs e)
 	{
 		if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnRoundEnd)
-			PathManager.UpdateDatabase();
+			WordBatchJob.UpdateDatabase();
 	}
 
 	private static void OnTypingWordPresented(object? sender, WordPresentEventArgs args)

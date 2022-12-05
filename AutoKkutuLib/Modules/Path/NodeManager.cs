@@ -1,15 +1,9 @@
 ﻿using AutoKkutuLib.Constants;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Modules;
-using AutoKkutuLib.Utils;
 using AutoKkutuLib.Utils.Extension;
 using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib.Modules.Path;
 
@@ -92,6 +86,13 @@ public class NodeManager
 	}
 	#endregion
 
+	public ICollection<string> GetEndNodeForMode(GameMode mode) => mode switch
+	{
+		GameMode.FirstAndLast => ReverseEndNodes,
+		GameMode.Kkutu => KkutuEndNodes,
+		_ => EndNodes,
+	};
+
 	#region Node list access/update
 	/// <summary>
 	/// Calculate the word flags by node lists
@@ -105,16 +106,16 @@ public class NodeManager
 		WordFlags flags = WordFlags.None;
 
 		// 한방 노드
-		CheckNodePresence(null, word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags);
+		CheckWordNode(word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags);
 
 		// 공격 노드
-		CheckNodePresence(null, word.GetLaFTailNode(), AttackNodes, WordFlags.AttackWord, ref flags);
+		CheckWordNode(word.GetLaFTailNode(), AttackNodes, WordFlags.AttackWord, ref flags);
 
 		// 앞말잇기 한방 노드
-		CheckNodePresence(null, word.GetFaLTailNode(), ReverseEndNodes, WordFlags.ReverseEndWord, ref flags);
+		CheckWordNode(word.GetFaLTailNode(), ReverseEndNodes, WordFlags.ReverseEndWord, ref flags);
 
 		// 앞말잇기 공격 노드
-		CheckNodePresence(null, word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags);
+		CheckWordNode(word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags);
 
 		var wordLength = word.Length;
 		if (wordLength == 2)
@@ -122,29 +123,29 @@ public class NodeManager
 		if (wordLength > 2)
 		{
 			// 끄투 한방 노드
-			CheckNodePresence(null, word.GetKkutuTailNode(), KkutuEndNodes, WordFlags.KkutuEndWord, ref flags);
+			CheckWordNode(word.GetKkutuTailNode(), KkutuEndNodes, WordFlags.KkutuEndWord, ref flags);
 
 			// 끄투 공격 노드
-			CheckNodePresence(null, word.GetKkutuTailNode(), KkutuAttackNodes, WordFlags.KkutuAttackWord, ref flags);
+			CheckWordNode(word.GetKkutuTailNode(), KkutuAttackNodes, WordFlags.KkutuAttackWord, ref flags);
 
 			if (wordLength == 3)
 			{
 				flags |= WordFlags.KKT3;
 
 				// 쿵쿵따 한방 노드
-				CheckNodePresence(null, word.GetLaFTailNode(), KKTEndNodes, WordFlags.KKTEndWord, ref flags);
+				CheckWordNode(word.GetLaFTailNode(), KKTEndNodes, WordFlags.KKTEndWord, ref flags);
 
 				// 쿵쿵따 공격 노드
-				CheckNodePresence(null, word.GetLaFTailNode(), KKTAttackNodes, WordFlags.KKTAttackWord, ref flags);
+				CheckWordNode(word.GetLaFTailNode(), KKTAttackNodes, WordFlags.KKTAttackWord, ref flags);
 			}
 
 			if (wordLength % 2 == 1)
 			{
 				// 가운뎃말잇기 한방 노드
-				CheckNodePresence(null, word.GetMaFTailNode(), EndNodes, WordFlags.MiddleEndWord, ref flags);
+				CheckWordNode(word.GetMaFTailNode(), EndNodes, WordFlags.MiddleEndWord, ref flags);
 
 				// 가운뎃말잇기 공격 노드
-				CheckNodePresence(null, word.GetMaFTailNode(), AttackNodes, WordFlags.MiddleAttackWord, ref flags);
+				CheckWordNode(word.GetMaFTailNode(), AttackNodes, WordFlags.MiddleAttackWord, ref flags);
 			}
 		}
 		return flags;
@@ -160,16 +161,16 @@ public class NodeManager
 			throw new ArgumentException(null, nameof(word));
 
 		// 한방 노드
-		NewEndNode += Convert.ToInt32(CheckNodePresence("end", word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags, true));
+		NewEndNode += Convert.ToInt32(UpdateNodeListByWord("end", word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags));
 
 		// 공격 노드
-		NewAttackNode += Convert.ToInt32(CheckNodePresence("attack", word.GetLaFTailNode(), AttackNodes, WordFlags.AttackWord, ref flags, true));
+		NewAttackNode += Convert.ToInt32(UpdateNodeListByWord("attack", word.GetLaFTailNode(), AttackNodes, WordFlags.AttackWord, ref flags));
 
 		// 앞말잇기 한방 노드
-		NewEndNode += Convert.ToInt32(CheckNodePresence("reverse end", word.GetFaLTailNode(), ReverseEndNodes, WordFlags.ReverseEndWord, ref flags, true));
+		NewEndNode += Convert.ToInt32(UpdateNodeListByWord("reverse end", word.GetFaLTailNode(), ReverseEndNodes, WordFlags.ReverseEndWord, ref flags));
 
 		// 앞말잇기 공격 노드
-		NewAttackNode += Convert.ToInt32(CheckNodePresence("reverse attack", word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags, true));
+		NewAttackNode += Convert.ToInt32(UpdateNodeListByWord("reverse attack", word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags));
 
 		var wordLength = word.Length;
 		if (word.Length == 2)
@@ -177,44 +178,55 @@ public class NodeManager
 		else if (wordLength > 2)
 		{
 			// 끄투 한방 노드
-			NewEndNode += Convert.ToInt32(CheckNodePresence("kkutu end", word.GetKkutuTailNode(), KkutuEndNodes, WordFlags.KkutuEndWord, ref flags, true));
+			NewEndNode += Convert.ToInt32(UpdateNodeListByWord("kkutu end", word.GetKkutuTailNode(), KkutuEndNodes, WordFlags.KkutuEndWord, ref flags));
 			NewEndNode++;
 
 			// 끄투 공격 노드
-			NewAttackNode += Convert.ToInt32(CheckNodePresence("kkutu attack", word.GetKkutuTailNode(), KkutuAttackNodes, WordFlags.KkutuAttackWord, ref flags, true));
+			NewAttackNode += Convert.ToInt32(UpdateNodeListByWord("kkutu attack", word.GetKkutuTailNode(), KkutuAttackNodes, WordFlags.KkutuAttackWord, ref flags));
 
 			if (wordLength == 3)
 			{
 				flags |= WordFlags.KKT3;
 
 				// 쿵쿵따 한방 노드
-				NewEndNode += Convert.ToInt32(CheckNodePresence("kungkungtta end", word.GetLaFTailNode(), KKTEndNodes, WordFlags.EndWord, ref flags, true));
+				NewEndNode += Convert.ToInt32(UpdateNodeListByWord("kungkungtta end", word.GetLaFTailNode(), KKTEndNodes, WordFlags.EndWord, ref flags));
 
 				// 쿵쿵따 공격 노드
-				NewAttackNode += Convert.ToInt32(CheckNodePresence("kungkungtta attack", word.GetLaFTailNode(), KKTAttackNodes, WordFlags.AttackWord, ref flags, true));
+				NewAttackNode += Convert.ToInt32(UpdateNodeListByWord("kungkungtta attack", word.GetLaFTailNode(), KKTAttackNodes, WordFlags.AttackWord, ref flags));
 			}
 
 			if (wordLength % 2 == 1)
 			{
 				// 가운뎃말잇기 한방 노드
-				NewEndNode += Convert.ToInt32(CheckNodePresence("middle end", word.GetMaFTailNode(), EndNodes, WordFlags.MiddleEndWord, ref flags, true));
+				NewEndNode += Convert.ToInt32(UpdateNodeListByWord("middle end", word.GetMaFTailNode(), EndNodes, WordFlags.MiddleEndWord, ref flags));
 
 				// 가운뎃말잇기 공격 노드
-				NewAttackNode += Convert.ToInt32(CheckNodePresence("middle attack", word.GetMaFTailNode(), AttackNodes, WordFlags.MiddleAttackWord, ref flags, true));
+				NewAttackNode += Convert.ToInt32(UpdateNodeListByWord("middle attack", word.GetMaFTailNode(), AttackNodes, WordFlags.MiddleAttackWord, ref flags));
 			}
 		}
 	}
 
-	// TODO: Remove 'noteType' parameter, replace it with enum instead.
-	public bool CheckNodePresence(string? nodeType, string node, ICollection<string>? nodeList, WordFlags targetFlag, ref WordFlags flags, bool addIfInexistent = false)
+	/// <summary>
+	/// nodeList -> node
+	/// </summary>
+	private void CheckWordNode(string node, ICollection<string> nodeList, WordFlags targetFlag, ref WordFlags flags)
 	{
-		if (addIfInexistent && string.IsNullOrEmpty(nodeType) || string.IsNullOrWhiteSpace(node) || nodeList == null)
+		if (string.IsNullOrWhiteSpace(node))
+			return;
+
+		if (nodeList.Contains(node))
+			flags |= targetFlag;
+	}
+
+	/// <summary>
+	/// node -> nodeList
+	/// </summary>
+	private bool UpdateNodeListByWord(string nodeType, string node, ICollection<string> nodeList, WordFlags targetFlag, ref WordFlags flags)
+	{
+		if (string.IsNullOrWhiteSpace(node) || string.IsNullOrEmpty(nodeType))
 			return false;
 
-		var exists = nodeList.Contains(node);
-		if (exists)
-			flags |= targetFlag;
-		else if (addIfInexistent && flags.HasFlag(targetFlag))
+		if (!nodeList.Contains(node) && flags.HasFlag(targetFlag))
 		{
 			nodeList.Add(node);
 			Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, node));
@@ -224,47 +236,37 @@ public class NodeManager
 	}
 	#endregion
 
-	#region Node addition/removal
+	#region Node addition
 	/// <summary>
 	/// 데이터베이스에 노드를 추가합니다.
 	/// </summary>
 	/// <param name="node">추가할 노드</param>
 	/// <param name="types">추가할 노드의 속성들</param>
 	/// <returns>데이터베이스에 추가된 노드의 총 갯수</returns>
-	public bool AddNode(string node, NodeTypes types)
+	public int AddNode(string node, NodeTypes types)
 	{
-		if (DbConnection == null || string.IsNullOrWhiteSpace(node))
-			return false;
+		if (DbConnection is null || string.IsNullOrWhiteSpace(node))
+			return 0;
 
-		var result = false;
+		var affected = 0;
 
-		// 한방 단어
-		result |= types.HasFlag(NodeTypes.EndWord) && DbConnection.AddNode(node, DatabaseConstants.EndNodeIndexTableName);
 
-		// 공격 단어
-		result |= types.HasFlag(NodeTypes.AttackWord) && DbConnection.AddNode(node, DatabaseConstants.AttackNodeIndexTableName);
+		affected += AddNodeInternal(node, types, NodeTypes.EndWord); // 한방 단어
+		affected += AddNodeInternal(node, types, NodeTypes.AttackWord); // 공격 단어
+		affected += AddNodeInternal(node, types, NodeTypes.ReverseEndWord); // 앞말잇기 한방 단어
+		affected += AddNodeInternal(node, types, NodeTypes.ReverseAttackWord); // 앞말잇기 공격 단어
+		affected += AddNodeInternal(node, types, NodeTypes.KkutuEndWord); // 끄투 한방 단어
+		affected += AddNodeInternal(node, types, NodeTypes.KkutuAttackWord); // 끄투 공격 단어
+		affected += AddNodeInternal(node, types, NodeTypes.KKTEndWord); // 쿵쿵따 한방 단어
+		affected += AddNodeInternal(node, types, NodeTypes.KKTAttackWord); // 쿵쿵따 공격 단어
 
-		// 앞말잇기 한방 단어
-		result |= types.HasFlag(NodeTypes.ReverseEndWord) && DbConnection.AddNode(node, DatabaseConstants.ReverseEndNodeIndexTableName);
-
-		// 앞말잇기 공격 단어
-		result |= types.HasFlag(NodeTypes.ReverseAttackWord) && DbConnection.AddNode(node, DatabaseConstants.ReverseAttackNodeIndexTableName);
-
-		// 끄투 한방 단어
-		result |= types.HasFlag(NodeTypes.KkutuEndWord) && DbConnection.AddNode(node, DatabaseConstants.KkutuEndNodeIndexTableName);
-
-		// 끄투 공격 단어
-		result |= types.HasFlag(NodeTypes.KkutuAttackWord) && DbConnection.AddNode(node, DatabaseConstants.KkutuAttackNodeIndexTableName);
-
-		// 쿵쿵따 한방 단어
-		result |= types.HasFlag(NodeTypes.KKTEndWord) && DbConnection.AddNode(node, DatabaseConstants.KKTEndNodeIndexTableName);
-
-		// 쿵쿵따 공격 단어
-		result |= types.HasFlag(NodeTypes.KKTAttackWord) && DbConnection.AddNode(node, DatabaseConstants.KKTAttackNodeIndexTableName);
-
-		return result;
+		return affected;
 	}
 
+	private int AddNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => nodeTypes.HasFlag(targetNodeType) ? Convert.ToInt32(DbConnection.AddNode(node, targetNodeType)) : 0;
+	#endregion
+
+	#region Node deletion
 	/// <summary>
 	/// 데이터베이스에서 노드를 삭제합니다.
 	/// </summary>
@@ -276,41 +278,21 @@ public class NodeManager
 		if (DbConnection == null || string.IsNullOrWhiteSpace(node))
 			return -1;
 
-		var count = 0;
+		var affected = 0;
 
-		// 한방 단어
-		if (types.HasFlag(NodeTypes.EndWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.EndNodeIndexTableName);
+		
+		affected += DeleteNodeInternal(node, types, NodeTypes.EndWord); // 한방 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.AttackWord); // 공격 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.ReverseEndWord); // 앞말잇기 한방 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.ReverseAttackWord); // 앞말잇기 공격 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.KkutuEndWord); // 끄투 한방 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.KkutuAttackWord); // 끄투 공격 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.KKTEndWord); // 쿵쿵따 한방 단어
+		affected += DeleteNodeInternal(node, types, NodeTypes.KKTAttackWord); // 쿵쿵따 공격 단어
 
-		// 공격 단어
-		if (types.HasFlag(NodeTypes.AttackWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.AttackNodeIndexTableName);
-
-		// 앞말잇기 한방 단어
-		if (types.HasFlag(NodeTypes.ReverseEndWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.ReverseEndNodeIndexTableName);
-
-		// 앞말잇기 공격 단어
-		if (types.HasFlag(NodeTypes.ReverseAttackWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.ReverseAttackNodeIndexTableName);
-
-		// 끄투 한방 단어
-		if (types.HasFlag(NodeTypes.KkutuEndWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.KkutuEndNodeIndexTableName);
-
-		// 끄투 공격 단어
-		if (types.HasFlag(NodeTypes.KkutuAttackWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.KkutuAttackNodeIndexTableName);
-
-		// 쿵쿵따 한방 단어
-		if (types.HasFlag(NodeTypes.KKTEndWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.KKTEndNodeIndexTableName);
-
-		// 쿵쿵따 공격 단어
-		if (types.HasFlag(NodeTypes.KKTAttackWord))
-			count += DbConnection.DeleteNode(node, DatabaseConstants.KKTAttackNodeIndexTableName);
-
-		return count;
+		return affected;
 	}
+
+	private int DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => nodeTypes.HasFlag(targetNodeType) ? DbConnection.DeleteNode(node, targetNodeType.GetNodeTableName()) : 0;
 	#endregion
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Constants;
+﻿namespace AutoKkutuLib.Constants;
 
 /// <summary>
 /// 'flags' column of word entry in database

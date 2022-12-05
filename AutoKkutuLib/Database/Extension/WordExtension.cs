@@ -1,8 +1,6 @@
 ﻿using AutoKkutuLib.Constants;
-using AutoKkutuLib.Database;
 using AutoKkutuLib.Utils.Extension;
 using Dapper;
-using System;
 
 namespace AutoKkutuLib.Database.Extension;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Modules;
+﻿namespace AutoKkutuLib.Modules;
 
 /// <summary>
 /// Marker annotation for module dependencies

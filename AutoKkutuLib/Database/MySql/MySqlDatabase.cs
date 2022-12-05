@@ -1,8 +1,6 @@
-﻿using AutoKkutu.Database.MySQL;
-using AutoKkutuLib.Database.Extension;
+﻿using AutoKkutuLib.Database.Extension;
 using MySqlConnector;
 using Serilog;
-using System;
 
 namespace AutoKkutuLib.Database.MySql;
 

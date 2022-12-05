@@ -1,9 +1,7 @@
-﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Extension;
+﻿using AutoKkutuLib.Database.Extension;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Serilog;
-using System;
 
 namespace AutoKkutuLib.Database.Sqlite;
 

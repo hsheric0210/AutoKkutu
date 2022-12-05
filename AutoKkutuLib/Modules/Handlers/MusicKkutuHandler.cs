@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AutoKkutuLib.Modules.Handlers;
+﻿namespace AutoKkutuLib.Modules.Handlers;
 
 internal partial class MusicKkutuHandler : AbstractHandler
 {

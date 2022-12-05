@@ -1,11 +1,9 @@
-﻿using AutoKkutu.Utils;
-using AutoKkutuLib.Constants;
+﻿using AutoKkutuLib.Constants;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
 using AutoKkutuLib.Utils.Extension;
 using Serilog;
 using System.Globalization;
-using System.Windows.Media;
 
 namespace AutoKkutuLib.Modules;
 

@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Database;
-using System;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 

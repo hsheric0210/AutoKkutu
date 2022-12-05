@@ -1,9 +1,6 @@
-﻿using AutoKkutu.Constants;
-using AutoKkutuLib.Modules.HandlerManagement;
+﻿using AutoKkutuLib.Modules.HandlerManagement;
 using AutoKkutuLib.Utils.Hangul;
 using Serilog;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib.Modules.AutoEntering;
 

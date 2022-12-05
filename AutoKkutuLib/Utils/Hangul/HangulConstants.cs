@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-// Original source available at https://plog2012.blogspot.com/2012/11/c.html
+﻿// Original source available at https://plog2012.blogspot.com/2012/11/c.html
 namespace AutoKkutuLib.Utils.Hangul;
 
 // TODO: 중세 자음, 모음 지원

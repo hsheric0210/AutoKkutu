@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Constants;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib.Modules.AutoEntering;
 public interface IInputSimulation

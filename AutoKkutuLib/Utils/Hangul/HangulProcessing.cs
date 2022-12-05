@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace AutoKkutuLib.Utils.Hangul;
+﻿namespace AutoKkutuLib.Utils.Hangul;
 
 public static class HangulProcessing
 {

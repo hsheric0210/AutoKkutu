@@ -1,7 +1,4 @@
-﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Extension;
-using Dapper;
-using System;
+﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Extension;
 

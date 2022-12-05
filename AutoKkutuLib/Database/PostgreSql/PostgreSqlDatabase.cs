@@ -1,7 +1,5 @@
 ﻿using Npgsql;
-using System;
 using Serilog;
-using AutoKkutu.Database.PostgreSQL;
 using AutoKkutuLib.Database.Extension;
 
 namespace AutoKkutuLib.Database.PostgreSql;

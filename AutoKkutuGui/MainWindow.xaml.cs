@@ -1,5 +1,4 @@
-﻿using AutoKkutu.Constants;
-using AutoKkutuGui;
+﻿using AutoKkutuGui;
 using AutoKkutuLib.Constants;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Modules;
@@ -220,13 +219,13 @@ public partial class MainWindow : Window
 		path.RemoveQueued = false;
 		try
 		{
-			PathManager.PathListLock.EnterWriteLock();
-			PathManager.UnsupportedPathList.Add(path.Content);
-			PathManager.InexistentPathList.Remove(path.Content);
+			WordBatchJob.PathListLock.EnterWriteLock();
+			WordBatchJob.UnsupportedPathList.Add(path.Content);
+			WordBatchJob.InexistentPathList.Remove(path.Content);
 		}
 		finally
 		{
-			PathManager.PathListLock.ExitWriteLock();
+			WordBatchJob.PathListLock.ExitWriteLock();
 		}
 	}
 
@@ -240,13 +239,13 @@ public partial class MainWindow : Window
 		path.RemoveQueued = false;
 		try
 		{
-			PathManager.PathListLock.EnterWriteLock();
-			PathManager.UnsupportedPathList.Remove(path.Content);
-			PathManager.InexistentPathList.Remove(path.Content);
+			WordBatchJob.PathListLock.EnterWriteLock();
+			WordBatchJob.UnsupportedPathList.Remove(path.Content);
+			WordBatchJob.InexistentPathList.Remove(path.Content);
 		}
 		finally
 		{
-			PathManager.PathListLock.ExitWriteLock();
+			WordBatchJob.PathListLock.ExitWriteLock();
 		}
 	}
 
@@ -260,13 +259,13 @@ public partial class MainWindow : Window
 		path.RemoveQueued = true;
 		try
 		{
-			PathManager.PathListLock.EnterWriteLock();
-			PathManager.UnsupportedPathList.Add(path.Content);
-			PathManager.InexistentPathList.Add(path.Content);
+			WordBatchJob.PathListLock.EnterWriteLock();
+			WordBatchJob.UnsupportedPathList.Add(path.Content);
+			WordBatchJob.InexistentPathList.Add(path.Content);
 		}
 		finally
 		{
-			PathManager.PathListLock.ExitWriteLock();
+			WordBatchJob.PathListLock.ExitWriteLock();
 		}
 	}
 

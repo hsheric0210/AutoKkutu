@@ -1,8 +1,6 @@
 ﻿using AutoKkutuLib.Constants;
 using AutoKkutuLib.Utils;
 using Serilog;
-using System;
-using System.Collections.Generic;
 
 namespace AutoKkutuLib.Modules.Handlers;
 

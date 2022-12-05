@@ -1,10 +1,6 @@
-﻿using AutoKkutu.Database.SQLite;
-using AutoKkutuLib.Database.Extension;
+﻿using AutoKkutuLib.Database.Extension;
 using Microsoft.Data.Sqlite;
 using Serilog;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace AutoKkutuLib.Database.Sqlite;
 

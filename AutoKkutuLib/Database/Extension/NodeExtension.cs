@@ -1,14 +1,15 @@
-﻿using AutoKkutuLib.Database;
+﻿using AutoKkutuLib.Constants;
 using Dapper;
 using Serilog;
-using System;
-using System.Collections.Generic;
 
 namespace AutoKkutuLib.Database.Extension;
 
 public static class NodeExtension
 {
-	public static bool AddNode(this AbstractDatabaseConnection connection, string node, string? tableName = null)
+	#region Node addition
+	public static bool AddNode(this AbstractDatabaseConnection connection, string node, NodeTypes nodeType) => connection.AddNode(node, nodeType.GetNodeTableName());
+
+	public static bool AddNode(this AbstractDatabaseConnection connection, string node, string tableName)
 	{
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
@@ -38,22 +39,29 @@ public static class NodeExtension
 		});
 		return true;
 	}
+	#endregion
 
-	public static int DeleteNode(this AbstractDatabaseConnection connection, string node, string? tableName = null)
+	#region Node deletion
+	public static int DeleteNode(this AbstractDatabaseConnection connection, string node, NodeTypes nodeType) => connection.DeleteNode(node, nodeType.GetNodeTableName());
+
+	public static int DeleteNode(this AbstractDatabaseConnection connection, string node, string tableName)
 	{
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 		if (string.IsNullOrWhiteSpace(node))
 			throw new ArgumentNullException(nameof(node));
-
-		if (string.IsNullOrWhiteSpace(tableName))
-			tableName = DatabaseConstants.EndNodeIndexTableName;
+		if (string.IsNullOrEmpty(tableName))
+			throw new ArgumentException("Empty table name", nameof(tableName));
 
 		return connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node", new
 		{
 			Node = node
 		});
 	}
+	#endregion
+
+	#region Query node list
+	public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, NodeTypes nodeType) => connection.GetNodeList(nodeType.GetNodeTableName());
 
 	public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, string tableName)
 	{
@@ -64,4 +72,20 @@ public static class NodeExtension
 		Log.Information("Found Total {0} nodes in {1}.", result.Count, tableName);
 		return result;
 	}
+	#endregion
+
+	#region NodeType to node table name conversion
+	public static string GetNodeTableName(this NodeTypes nodeType) => nodeType switch
+	{
+		NodeTypes.EndWord => DatabaseConstants.EndNodeIndexTableName,
+		NodeTypes.AttackWord => DatabaseConstants.AttackNodeIndexTableName,
+		NodeTypes.ReverseEndWord => DatabaseConstants.ReverseEndNodeIndexTableName,
+		NodeTypes.ReverseAttackWord => DatabaseConstants.ReverseAttackNodeIndexTableName,
+		NodeTypes.KkutuEndWord => DatabaseConstants.KkutuEndNodeIndexTableName,
+		NodeTypes.KkutuAttackWord => DatabaseConstants.KkutuAttackNodeIndexTableName,
+		NodeTypes.KKTEndWord => DatabaseConstants.KKTEndNodeIndexTableName,
+		NodeTypes.KKTAttackWord => DatabaseConstants.KKTAttackNodeIndexTableName,
+		_ => throw new ArgumentException("Unsuppored node type: " + nodeType, nameof(nodeType))
+	};
+	#endregion
 }

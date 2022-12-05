@@ -1,21 +1,16 @@
-using AutoKkutu.Modules;
 using AutoKkutuLib.Constants;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Modules;
 using AutoKkutuLib.Utils;
+using AutoKkutuLib.Utils.Extension;
 using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib.Modules.Path;
 
-[ModuleDependency(typeof(IPathManager))]
-public class PathFinder : IPathFinder
+public class PathFinder
 {
-	private readonly IPathManager PathManager;
+	private readonly NodeManager nodeManager;
+	private readonly SpecialPathList specialPathList;
 
 	public IList<PathObject> DisplayList
 	{
@@ -27,11 +22,13 @@ public class PathFinder : IPathFinder
 		get; private set;
 	} = new List<PathObject>();
 
+	public event EventHandler<PathFinderStateEventArgs>? OnStateChanged;
 	public event EventHandler<PathUpdateEventArgs>? OnPathUpdated;
 
-	public PathFinder(IPathManager pathManager)
+	public PathFinder(NodeManager nodeManager, SpecialPathList specialPathList)
 	{
-		PathManager = pathManager;
+		this.nodeManager = nodeManager;
+		this.specialPathList = specialPathList;
 	}
 
 	public void Find(GameMode gameMode, PathFinderParameter parameter, WordPreference preference)
@@ -42,17 +39,19 @@ public class PathFinder : IPathFinder
 		try
 		{
 			PresentedWord word = parameter.Word;
-			if (!ConfigEnums.IsFreeMode(gameMode) && PathManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || PathManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
+			if (!gameMode.IsFreeMode() && nodeManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || nodeManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
 			{
 				// 진퇴양난
 				Log.Warning(I18n.PathFinderFailed_Endword);
 				// AutoKkutuMain.ResetPathList();
-				AutoKkutuMain.UpdateSearchState(null, true);
-				AutoKkutuMain.UpdateStatusMessage(StatusMessage.EndWord);
+				//AutoKkutuMain.UpdateSearchState(null, true);
+				//AutoKkutuMain.UpdateStatusMessage(StatusMessage.EndWord);
+				OnStateChanged?.Invoke(this, new PathFinderStateEventArgs(PathFinderState.EndWord));
 			}
 			else
 			{
-				AutoKkutuMain.UpdateStatusMessage(StatusMessage.Searching);
+				//AutoKkutuMain.UpdateStatusMessage(StatusMessage.Searching);
+				OnStateChanged?.Invoke(this, new PathFinderStateEventArgs(PathFinderState.Finding));
 
 				// Enqueue search
 				FindInternal(gameMode, parameter, preference);
@@ -64,16 +63,16 @@ public class PathFinder : IPathFinder
 		}
 	}
 
-	public void FindInternal(GameMode mode, PathFinderParameter param, WordPreference preference)
+	public void FindInternal(GameMode mode, PathFinderParameter parameter, WordPreference preference)
 	{
-		if (ConfigEnums.IsFreeMode(mode))
+		if (mode.IsFreeMode())
 		{
-			GenerateRandomPath(mode, param);
+			GenerateRandomPath(mode, parameter);
 			return;
 		}
 
-		PathFinderOptions flags = param.Options;
-		PresentedWord word = param.Word;
+		PathFinderOptions flags = parameter.Options;
+		PresentedWord word = parameter.Word;
 		if (word.CanSubstitution)
 			Log.Information(I18n.PathFinder_FindPath_Substituation, word.Content, word.Substitution);
 		else
@@ -93,34 +92,34 @@ public class PathFinder : IPathFinder
 			IList<PathObject>? totalWordList = null;
 			try
 			{
-				totalWordList = PathManager.DbConnection.FindWord(mode, param, preference);
+				totalWordList = nodeManager.DbConnection.FindWord(mode, parameter, preference);
 				Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
 			}
 			catch (Exception e)
 			{
 				stopwatch.Stop();
 				Log.Error(e, I18n.PathFinder_FindPath_Error);
-				NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Error, 0, 0, 0));
+				NotifyPathUpdate(new PathUpdateEventArgs(parameter, PathFindResult.Error, 0, 0, 0));
 				return;
 			}
 
 			var totalWordCount = totalWordList.Count;
 
 			// Limit the word list size
-			var maxCount = AutoKkutuMain.Configuration.MaxDisplayedWordCount;
+			var maxCount = parameter.MaxDisplayed;
 			if (totalWordList.Count > maxCount)
 				totalWordList = totalWordList.Take(maxCount).ToList();
 			stopwatch.Stop();
 
 			DisplayList = totalWordList;
 			// TODO: Detach with 'Mediator' pattern
-			IList<PathObject> qualifiedWordList = PathManager.CreateQualifiedWordList(totalWordList);
+			IList<PathObject> qualifiedWordList = specialPathList.CreateQualifiedWordList(totalWordList);
 
 			// If there's no word found (or all words was filtered out)
 			if (qualifiedWordList.Count == 0)
 			{
 				Log.Warning(I18n.PathFinder_FindPath_NotFound);
-				NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
+				NotifyPathUpdate(new PathUpdateEventArgs(parameter, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 				return;
 			}
 
@@ -128,7 +127,7 @@ public class PathFinder : IPathFinder
 			QualifiedList = qualifiedWordList;
 
 			Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, stopwatch.ElapsedMilliseconds);
-			NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
+			NotifyPathUpdate(new PathUpdateEventArgs(parameter, PathFindResult.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 		});
 	}
 

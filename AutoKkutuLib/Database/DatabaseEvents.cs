@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Database;
+﻿namespace AutoKkutuLib.Database;
 
 public static class DatabaseEvents
 {

@@ -1,8 +1,6 @@
 ﻿using Serilog;
 using Npgsql;
-using System;
 using Dapper;
-using AutoKkutuLib.Database;
 
 namespace AutoKkutuLib.Database.PostgreSql;
 

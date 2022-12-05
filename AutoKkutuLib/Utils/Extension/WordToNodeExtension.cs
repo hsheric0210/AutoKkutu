@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿namespace AutoKkutuLib.Utils.Extension;
 
-namespace AutoKkutuLib.Utils.Extension;
-
-public static class WordNodeExtension
+public static class WordToNodeExtension
 {
 	/// <summary>
 	/// 끝말잇기 단어 <paramref name="word"/>의 HEAD 노드/인덱스

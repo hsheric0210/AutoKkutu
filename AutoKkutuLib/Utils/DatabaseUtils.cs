@@ -1,14 +1,5 @@
-﻿using AutoKkutu.ConfigFile;
-using AutoKkutu.Constants;
-using AutoKkutu.Database.MySQL;
-using AutoKkutu.Database.PostgreSQL;
-using AutoKkutu.Database.SQLite;
-using AutoKkutu.Modules.PathManager;
-using AutoKkutu.Utils.Extension;
-using AutoKkutuLib.Database;
+﻿using AutoKkutuLib.Database;
 using Serilog;
-using System;
-using System.Configuration;
 
 namespace AutoKkutuLib.Utils;
 

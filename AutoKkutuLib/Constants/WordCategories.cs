@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Constants;
+﻿namespace AutoKkutuLib.Constants;
 
 [Flags]
 public enum WordCategories

@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Database.Extension;
 using AutoKkutuLib.Utils;
-using System;
 
 namespace AutoKkutuLib.Database;
 

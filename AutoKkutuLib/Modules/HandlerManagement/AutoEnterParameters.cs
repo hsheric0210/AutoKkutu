@@ -1,5 +1,4 @@
-﻿using System;
-using AutoKkutuLib.Constants;
+﻿using AutoKkutuLib.Constants;
 
 namespace AutoKkutuLib.Modules.AutoEntering;
 

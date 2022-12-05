@@ -1,7 +1,6 @@
 ﻿using Serilog;
 using System;
 using System.Windows;
-using AutoKkutu.Utils.Extension;
 using AutoKkutuGui;
 
 namespace AutoKkutu;

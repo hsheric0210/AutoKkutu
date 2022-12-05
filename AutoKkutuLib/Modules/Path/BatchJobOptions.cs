@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Modules.Path;
+﻿namespace AutoKkutuLib.Modules.Path;
 
 [Flags]
 public enum BatchJobOptions

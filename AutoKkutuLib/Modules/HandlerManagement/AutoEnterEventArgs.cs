@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AutoKkutuLib.Modules.AutoEntering;
+﻿namespace AutoKkutuLib.Modules.AutoEntering;
 
 public class AutoEnterEventArgs : EventArgs
 {

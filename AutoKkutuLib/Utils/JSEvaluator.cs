@@ -1,8 +1,6 @@
 ﻿using CefSharp;
 using Serilog;
-using System;
 using System.Globalization;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib.Utils;
 
