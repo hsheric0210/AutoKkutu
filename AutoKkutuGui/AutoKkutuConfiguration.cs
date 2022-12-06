@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Constants;
+﻿using AutoKkutuLib;
 using System;
 
 namespace AutoKkutuGui;

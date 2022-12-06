@@ -50,9 +50,9 @@ public partial class SqliteDatabase : AbstractDatabase
 
 			if ((flags & endWordFlag) != 0)
 				return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
-			if ((flags & attackWordFlag) != 0)
-				return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
-			return (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
+			return (flags & attackWordFlag) != 0
+				? (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256
+				: (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
 		});
 
 	// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
@@ -61,9 +61,9 @@ public partial class SqliteDatabase : AbstractDatabase
 		{
 			if ((flags & endWordFlag) != 0)
 				return endWordOrdinal * DatabaseConstants.MaxWordLength;
-			if ((flags & attackWordFlag) != 0)
-				return attackWordOrdinal * DatabaseConstants.MaxWordLength;
-			return normalWordOrdinal * DatabaseConstants.MaxWordLength;
+			return (flags & attackWordFlag) != 0
+				? attackWordOrdinal * DatabaseConstants.MaxWordLength
+				: normalWordOrdinal * DatabaseConstants.MaxWordLength;
 		});
 
 	public override string GetDBType() => "SQLite";

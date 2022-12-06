@@ -40,9 +40,9 @@ public static class DatabaseExtension
 
 	public static int DeduplicateDatabase(this IDbConnection connection)
 	{
-		if (connection is null)
-			throw new ArgumentNullException(nameof(connection));
-		return connection.Execute(DatabaseConstants.DeduplicationQuery);
+		return connection is null
+			?         throw new ArgumentNullException(nameof(connection))
+			: connection.Execute(DatabaseConstants.DeduplicationQuery);
 	}
 
 	public static void CreateIndex(this IDbConnection connection, string tableName, string columnName)

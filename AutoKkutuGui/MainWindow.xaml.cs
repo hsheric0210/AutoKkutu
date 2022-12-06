@@ -1,9 +1,8 @@
 ﻿using AutoKkutuGui;
-using AutoKkutuLib.Constants;
+using AutoKkutuLib;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.Modules;
 using AutoKkutuLib.Modules.AutoEntering;
-using AutoKkutuLib.Modules.Path;
+using AutoKkutuLib.Path;
 using AutoKkutuLib.Utils;
 using CefSharp;
 using Serilog;
@@ -131,10 +130,7 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void OnColorManagerClick(object? sender, RoutedEventArgs e)
-	{
-		new ColorManagement(AutoKkutuMain.ColorPreference).Show();
-	}
+	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(AutoKkutuMain.ColorPreference).Show();
 
 	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(AutoKkutuMain.Database).Show();
 
@@ -291,10 +287,7 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void OnSettingsClick(object? sender, RoutedEventArgs e)
-	{
-		new ConfigWindow(AutoKkutuMain.Configuration).Show();
-	}
+	private void OnSettingsClick(object? sender, RoutedEventArgs e) => new ConfigWindow(AutoKkutuMain.Configuration).Show();
 
 	private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
 	{
@@ -327,10 +320,7 @@ public partial class MainWindow : Window
 		string Result;
 		if (arg == null)
 		{
-			if (IsEnd)
-				Result = I18n.PathFinderUnavailable;
-			else
-				Result = I18n.PathFinderWaiting;
+			Result = IsEnd ? I18n.PathFinderUnavailable : I18n.PathFinderWaiting;
 		}
 		else
 		{
@@ -356,10 +346,9 @@ public partial class MainWindow : Window
 		}
 		else
 		{
-			if (arg.ResultType == PathFindResult.NotFound)
-				FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount);
-			else
-				FindResult = I18n.PathFinderError;
+			FindResult = arg.ResultType == PathFindResult.NotFound
+				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
+				: I18n.PathFinderError;
 		}
 		if (arg.Flags.HasFlag(PathFinderOptions.UseEndWord))
 			SpecialFilterText += ", " + I18n.PathFinderEndWord;

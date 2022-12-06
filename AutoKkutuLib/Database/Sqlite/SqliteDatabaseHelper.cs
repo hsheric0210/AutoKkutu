@@ -3,7 +3,6 @@ using Microsoft.Data.Sqlite;
 using Dapper;
 using System.ComponentModel.DataAnnotations.Schema;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Constants;
 
 namespace AutoKkutuLib.Database.Sqlite;
 
@@ -105,11 +104,9 @@ public static class SqliteDatabaseHelper
 
 		var counter = 0;
 		var hasIsEndwordColumn = args.source.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName);
-		string columns;
-		if (hasIsEndwordColumn)
-			columns = DatabaseConstants.WordColumnName + ", " + DatabaseConstants.IsEndwordColumnName;
-		else
-			columns = DatabaseConstants.WordColumnName + ", " + DatabaseConstants.FlagsColumnName;
+		var columns = hasIsEndwordColumn
+			? DatabaseConstants.WordColumnName + ", " + DatabaseConstants.IsEndwordColumnName
+			: DatabaseConstants.WordColumnName + ", " + DatabaseConstants.FlagsColumnName;
 
 		foreach (CompatibleWordModel word in args.source.Query<CompatibleWordModel>($"SELECT {columns} FROM {DatabaseConstants.WordTableName}"))
 		{

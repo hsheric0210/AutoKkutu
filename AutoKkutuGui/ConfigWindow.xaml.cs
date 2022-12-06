@@ -1,6 +1,6 @@
 ﻿using AutoKkutuGui;
 using AutoKkutuGui.Config;
-using AutoKkutuLib.Constants;
+using AutoKkutuLib;
 using Serilog;
 using System;
 using System.Globalization;

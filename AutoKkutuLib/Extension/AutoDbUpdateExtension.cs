@@ -1,7 +1,6 @@
-﻿using AutoKkutuLib.Constants;
-using AutoKkutuLib.Database;
+﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Modules.Path;
+using AutoKkutuLib.Path;
 using Serilog;
 using System.Globalization;
 
@@ -21,7 +20,9 @@ public static class AutoDbUpdateExtension
 			var AddQueueCount = pathList.NewPaths.Count;
 			var RemoveQueueCount = pathList.InexistentPaths.Count;
 			if (AddQueueCount + RemoveQueueCount == 0)
+			{
 				Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
+			}
 			else
 			{
 				Log.Debug(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);

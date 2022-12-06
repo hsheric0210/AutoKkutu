@@ -89,10 +89,7 @@ public class ReorderableList<TItem> where TItem : class
 		DependencyObject parentObject = VisualTreeHelper.GetParent(child);
 		if (parentObject == null)
 			return null;
-		if (parentObject is T parent)
-			return parent;
-
-		return FindVisualParent<T>(parentObject);
+		return parentObject is T parent ? parent : FindVisualParent<T>(parentObject);
 	}
 
 	private void Initialize()

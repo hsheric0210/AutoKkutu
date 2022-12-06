@@ -1,10 +1,10 @@
-﻿using AutoKkutuLib.Constants;
+﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
+using AutoKkutuLib.HandlerManagement;
+using AutoKkutuLib.HandlerManagement.Extension;
 using AutoKkutuLib.Modules.AutoEntering;
-using AutoKkutuLib.Modules.HandlerManagement;
-using AutoKkutuLib.Modules.Path;
+using AutoKkutuLib.Path;
 using AutoKkutuLib.Utils;
-using AutoKkutuLib.Utils.Extension;
 using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
@@ -192,7 +192,7 @@ public static class AutoKkutuMain
 			watch.Start();
 
 			Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
-			Database = DatabaseUtils.CreateDatabase(databaseConfig);
+			Database = DatabaseInit.CreateDatabase(databaseConfig);
 			Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 			watch.Restart();
@@ -312,7 +312,9 @@ public static class AutoKkutuMain
 	public static void SendMessage(string message)
 	{
 		if (InputSimulation.CanSimulateInput())
+		{
 			Task.Run(async () => await InputSimulation.PerformInputSimulation(message));
+		}
 		else
 		{
 			Handler.UpdateChat(message);
@@ -386,7 +388,9 @@ public static class AutoKkutuMain
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
 			var result = WordBatchJob.UpdateDatabase();
 			if (string.IsNullOrEmpty(result))
+			{
 				UpdateStatusMessage(StatusMessage.Wait);
+			}
 			else
 			{
 				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);

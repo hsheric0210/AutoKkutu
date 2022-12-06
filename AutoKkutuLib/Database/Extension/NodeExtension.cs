@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Constants;
-using Dapper;
+﻿using Dapper;
 using Serilog;
 
 namespace AutoKkutuLib.Database.Extension;
@@ -19,11 +18,7 @@ public static class NodeExtension
 		if (string.IsNullOrWhiteSpace(tableName))
 			tableName = DatabaseConstants.EndNodeIndexTableName;
 
-		string nodeString;
-		if (tableName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.Ordinal))
-			nodeString = node[..2];
-		else
-			nodeString = node[0].ToString();
+		var nodeString = tableName.Equals(DatabaseConstants.KkutuWordIndexColumnName, StringComparison.Ordinal) ? node[..2] : node[0].ToString();
 
 		if (connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new
 		{
@@ -50,10 +45,10 @@ public static class NodeExtension
 			throw new ArgumentNullException(nameof(connection));
 		if (string.IsNullOrWhiteSpace(node))
 			throw new ArgumentNullException(nameof(node));
-		if (string.IsNullOrEmpty(tableName))
-			throw new ArgumentException("Empty table name", nameof(tableName));
 
-		return connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node", new
+		return string.IsNullOrEmpty(tableName)
+			?            throw new ArgumentException("Empty table name", nameof(tableName))
+			: connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node", new
 		{
 			Node = node
 		});
