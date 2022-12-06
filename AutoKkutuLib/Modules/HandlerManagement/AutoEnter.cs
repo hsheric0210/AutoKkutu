@@ -1,54 +1,30 @@
 ﻿using AutoKkutuLib.Constants;
-using AutoKkutuLib.Modules.HandlerManagement;
+using AutoKkutuLib.Utils.Hangul;
 using Serilog;
 using System.Diagnostics;
 
-namespace AutoKkutuLib.Modules.AutoEntering;
+namespace AutoKkutuLib.Modules.HandlerManagement;
 
-[ModuleDependency(typeof(IHandlerManager))]
-public class AutoEnter : IAutoEnter
+public class AutoEnter
 {
+	#region Events
 	public event EventHandler<InputDelayEventArgs>? InputDelayApply;
-	public event EventHandler? NoPathAvailable;
 	public event EventHandler<AutoEnterEventArgs>? AutoEntered;
+	public event EventHandler? NoPathAvailable;
+	#endregion
 
 	public static Stopwatch InputStopwatch
 	{
 		get;
 	} = new();
 
-	private readonly IHandlerManager handlerManager;
-	private readonly InputSimulation inputSimulation;
+	private readonly HandlerManager handlerManager;
 
-	public AutoEnter(IHandlerManager handlerManager)
-	{
-		this.handlerManager = handlerManager;
-		inputSimulation = new InputSimulation(this, handlerManager);
-	}
-
-	public string? GetWordByIndex(IList<PathObject> qualifiedWordList, bool delayPerChar, int delay, int remainingTurnTime, int wordIndex = 0)
-	{
-		if (qualifiedWordList is null)
-			throw new ArgumentNullException(nameof(qualifiedWordList));
-
-		if (delayPerChar)
-		{
-			var remain = Math.Max(300, remainingTurnTime);
-			PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
-			var word = arr.Length <= wordIndex ? null : arr[wordIndex].Content;
-			if (word == null)
-				Log.Debug(I18n.TimeFilter_TimeOver, remain);
-			else
-				Log.Debug(I18n.TimeFilter_Success, remain, word.Length * delay);
-			return word;
-		}
-
-		return qualifiedWordList.Count <= wordIndex ? null : qualifiedWordList[wordIndex].Content;
-	}
+	public AutoEnter(HandlerManager handlerManager) => this.handlerManager = handlerManager;
 
 	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => handlerManager.IsGameStarted && handlerManager.IsMyTurn && (path == null || handlerManager.IsValidPath(path with { Options = path.Options | PathFinderOptions.AutoFixed }));
 
-	#region AutoEnter initiator
+	#region AutoEnter starter
 	public void PerformAutoEnter(AutoEnterParameter parameter)
 	{
 		if (parameter is null)
@@ -65,9 +41,9 @@ public class AutoEnter : IAutoEnter
 			Task.Run(async () =>
 			{
 				if (parameter.DelayStartAfterCharEnterEnabled)
-					await AutoEnterInputTimerTask(parameter);
+					await AutoEnterDynamicDelayTask(parameter);
 				else
-					await AutoEnterTask(parameter);
+					await AutoEnterDelayTask(parameter);
 			});
 		}
 		else
@@ -81,13 +57,11 @@ public class AutoEnter : IAutoEnter
 	{
 		if (parameter is null)
 			throw new ArgumentNullException(nameof(parameter));
-		if (!string.IsNullOrEmpty(parameter.Content))
-			throw new ArgumentException("parameter.Content should be empty", nameof(parameter));
 
 		try
 		{
 			// TODO: move WordIndex incremental code out
-			var content = GetWordByIndex(availablePaths, parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
+			var content = availablePaths.GetWordByIndex(parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
 			if (content is null)
 			{
 				Log.Warning(I18n.Main_NoMorePathAvailable);
@@ -96,12 +70,12 @@ public class AutoEnter : IAutoEnter
 			}
 
 			AutoEnterParameter contentParameter = parameter with { Content = content };
-			if (AutoKkutuMain.Configuration.FixDelayEnabled)
+			if (parameter.DelayEnabled)
 			{
 				var delay = contentParameter.RealDelay;
 				InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, parameter.WordIndex));
 				Log.Debug(I18n.Main_WaitingSubmitNext, delay);
-				Task.Run(async () => await AutoEnterTask(contentParameter));
+				Task.Run(async () => await AutoEnterDelayTask(contentParameter));
 			}
 			else
 			{
@@ -111,6 +85,44 @@ public class AutoEnter : IAutoEnter
 		catch (Exception ex)
 		{
 			Log.Error(ex, I18n.Main_PathSubmitException);
+		}
+	}
+	#endregion
+
+	#region AutoEnter delay task proc.
+	private async Task AutoEnterDelayTask(AutoEnterParameter parameter)
+	{
+		await Task.Delay(parameter.RealDelay);
+
+		if (parameter.CanSimulateInput)
+		{
+			await PerformInputSimulationAutoEnter(parameter);
+			AutoEntered?.Invoke(this, new AutoEnterEventArgs(parameter.Content));
+		}
+		else
+		{
+			PerformAutoEnterNow(parameter.Content, parameter.PathFinderParams, parameter.WordIndex);
+		}
+	}
+
+	private async Task AutoEnterDynamicDelayTask(AutoEnterParameter parameter)
+	{
+		var delay = parameter.RealDelay;
+		var _delay = 0;
+		if (InputStopwatch.ElapsedMilliseconds <= delay)
+		{
+			_delay = (int)(delay - InputStopwatch.ElapsedMilliseconds);
+			await Task.Delay(_delay);
+		}
+
+		if (parameter.CanSimulateInput)
+		{
+			await PerformInputSimulationAutoEnter(parameter);
+			AutoEntered?.Invoke(this, new AutoEnterEventArgs(parameter.Content));
+		}
+		else
+		{
+			PerformAutoEnterNow(parameter.Content, parameter.PathFinderParams, parameter.WordIndex);
 		}
 	}
 	#endregion
@@ -130,42 +142,62 @@ public class AutoEnter : IAutoEnter
 	}
 	#endregion
 
-	#region AutoEnter task
-	private async Task AutoEnterTask(AutoEnterParameter parameter)
-	{
-		await Task.Delay(parameter.RealDelay);
+	#region Input simulation
 
-		if (parameter.CanSimulateInput)
+	public async Task PerformInputSimulationAutoEnter(AutoEnterParameter parameter)
+	{
+		if (parameter is null)
+			return;
+
+		var content = parameter.Content;
+		var wordIndex = parameter.WordIndex;
+		var aborted = false;
+		var list = new List<(JamoType, char)>();
+		foreach (var ch in content)
+			list.AddRange(ch.SplitConsonants().Serialize());
+
+		Log.Information(I18n.Main_InputSimulating, wordIndex, content);
+		handlerManager.UpdateChat("");
+		foreach ((JamoType type, var ch) in list)
 		{
-			await inputSimulation.PerformInputSimulationAutoEnter(parameter);
-			AutoEntered?.Invoke(this, new AutoEnterEventArgs(parameter.Content));
+			if (!CanPerformAutoEnterNow(parameter.PathFinderParams))
+			{
+				aborted = true; // Abort
+				break;
+			}
+			handlerManager.AppendChat(s => s.AppendChar(type, ch));
+			await Task.Delay(parameter.DelayInMillis);
 		}
+
+		if (aborted)
+			Log.Warning(I18n.Main_InputSimulationAborted, wordIndex, content);
 		else
 		{
-			PerformAutoEnterNow(parameter.Content, parameter.PathFinderParams, parameter.WordIndex);
+			handlerManager.ClickSubmitButton();
+			Log.Information(I18n.Main_InputSimulationFinished, wordIndex, content);
 		}
+		handlerManager.UpdateChat("");
 	}
 
-	// ExtModules: InputSimulation
-	private async Task AutoEnterInputTimerTask(AutoEnterParameter parameter)
+	public async Task PerformInputSimulation(string message, int delay)
 	{
-		var delay = parameter.RealDelay;
-		var _delay = 0;
-		if (InputStopwatch.ElapsedMilliseconds <= delay)
-		{
-			_delay = (int)(delay - InputStopwatch.ElapsedMilliseconds);
-			await Task.Delay(_delay);
-		}
+		if (message is null)
+			return;
 
-		if (parameter.CanSimulateInput)
+		var list = new List<(JamoType, char)>();
+		foreach (var ch in message)
+			list.AddRange(ch.SplitConsonants().Serialize());
+
+		Log.Information(I18n.Main_InputSimulating, "Input", message);
+		handlerManager.UpdateChat("");
+		foreach ((JamoType type, var ch) in list)
 		{
-			await inputSimulation.PerformInputSimulationAutoEnter(parameter);
-			AutoEntered?.Invoke(this, new AutoEnterEventArgs(parameter.Content));
+			handlerManager.AppendChat(s => s.AppendChar(type, ch));
+			await Task.Delay(delay);
 		}
-		else
-		{
-			PerformAutoEnterNow(parameter.Content, parameter.PathFinderParams, parameter.WordIndex);
-		}
+		handlerManager.ClickSubmitButton();
+		handlerManager.UpdateChat("");
+		Log.Information(I18n.Main_InputSimulationFinished, "Input ", message);
 	}
 	#endregion
 }

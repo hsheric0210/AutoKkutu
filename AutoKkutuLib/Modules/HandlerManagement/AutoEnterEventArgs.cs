@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.Modules.AutoEntering;
+﻿namespace AutoKkutuLib.Modules.HandlerManagement;
 
 public class AutoEnterEventArgs : EventArgs
 {
@@ -7,8 +7,5 @@ public class AutoEnterEventArgs : EventArgs
 		get;
 	}
 
-	public AutoEnterEventArgs(string content)
-	{
-		Content = content;
-	}
+	public AutoEnterEventArgs(string content) => Content = content;
 }

@@ -1,10 +1,9 @@
-﻿using AutoKkutuLib.Constants;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
-namespace AutoKkutuGui.Constants;
+namespace AutoKkutuLib.Constants;
 
 public class WordPreferenceTypeConverter : TypeConverter
 {

@@ -9,10 +9,7 @@ namespace AutoKkutuLib.Database.Sqlite;
 
 public static class SqliteDatabaseHelper
 {
-	static SqliteDatabaseHelper()
-	{
-		typeof(CompatibleWordModel).RegisterMapping();
-	}
+	static SqliteDatabaseHelper() => typeof(CompatibleWordModel).RegisterMapping();
 
 	public static void LoadFromExternalSQLite(AbstractDatabaseConnection targetDatabase, string externalSQLiteFilePath)
 	{

@@ -11,10 +11,7 @@ public class WordPreference
 	{
 	}
 
-	public WordPreference(WordCategories[] attributes)
-	{
-		Attributes = attributes;
-	}
+	public WordPreference(WordCategories[] attributes) => Attributes = attributes;
 	public WordCategories[] GetAttributes() => Attributes;
 
 	public static string GetName(WordCategories attr)

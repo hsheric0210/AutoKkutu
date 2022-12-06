@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Constants;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Modules;
+using AutoKkutuLib.Modules.Path;
 using Serilog;
 using System.Globalization;
 

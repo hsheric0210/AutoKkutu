@@ -9,10 +9,7 @@ public abstract class AbstractDatabase : IDisposable
 
 	public AbstractDatabaseConnection Connection => _baseConnection.RequireNotNull();
 
-	static AbstractDatabase()
-	{
-		typeof(WordModel).RegisterMapping();
-	}
+	static AbstractDatabase() => typeof(WordModel).RegisterMapping();
 
 	protected AbstractDatabase()
 	{

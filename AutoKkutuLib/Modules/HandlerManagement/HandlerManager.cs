@@ -6,8 +6,7 @@ using System.Globalization;
 
 namespace AutoKkutuLib.Modules.HandlerManagement;
 
-[ModuleDependency(typeof(IPathManager))]
-public class HandlerManager : IHandlerManager
+public class HandlerManager
 {
 	#region Game status properties
 	public PresentedWord? CurrentPresentedWord
@@ -43,11 +42,13 @@ public class HandlerManager : IHandlerManager
 	}
 	#endregion
 
+	#region Internal handle holder fields
 	private readonly AbstractHandler handler = null!;
 
 	private Task? primaryWatchdogTask;
 
 	private CancellationTokenSource? cancelTokenSrc;
+	#endregion
 
 	#region Game state cache fields
 	private readonly int checkgameInterval = 3000;
@@ -81,15 +82,11 @@ public class HandlerManager : IHandlerManager
 	public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 
 	public event EventHandler? ChatUpdated;
+
+	public event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
 	#endregion
 
-	private readonly IPathManager pathManager;
-
-	public HandlerManager(IPathManager pathManager, AbstractHandler handler)
-	{
-		this.pathManager = pathManager;
-		this.handler = handler;
-	}
+	public HandlerManager(AbstractHandler handler) => this.handler = handler;
 
 	public string GetID() => $"{handler.HandlerName} - #{(primaryWatchdogTask == null ? "Global" : primaryWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
@@ -191,7 +188,7 @@ public class HandlerManager : IHandlerManager
 	{
 		await WatchdogProc(async () =>
 			{
-				if (AutoKkutuMain.Configuration.GameMode == GameMode.TypingBattle && IsGameStarted)
+				if (CurrentGameMode == GameMode.TypingBattle && IsGameStarted)
 				{
 					if (IsMyTurn)
 						UpdateTypingWord();
@@ -279,7 +276,7 @@ public class HandlerManager : IHandlerManager
 		if (IsMyTurn && (differentWord || differentMissionChar))
 		{
 			Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
-			MyWordPresented?.Invoke(this, new WordPresentEventArgs(CurrentPresentedWord!, CurrentMissionChar!));
+			MyWordPresented?.Invoke(this, new WordPresentEventArgs(CurrentPresentedWord!, CurrentMissionChar!)); // Re-trigger search
 			return false;
 		}
 		return true;
@@ -288,7 +285,7 @@ public class HandlerManager : IHandlerManager
 	#region Update game status
 	private void UpdateWordHistory()
 	{
-		if (ConfigEnums.IsFreeMode(AutoKkutuMain.Configuration.GameMode))
+		if (CurrentGameMode.IsFreeMode())
 			return;
 
 		var tmpWordCache = new string[6];
@@ -307,13 +304,16 @@ public class HandlerManager : IHandlerManager
 			{
 				Log.Information("Found previous word : {word}", word);
 
-				if (!pathManager.NewPathList.Contains(word))
-					pathManager.NewPathList.Add(word);
+				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(word));
 
-				if (ReturnMode)
-					pathManager.ResetPreviousPath();
-				else
-					pathManager.AddPreviousPath(word);
+				// FIXME: Handle these process with events
+				// if (!pathManager.NewPathList.Contains(word))
+				// 	pathManager.NewPathList.Add(word);
+				// 
+				// if (ReturnMode)
+				// 	pathManager.ResetPreviousPath();
+				// else
+				// 	pathManager.AddPreviousPath(word);
 			}
 		}
 
@@ -345,7 +345,7 @@ public class HandlerManager : IHandlerManager
 			return;
 		Log.Information("Round Changed : Index {0} Word {1}", roundIndex, roundText);
 		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
-		pathManager.ResetPreviousPath();
+		// pathManager.ResetPreviousPath();
 	}
 
 	private void UpdateUnsupportedWord()
@@ -374,7 +374,7 @@ public class HandlerManager : IHandlerManager
 			return;
 		exampleWordCache = example;
 		Log.Information("Path example detected : {word}", example);
-		pathManager.NewPathList.Add(example);
+		// pathManager.NewPathList.Add(example);
 	}
 
 	private void UpdateTypingWord()
@@ -397,7 +397,7 @@ public class HandlerManager : IHandlerManager
 		if (gameMode == CurrentGameMode)
 			return;
 		CurrentGameMode = gameMode;
-		Log.Information("Game mode change detected : {gameMode}", ConfigEnums.GetGameModeName(gameMode));
+		Log.Information("Game mode change detected : {gameMode}", gameMode.GetGameModeName());
 		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 	}
 

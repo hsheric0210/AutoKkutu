@@ -3,12 +3,12 @@
 namespace AutoKkutuLib.Utils.Extension;
 public static class GameModeExtension
 {
-	public static string? ConvertToPresentedWord(this GameMode mode, string path)
+	public static string? ConvertToPresentedWord(this GameMode gameMode, string path)
 	{
 		if (string.IsNullOrWhiteSpace(path))
 			throw new ArgumentException("Parameter is null or blank", nameof(path));
 
-		switch (mode)
+		switch (gameMode)
 		{
 			case GameMode.LastAndFirst:
 			case GameMode.KungKungTta:
@@ -40,4 +40,25 @@ public static class GameModeExtension
 	}
 
 	public static bool IsFreeMode(this GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
+
+	public static string? GetDBAutoUpdateModeName(DatabaseUpdateTiming key) => key switch
+	{
+		DatabaseUpdateTiming.OnGameEnd => I18n.AutoDBUpdate_OnGameEnd,
+		DatabaseUpdateTiming.OnRoundEnd => I18n.AutoDBUpdate_OnRoundEnd,
+		_ => null,
+	};
+
+	public static string? GetGameModeName(this GameMode gameMode) => gameMode switch
+	{
+		GameMode.LastAndFirst => I18n.GameMode_LastAndFirst,
+		GameMode.FirstAndLast => I18n.GameMode_FirstAndLast,
+		GameMode.MiddleAndFirst => I18n.GameMode_MiddleAndFirst,
+		GameMode.Kkutu => I18n.GameMode_Kkutu,
+		GameMode.KungKungTta => I18n.GameMode_KungKungTta,
+		GameMode.TypingBattle => I18n.GameMode_TypingBattle,
+		GameMode.All => I18n.GameMode_All,
+		GameMode.Free => I18n.GameMode_Free,
+		GameMode.LastAndFirstFree => I18n.GameMode_LastAndFirstFree,
+		_ => null,
+	};
 }

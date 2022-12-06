@@ -51,8 +51,5 @@ public class DataBaseIntegrityCheckDoneEventArgs : EventArgs
 		get;
 	}
 
-	public DataBaseIntegrityCheckDoneEventArgs(string result)
-	{
-		Result = result;
-	}
+	public DataBaseIntegrityCheckDoneEventArgs(string result) => Result = result;
 }

@@ -6,10 +6,7 @@ namespace AutoKkutuLib.Database.PostgreSql;
 
 public partial class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
 {
-	public PostgreSqlDatabaseConnection(NpgsqlConnection connection)
-	{
-		Initialize(connection);
-	}
+	public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Initialize(connection);
 
 	public override void AddSequenceColumnToWordList() => this.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN seq SERIAL PRIMARY KEY");
 

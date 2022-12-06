@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.Modules.AutoEntering;
+﻿namespace AutoKkutuLib.Modules.HandlerManagement;
 
 public class InputDelayEventArgs : EventArgs
 {
