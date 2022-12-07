@@ -39,13 +39,6 @@ public static class GameModeExtension
 
 	public static bool IsFreeMode(this GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
 
-	public static string? GetDBAutoUpdateModeName(DatabaseUpdateTiming key) => key switch
-	{
-		DatabaseUpdateTiming.OnGameEnd => I18n.AutoDBUpdate_OnGameEnd,
-		DatabaseUpdateTiming.OnRoundEnd => I18n.AutoDBUpdate_OnRoundEnd,
-		_ => null,
-	};
-
 	public static string? GetGameModeName(this GameMode gameMode) => gameMode switch
 	{
 		GameMode.LastAndFirst => I18n.GameMode_LastAndFirst,

@@ -5,7 +5,7 @@ using Serilog;
 using System.Globalization;
 
 namespace AutoKkutuLib.Extension;
-public static class AutoDbUpdateExtension
+public static class DbUpdateExtension
 {
 	public static string? UpdateDatabase(this AbstractDatabaseConnection dbConnection, SpecialPathList pathList)
 	{

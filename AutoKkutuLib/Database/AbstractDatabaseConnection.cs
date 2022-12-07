@@ -1,15 +1,13 @@
-﻿using AutoKkutuLib.Utils;
-using System.Data;
+﻿using System.Data;
 
 namespace AutoKkutuLib.Database;
 
 public abstract class AbstractDatabaseConnection : IDbConnection
 {
-	private IDbConnection? _baseConnection;
+	private IDbConnection? underlyingConnection;
 
-	protected IDbConnection Connection => _baseConnection.RequireNotNull();
+	protected IDbConnection Connection => underlyingConnection ?? throw new NullReferenceException("Database connection accessed before initialized");
 
-	/* Delegate properties */
 	public string ConnectionString
 	{
 		get => Connection.ConnectionString;
@@ -26,11 +24,14 @@ public abstract class AbstractDatabaseConnection : IDbConnection
 	{
 	}
 
+	/// <summary>
+	/// This method must called on initialization phase.
+	/// </summary>
 	protected void Initialize(IDbConnection connection)
 	{
-		if (_baseConnection != null)
+		if (underlyingConnection != null)
 			throw new InvalidOperationException($"{nameof(Connection)} is already initialized");
-		_baseConnection = connection;
+		underlyingConnection = connection;
 	}
 
 	public abstract void AddSequenceColumnToWordList();

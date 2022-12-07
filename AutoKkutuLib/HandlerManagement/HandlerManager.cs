@@ -1,11 +1,12 @@
-﻿using AutoKkutuLib.HandlerManagement.Extension;
+﻿using AutoKkutuLib.HandlerManagement.Events;
+using AutoKkutuLib.HandlerManagement.Extension;
 using AutoKkutuLib.Handlers;
 using Serilog;
 using System.Globalization;
 
 namespace AutoKkutuLib.HandlerManagement;
 
-public class HandlerManager
+public class HandlerManager : IHandlerManager
 {
 	#region Game status properties
 	public PresentedWord? CurrentPresentedWord
@@ -454,12 +455,7 @@ public class HandlerManager
 	}
 	#endregion
 
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
+	#region Disposal
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -468,4 +464,11 @@ public class HandlerManager
 			primaryWatchdogTask?.Dispose();
 		}
 	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+	#endregion
 }

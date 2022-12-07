@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.HandlerManagement;
+﻿namespace AutoKkutuLib.HandlerManagement.Events;
 
 public class AutoEnterEventArgs : EventArgs
 {

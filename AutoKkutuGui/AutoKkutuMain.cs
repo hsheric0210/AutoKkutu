@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.HandlerManagement;
+using AutoKkutuLib.HandlerManagement.Events;
 using AutoKkutuLib.HandlerManagement.Extension;
 using AutoKkutuLib.Modules.AutoEntering;
 using AutoKkutuLib.Path;

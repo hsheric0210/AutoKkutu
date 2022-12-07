@@ -6,6 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Constants\**" />
+    <EmbeddedResource Remove="Constants\**" />
+    <None Remove="Constants\**" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="CefSharp.Common.NETCore" Version="107.1.90" />
@@ -51,10 +57,6 @@
 
   <ItemGroup>
     <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="107.1.9" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Constants\" />
   </ItemGroup>
 
 </Project>

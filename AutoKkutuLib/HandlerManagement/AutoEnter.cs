@@ -1,4 +1,5 @@
-﻿using AutoKkutuLib.HandlerManagement.Extension;
+﻿using AutoKkutuLib.HandlerManagement.Events;
+using AutoKkutuLib.HandlerManagement.Extension;
 using AutoKkutuLib.Hangul;
 using Serilog;
 using System.Diagnostics;
@@ -18,13 +19,14 @@ public class AutoEnter
 		get;
 	} = new();
 
-	private readonly HandlerManager handlerManager;
+	private readonly IHandlerManager handlerManager;
 
-	public AutoEnter(HandlerManager handlerManager) => this.handlerManager = handlerManager;
+	public AutoEnter(IHandlerManager handlerManager) => this.handlerManager = handlerManager;
 
 	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => handlerManager.IsGameStarted && handlerManager.IsMyTurn && (path == null || handlerManager.IsValidPath(path with { Options = path.Options | PathFinderOptions.AutoFixed }));
 
 	#region AutoEnter starter
+	// TODO: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)
 	public void PerformAutoEnter(AutoEnterParameter parameter)
 	{
 		if (parameter is null)
@@ -60,7 +62,6 @@ public class AutoEnter
 
 		try
 		{
-			// TODO: move WordIndex incremental code out
 			var content = availablePaths.GetWordByIndex(parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
 			if (content is null)
 			{
