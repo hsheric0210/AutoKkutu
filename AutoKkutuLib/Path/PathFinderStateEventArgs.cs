@@ -1,6 +1,4 @@
-﻿using AutoKkutuLib.Constants;
-
-namespace AutoKkutuLib.Path;
+﻿namespace AutoKkutuLib.Path;
 
 public class PathFinderStateEventArgs : EventArgs
 {

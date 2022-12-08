@@ -141,9 +141,9 @@ public class PathFinder
 		var random = new Random();
 		var len = random.Next(64, 256);
 		if (!string.IsNullOrWhiteSpace(param.MissionChar))
-			DisplayList.Add(new PathObject(firstChar + RandomExtension.GenerateRandomString(random.Next(16, 64), false, random) + new string(param.MissionChar[0], len) + RandomExtension.GenerateRandomString(random.Next(16, 64), false, random), WordCategories.None, len));
+			DisplayList.Add(new PathObject(firstChar + random.GenerateRandomString(random.Next(16, 64), false) + new string(param.MissionChar[0], len) + random.GenerateRandomString(random.Next(16, 64), false), WordCategories.None, len));
 		for (var i = 0; i < 10; i++)
-			DisplayList.Add(new PathObject(firstChar + RandomExtension.GenerateRandomString(len, false, random), WordCategories.None, 0));
+			DisplayList.Add(new PathObject(firstChar + random.GenerateRandomString(len, false), WordCategories.None, 0));
 		stopwatch.Stop();
 		QualifiedList = new List<PathObject>(DisplayList);
 		NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Found, DisplayList.Count, DisplayList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));

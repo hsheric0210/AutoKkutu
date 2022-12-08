@@ -6,6 +6,10 @@ internal class KkutuCoKrHandler : AbstractHandler
 
 	public override string HandlerName => "Kkutu.co.kr Handler";
 
+	public KkutuCoKrHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	{
+	}
+
 	public override void UpdateChat(string input)
 	{
 		RegisterJSFunction(WriteInputFunc, "input", @"

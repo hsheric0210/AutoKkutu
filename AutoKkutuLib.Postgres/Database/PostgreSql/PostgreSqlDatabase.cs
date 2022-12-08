@@ -19,7 +19,7 @@ public partial class PostgreSqlDatabase : AbstractDatabase
 			var connection = new NpgsqlConnection(connectionString);
 			connection.Open();
 			Initialize(new PostgreSqlDatabaseConnection(connection));
-			Connection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
+			Connection.TryExecute($"SET Application_Name TO 'AutoKkutu';");
 
 			// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
 			Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)
@@ -87,7 +87,7 @@ $$ LANGUAGE plpgsql
 		var connection = new NpgsqlConnection(ConnectionString);
 		connection.Open();
 		var wrappedConnection = new PostgreSqlDatabaseConnection(connection);
-		wrappedConnection.TryExecute($"SET Application_Name TO 'AutoKkutu v{MainWindow.VERSION}';");
+		wrappedConnection.TryExecute($"SET Application_Name TO 'AutoKkutu';");
 		return wrappedConnection;
 	}
 }

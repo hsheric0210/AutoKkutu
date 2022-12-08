@@ -6,6 +6,10 @@ internal class BFKkutuHandler : AbstractHandler
 
 	public override string HandlerName => "BFKkutu.kr Handler";
 
+	public BFKkutuHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	{
+	}
+
 	public override void UpdateChat(string input)
 	{
 		RegisterJSFunction(WriteInputFunc, "input", @"

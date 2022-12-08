@@ -75,16 +75,16 @@ public class WordBatchJob
 		public int NewAttackNode;
 	}
 
-	public void BatchAddWord(string[] wordList, BatchJobOptions batchOptions)
+	public void BatchAddWord(string[] wordList, JSEvaluator jsEvaluator, BatchJobOptions batchOptions)
 	{
 		if (wordList == null)
 			throw new ArgumentNullException(nameof(wordList));
 
 		var onlineVerify = batchOptions.HasFlag(BatchJobOptions.VerifyBeforeAdd);
-		if (onlineVerify && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
-			// FIXME: Replace with event
-			// MessageBox.Show("끄투 사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", _namespace, MessageBoxButton.OK, MessageBoxImage.Warning);
-			return;
+		// FIXME: Should be handled by caller
+		// if (onlineVerify && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
+		//	MessageBox.Show("끄투 사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", _namespace, MessageBoxButton.OK, MessageBoxImage.Warning);
+		//	return;
 
 		new DatabaseImportEventArgs("Batch word addition").TriggerDatabaseImportStart();
 
@@ -92,7 +92,7 @@ public class WordBatchJob
 
 		Task.Run(() =>
 		{
-			WordBatchResult result = PerformBatchAddWord(wordList, onlineVerify);
+			WordBatchResult result = PerformBatchAddWord(wordList, onlineVerify, jsEvaluator);
 
 			var message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
 			Log.Information("Database Operation Complete: {0}", message);
@@ -100,7 +100,7 @@ public class WordBatchJob
 		});
 	}
 
-	private WordBatchResult PerformBatchAddWord(string[] wordlist, bool onlineVerify)
+	private WordBatchResult PerformBatchAddWord(string[] wordlist, bool onlineVerify, JSEvaluator jsEvaluator)
 	{
 		var result = new WordBatchResult();
 		foreach (var word in wordlist)
@@ -116,7 +116,7 @@ public class WordBatchJob
 				continue;
 			}
 
-			if (!onlineVerify || word.VerifyWordOnline())
+			if (!onlineVerify || jsEvaluator.VerifyWordOnline(word))
 			{
 				var singleResult = AddSingleWord(word);
 				switch (singleResult.ResultType)

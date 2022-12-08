@@ -20,11 +20,12 @@ public class DatabaseCheckJob
 	/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
 	/// </summary>
 	/// <param name="UseOnlineDB">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
-	public void CheckDB(bool UseOnlineDB)
+	public void CheckDB(bool UseOnlineDB, JSEvaluator jsEvaluator)
 	{
-		if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
-			// FIXME: MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 여십시오.", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Warning);
-			return;
+		// FIXME: Move to caller
+		//if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
+		//	MessageBox.Show("사전 창을 감지하지 못했습니다.\n끄투 사전 창을 여십시오.", "데이터베이스 관리자", MessageBoxButton.OK, MessageBoxImage.Warning);
+		//	return;
 
 		DatabaseEvents.TriggerDatabaseIntegrityCheckStart();
 
@@ -43,69 +44,66 @@ public class DatabaseCheckJob
 				Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
 				var flagCorrection = new Dictionary<string, int>();
 
-				Log.Information("Opening auxiliary SQLite connection...");
-				using (AbstractDatabaseConnection auxiliaryConnection = DbConnection.OpenSecondaryConnection()) // TODO
+				Log.Information("Opening auxiliary SQLite DbConnection...");
+				// Deduplicate
+				DeduplicatedCount = DeduplicateDatabaseAndGetCount();
+
+				// Refresh node lists
+				RefreshNodeLists();
+
+				// Check for errorsd
+				Log.Information("Searching problems...");
+				watch.Start();
+				foreach (WordModel element in DbConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 				{
-					// Deduplicate
-					DeduplicatedCount = DeduplicateDatabaseAndGetCount(auxiliaryConnection);
+					currentElementIndex++;
+					var word = element.Word;
+					Log.Information("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
 
-					// Refresh node lists
-					RefreshNodeLists(auxiliaryConnection);
-
-					// Check for errorsd
-					Log.Information("Searching problems...");
-					watch.Start();
-					foreach (WordModel element in auxiliaryConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+					// Check word validity
+					if (IsInvalid(word))
 					{
-						currentElementIndex++;
-						var word = element.Word;
-						Log.Information("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
-
-						// Check word validity
-						if (IsInvalid(word))
-						{
-							Log.Information("Invalid word {word}, will be removed.", word);
-							deletionList.Add(word);
-							continue;
-						}
-
-						// Online verify
-						if (UseOnlineDB && !word.Trim().VerifyWordOnline())
-						{
-							deletionList.Add(word);
-							continue;
-						}
-
-						// Check WordIndex tag
-						VerifyWordIndexes(auxiliaryConnection, DatabaseConstants.WordIndexColumnName, word, element.WordIndex, WordToNodeExtension.GetLaFHeadNode, wordIndexCorrection);
-
-						// Check ReverseWordIndex tag
-						VerifyWordIndexes(auxiliaryConnection, DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, WordToNodeExtension.GetFaLHeadNode, reverseWordIndexCorrection);
-
-						// Check KkutuIndex tag
-						VerifyWordIndexes(auxiliaryConnection, DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, WordToNodeExtension.GetKkutuHeadNode, kkutuIndexCorrection);
-
-						// Check Flags
-						VerifyWordFlags(auxiliaryConnection, word, element.Flags, flagCorrection);
+						Log.Information("Invalid word {word}, will be removed.", word);
+						deletionList.Add(word);
+						continue;
 					}
-					watch.Stop();
-					Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
-					watch.Restart();
+					// Online verify
+					if (UseOnlineDB && !jsEvaluator.VerifyWordOnline(word.Trim()))
+					{
+						deletionList.Add(word);
+						continue;
+					}
 
-					// Start fixing
-					RemovedCount += DeleteWordRange(auxiliaryConnection, deletionList);
-					FixedCount += ResetWordIndex(auxiliaryConnection, wordFixList, DatabaseConstants.WordColumnName);
-					FixedCount += ResetWordIndex(auxiliaryConnection, wordIndexCorrection, DatabaseConstants.WordIndexColumnName);
-					FixedCount += ResetWordIndex(auxiliaryConnection, reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName);
-					FixedCount += ResetWordIndex(auxiliaryConnection, kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName);
-					FixedCount += ResetWordFlag(auxiliaryConnection, flagCorrection);
+					// Check WordIndex tag
+					VerifyWordIndexes(DatabaseConstants.WordIndexColumnName, word, element.WordIndex, WordToNodeExtension.GetLaFHeadNode, wordIndexCorrection);
 
-					watch.Stop();
-					Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
+					// Check ReverseWordIndex tag
+					VerifyWordIndexes(DatabaseConstants.ReverseWordIndexColumnName, word, element.ReverseWordIndex, WordToNodeExtension.GetFaLHeadNode, reverseWordIndexCorrection);
 
-					ExecuteVacuum(auxiliaryConnection);
+					// Check KkutuIndex tag
+					VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, WordToNodeExtension.GetKkutuHeadNode, kkutuIndexCorrection);
+
+					// Check Flags
+					VerifyWordFlags(word, element.Flags, flagCorrection);
 				}
+				watch.Stop();
+				Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
+
+				watch.Restart();
+
+				// Start fixing
+				RemovedCount += DeleteWordRange(deletionList);
+				FixedCount += ResetWordIndex(wordFixList, DatabaseConstants.WordColumnName);
+				FixedCount += ResetWordIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName);
+				FixedCount += ResetWordIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName);
+				FixedCount += ResetWordIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName);
+				FixedCount += ResetWordFlag(flagCorrection);
+
+				watch.Stop();
+				Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
+
+				ExecuteVacuum();
 
 				Log.Information("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
 
@@ -120,7 +118,7 @@ public class DatabaseCheckJob
 	#endregion
 
 	#region Database checkings
-	private void VerifyWordFlags(AbstractDatabaseConnection connection, string word, int currentFlags, IDictionary<string, int> correction)
+	private void VerifyWordFlags(string word, int currentFlags, IDictionary<string, int> correction)
 	{
 		WordFlags correctFlags = nodeManager.CalcWordFlags(word);
 		var correctFlagsInt = (int)correctFlags;
@@ -131,7 +129,7 @@ public class DatabaseCheckJob
 		}
 	}
 
-	private void VerifyWordIndexes(AbstractDatabaseConnection connection, string wordIndexName, string word, string currentWordIndex, Func<string, string> wordIndexSupplier, IDictionary<string, string> correction)
+	private void VerifyWordIndexes(string wordIndexName, string word, string currentWordIndex, Func<string, string> wordIndexSupplier, IDictionary<string, string> correction)
 	{
 		var correctWordIndex = wordIndexSupplier(word);
 		if (correctWordIndex != currentWordIndex)
@@ -163,13 +161,13 @@ public class DatabaseCheckJob
 	#endregion
 
 	#region Database fixings
-	private int ResetWordFlag(AbstractDatabaseConnection connection, IDictionary<string, int> correction)
+	private int ResetWordFlag(IDictionary<string, int> correction)
 	{
 		var Counter = 0;
 
 		foreach (KeyValuePair<string, int> pair in correction)
 		{
-			var affected = connection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET flags = @Flags WHERE {DatabaseConstants.WordColumnName} = @Word;", new
+			var affected = DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET flags = @Flags WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{
 				Flags = pair.Value,
 				Word = pair.Key
@@ -184,12 +182,12 @@ public class DatabaseCheckJob
 		return Counter;
 	}
 
-	private int ResetWordIndex(AbstractDatabaseConnection connection, IDictionary<string, string> correction, string indexColumnName)
+	private int ResetWordIndex(IDictionary<string, string> correction, string indexColumnName)
 	{
 		var counter = 0;
 		foreach (KeyValuePair<string, string> pair in correction)
 		{
-			var affected = connection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
+			var affected = DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{
 				WordIndex = pair.Value,
 				Word = pair.Key
@@ -203,12 +201,12 @@ public class DatabaseCheckJob
 		return counter;
 	}
 
-	private int DeleteWordRange(AbstractDatabaseConnection connection, IEnumerable<string> range)
+	private int DeleteWordRange(IEnumerable<string> range)
 	{
 		var counter = 0;
 		foreach (var word in range)
 		{
-			var affected = connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new
+			var affected = DbConnection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new
 			{
 				Word = word
 			});
@@ -226,12 +224,12 @@ public class DatabaseCheckJob
 	/// <summary>
 	/// (지원되는 DBMS에 한해) Vacuum 작업을 실행합니다.
 	/// </summary>
-	private void ExecuteVacuum(AbstractDatabaseConnection connection)
+	private void ExecuteVacuum()
 	{
 		var watch = new Stopwatch();
 		Log.Information("Executing vacuum...");
 		watch.Restart();
-		connection.ExecuteVacuum();
+		DbConnection.ExecuteVacuum();
 		watch.Stop();
 		Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 	}
@@ -239,14 +237,14 @@ public class DatabaseCheckJob
 	/// <summary>
 	/// 단어 노드 목록들(한방 단어 노드 목록, 공격 단어 노드 목록 등)을 데이터베이스로부터 다시 로드합니다.
 	/// </summary>
-	private void RefreshNodeLists(AbstractDatabaseConnection connection)
+	private void RefreshNodeLists()
 	{
 		var watch = new Stopwatch();
 		watch.Start();
 		Log.Information("Updating node lists...");
 		try
 		{
-			nodeManager.LoadNodeLists(connection);
+			nodeManager.LoadNodeLists(DbConnection);
 			watch.Stop();
 			Log.Information("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 		}
@@ -256,7 +254,7 @@ public class DatabaseCheckJob
 		}
 	}
 
-	private int DeduplicateDatabaseAndGetCount(AbstractDatabaseConnection connection)
+	private int DeduplicateDatabaseAndGetCount()
 	{
 		var count = 0;
 		var watch = new Stopwatch();
@@ -264,7 +262,7 @@ public class DatabaseCheckJob
 		Log.Information("Deduplicating entries...");
 		try
 		{
-			count = connection.DeduplicateDatabase();
+			count = DbConnection.DeduplicateDatabase();
 			watch.Stop();
 			Log.Information("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 		}

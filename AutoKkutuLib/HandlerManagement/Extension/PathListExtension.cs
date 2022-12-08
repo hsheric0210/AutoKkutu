@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Utils.Hangul;
-using Serilog;
+﻿using Serilog;
 
 namespace AutoKkutuLib.HandlerManagement.Extension;
 

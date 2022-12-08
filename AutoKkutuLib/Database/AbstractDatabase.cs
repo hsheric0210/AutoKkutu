@@ -1,13 +1,12 @@
 ﻿using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Utils;
 
 namespace AutoKkutuLib.Database;
 
 public abstract class AbstractDatabase : IDisposable
 {
-	private AbstractDatabaseConnection? _baseConnection;
+	private AbstractDatabaseConnection? underlyingConnection;
 
-	public AbstractDatabaseConnection Connection => _baseConnection.RequireNotNull();
+	public AbstractDatabaseConnection Connection => underlyingConnection ?? throw new NullReferenceException("Database connection accessed before initialized");
 
 	static AbstractDatabase() => typeof(WordModel).RegisterMapping();
 
@@ -21,9 +20,9 @@ public abstract class AbstractDatabase : IDisposable
 
 	protected void Initialize(AbstractDatabaseConnection defaultConnection)
 	{
-		if (_baseConnection != null)
+		if (underlyingConnection != null)
 			throw new InvalidOperationException($"{nameof(Connection)} is already initialized");
-		_baseConnection = defaultConnection;
+		underlyingConnection = defaultConnection;
 	}
 
 	protected virtual void Dispose(bool disposing)

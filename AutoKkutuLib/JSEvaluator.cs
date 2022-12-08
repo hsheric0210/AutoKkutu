@@ -1,29 +1,15 @@
-﻿using CefSharp;
-using Serilog;
+﻿using Serilog;
 using System.Globalization;
 
 namespace AutoKkutuLib;
 
-// Access IJavascriptExecutor in AutoKkutu.cs
-// TODO: Create IJavascriptExecutor to support multiple embedded browsers such as CefSharp, WebView2, etc.
-public static class JSEvaluator
+public class JSEvaluator
 {
-	private static object? EvaluateJSInternal(string javaScript, object? defaultResult)
-	{
-		if (!AutoKkutuMain.Browser.CanExecuteJavascriptInMainFrame)
-			return defaultResult;
+	private readonly IKkutuBrowser browser;
 
-		using (IFrame frame = AutoKkutuMain.Browser.GetMainFrame())
-		{
-			if (frame != null)
-			{
-				using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
-				return task.Result.Result ?? defaultResult;
-			}
-		}
+	public JSEvaluator(IKkutuBrowser browser) => this.browser = browser;
 
-		return defaultResult;
-	}
+	private object? EvaluateJSInternal(string javaScript, object? defaultResult) => browser.EvaluateScriptAsync(javaScript) ?? defaultResult;
 
 	/// <summary>
 	/// Execute the javascript and return the <u>Error Message</u>
@@ -31,29 +17,16 @@ public static class JSEvaluator
 	/// <param name="javaScript">Javascript script to execute in browser main frame</param>
 	/// <param name="error">Error message if available. Empty if not.</param>
 	/// <returns>true if error occurred, false otherwise.</returns>
-	public static bool EvaluateJSReturnError(string javaScript, out string error)
+	public bool EvaluateJSReturnError(string javaScript, out string error)
 	{
-		if (!AutoKkutuMain.Browser.CanExecuteJavascriptInMainFrame)
-		{
-			error = "Browser is not prepared";
-			return true;
-		}
-
-		using (IFrame frame = AutoKkutuMain.Browser.GetMainFrame())
-		{
-			if (frame != null)
-			{
-				using Task<JavascriptResponse> task = frame.EvaluateScriptAsync(javaScript);
-				error = task.Result.Message;
-				return !string.IsNullOrWhiteSpace(error);
-			}
-		}
-
-		error = "Main frame is null";
-		return true;
+		error = "";
+		JSResponse task = browser.EvaluateScriptAsync(javaScript).Result;
+		if (!task.Success)
+			error = task.Message;
+		return task.Success;
 	}
 
-	public static string EvaluateJS(string javaScript, string defaultResult = " ", string? errorMessage = null)
+	public string EvaluateJS(string javaScript, string defaultResult = " ", string? errorMessage = null)
 	{
 		try
 		{
@@ -70,7 +43,7 @@ public static class JSEvaluator
 		}
 	}
 
-	public static int EvaluateJSInt(string javaScript, int defaultResult = -1, string? errorMessage = null)
+	public int EvaluateJSInt(string javaScript, int defaultResult = -1, string? errorMessage = null)
 	{
 		try
 		{
@@ -88,7 +61,7 @@ public static class JSEvaluator
 		}
 	}
 
-	public static bool EvaluateJSBool(string javaScript, bool defaultResult = false, string? errorMessage = null)
+	public bool EvaluateJSBool(string javaScript, bool defaultResult = false, string? errorMessage = null)
 	{
 		try
 		{

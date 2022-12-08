@@ -6,6 +6,7 @@ using System.Globalization;
 
 namespace AutoKkutuLib;
 
+// Strip all gui-related features
 public class PathObject
 {
 	public string Color

@@ -12,6 +12,10 @@ internal partial class KkutuIoHandler : AbstractHandler
 
 	public override string HandlerName => "Kkutu.io Handler";
 
+	public KkutuIoHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	{
+	}
+
 	public override void UpdateChat(string input)
 	{
 		RegisterJSFunction(ParseExtraVisibilityStyleTagsFunc, "", @"
