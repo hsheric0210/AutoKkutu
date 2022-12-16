@@ -1,6 +1,6 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.HandlerManagement.Extension;
+using AutoKkutuLib.Extension;
 using Serilog;
 using System.Globalization;
 
@@ -290,6 +290,6 @@ public class NodeManager
 		return affected;
 	}
 
-	private int DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => nodeTypes.HasFlag(targetNodeType) ? DbConnection.DeleteNode(node, targetNodeType.GetNodeTableName()) : 0;
+	private int DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => nodeTypes.HasFlag(targetNodeType) ? DbConnection.DeleteNode(node, targetNodeType.ToNodeTableName()) : 0;
 	#endregion
 }

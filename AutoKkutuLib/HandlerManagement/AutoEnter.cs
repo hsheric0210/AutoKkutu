@@ -1,5 +1,5 @@
-﻿using AutoKkutuLib.HandlerManagement.Events;
-using AutoKkutuLib.HandlerManagement.Extension;
+﻿using AutoKkutuLib.Extension;
+using AutoKkutuLib.HandlerManagement.Events;
 using AutoKkutuLib.Hangul;
 using Serilog;
 using System.Diagnostics;

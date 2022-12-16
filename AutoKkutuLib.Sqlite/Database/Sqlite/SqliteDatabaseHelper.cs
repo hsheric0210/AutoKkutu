@@ -67,7 +67,7 @@ public static class SqliteDatabaseHelper
 			TableName = tableName
 		}))
 		{
-			if (args.destination.AddNode(wordIndex))
+			if (args.destination.AddNode(wordIndex, tableName))
 				Log.Information("Added {node} to {tableName}.", wordIndex, tableName);
 			else
 				Log.Warning("{node} in {tableName} already exists in database.", wordIndex, tableName);

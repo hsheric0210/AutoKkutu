@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.HandlerManagement.Extension;
+﻿using AutoKkutuLib.Extension;
 using Dapper;
 
 namespace AutoKkutuLib.Database.Extension;

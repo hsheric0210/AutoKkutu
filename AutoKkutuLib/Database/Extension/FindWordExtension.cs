@@ -50,7 +50,7 @@ public static class FindWordExtension
 		attackWordFlag = (int)WordFlags.AttackWord;
 	}
 
-	private static WordCategories QueryWordCategories(
+	private static WordCategories CategorizeWord(
 		string word,
 		WordFlags wordFlags,
 		string missionChar,
@@ -89,18 +89,26 @@ public static class FindWordExtension
 
 		var result = new List<PathObject>();
 		SelectWordEndAttackFlags(mode, out var endWordFlag, out var attackWordFlag);
-		FindQuery query = connection.CreateQuery(mode, parameter.Word, parameter.MissionChar, endWordFlag, attackWordFlag, preference, parameter.Options);
+		FindQuery findQuery = connection.CreateQuery(
+			mode,
+			parameter.Word,
+			parameter.MissionChar,
+			endWordFlag,
+			attackWordFlag,
+			preference,
+			parameter.Options);
 
-		foreach (WordModel found in connection.Query<WordModel>(query.Sql, new DynamicParameters(query.Parameters)))
+		foreach (WordModel found in connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
 		{
 			var wordString = found.Word.Trim();
-			result.Add(new PathObject(wordString, QueryWordCategories(
+			WordCategories categories = CategorizeWord(
 				 wordString,
 				(WordFlags)found.Flags,
 				parameter.MissionChar,
 				(WordFlags)endWordFlag,
 				(WordFlags)attackWordFlag,
-				out var missionCharCount), missionCharCount));
+				out var missionCharCount);
+			result.Add(new PathObject(wordString, categories, missionCharCount));
 		}
 
 		return result;
@@ -134,13 +142,13 @@ public static class FindWordExtension
 				filter = $" WHERE ({wordIndexColumn} = @PrimaryWord)";
 			}
 
-			// 한방 단어
+			// Use end-words?
 			ApplyFilter(options, PathFinderOptions.UseEndWord, endWordFlag, ref filter);
 
-			// 공격 단어
+			// Use attack-words?
 			ApplyFilter(options, PathFinderOptions.UseAttackWord, attackWordFlag, ref filter);
 
-			// 쿵쿵따 모드에서는 쿵쿵따 전용 단어들만 추천
+			// Only KungKungTta words if we're on KungKungTta mode
 			if (mode == GameMode.KungKungTta)
 				filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordFlags.KKT3} != 0)";
 		}
@@ -159,7 +167,15 @@ public static class FindWordExtension
 	{
 		if (string.IsNullOrWhiteSpace(missionChar))
 		{
-			// WordPriority
+			/*
+			WordPriority(
+				string flagsColumnName,
+				int endWordFlag,
+				int attackWordFlag,
+				int endWordPriority,
+				int attackWordPriority,
+				int normalWordPriority)
+			 */
 			return string.Format(
 				CultureInfo.InvariantCulture,
 				"{0}({1}, {2}, {3}, {4}, {5}, {6})",
@@ -173,6 +189,20 @@ public static class FindWordExtension
 		}
 		else
 		{
+			/*
+			MissionWordPriority(
+				string wordColumnName,
+				string flagsColumnName,
+				string missionChar,
+				int endWordFlag,
+				int attackWordFlag,
+				int endMissionWordPriority,
+				int endWordPriority,
+				int attackMissionWordPriority,
+				int attackWordPriority,
+				int missionWordPriority,
+				int normalWordPriority)
+			*/
 			param.Add("@MissionChar", missionChar);
 			return string.Format(
 				CultureInfo.InvariantCulture,

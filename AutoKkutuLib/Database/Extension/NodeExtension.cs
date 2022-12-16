@@ -6,7 +6,7 @@ namespace AutoKkutuLib.Database.Extension;
 public static class NodeExtension
 {
 	#region Node addition
-	public static bool AddNode(this AbstractDatabaseConnection connection, string node, NodeTypes nodeType) => connection.AddNode(node, nodeType.GetNodeTableName());
+	public static bool AddNode(this AbstractDatabaseConnection connection, string node, NodeTypes nodeType) => connection.AddNode(node, nodeType.ToNodeTableName());
 
 	public static bool AddNode(this AbstractDatabaseConnection connection, string node, string tableName)
 	{
@@ -37,7 +37,7 @@ public static class NodeExtension
 	#endregion
 
 	#region Node deletion
-	public static int DeleteNode(this AbstractDatabaseConnection connection, string node, NodeTypes nodeType) => connection.DeleteNode(node, nodeType.GetNodeTableName());
+	public static int DeleteNode(this AbstractDatabaseConnection connection, string node, NodeTypes nodeType) => connection.DeleteNode(node, nodeType.ToNodeTableName());
 
 	public static int DeleteNode(this AbstractDatabaseConnection connection, string node, string tableName)
 	{
@@ -47,16 +47,16 @@ public static class NodeExtension
 			throw new ArgumentNullException(nameof(node));
 
 		return string.IsNullOrEmpty(tableName)
-			?            throw new ArgumentException("Empty table name", nameof(tableName))
+			? throw new ArgumentException("Empty table name", nameof(tableName))
 			: connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node", new
-		{
-			Node = node
-		});
+			{
+				Node = node
+			});
 	}
 	#endregion
 
 	#region Query node list
-	public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, NodeTypes nodeType) => connection.GetNodeList(nodeType.GetNodeTableName());
+	public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, NodeTypes nodeType) => connection.GetNodeList(nodeType.ToNodeTableName());
 
 	public static ICollection<string> GetNodeList(this AbstractDatabaseConnection connection, string tableName)
 	{
@@ -69,8 +69,8 @@ public static class NodeExtension
 	}
 	#endregion
 
-	#region NodeType to node table name conversion
-	public static string GetNodeTableName(this NodeTypes nodeType) => nodeType switch
+	#region Conversion between NodeType and node table name
+	public static string ToNodeTableName(this NodeTypes nodeType) => nodeType switch
 	{
 		NodeTypes.EndWord => DatabaseConstants.EndNodeIndexTableName,
 		NodeTypes.AttackWord => DatabaseConstants.AttackNodeIndexTableName,
