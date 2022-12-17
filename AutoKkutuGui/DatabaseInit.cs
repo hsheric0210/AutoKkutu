@@ -8,7 +8,7 @@ using System;
 
 namespace AutoKkutuGui;
 
-public static class DatabaseUtils
+public static class DatabaseInit
 {
 	public static AbstractDatabase CreateDatabase(System.Configuration.Configuration config)
 	{

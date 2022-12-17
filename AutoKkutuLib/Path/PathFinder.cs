@@ -10,6 +10,7 @@ public class PathFinder
 	private readonly NodeManager nodeManager;
 	private readonly SpecialPathList specialPathList;
 
+	// TODO: Remove DisplayList and QualifiedList from global var
 	public IList<PathObject> DisplayList
 	{
 		get; private set;

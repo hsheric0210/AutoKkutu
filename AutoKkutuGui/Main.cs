@@ -2,6 +2,7 @@
 using AutoKkutuLib.Database;
 using AutoKkutuLib.HandlerManagement;
 using AutoKkutuLib.HandlerManagement.Events;
+using AutoKkutuLib.Handlers;
 using AutoKkutuLib.Path;
 using CefSharp;
 using CefSharp.Wpf;
@@ -14,7 +15,7 @@ namespace AutoKkutuGui;
 
 public static class Main
 {
-	public static Configuration Configuration
+	public static Preference Configuration
 	{
 		get; set;
 	} = null!;
@@ -84,7 +85,7 @@ public static class Main
 
 			Kkutu = new AutoKkutu(Database, Handler);
 
-			PathFinder.OnPathUpdated += OnPathUpdated;
+			Kkutu.PathFinder.OnPathUpdated += OnPathUpdated;
 			InitializationFinished?.Invoke(null, EventArgs.Empty);
 		}
 		catch (Exception e)
@@ -135,11 +136,10 @@ public static class Main
 		{
 			Settings config = Settings.Default;
 			config.Reload();
-			Configuration = new AutoKkutuConfiguration
+			Configuration = new Preference
 			{
 				AutoEnterEnabled = config.AutoEnterEnabled,
 				AutoDBUpdateEnabled = config.AutoDBUpdateEnabled,
-				AutoDBUpdateMode = config.AutoDBUpdateMode,
 				ActiveWordPreference = config.ActiveWordPreference,
 				InactiveWordPreference = config.InactiveWordPreference,
 				AttackWordAllowed = config.AttackWordEnabled,
@@ -152,7 +152,6 @@ public static class Main
 				DelayInMillis = config.DelayInMillis,
 				DelayStartAfterCharEnterEnabled = config.DelayStartAfterWordEnterEnabled,
 				InputSimulate = config.InputSimulate,
-				GameModeAutoDetectEnabled = config.GameModeAutoDetectionEnabled,
 				MaxDisplayedWordCount = config.MaxDisplayedWordCount,
 				FixDelayEnabled = config.FixDelayEnabled,
 				FixDelayPerCharEnabled = config.FixDelayPerCharEnabled,
@@ -196,12 +195,11 @@ public static class Main
 			var watch = new Stopwatch();
 			watch.Start();
 
-			Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
+			System.Configuration.Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
 			Database = DatabaseInit.CreateDatabase(databaseConfig);
 			Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 			watch.Restart();
-			WordBatchJob.Initialize();
 			Log.Information(I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
 
 			watch.Stop();
@@ -279,7 +277,7 @@ public static class Main
 	private static void ResetPathList()
 	{
 		Log.Information(I18n.Main_ResetPathList);
-		PathFinder.ResetFinalList();
+		Kkutu.PathFinder.ResetFinalList();
 		PathListUpdated?.Invoke(null, EventArgs.Empty);
 	}
 
@@ -297,9 +295,13 @@ public static class Main
 		var url = args.Url;
 
 		// Find appropriate handler for current URL
-		Handler = CommonHandler.GetHandler(url);
-		if (Handler != null)
+		var handler = HandlerList.GetByUri(new Uri(url));
+
+		if (handler != null)
 		{
+			Handler = new HandlerManager(handler);
+			Kkutu.SetHandlerManager(Handler);
+
 			// Initialize and load the handler
 			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
 			LoadHandler(Handler);

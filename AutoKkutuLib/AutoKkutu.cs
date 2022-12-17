@@ -1,40 +1,33 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.HandlerManagement;
-using AutoKkutuLib.Handlers;
 using AutoKkutuLib.Path;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoKkutuLib;
 
-// TODO: Implement the global initializer and management here
-// like CefSharp.Cef
 public class AutoKkutu : IDisposable
 {
 	private bool disposedValue;
+	private IHandlerManager? handlerManager;
+	private AutoEnter? autoEnter;
 
 	public NodeManager NodeManager { get; }
 	public SpecialPathList SpecialPathList { get; }
 	public PathFinder PathFinder { get; }
 
-	public IHandlerManager HandlerManager { get; }
-	public AutoEnter AutoEnter { get; }
+	public IHandlerManager HandlerManager => handlerManager ?? throw new InvalidOperationException("HandlerManager is not initalized yet! Call SetHandlerManager() to initialize it.");
+	public AutoEnter AutoEnter => autoEnter ?? throw new InvalidOperationException("AutoEnter is not initalized yet! Call SetHandlerManager() to initialize it.");
 
-	public AutoKkutu(AbstractDatabase db, IHandlerManager handlerManager)
+	public AutoKkutu(AbstractDatabase db)
 	{
 		SpecialPathList = new SpecialPathList();
 		NodeManager = new NodeManager(db.Connection);
 		PathFinder = new PathFinder(NodeManager, SpecialPathList);
-
-		HandlerManager = handlerManager;
-		AutoEnter = new AutoEnter(HandlerManager);
 	}
 
-	public AutoKkutu(AbstractDatabase db, AbstractHandler handler) : this(db, new HandlerManager(handler))
+	public void SetHandlerManager(IHandlerManager handlerManager)
 	{
+		this.handlerManager = handlerManager;
+		autoEnter = new AutoEnter(handlerManager);
 	}
 
 	#region Disposal
@@ -44,7 +37,7 @@ public class AutoKkutu : IDisposable
 		{
 			if (disposing)
 			{
-				HandlerManager.Dispose();
+				handlerManager?.Dispose();
 			}
 			disposedValue = true;
 		}

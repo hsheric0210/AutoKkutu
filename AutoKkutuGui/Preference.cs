@@ -3,7 +3,7 @@ using System;
 
 namespace AutoKkutuGui;
 
-public class Configuration
+public class Preference
 {
 	public bool AutoEnterEnabled
 	{
@@ -95,7 +95,7 @@ public class Configuration
 		get; set;
 	} = 10;
 
-	public Configuration()
+	public Preference()
 	{
 	}
 
@@ -116,7 +116,7 @@ public class Configuration
 
 	public override bool Equals(object? obj)
 	{
-		if (obj is not Configuration other)
+		if (obj is not Preference other)
 			return false;
 
 		return DelayEnabled == other.DelayEnabled

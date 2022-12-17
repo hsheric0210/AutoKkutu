@@ -15,7 +15,7 @@ public partial class ConfigWindow : Window
 {
 	private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
 
-	public ConfigWindow(Configuration config)
+	public ConfigWindow(Preference config)
 	{
 		if (config == null)
 			throw new ArgumentNullException(nameof(config));
@@ -78,7 +78,7 @@ public partial class ConfigWindow : Window
 		}
 
 		// :)
-		var conf = new Configuration
+		var conf = new Preference
 		{
 			ActiveWordPreference = new WordPreference(PreferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
 			InactiveWordPreference = new WordPreference(PreferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
