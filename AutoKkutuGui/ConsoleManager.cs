@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+﻿using AutoKkutuLib;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace AutoKkutuLib.Utils;
+namespace AutoKkutuGui;
 
 public static class ConsoleManager
 {

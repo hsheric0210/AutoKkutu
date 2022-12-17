@@ -8,7 +8,7 @@
 	<AnalysisLevel>latest</AnalysisLevel>
 	<AnalysisMode>All</AnalysisMode>
 	<CodeAnalysisRuleSet>.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
-	<StartupObject>AutoKkutu.App</StartupObject>
+	<StartupObject>AutoKkutuGui.App</StartupObject>
 	<ApplicationIcon>jjoriping.ico</ApplicationIcon>
 	<RepositoryUrl>https://github.com/hsheric0210/AutoKkutu</RepositoryUrl>
 	<PackageProjectUrl>https://github.com/hsheric0210/AutoKkutu</PackageProjectUrl>
@@ -106,6 +106,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
+    <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
+    <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
+    <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
     <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
   </ItemGroup>
 

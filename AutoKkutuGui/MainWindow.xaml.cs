@@ -1,9 +1,7 @@
-﻿using AutoKkutuGui;
-using AutoKkutuLib;
+﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.Modules.AutoEntering;
+using AutoKkutuLib.HandlerManagement;
 using AutoKkutuLib.Path;
-using AutoKkutuLib.Utils;
 using CefSharp;
 using Serilog;
 using System;
@@ -14,7 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
-namespace AutoKkutu;
+namespace AutoKkutuGui;
 
 public partial class MainWindow : Window
 {
@@ -39,16 +37,16 @@ public partial class MainWindow : Window
 		DatabaseEvents.DatabaseImportStart += OnDatabaseImportStart;
 		DatabaseEvents.DatabaseImportDone += OnDatabaseImportDone;
 
-		AutoKkutuMain.PathListUpdated += OnPathListUpdated;
-		AutoKkutuMain.InitializeUI += OnInitializeUI;
-		AutoKkutuMain.SearchStateChanged += OnSearchStateChanged;
-		AutoKkutuMain.StatusMessageChanged += OnStatusMessageChanged;
+		Main.PathListUpdated += OnPathListUpdated;
+		Main.InitializeUI += OnInitializeUI;
+		Main.SearchStateChanged += OnSearchStateChanged;
+		Main.StatusMessageChanged += OnStatusMessageChanged;
 
 		AutoEnter.EnterDelaying += OnEnterDelaying;
 		AutoEnter.PathNotFound += OnPathNotFound;
 		AutoEnter.AutoEntered += OnAutoEntered;
 
-		AutoKkutuMain.Initialize();
+		Main.Initialize();
 	}
 
 	/* EVENTS: AutoEnter */
@@ -70,12 +68,12 @@ public partial class MainWindow : Window
 		Dispatcher.Invoke(() =>
 		{
 			// Apply browser frame
-			BrowserContainer.Content = AutoKkutuMain.Browser;
+			BrowserContainer.Content = Main.Browser;
 
 			// Update database icon
 			var img = new BitmapImage();
 			img.BeginInit();
-			img.UriSource = new Uri($@"Images\{AutoKkutuMain.Database.GetDBType()}.png", UriKind.Relative);
+			img.UriSource = new Uri($@"Images\{Main.Database.GetDBType()}.png", UriKind.Relative);
 			img.EndInit();
 			DBLogo.Source = img;
 
@@ -102,11 +100,11 @@ public partial class MainWindow : Window
 
 	/* EVENT: Hotkeys */
 
-	private void OnToggleDelay(object? sender, RoutedEventArgs e) => AutoKkutuMain.ToggleFeature(config => config.DelayEnabled = !config.DelayEnabled, StatusMessage.DelayToggled);
+	private void OnToggleDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.DelayEnabled = !config.DelayEnabled, StatusMessage.DelayToggled);
 
-	private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => AutoKkutuMain.ToggleFeature(config => config.DelayEnabled = config.FixDelayEnabled = !config.DelayEnabled, StatusMessage.AllDelayToggled);
+	private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.DelayEnabled = config.FixDelayEnabled = !config.DelayEnabled, StatusMessage.AllDelayToggled);
 
-	private void OnToggleAutoEnter(object? sender, RoutedEventArgs e) => AutoKkutuMain.ToggleFeature(config => config.AutoEnterEnabled = !config.AutoEnterEnabled, StatusMessage.AutoEnterToggled);
+	private void OnToggleAutoEnter(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterEnabled = !config.AutoEnterEnabled, StatusMessage.AutoEnterToggled);
 
 	/* EVENTS: UI */
 
@@ -122,7 +120,7 @@ public partial class MainWindow : Window
 		{
 			var clipboard = Clipboard.GetText();
 			if (!string.IsNullOrWhiteSpace(clipboard))
-				AutoKkutuMain.SendMessage(clipboard);
+				Main.SendMessage(clipboard);
 		}
 		catch (Exception ex)
 		{
@@ -130,11 +128,11 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(AutoKkutuMain.ColorPreference).Show();
+	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(Main.ColorPreference).Show();
 
-	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(AutoKkutuMain.Database).Show();
+	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(Main.Database).Show();
 
-	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => AutoKkutuMain.Browser.ShowDevTools();
+	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => Main.Browser.ShowDevTools();
 
 	private void OnPathListContextMenuOpen(object? sender, ContextMenuEventArgs e)
 	{
@@ -186,7 +184,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeAttack(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.Connection);
+		((PathObject)currentSelected).MakeAttack(Main.Configuration.GameMode, Main.Database.Connection);
 	}
 
 	private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -194,7 +192,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeEnd(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.Connection);
+		((PathObject)currentSelected).MakeEnd(Main.Configuration.GameMode, Main.Database.Connection);
 	}
 
 	private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -202,7 +200,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeNormal(AutoKkutuMain.Configuration.GameMode, AutoKkutuMain.Database.Connection);
+		((PathObject)currentSelected).MakeNormal(Main.Configuration.GameMode, Main.Database.Connection);
 	}
 
 	private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)
@@ -283,16 +281,16 @@ public partial class MainWindow : Window
 		if (i != null)
 		{
 			Log.Information(I18n.Main_PathSubmitted, i.Content);
-			AutoKkutuMain.SendMessage(i.Content);
+			Main.SendMessage(i.Content);
 		}
 	}
 
-	private void OnSettingsClick(object? sender, RoutedEventArgs e) => new ConfigWindow(AutoKkutuMain.Configuration).Show();
+	private void OnSettingsClick(object? sender, RoutedEventArgs e) => new ConfigWindow(Main.Configuration).Show();
 
 	private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
 	{
-		AutoKkutuMain.Browser.Load(CurrentURL.Text);
-		AutoKkutuMain.FrameReloaded();
+		Main.Browser.Load(CurrentURL.Text);
+		Main.FrameReloaded();
 	}
 
 	private void OnWindowClose(object? sender, CancelEventArgs e)
@@ -300,7 +298,7 @@ public partial class MainWindow : Window
 		Log.Information(I18n.Main_ClosingDBConnection);
 		try
 		{
-			AutoKkutuMain.Database.Dispose();
+			Main.Database.Dispose();
 		}
 		catch (Exception ex)
 		{
@@ -363,7 +361,7 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(ChatField.Text))
 		{
-			AutoKkutuMain.SendMessage(ChatField.Text);
+			Main.SendMessage(ChatField.Text);
 			ChatField.Text = "";
 		}
 	}
@@ -372,7 +370,7 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(SearchField.Text))
 		{
-			AutoKkutuMain.StartPathFinding(new PresentedWord(SearchField.Text, false), AutoKkutuMain.Handler?.CurrentMissionChar ?? string.Empty, PathFinderOptions.ManualSearch);
+			Main.StartPathFinding(new PresentedWord(SearchField.Text, false), Main.Handler?.CurrentMissionChar ?? string.Empty, PathFinderOptions.ManualSearch);
 			SearchField.Text = "";
 		}
 	}

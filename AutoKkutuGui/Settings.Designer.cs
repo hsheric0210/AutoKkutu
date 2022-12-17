@@ -49,22 +49,10 @@ namespace AutoKkutuGui {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("OnGameEnd")]
-        public global::AutoKkutu.Constants.AutoDBUpdateMode AutoDBUpdateMode {
-            get {
-                return ((global::AutoKkutu.Constants.AutoDBUpdateMode)(this["AutoDBUpdateMode"]));
-            }
-            set {
-                this["AutoDBUpdateMode"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("5;6;4;1;2;0")]
-        public global::AutoKkutu.Constants.WordPreference ActiveWordPreference {
+        public global::AutoKkutuLib.WordPreference ActiveWordPreference {
             get {
-                return ((global::AutoKkutu.Constants.WordPreference)(this["ActiveWordPreference"]));
+                return ((global::AutoKkutuLib.WordPreference)(this["ActiveWordPreference"]));
             }
             set {
                 this["ActiveWordPreference"] = value;
@@ -73,9 +61,9 @@ namespace AutoKkutuGui {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::AutoKkutu.Constants.WordPreference InactiveWordPreference {
+        public global::AutoKkutuLib.WordPreference InactiveWordPreference {
             get {
-                return ((global::AutoKkutu.Constants.WordPreference)(this["InactiveWordPreference"]));
+                return ((global::AutoKkutuLib.WordPreference)(this["InactiveWordPreference"]));
             }
             set {
                 this["InactiveWordPreference"] = value;
@@ -187,18 +175,6 @@ namespace AutoKkutuGui {
             }
             set {
                 this["DelayStartAfterWordEnterEnabled"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool GameModeAutoDetectionEnabled {
-            get {
-                return ((bool)(this["GameModeAutoDetectionEnabled"]));
-            }
-            set {
-                this["GameModeAutoDetectionEnabled"] = value;
             }
         }
         

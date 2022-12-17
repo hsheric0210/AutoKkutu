@@ -1,5 +1,4 @@
-﻿using AutoKkutuGui;
-using AutoKkutuGui.Config;
+﻿using AutoKkutuGui.Config;
 using AutoKkutuLib;
 using Serilog;
 using System;
@@ -7,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 
-namespace AutoKkutu;
+namespace AutoKkutuGui;
 
 /// <summary>
 /// ConfigWindow.xaml에 대한 상호 작용 논리
@@ -16,31 +15,25 @@ public partial class ConfigWindow : Window
 {
 	private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
 
-	public ConfigWindow(AutoKkutuConfiguration config)
+	public ConfigWindow(Configuration config)
 	{
 		if (config == null)
 			throw new ArgumentNullException(nameof(config));
 
 		InitializeComponent();
 
-		DBAutoUpdateModeCB.ItemsSource = ConfigEnums.GetDBAutoUpdateModeValues().Select(ConfigEnums.GetDBAutoUpdateModeName);
-		GameMode.ItemsSource = ConfigEnums.GetGameModeValues().Select(ConfigEnums.GetGameModeName);
-
 		AutoEnter.IsChecked = config.AutoEnterEnabled;
 		DBAutoUpdate.IsChecked = config.AutoDBUpdateEnabled;
-		DBAutoUpdateModeCB.SelectedIndex = (int)config.AutoDBUpdateMode;
 		AttackWord.IsChecked = config.AttackWordAllowed;
 		EndWord.IsChecked = config.EndWordEnabled;
 		ReturnMode.IsChecked = config.ReturnModeEnabled;
 		AutoFix.IsChecked = config.AutoFixEnabled;
 		MissionDetection.IsChecked = config.MissionAutoDetectionEnabled;
-		GameMode.SelectedIndex = (int)config.GameMode;
 		Delay.IsChecked = config.DelayEnabled;
 		DelayPerWord.IsChecked = config.DelayPerCharEnabled;
 		DelayNumber.Text = config.DelayInMillis.ToString(CultureInfo.InvariantCulture);
 		DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterCharEnterEnabled;
 		InputSimulate.IsChecked = config.InputSimulate;
-		GameModeAutoDetect.IsChecked = config.GameModeAutoDetectEnabled;
 		MaxWordCount.Text = config.MaxDisplayedWordCount.ToString(CultureInfo.InvariantCulture);
 		FixDelay.IsChecked = config.FixDelayEnabled;
 		FixDelayPerWord.IsChecked = config.FixDelayPerCharEnabled;
@@ -84,54 +77,50 @@ public partial class ConfigWindow : Window
 			Log.Warning("Can't parse fix delay number {string}; will be reset to {default:l}.", fixDelayNumber, _fixdelay);
 		}
 
-		var conf = new AutoKkutuConfiguration
+		// :)
+		var conf = new Configuration
 		{
-			AutoEnterEnabled = AutoEnter.IsChecked ?? false,
-			AutoDBUpdateEnabled = DBAutoUpdate.IsChecked ?? false,
-			AutoDBUpdateMode = ConfigEnums.GetDBAutoUpdateModeValues()[DBAutoUpdateModeCB.SelectedIndex],
 			ActiveWordPreference = new WordPreference(PreferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
 			InactiveWordPreference = new WordPreference(PreferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
-			AttackWordAllowed = AttackWord.IsChecked ?? false,
-			EndWordEnabled = EndWord.IsChecked ?? false,
-			ReturnModeEnabled = ReturnMode.IsChecked ?? false,
-			AutoFixEnabled = AutoFix.IsChecked ?? false,
-			MissionAutoDetectionEnabled = MissionDetection.IsChecked ?? false,
-			GameMode = ConfigEnums.GetGameModeValues()[GameMode.SelectedIndex],
-			DelayEnabled = Delay.IsChecked ?? false,
-			DelayPerCharEnabled = DelayPerWord.IsChecked ?? false,
-			DelayInMillis = _delay,
 			DelayStartAfterCharEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
-			InputSimulate = InputSimulate.IsChecked ?? false,
-			GameModeAutoDetectEnabled = GameModeAutoDetect.IsChecked ?? false,
-			MaxDisplayedWordCount = MaxWords,
-			FixDelayEnabled = FixDelay.IsChecked ?? false,
+			MissionAutoDetectionEnabled = MissionDetection.IsChecked ?? false,
 			FixDelayPerCharEnabled = FixDelayPerWord.IsChecked ?? false,
-			FixDelayInMillis = _fixdelay
+			AutoDBUpdateEnabled = DBAutoUpdate.IsChecked ?? false,
+			DelayPerCharEnabled = DelayPerWord.IsChecked ?? false,
+			ReturnModeEnabled = ReturnMode.IsChecked ?? false,
+			AttackWordAllowed = AttackWord.IsChecked ?? false,
+			InputSimulate = InputSimulate.IsChecked ?? false,
+			AutoEnterEnabled = AutoEnter.IsChecked ?? false,
+			FixDelayEnabled = FixDelay.IsChecked ?? false,
+			EndWordEnabled = EndWord.IsChecked ?? false,
+			AutoFixEnabled = AutoFix.IsChecked ?? false,
+			DelayEnabled = Delay.IsChecked ?? false,
+			MaxDisplayedWordCount = MaxWords,
+			FixDelayInMillis = _fixdelay,
+			DelayInMillis = _delay,
 		};
 
 		try
 		{
 			Settings config = Settings.Default;
-			config.AutoEnterEnabled = conf.AutoEnterEnabled;
-			config.AutoDBUpdateEnabled = conf.AutoDBUpdateEnabled;
-			config.AutoDBUpdateMode = conf.AutoDBUpdateMode;
-			config.ActiveWordPreference = conf.ActiveWordPreference;
-			config.InactiveWordPreference = conf.InactiveWordPreference;
-			config.AttackWordEnabled = conf.AttackWordAllowed;
-			config.EndWordEnabled = conf.EndWordEnabled;
-			config.ReturnModeEnabled = conf.ReturnModeEnabled;
-			config.AutoFixEnabled = conf.AutoFixEnabled;
-			config.MissionAutoDetectionEnabled = conf.MissionAutoDetectionEnabled;
 			config.DelayEnabled = conf.DelayEnabled;
-			config.DelayPerCharEnabled = conf.DelayPerCharEnabled;
 			config.DelayInMillis = conf.DelayInMillis;
-			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterCharEnterEnabled;
 			config.InputSimulate = conf.InputSimulate;
-			config.GameModeAutoDetectionEnabled = conf.GameModeAutoDetectEnabled;
-			config.MaxDisplayedWordCount = conf.MaxDisplayedWordCount;
+			config.EndWordEnabled = conf.EndWordEnabled;
+			config.AutoFixEnabled = conf.AutoFixEnabled;
 			config.FixDelayEnabled = conf.FixDelayEnabled;
-			config.FixDelayPerCharEnabled = conf.FixDelayPerCharEnabled;
 			config.FixDelayInMillis = conf.FixDelayInMillis;
+			config.AutoEnterEnabled = conf.AutoEnterEnabled;
+			config.ReturnModeEnabled = conf.ReturnModeEnabled;
+			config.AttackWordEnabled = conf.AttackWordAllowed;
+			config.DelayPerCharEnabled = conf.DelayPerCharEnabled;
+			config.AutoDBUpdateEnabled = conf.AutoDBUpdateEnabled;
+			config.ActiveWordPreference = conf.ActiveWordPreference;
+			config.MaxDisplayedWordCount = conf.MaxDisplayedWordCount;
+			config.InactiveWordPreference = conf.InactiveWordPreference;
+			config.FixDelayPerCharEnabled = conf.FixDelayPerCharEnabled;
+			config.MissionAutoDetectionEnabled = conf.MissionAutoDetectionEnabled;
+			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterCharEnterEnabled;
 			Settings.Default.Save();
 		}
 		catch (Exception ex)
@@ -139,7 +128,7 @@ public partial class ConfigWindow : Window
 			Log.Error(ex, "Failed to save the configuration.");
 		}
 
-		AutoKkutuMain.Configuration = conf;
+		Main.Configuration = conf;
 		Close();
 	}
 

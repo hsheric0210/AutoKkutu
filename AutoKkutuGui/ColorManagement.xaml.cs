@@ -1,16 +1,15 @@
 ﻿using Serilog;
 using System;
 using System.Windows;
-using AutoKkutuGui;
 
-namespace AutoKkutu;
+namespace AutoKkutuGui;
 
 /// <summary>
 /// ColorManagement.xaml에 대한 상호 작용 논리
 /// </summary>
 public partial class ColorManagement : Window
 {
-	public ColorManagement(AutoKkutuColorPreference config)
+	public ColorManagement(ColorPreference config)
 	{
 		if (config == null)
 			throw new ArgumentNullException(nameof(config));
@@ -25,13 +24,13 @@ public partial class ColorManagement : Window
 
 	private void OnSubmit(object sender, RoutedEventArgs e)
 	{
-		var newPref = new AutoKkutuColorPreference
+		var newPref = new ColorPreference
 		{
-			EndWordColor = EndWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultEndWordColor,
-			AttackWordColor = AttackWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultAttackWordColor,
-			MissionWordColor = MissionWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultMissionWordColor,
-			EndMissionWordColor = EndMissionWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultEndMissionWordColor,
-			AttackMissionWordColor = AttackMissionWordColor.SelectedColor ?? AutoKkutuColorPreference.DefaultAttackMissionWordColor,
+			EndWordColor = EndWordColor.SelectedColor ?? ColorPreference.DefaultEndWordColor,
+			AttackWordColor = AttackWordColor.SelectedColor ?? ColorPreference.DefaultAttackWordColor,
+			MissionWordColor = MissionWordColor.SelectedColor ?? ColorPreference.DefaultMissionWordColor,
+			EndMissionWordColor = EndMissionWordColor.SelectedColor ?? ColorPreference.DefaultEndMissionWordColor,
+			AttackMissionWordColor = AttackMissionWordColor.SelectedColor ?? ColorPreference.DefaultAttackMissionWordColor,
 		};
 
 		try
@@ -49,7 +48,7 @@ public partial class ColorManagement : Window
 			Log.Error(ex, "Failed to save the configuration.");
 		}
 
-		AutoKkutuMain.ColorPreference = newPref;
+		Main.ColorPreference = newPref;
 		Close();
 	}
 

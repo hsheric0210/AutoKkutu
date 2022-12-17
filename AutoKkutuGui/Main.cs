@@ -2,10 +2,7 @@
 using AutoKkutuLib.Database;
 using AutoKkutuLib.HandlerManagement;
 using AutoKkutuLib.HandlerManagement.Events;
-using AutoKkutuLib.HandlerManagement.Extension;
-using AutoKkutuLib.Modules.AutoEntering;
 using AutoKkutuLib.Path;
-using AutoKkutuLib.Utils;
 using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
@@ -15,14 +12,14 @@ using System.Diagnostics;
 
 namespace AutoKkutuGui;
 
-public static class AutoKkutuMain
+public static class Main
 {
-	public static AutoKkutuConfiguration Configuration
+	public static Configuration Configuration
 	{
 		get; set;
 	} = null!;
 
-	public static AutoKkutuColorPreference ColorPreference
+	public static ColorPreference ColorPreference
 	{
 		get; set;
 	} = null!;
@@ -57,6 +54,11 @@ public static class AutoKkutuMain
 
 	public static event EventHandler? ChatUpdated;
 
+	public static AutoKkutu Kkutu
+	{
+		get; private set;
+	}
+
 	/* Misc. variables */
 
 	/* Initialization-related */
@@ -79,6 +81,8 @@ public static class AutoKkutuMain
 
 			// Initialize UI
 			InitializeUI?.Invoke(null, EventArgs.Empty);
+
+			Kkutu = new AutoKkutu(Database, Handler);
 
 			PathFinder.OnPathUpdated += OnPathUpdated;
 			InitializationFinished?.Invoke(null, EventArgs.Empty);
@@ -155,7 +159,7 @@ public static class AutoKkutuMain
 				FixDelayInMillis = config.FixDelayInMillis
 			};
 
-			ColorPreference = new AutoKkutuColorPreference
+			ColorPreference = new ColorPreference
 			{
 				EndWordColor = config.EndWordColor.ToMediaColor(),
 				AttackWordColor = config.AttackWordColor.ToMediaColor(),

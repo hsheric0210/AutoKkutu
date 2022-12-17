@@ -1,13 +1,16 @@
-﻿using AutoKkutuLib.Database;
+﻿using AutoKkutuGui.ConfigFile;
+using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.MySql;
+using AutoKkutuLib.Database.PostgreSql;
+using AutoKkutuLib.Database.Sqlite;
 using Serilog;
+using System;
 
-namespace AutoKkutuLib;
+namespace AutoKkutuGui;
 
-// TODO: Scrap and create better thing
-// or move database initialization to AutoKkutu.cs
 public static class DatabaseUtils
 {
-	public static AbstractDatabase CreateDatabase(Configuration config)
+	public static AbstractDatabase CreateDatabase(System.Configuration.Configuration config)
 	{
 		if (config == null)
 			throw new ArgumentNullException(nameof(config));

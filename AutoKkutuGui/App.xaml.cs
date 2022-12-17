@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Windows;
-using AutoKkutuLib.Utils;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace AutoKkutu;
+namespace AutoKkutuGui;
 
 /// <summary>
 /// Interaction logic for App.xaml

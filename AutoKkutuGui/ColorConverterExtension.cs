@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace AutoKkutuLib.HandlerManagement.Extension;
+namespace AutoKkutuGui;
 
 // https://stackoverflow.com/a/62838184
 public static class ColorConverterExtension

@@ -9,11 +9,10 @@ using System.Text;
 using System.Windows;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Sqlite;
-using AutoKkutuLib.Utils;
 using AutoKkutuLib;
 using AutoKkutuLib.Path;
 
-namespace AutoKkutu;
+namespace AutoKkutuGui;
 
 public partial class DatabaseManagement : Window
 {

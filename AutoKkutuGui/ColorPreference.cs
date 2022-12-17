@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace AutoKkutuGui;
 
-public class AutoKkutuColorPreference
+public class ColorPreference
 {
 	public static readonly Color DefaultEndWordColor = Color.FromRgb(0xFF, 0x11, 0x00);
 	public static readonly Color DefaultAttackWordColor = Color.FromRgb(0xFF, 0x80, 0x00);
@@ -38,7 +38,7 @@ public class AutoKkutuColorPreference
 
 	public override int GetHashCode() => HashCode.Combine(EndWordColor, AttackWordColor, MissionWordColor, EndMissionWordColor, AttackMissionWordColor);
 
-	public override bool Equals(object? obj) => obj is AutoKkutuColorPreference other
+	public override bool Equals(object? obj) => obj is ColorPreference other
 			&& EndWordColor == other.EndWordColor
 			&& AttackWordColor == other.AttackWordColor
 			&& MissionWordColor == other.MissionWordColor
