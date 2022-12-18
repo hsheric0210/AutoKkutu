@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.HandlerManagement.Events;
+﻿namespace AutoKkutuLib.Game.Events;
 
 public class WordHistoryEventArgs : EventArgs
 {

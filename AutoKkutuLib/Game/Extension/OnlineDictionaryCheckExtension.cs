@@ -1,6 +1,6 @@
 ﻿using Serilog;
 
-namespace AutoKkutuLib.HandlerManagement.Extension;
+namespace AutoKkutuLib.Game.Extension;
 
 public static class OnlineVerifyExtension
 {

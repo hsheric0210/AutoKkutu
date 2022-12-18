@@ -1,6 +1,6 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.HandlerManagement;
+using AutoKkutuLib.Game;
 using AutoKkutuLib.Path;
 using CefSharp;
 using Serilog;
@@ -184,7 +184,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeAttack(Main.Configuration.GameMode, Main.Database.Connection);
+		((PathObject)currentSelected).MakeAttack(Main.Prefs.GameMode, Main.Database.Connection);
 	}
 
 	private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -192,7 +192,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeEnd(Main.Configuration.GameMode, Main.Database.Connection);
+		((PathObject)currentSelected).MakeEnd(Main.Prefs.GameMode, Main.Database.Connection);
 	}
 
 	private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -200,7 +200,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeNormal(Main.Configuration.GameMode, Main.Database.Connection);
+		((PathObject)currentSelected).MakeNormal(Main.Prefs.GameMode, Main.Database.Connection);
 	}
 
 	private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)
@@ -285,7 +285,7 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void OnSettingsClick(object? sender, RoutedEventArgs e) => new ConfigWindow(Main.Configuration).Show();
+	private void OnSettingsClick(object? sender, RoutedEventArgs e) => new ConfigWindow(Main.Prefs).Show();
 
 	private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
 	{

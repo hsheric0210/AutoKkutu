@@ -128,7 +128,7 @@ public partial class ConfigWindow : Window
 			Log.Error(ex, "Failed to save the configuration.");
 		}
 
-		Main.Configuration = conf;
+		Main.Prefs = conf;
 		Close();
 	}
 

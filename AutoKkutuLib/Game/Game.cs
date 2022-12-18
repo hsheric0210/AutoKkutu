@@ -1,14 +1,17 @@
 ﻿using AutoKkutuLib.Extension;
-using AutoKkutuLib.HandlerManagement.Events;
+using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Handlers;
 using Serilog;
 using System.Globalization;
 
-namespace AutoKkutuLib.HandlerManagement;
+namespace AutoKkutuLib.Game;
 
-public class HandlerManager : IHandlerManager
+public class Game : IGame
 {
+	public AutoEnter AutoEnter { get; }
+
 	#region Game status properties
+
 	public PresentedWord? CurrentPresentedWord
 	{
 		get; private set;
@@ -43,7 +46,7 @@ public class HandlerManager : IHandlerManager
 	#endregion
 
 	#region Internal handle holder fields
-	private readonly AbstractHandler handler = null!;
+	private readonly AbstractHandler handler;
 
 	private Task? primaryWatchdogTask;
 
@@ -86,9 +89,15 @@ public class HandlerManager : IHandlerManager
 	public event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
 	#endregion
 
-	public HandlerManager(AbstractHandler handler) => this.handler = handler;
+	public Game(AbstractHandler handler)
+	{
+		this.handler = handler;
+		AutoEnter = new AutoEnter(this);
+	}
 
 	public string GetID() => $"{handler.HandlerName} - #{(primaryWatchdogTask == null ? "Global" : primaryWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
+
+	public bool HasSameHandler(AbstractHandler otherHandler) => handler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
 
 	#region Watchdog proc. helper methods
 
@@ -161,6 +170,7 @@ public class HandlerManager : IHandlerManager
 		{
 			Log.Information("Watchdog stop requested.");
 			cancelTokenSrc?.Cancel();
+			primaryWatchdogTask?.Wait(); // await to be terminated
 			isWatchdogWokeUp = false;
 		}
 	}
@@ -451,6 +461,8 @@ public class HandlerManager : IHandlerManager
 	public void ClickSubmitButton()
 	{
 		handler.ClickSubmit();
+		if (!string.IsNullOrEmpty(lastChat))
+			AutoEnter.InputStopwatch.Restart();
 		lastChat = "";
 	}
 	#endregion

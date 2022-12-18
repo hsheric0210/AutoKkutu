@@ -4,10 +4,25 @@ using AutoKkutuLib.Path;
 using Serilog;
 using System.Globalization;
 
-namespace AutoKkutuLib.Extension;
-public static class DbUpdateExtension
+namespace AutoKkutuLib;
+public class DbUpdateTask
 {
-	public static string? UpdateDatabase(this NodeManager nodeManager, SpecialPathList pathList)
+	private readonly AbstractDatabaseConnection dbConnection;
+	private readonly NodeManager nodeManager;
+	private readonly SpecialPathList specialPathList;
+
+	public DbUpdateTask(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, SpecialPathList specialPathList)
+	{
+		this.dbConnection = dbConnection;
+		this.nodeManager = nodeManager;
+		this.specialPathList = specialPathList;
+	}
+
+	public DbUpdateTask(NodeManager nodeManager, SpecialPathList specialPathList) : this(nodeManager.DbConnection, nodeManager, specialPathList)
+	{
+	}
+
+	public string Execute()
 	{
 		// fixme: this check should be performed by caller, not here.
 		//if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
@@ -16,21 +31,19 @@ public static class DbUpdateExtension
 		Log.Debug(I18n.PathFinder_AutoDBUpdate);
 		try
 		{
-			pathList.Lock.EnterUpgradeableReadLock();
-			var AddQueueCount = pathList.NewPaths.Count;
-			var RemoveQueueCount = pathList.InexistentPaths.Count;
+			specialPathList.Lock.EnterUpgradeableReadLock();
+			var AddQueueCount = specialPathList.NewPaths.Count;
+			var RemoveQueueCount = specialPathList.InexistentPaths.Count;
 			if (AddQueueCount + RemoveQueueCount == 0)
-			{
 				Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
-			}
 			else
 			{
 				Log.Debug(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);
-				var AddSuccessfulCount = AddNewPaths(nodeManager, CopyPathList(pathList.NewPaths, pathList.Lock));
+				var AddSuccessfulCount = AddNewPaths(CopyPathList(specialPathList.NewPaths));
 
 				Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
 
-				var RemoveSuccessfulCount = RemoveInexistentPaths(nodeManager.DbConnection, CopyPathList(pathList.InexistentPaths, pathList.Lock));
+				var RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
 				var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount);
 
 				Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
@@ -39,28 +52,28 @@ public static class DbUpdateExtension
 		}
 		finally
 		{
-			pathList.Lock.ExitUpgradeableReadLock();
+			specialPathList.Lock.ExitUpgradeableReadLock();
 		}
 
 		return null;
 	}
 
-	private static ICollection<string> CopyPathList(this ICollection<string> pathList, ReaderWriterLockSlim rwLock)
+	private ICollection<string> CopyPathList(ICollection<string> pathList)
 	{
 		try
 		{
 			var copy = new List<string>(pathList);
-			rwLock.EnterWriteLock();
+			specialPathList.Lock.EnterWriteLock();
 			pathList.Clear();
 			return copy;
 		}
 		finally
 		{
-			rwLock.ExitWriteLock();
+			specialPathList.Lock.ExitWriteLock();
 		}
 	}
 
-	private static int AddNewPaths(NodeManager nodeManager, ICollection<string> paths)
+	private int AddNewPaths(ICollection<string> paths)
 	{
 		var count = 0;
 		foreach (var word in paths)
@@ -70,7 +83,7 @@ public static class DbUpdateExtension
 			try
 			{
 				Log.Debug(I18n.PathFinder_AddPath, word, flags);
-				if (nodeManager.DbConnection.AddWord(word, flags))
+				if (dbConnection.AddWord(word, flags))
 				{
 					Log.Information(I18n.PathFinder_AddPath_Success, word);
 					count++;
@@ -85,7 +98,7 @@ public static class DbUpdateExtension
 		return count;
 	}
 
-	private static int RemoveInexistentPaths(AbstractDatabaseConnection dbConnection, ICollection<string> paths)
+	private int RemoveInexistentPaths(ICollection<string> paths)
 	{
 		var count = 0;
 		foreach (var word in paths)

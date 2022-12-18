@@ -1,7 +1,8 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.HandlerManagement;
-using AutoKkutuLib.HandlerManagement.Events;
+using AutoKkutuLib.Extension;
+using AutoKkutuLib.Game;
+using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Handlers;
 using AutoKkutuLib.Path;
 using CefSharp;
@@ -10,12 +11,13 @@ using Serilog;
 using System;
 using System.Configuration;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AutoKkutuGui;
 
 public static class Main
 {
-	public static Preference Configuration
+	public static Preference Prefs
 	{
 		get; set;
 	} = null!;
@@ -30,15 +32,10 @@ public static class Main
 		get; private set;
 	} = null!;
 
-	public static AbstractDatabase Database
+	public static AutoKkutu AutoKkutu
 	{
 		get; private set;
 	} = null!;
-
-	public static IHandlerManager? Handler
-	{
-		get; private set;
-	}
 
 	/* EVENTS */
 	public static event EventHandler? InitializeUI;
@@ -54,11 +51,6 @@ public static class Main
 	public static event EventHandler<StatusMessageChangedEventArgs>? StatusMessageChanged;
 
 	public static event EventHandler? ChatUpdated;
-
-	public static AutoKkutu Kkutu
-	{
-		get; private set;
-	}
 
 	/* Misc. variables */
 
@@ -78,14 +70,17 @@ public static class Main
 			InitializeBrowser();
 
 			// Initialize database
-			InitializeDatabase();
+			AbstractDatabase? database = InitializeDatabase();
+
+			if (database is null) // Not triggered; because InitializeDatabase calls Application.Exit()
+				return;
 
 			// Initialize UI
 			InitializeUI?.Invoke(null, EventArgs.Empty);
 
-			Kkutu = new AutoKkutu(Database, Handler);
+			AutoKkutu = new AutoKkutu(database);
 
-			Kkutu.PathFinder.OnPathUpdated += OnPathUpdated;
+			AutoKkutu.PathFinder.OnPathUpdated += OnPathUpdated;
 			InitializationFinished?.Invoke(null, EventArgs.Empty);
 		}
 		catch (Exception e)
@@ -136,7 +131,7 @@ public static class Main
 		{
 			Settings config = Settings.Default;
 			config.Reload();
-			Configuration = new Preference
+			Prefs = new Preference
 			{
 				AutoEnterEnabled = config.AutoEnterEnabled,
 				AutoDBUpdateEnabled = config.AutoDBUpdateEnabled,
@@ -188,26 +183,29 @@ public static class Main
 		Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
 	}
 
-	private static void InitializeDatabase()
+	private static AbstractDatabase? InitializeDatabase()
 	{
+		AbstractDatabase database;
 		try
 		{
 			var watch = new Stopwatch();
 			watch.Start();
 
 			System.Configuration.Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
-			Database = DatabaseInit.CreateDatabase(databaseConfig);
+			database = DatabaseInit.CreateDatabase(databaseConfig);
 			Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 			watch.Restart();
 			Log.Information(I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
 
 			watch.Stop();
+			return database;
 		}
 		catch (Exception ex)
 		{
 			Log.Error(ex, I18n.Main_DBConfigException);
 			Environment.Exit(1);
+			return null;
 		}
 	}
 
@@ -233,29 +231,29 @@ public static class Main
 
 	/* Handler-related */
 
-	private static void LoadHandler(IHandlerManager handler)
+	private static void RegisterGame(IGame game)
 	{
 		Log.Information(I18n.Main_CEFFrameLoadEnd);
 
-		handler.GameStarted += OnGameStarted;
-		handler.GameEnded += OnGameEnded;
-		handler.MyWordPresented += OnMyTurn;
-		handler.MyTurnEnded += OnMyTurnEnded;
-		handler.UnsupportedWordEntered += OnUnsupportedWordEntered;
-		handler.MyPathIsUnsupported += OnMyPathIsUnsupported;
-		handler.RoundChanged += OnRoundChange;
-		handler.GameModeChanged += OnGameModeChange;
-		handler.TypingWordPresented += OnTypingWordPresented;
-		handler.ChatUpdated += OnChatUpdated;
-		handler.Start();
+		game.GameStarted += OnGameStarted;
+		game.GameEnded += OnGameEnded;
+		game.MyWordPresented += OnMyTurn;
+		game.MyTurnEnded += OnMyTurnEnded;
+		game.UnsupportedWordEntered += OnUnsupportedWordEntered;
+		game.MyPathIsUnsupported += OnMyPathIsUnsupported;
+		game.RoundChanged += OnRoundChange;
+		game.GameModeChanged += OnGameModeChange;
+		game.TypingWordPresented += OnTypingWordPresented;
+		game.ChatUpdated += OnChatUpdated;
+		game.Start();
 
-		Log.Information(I18n.Main_UseHandler, handler.GetID());
+		Log.Information(I18n.Main_UseHandler, game.GetID());
 		RemoveAd();
 
 		HandlerRegistered?.Invoke(null, EventArgs.Empty);
 	}
 
-	private static void UnloadHandler(IHandlerManager handler)
+	private static void UnloadHandler(IGame handler)
 	{
 		Log.Information(I18n.HandlerRegistry_Unregistered, handler.GetID());
 
@@ -277,7 +275,7 @@ public static class Main
 	private static void ResetPathList()
 	{
 		Log.Information(I18n.Main_ResetPathList);
-		Kkutu.PathFinder.ResetFinalList();
+		AutoKkutu.PathFinder.ResetFinalList();
 		PathListUpdated?.Invoke(null, EventArgs.Empty);
 	}
 
@@ -285,26 +283,14 @@ public static class Main
 
 	private static void OnBrowserFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)
 	{
-		if (Handler != null)
-		{
-			// Unload previous handler
-			UnloadHandler(Handler);
-			Handler = null;
-		}
-
 		var url = args.Url;
 
 		// Find appropriate handler for current URL
-		var handler = HandlerList.GetByUri(new Uri(url));
-
-		if (handler != null)
+		AbstractHandler? handler = HandlerList.GetByUri(new Uri(url));
+		if (handler is not null && !(AutoKkutu.HasGameSet && AutoKkutu.Game.HasSameHandler(handler)))
 		{
-			Handler = new HandlerManager(handler);
-			Kkutu.SetHandlerManager(Handler);
-
-			// Initialize and load the handler
+			AutoKkutu.SetGame(new Game(handler));
 			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
-			LoadHandler(Handler);
 		}
 		else
 		{
@@ -318,23 +304,25 @@ public static class Main
 
 	public static void SendMessage(string message)
 	{
-		if (InputSimulation.CanSimulateInput())
+		if (!AutoKkutu.HasGameSet)
+			return;
+
+		if (Prefs.DelayEnabled && Prefs.DelayPerCharEnabled && Prefs.InputSimulate)
 		{
-			Task.Run(async () => await InputSimulation.PerformInputSimulation(message));
+			Task.Run(async () => await AutoKkutu.Game.AutoEnter.PerformInputSimulation(message, Prefs.DelayInMillis));
 		}
 		else
 		{
-			Handler.UpdateChat(message);
-			Handler.ClickSubmitButton();
+			AutoKkutu.Game.UpdateChat(message);
+			AutoKkutu.Game.ClickSubmitButton();
 		}
-		InputStopwatch.Restart();
 	}
 
-	public static void ToggleFeature(Func<AutoKkutuConfiguration, bool> toggleFunc, StatusMessage displayStatus)
+	public static void ToggleFeature(Func<Preference, bool> toggleFunc, StatusMessage displayStatus)
 	{
 		if (toggleFunc is null)
 			throw new ArgumentNullException(nameof(toggleFunc));
-		UpdateStatusMessage(displayStatus, toggleFunc(Configuration) ? I18n.Enabled : I18n.Disabled);
+		UpdateStatusMessage(displayStatus, toggleFunc(Prefs) ? I18n.Enabled : I18n.Disabled);
 	}
 
 	/* EVENTS: PathFinder */
@@ -344,7 +332,7 @@ public static class Main
 		Log.Information(I18n.Main_PathUpdateReceived);
 		PathFinderParameter path = args.Result;
 
-		var autoEnter = Configuration.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderOptions.ManualSearch);
+		var autoEnter = Prefs.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderOptions.ManualSearch);
 
 		if (args.ResultType == PathFindResult.NotFound && !path.Options.HasFlag(PathFinderOptions.ManualSearch))
 			UpdateStatusMessage(StatusMessage.NotFound); // Not found
@@ -353,7 +341,7 @@ public static class Main
 		else if (!autoEnter)
 			UpdateStatusMessage(StatusMessage.Normal);
 
-		if (!Handler.IsValidPath(path))
+		if (!AutoKkutu.Game.IsValidPath(path))
 			return;
 
 		UpdateSearchState(args);
@@ -369,7 +357,7 @@ public static class Main
 			}
 			else
 			{
-				var wordToEnter = AutoEnter.GetWordByIndex(PathFinder.QualifiedList, Configuration.DelayEnabled && Configuration.DelayPerCharEnabled, Configuration.DelayInMillis, Handler.TurnTimeMillis);
+				var wordToEnter = AutoKkutu.PathFinder.QualifiedList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
 				if (string.IsNullOrEmpty(wordToEnter))
 				{
 					Log.Warning(I18n.Auto_TimeOver);
@@ -377,7 +365,14 @@ public static class Main
 				}
 				else
 				{
-					AutoEnter.PerformAutoEnter(wordToEnter, path);
+					AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterParameter(
+						Prefs.DelayEnabled,
+						Prefs.DelayStartAfterCharEnterEnabled,
+						Prefs.DelayInMillis,
+						Prefs.DelayPerCharEnabled,
+						Prefs.InputSimulate,
+						path,
+						wordToEnter));
 				}
 			}
 		}
@@ -389,11 +384,12 @@ public static class Main
 	{
 		UpdateSearchState(null, false);
 		// ResetPathList();
-		WordBatchJob.UnsupportedPathList.Clear();
-		if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnGameEnd)
+		AutoKkutu.SpecialPathList.UnsupportedPaths.Clear();
+		if (Prefs.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-			var result = WordBatchJob.UpdateDatabase();
+			DbUpdateTask updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.SpecialPathList);
+			var result = updateTask.Execute();
 			if (string.IsNullOrEmpty(result))
 			{
 				UpdateStatusMessage(StatusMessage.Wait);
@@ -411,18 +407,15 @@ public static class Main
 
 	private static void OnGameModeChange(object? sender, GameModeChangeEventArgs args)
 	{
-		if (Configuration.GameModeAutoDetectEnabled)
-		{
-			GameMode newGameMode = args.GameMode;
-			Configuration.GameMode = newGameMode;
-			Log.Information(I18n.Main_GameModeUpdated, ConfigEnums.GetGameModeName(newGameMode));
-		}
+		GameMode newGameMode = args.GameMode;
+		Log.Information(I18n.Main_GameModeUpdated, ConfigEnums.GetGameModeName(newGameMode));
 	}
 
 	private static void OnGameStarted(object? sender, EventArgs e)
 	{
 		UpdateStatusMessage(StatusMessage.Normal);
-		AutoEnter.ResetWordIndex();
+		// AutoEnter.ResetWordIndex();
+		WordIndex = 0;
 	}
 
 	private static void OnMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
@@ -430,17 +423,18 @@ public static class Main
 		var word = args.Word;
 		Log.Warning(I18n.Main_MyPathIsUnsupported, word);
 
-		if (Configuration.AutoEnterEnabled && Configuration.AutoFixEnabled)
-			AutoEnter.PerformAutoFix();
+		if (Prefs.AutoEnterEnabled && Prefs.AutoFixEnabled)
+			AutoKkutu.Game.AutoEnter.PerformAutoFix();
 	}
 
 	private static void OnMyTurnEnded(object? sender, EventArgs e)
 	{
 		Log.Debug(I18n.Main_WordIndexReset);
-		AutoEnter.ResetWordIndex();
+		// AutoEnter.ResetWordIndex();
+		WordIndex = 0;
 	}
 
-	private static void OnMyTurn(object? sender, WordPresentEventArgs args) => PathFinder.StartPathFinding(Configuration, args.Word, args.MissionChar, PathFinderOptions.None);
+	private static void OnMyTurn(object? sender, WordPresentEventArgs args) => AutoKkutu.PathFinder.Find(Prefs, args.Word, args.MissionChar, PathFinderOptions.None);
 
 	private static void OnUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)
 	{
@@ -455,7 +449,7 @@ public static class Main
 
 	private static void OnRoundChange(object? sender, EventArgs e)
 	{
-		if (Configuration.AutoDBUpdateMode == DatabaseUpdateTiming.OnRoundEnd)
+		if (Prefs.AutoDBUpdateMode == DatabaseUpdateTiming.OnRoundEnd)
 			WordBatchJob.UpdateDatabase();
 	}
 
@@ -463,7 +457,7 @@ public static class Main
 	{
 		var word = args.Word.Content;
 
-		if (!Configuration.AutoEnterEnabled)
+		if (!Prefs.AutoEnterEnabled)
 			return;
 
 		AutoEnter.PerformAutoEnter(word, null, I18n.Main_Presented);

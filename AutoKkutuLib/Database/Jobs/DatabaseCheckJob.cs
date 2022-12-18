@@ -1,7 +1,6 @@
-﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Extension;
+﻿using AutoKkutuLib.Database.Extension;
 using AutoKkutuLib.Extension;
-using AutoKkutuLib.HandlerManagement.Extension;
+using AutoKkutuLib.Game.Extension;
 using AutoKkutuLib.Path;
 using Dapper;
 using Serilog;

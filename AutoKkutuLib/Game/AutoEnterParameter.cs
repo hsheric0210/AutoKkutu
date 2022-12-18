@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.HandlerManagement;
+﻿namespace AutoKkutuLib.Game;
 
 public record AutoEnterParameter(
 	bool DelayEnabled,

@@ -1,8 +1,10 @@
-﻿using AutoKkutuLib.HandlerManagement.Events;
+﻿using AutoKkutuLib.Game.Events;
+using AutoKkutuLib.Handlers;
 
-namespace AutoKkutuLib.HandlerManagement;
-public interface IHandlerManager : IDisposable
+namespace AutoKkutuLib.Game;
+public interface IGame
 {
+	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
 	string? CurrentMissionChar { get; }
 	PresentedWord? CurrentPresentedWord { get; }
@@ -25,7 +27,9 @@ public interface IHandlerManager : IDisposable
 
 	void AppendChat(Func<string, string> appender);
 	void ClickSubmitButton();
+	void Dispose();
 	string GetID();
+	bool HasSameHandler(AbstractHandler otherHandler);
 	bool IsValidPath(PathFinderParameter path);
 	void Start();
 	void Stop();

@@ -1,6 +1,6 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.HandlerManagement.Extension;
+using AutoKkutuLib.Game.Extension;
 using Serilog;
 
 namespace AutoKkutuLib.Path;

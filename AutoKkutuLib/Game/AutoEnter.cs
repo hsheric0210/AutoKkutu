@@ -1,10 +1,10 @@
 ﻿using AutoKkutuLib.Extension;
-using AutoKkutuLib.HandlerManagement.Events;
+using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Hangul;
 using Serilog;
 using System.Diagnostics;
 
-namespace AutoKkutuLib.HandlerManagement;
+namespace AutoKkutuLib.Game;
 
 public class AutoEnter
 {
@@ -19,11 +19,11 @@ public class AutoEnter
 		get;
 	} = new();
 
-	private readonly IHandlerManager handlerManager;
+	private readonly IGame game;
 
-	public AutoEnter(IHandlerManager handlerManager) => this.handlerManager = handlerManager;
+	public AutoEnter(IGame game) => this.game = game;
 
-	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => handlerManager.IsGameStarted && handlerManager.IsMyTurn && (path == null || handlerManager.IsValidPath(path with { Options = path.Options | PathFinderOptions.AutoFixed }));
+	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => game.IsGameStarted && game.IsMyTurn && (path == null || game.IsValidPath(path with { Options = path.Options | PathFinderOptions.AutoFixed }));
 
 	#region AutoEnter starter
 	// TODO: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)
@@ -136,8 +136,8 @@ public class AutoEnter
 
 		Log.Information(I18n.Main_AutoEnter, pathIndex, content);
 
-		handlerManager.UpdateChat(content);
-		handlerManager.ClickSubmitButton();
+		game.UpdateChat(content);
+		game.ClickSubmitButton();
 		InputStopwatch.Restart();
 		AutoEntered?.Invoke(this, new AutoEnterEventArgs(content));
 	}
@@ -158,7 +158,7 @@ public class AutoEnter
 			list.AddRange(ch.SplitConsonants().Serialize());
 
 		Log.Information(I18n.Main_InputSimulating, wordIndex, content);
-		handlerManager.UpdateChat("");
+		game.UpdateChat("");
 		foreach ((JamoType type, var ch) in list)
 		{
 			if (!CanPerformAutoEnterNow(parameter.PathFinderParams))
@@ -166,7 +166,7 @@ public class AutoEnter
 				aborted = true; // Abort
 				break;
 			}
-			handlerManager.AppendChat(s => s.AppendChar(type, ch));
+			game.AppendChat(s => s.AppendChar(type, ch));
 			await Task.Delay(parameter.DelayInMillis);
 		}
 
@@ -174,10 +174,10 @@ public class AutoEnter
 			Log.Warning(I18n.Main_InputSimulationAborted, wordIndex, content);
 		else
 		{
-			handlerManager.ClickSubmitButton();
+			game.ClickSubmitButton();
 			Log.Information(I18n.Main_InputSimulationFinished, wordIndex, content);
 		}
-		handlerManager.UpdateChat("");
+		game.UpdateChat("");
 	}
 
 	public async Task PerformInputSimulation(string message, int delay)
@@ -190,14 +190,14 @@ public class AutoEnter
 			list.AddRange(ch.SplitConsonants().Serialize());
 
 		Log.Information(I18n.Main_InputSimulating, "Input", message);
-		handlerManager.UpdateChat("");
+		game.UpdateChat("");
 		foreach ((JamoType type, var ch) in list)
 		{
-			handlerManager.AppendChat(s => s.AppendChar(type, ch));
+			game.AppendChat(s => s.AppendChar(type, ch));
 			await Task.Delay(delay);
 		}
-		handlerManager.ClickSubmitButton();
-		handlerManager.UpdateChat("");
+		game.ClickSubmitButton();
+		game.UpdateChat("");
 		Log.Information(I18n.Main_InputSimulationFinished, "Input ", message);
 	}
 	#endregion
