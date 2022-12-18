@@ -1,5 +1,4 @@
-﻿using AutoKkutu;
-using AutoKkutuGui.Constants;
+﻿using AutoKkutuGui.Constants;
 using System;
 using System.Globalization;
 using System.Windows.Media;

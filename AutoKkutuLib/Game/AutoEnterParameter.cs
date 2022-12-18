@@ -6,7 +6,7 @@ public record AutoEnterParameter(
 	int DelayInMillis,
 	bool DelayPerCharEnabled,
 	bool SimulateInput,
-	PathFinderParameter PathFinderParams,
+	PathFinderParameter? PathFinderParams = null,
 	string Content = "",
 	int WordIndex = 0)
 {

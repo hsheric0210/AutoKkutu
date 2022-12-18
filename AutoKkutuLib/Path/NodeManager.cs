@@ -151,8 +151,7 @@ public class NodeManager
 	}
 
 	/// <summary>
-	/// Update node lists by word
-	/// (word -> nodeLists)
+	/// Update node lists by word (word -> nodeLists); Only called when adding words to database
 	/// </summary>
 	public void UpdateNodeListsByWord(string word, ref WordFlags flags, ref int NewEndNode, ref int NewAttackNode)
 	{

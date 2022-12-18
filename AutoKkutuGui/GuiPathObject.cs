@@ -52,6 +52,10 @@ public record GuiPathObject
 		get;
 	}
 
+	public bool AlreadyUsed => pathObject.AlreadyUsed;
+	public bool Excluded => pathObject.Excluded;
+	public bool RemoveQueued => pathObject.RemoveQueued;
+
 	public string Decorations => pathObject.AlreadyUsed || pathObject.Excluded || pathObject.RemoveQueued ? "Strikethrough" : "None";
 
 	public string FontWeight => pathObject.RemoveQueued ? "Bold" : "Normal";

@@ -1,6 +1,8 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
+using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
+using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Path;
 using CefSharp;
 using Serilog;
@@ -42,9 +44,9 @@ public partial class MainWindow : Window
 		Main.SearchStateChanged += OnSearchStateChanged;
 		Main.StatusMessageChanged += OnStatusMessageChanged;
 
-		AutoEnter.EnterDelaying += OnEnterDelaying;
-		AutoEnter.PathNotFound += OnPathNotFound;
-		AutoEnter.AutoEntered += OnAutoEntered;
+		Main.AutoKkutu.Game.AutoEnter.InputDelayApply += OnEnterDelaying;
+		Main.AutoKkutu.Game.AutoEnter.NoPathAvailable += OnPathNotFound;
+		Main.AutoKkutu.Game.AutoEnter.AutoEntered += OnAutoEntered;
 
 		Main.Initialize();
 	}
@@ -59,7 +61,7 @@ public partial class MainWindow : Window
 
 	/* EVENTS: AutoKkutu */
 
-	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = PathFinder.DisplayList);
+	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.DisplayList);
 
 	private void OnInitializeUI(object? sender, EventArgs args)
 	{
@@ -73,7 +75,7 @@ public partial class MainWindow : Window
 			// Update database icon
 			var img = new BitmapImage();
 			img.BeginInit();
-			img.UriSource = new Uri($@"Images\{Main.Database.GetDBType()}.png", UriKind.Relative);
+			img.UriSource = new Uri($@"Images\{Main.AutoKkutu.Database.GetDBType()}.png", UriKind.Relative);
 			img.EndInit();
 			DBLogo.Source = img;
 
@@ -130,7 +132,7 @@ public partial class MainWindow : Window
 
 	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(Main.ColorPreference).Show();
 
-	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(Main.Database).Show();
+	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(Main.AutoKkutu.Database).Show();
 
 	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => Main.Browser.ShowDevTools();
 
@@ -141,7 +143,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		var current = ((PathObject)currentSelected);
+		var current = new GuiPathObject((PathObject)currentSelected);
 		foreach (Control item in contextMenu.Items)
 		{
 			if (item is not MenuItem)
@@ -184,7 +186,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeAttack(Main.Prefs.GameMode, Main.Database.Connection);
+		Main.AutoKkutu.Database.Connection.MakeAttack((PathObject)currentSelected, Main.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -192,7 +194,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeEnd(Main.Prefs.GameMode, Main.Database.Connection);
+		Main.AutoKkutu.Database.Connection.MakeEnd((PathObject)currentSelected, Main.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -200,9 +202,10 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
-		((PathObject)currentSelected).MakeNormal(Main.Prefs.GameMode, Main.Database.Connection);
+		Main.AutoKkutu.Database.Connection.MakeNormal((PathObject)currentSelected, Main.AutoKkutu.Game.CurrentGameMode);
 	}
 
+	// TODO: Move these duplicate path list writes to Lib.SpecialPathList
 	private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)
 	{
 		var currentSelected = PathList.SelectedItem;
@@ -211,15 +214,16 @@ public partial class MainWindow : Window
 		var path = (PathObject)currentSelected;
 		path.Excluded = true;
 		path.RemoveQueued = false;
+		SpecialPathList spl = Main.AutoKkutu.SpecialPathList;
 		try
 		{
-			WordBatchJob.PathListLock.EnterWriteLock();
-			WordBatchJob.UnsupportedPathList.Add(path.Content);
-			WordBatchJob.InexistentPathList.Remove(path.Content);
+			spl.Lock.EnterWriteLock();
+			spl.UnsupportedPaths.Add(path.Content);
+			spl.InexistentPaths.Remove(path.Content);
 		}
 		finally
 		{
-			WordBatchJob.PathListLock.ExitWriteLock();
+			spl.Lock.ExitWriteLock();
 		}
 	}
 
@@ -231,15 +235,16 @@ public partial class MainWindow : Window
 		var path = (PathObject)currentSelected;
 		path.Excluded = false;
 		path.RemoveQueued = false;
+		SpecialPathList spl = Main.AutoKkutu.SpecialPathList;
 		try
 		{
-			WordBatchJob.PathListLock.EnterWriteLock();
-			WordBatchJob.UnsupportedPathList.Remove(path.Content);
-			WordBatchJob.InexistentPathList.Remove(path.Content);
+			spl.Lock.EnterWriteLock();
+			spl.UnsupportedPaths.Remove(path.Content);
+			spl.InexistentPaths.Remove(path.Content);
 		}
 		finally
 		{
-			WordBatchJob.PathListLock.ExitWriteLock();
+			spl.Lock.ExitWriteLock();
 		}
 	}
 
@@ -251,15 +256,16 @@ public partial class MainWindow : Window
 		var path = (PathObject)currentSelected;
 		path.Excluded = false;
 		path.RemoveQueued = true;
+		SpecialPathList spl = Main.AutoKkutu.SpecialPathList;
 		try
 		{
-			WordBatchJob.PathListLock.EnterWriteLock();
-			WordBatchJob.UnsupportedPathList.Add(path.Content);
-			WordBatchJob.InexistentPathList.Add(path.Content);
+			spl.Lock.EnterWriteLock();
+			spl.UnsupportedPaths.Add(path.Content);
+			spl.InexistentPaths.Add(path.Content);
 		}
 		finally
 		{
-			WordBatchJob.PathListLock.ExitWriteLock();
+			spl.Lock.ExitWriteLock();
 		}
 	}
 
@@ -298,7 +304,9 @@ public partial class MainWindow : Window
 		Log.Information(I18n.Main_ClosingDBConnection);
 		try
 		{
-			Main.Database.Dispose();
+			// Dispose 책임 순서 꼬일거같은데
+			Main.AutoKkutu.Database.Dispose();
+			Main.AutoKkutu.Dispose();
 		}
 		catch (Exception ex)
 		{
@@ -329,11 +337,12 @@ public partial class MainWindow : Window
 
 	private static string CreatePathResultExplain(PathUpdateEventArgs arg)
 	{
-		var filter = $"'{arg.Word.Content}'";
-		if (arg.Word.CanSubstitution)
-			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{arg.Word.Substitution}'");
-		if (!string.IsNullOrWhiteSpace(arg.MissionChar))
-			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, arg.MissionChar);
+		var parameter = arg.Result;
+		var filter = $"'{parameter.Word.Content}'";
+		if (parameter.Word.CanSubstitution)
+			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{parameter.Word.Substitution}'");
+		if (!string.IsNullOrWhiteSpace(parameter.MissionChar))
+			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, parameter.MissionChar);
 		var FilterText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview, filter);
 		var SpecialFilterText = "";
 		string FindResult;
@@ -348,9 +357,9 @@ public partial class MainWindow : Window
 				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
 				: I18n.PathFinderError;
 		}
-		if (arg.Flags.HasFlag(PathFinderOptions.UseEndWord))
+		if (parameter.Options.HasFlag(PathFinderOptions.UseEndWord))
 			SpecialFilterText += ", " + I18n.PathFinderEndWord;
-		if (arg.Flags.HasFlag(PathFinderOptions.UseAttackWord))
+		if (parameter.Options.HasFlag(PathFinderOptions.UseAttackWord))
 			SpecialFilterText += ", " + I18n.PathFinderAttackWord;
 
 		var newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(CultureInfo.CurrentCulture, I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
@@ -370,7 +379,7 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(SearchField.Text))
 		{
-			Main.StartPathFinding(new PresentedWord(SearchField.Text, false), Main.Handler?.CurrentMissionChar ?? string.Empty, PathFinderOptions.ManualSearch);
+			Main.AutoKkutu.PathFinder.Find(GameMode.LastAndFirst, new PathFinderParameter(new PresentedWord(SearchField.Text, false), Main.AutoKkutu.Game.CurrentMissionChar ?? "", PathFinderOptions.ManualSearch, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

@@ -16,6 +16,7 @@ public class AutoKkutu : IDisposable
 	public NodeManager NodeManager { get; }
 	public SpecialPathList SpecialPathList { get; }
 	public PathFinder PathFinder { get; }
+	public AbstractDatabase Database { get; }
 
 	public IGame Game => game ?? throw new InvalidOperationException("Game is not registered yet!");
 	public bool HasGameSet => game is not null;
@@ -37,6 +38,7 @@ public class AutoKkutu : IDisposable
 
 	public AutoKkutu(AbstractDatabase db)
 	{
+		Database = db;
 		SpecialPathList = new SpecialPathList();
 		NodeManager = new NodeManager(db.Connection);
 		PathFinder = new PathFinder(NodeManager, SpecialPathList);

@@ -21,12 +21,11 @@ public class WordBatchJob
 
 	private sealed record AddWordResult(AddWordResultType ResultType, int NewEndNode = 0, int NewAttackNode = 0);
 
-	private AddWordResult AddSingleWord(string word)
+	private AddWordResult AddSingleWord(string word, WordFlags flags)
 	{
 		try
 		{
 			int newEnd = 0, newAttack = 0;
-			WordFlags flags = WordFlags.None;
 			nodeManager.UpdateNodeListsByWord(word, ref flags, ref newEnd, ref newAttack);
 
 			Log.Information("Adding {word} into database... (flags: {flags})", word, flags);
@@ -75,7 +74,7 @@ public class WordBatchJob
 		public int NewAttackNode;
 	}
 
-	public void BatchAddWord(string[] wordList, JSEvaluator jsEvaluator, BatchJobOptions batchOptions)
+	public void BatchAddWord(string[] wordList, JSEvaluator jsEvaluator, BatchJobOptions batchOptions, WordFlags flags)
 	{
 		if (wordList == null)
 			throw new ArgumentNullException(nameof(wordList));
@@ -92,7 +91,7 @@ public class WordBatchJob
 
 		Task.Run(() =>
 		{
-			WordBatchResult result = PerformBatchAddWord(wordList, onlineVerify, jsEvaluator);
+			WordBatchResult result = PerformBatchAddWord(wordList, onlineVerify, jsEvaluator, flags);
 
 			var message = $"{result.SuccessCount} succeed / {result.NewEndNode} new end nodes / {result.NewAttackNode} new attack nodes / {result.DuplicateCount} duplicated / {result.FailedCount} failed";
 			Log.Information("Database Operation Complete: {0}", message);
@@ -100,7 +99,7 @@ public class WordBatchJob
 		});
 	}
 
-	private WordBatchResult PerformBatchAddWord(string[] wordlist, bool onlineVerify, JSEvaluator jsEvaluator)
+	private WordBatchResult PerformBatchAddWord(string[] wordlist, bool onlineVerify, JSEvaluator jsEvaluator, WordFlags flags)
 	{
 		var result = new WordBatchResult();
 		foreach (var word in wordlist)
@@ -118,7 +117,7 @@ public class WordBatchJob
 
 			if (!onlineVerify || jsEvaluator.VerifyWordOnline(word))
 			{
-				var singleResult = AddSingleWord(word);
+				var singleResult = AddSingleWord(word, flags);
 				switch (singleResult.ResultType)
 				{
 					case AddWordResultType.Success:

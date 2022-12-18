@@ -11,6 +11,7 @@ using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Sqlite;
 using AutoKkutuLib;
 using AutoKkutuLib.Path;
+using AutoKkutuLib.Database.Jobs;
 
 namespace AutoKkutuGui;
 
@@ -33,10 +34,11 @@ public partial class DatabaseManagement : Window
 		var wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 		AbstractDatabaseConnection connection = database.Connection;
+		WordBatchJob job = new WordBatchJob(Main.AutoKkutu.NodeManager);
 		if (mode.HasFlag(BatchJobOptions.Remove))
-			connection.BatchRemoveWord(wordlist);
+			job.BatchRemoveWord(wordlist);
 		else
-			connection.BatchAddWord(wordlist, mode, flags);
+			job.BatchAddWord(wordlist, Main.AutoKkutu.Game.JsEvaluator, mode, flags);
 	}
 
 	private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
@@ -110,9 +112,7 @@ public partial class DatabaseManagement : Window
 		return type;
 	}
 
-	private void BatchAddNode(bool remove) => Database.Connection.BatchAddNode(Node_Input.Text, remove, GetSelectedNodeTypes());
-
-	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => Database.CheckDB(Use_OnlineDic.IsChecked ?? false);
+	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DatabaseCheckJob(Main.AutoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, Main.AutoKkutu.Game.JsEvaluator);
 
 	private WordFlags GetBatchAddWordDatabaseAttributes()
 	{
@@ -176,9 +176,9 @@ public partial class DatabaseManagement : Window
 		return mode;
 	}
 
-	private void Node_Remove_Click(object sender, RoutedEventArgs e) => BatchAddNode(true);
+	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.NodeManager.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
 
-	private void Node_Submit_Click(object sender, RoutedEventArgs e) => BatchAddNode(false);
+	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.NodeManager.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
 
 	private void OnWordFolderSubmit(object sender, RoutedEventArgs e)
 	{
