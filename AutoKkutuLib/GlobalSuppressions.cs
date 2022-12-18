@@ -30,3 +30,5 @@ using System.Diagnostics.CodeAnalysis;
 
 // SecureRandom
 [assembly: SuppressMessage("Security", "CA5394", Scope = "member", Target = "~M:AutoKkutuLib.Utils.RandomUtils.GenerateRandomString(System.Int32,System.Boolean,System.Random)~System.String")]
+[assembly: SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "<Pending>", Scope = "member", Target = "~M:AutoKkutuLib.Node.NodeCount.Increment(AutoKkutuLib.NodeTypes,System.Int32)")]
+[assembly: SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "<Pending>", Scope = "member", Target = "~M:AutoKkutuLib.Node.WordCount.Increment(AutoKkutuLib.WordFlags,System.Int32)")]

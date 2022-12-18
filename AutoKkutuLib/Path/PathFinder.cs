@@ -1,5 +1,6 @@
 using AutoKkutuLib.Database.Extension;
 using AutoKkutuLib.Extension;
+using AutoKkutuLib.Node;
 using Serilog;
 using System.Diagnostics;
 
@@ -112,7 +113,7 @@ public class PathFinder
 
 			DisplayList = totalWordList;
 			// TODO: Detach with 'Mediator' pattern
-			IList<PathObject> qualifiedWordList = specialPathList.CreateQualifiedWordList(totalWordList);
+			IList<PathObject> qualifiedWordList = specialPathList.FilterPathList(totalWordList);
 
 			// If there's no word found (or all words was filtered out)
 			if (qualifiedWordList.Count == 0)

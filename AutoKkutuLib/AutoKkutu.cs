@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Events;
+using AutoKkutuLib.Node;
 using AutoKkutuLib.Path;
 
 namespace AutoKkutuLib;

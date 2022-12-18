@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Database.Extension;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game.Extension;
-using AutoKkutuLib.Path;
+using AutoKkutuLib.Node;
 using Dapper;
 using Serilog;
 using System.Diagnostics;

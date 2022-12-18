@@ -12,6 +12,7 @@ using AutoKkutuLib.Database.Sqlite;
 using AutoKkutuLib;
 using AutoKkutuLib.Path;
 using AutoKkutuLib.Database.Jobs;
+using AutoKkutuLib.Node;
 
 namespace AutoKkutuGui;
 
