@@ -322,7 +322,7 @@ public static class Main
 			}
 			else
 			{
-				var wordToEnter = AutoKkutu.PathFinder.QualifiedList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
+				var wordToEnter = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
 				if (string.IsNullOrEmpty(wordToEnter))
 				{
 					Log.Warning(I18n.Auto_TimeOver);
@@ -392,7 +392,7 @@ public static class Main
 		// TODO: check lastPathFinderParameter out-of-sync
 
 		if (Prefs.AutoEnterEnabled && Prefs.AutoFixEnabled)
-			AutoKkutu.Game.AutoEnter.PerformAutoFix(AutoKkutu.PathFinder.QualifiedList, new AutoEnterParameter(
+			AutoKkutu.Game.AutoEnter.PerformAutoFix(AutoKkutu.PathFinder.AvailableWordList, new AutoEnterParameter(
 						Prefs.DelayEnabled,
 						Prefs.DelayStartAfterCharEnterEnabled,
 						Prefs.DelayInMillis,
@@ -409,7 +409,7 @@ public static class Main
 	}
 
 	// TODO: Move to Lib
-	private static void OnMyTurn(object? sender, WordPresentEventArgs args) => AutoKkutu.PathFinder.Find(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, PathFinderOptions.None, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
+	private static void OnMyTurn(object? sender, WordPresentEventArgs args) => AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, PathFinderOptions.None, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
 
 	// TODO: Move to Lib
 	private static void OnUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)

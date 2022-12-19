@@ -61,7 +61,7 @@ public partial class MainWindow : Window
 
 	/* EVENTS: AutoKkutu */
 
-	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.DisplayList);
+	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.TotalWordList);
 
 	private void OnInitializeUI(object? sender, EventArgs args)
 	{
@@ -379,7 +379,7 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(SearchField.Text))
 		{
-			Main.AutoKkutu.PathFinder.Find(GameMode.LastAndFirst, new PathFinderParameter(new PresentedWord(SearchField.Text, false), Main.AutoKkutu.Game.CurrentMissionChar ?? "", PathFinderOptions.ManualSearch, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
+			Main.AutoKkutu.PathFinder.FindPath(GameMode.LastAndFirst, new PathFinderParameter(new PresentedWord(SearchField.Text, false), Main.AutoKkutu.Game.CurrentMissionChar ?? "", PathFinderOptions.ManualSearch, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

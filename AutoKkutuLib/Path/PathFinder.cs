@@ -11,13 +11,12 @@ public class PathFinder
 	private readonly NodeManager nodeManager;
 	private readonly SpecialPathList specialPathList;
 
-	// TODO: Remove DisplayList and QualifiedList from global var
-	public IList<PathObject> DisplayList
+	public IList<PathObject> TotalWordList
 	{
 		get; private set;
 	} = new List<PathObject>();
 
-	public IList<PathObject> QualifiedList
+	public IList<PathObject> AvailableWordList
 	{
 		get; private set;
 	} = new List<PathObject>();
@@ -31,15 +30,23 @@ public class PathFinder
 		this.specialPathList = specialPathList;
 	}
 
-	public void Find(GameMode gameMode, PathFinderParameter parameter, WordPreference preference)
+	public void FindPath(GameMode gameMode, PathFinderParameter parameter, WordPreference preference)
 	{
+		// TODO: This check could be moved to caller site
 		if (gameMode == GameMode.TypingBattle && !parameter.Options.HasFlag(PathFinderOptions.ManualSearch))
 			return;
+
+		// TODO: This implementation could be moved to caller site
+		if (gameMode.IsFreeMode())
+		{
+			Task.Run(() => GenerateRandomPath(gameMode, parameter));
+			return;
+		}
 
 		try
 		{
 			PresentedWord word = parameter.Word;
-			if (!gameMode.IsFreeMode() && nodeManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || nodeManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
+			if (nodeManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || nodeManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
 			{
 				// 진퇴양난
 				Log.Warning(I18n.PathFinderFailed_Endword);
@@ -53,8 +60,13 @@ public class PathFinder
 				//AutoKkutuMain.UpdateStatusMessage(StatusMessage.Searching);
 				OnStateChanged?.Invoke(this, new PathFinderStateEventArgs(PathFinderState.Finding));
 
+				if (word.CanSubstitution)
+					Log.Information(I18n.PathFinder_FindPath_Substituation, word.Content, word.Substitution);
+				else
+					Log.Information(I18n.PathFinder_FindPath, word.Content);
+
 				// Enqueue search
-				FindInternal(gameMode, parameter, preference);
+				Task.Run(() => FindPathInternal(gameMode, parameter, preference));
 			}
 		}
 		catch (Exception ex)
@@ -63,72 +75,53 @@ public class PathFinder
 		}
 	}
 
-	public void FindInternal(GameMode mode, PathFinderParameter parameter, WordPreference preference)
+	private void FindPathInternal(GameMode mode, PathFinderParameter parameter, WordPreference preference)
 	{
-		if (mode.IsFreeMode())
+		var stopWatch = new Stopwatch();
+		stopWatch.Start();
+
+		// Flush previous search result
+		Reset();
+
+		// Search words from database
+		IList<PathObject>? totalWordList = null;
+		try
 		{
-			GenerateRandomPath(mode, parameter);
+			totalWordList = nodeManager.DbConnection.FindWord(mode, parameter, preference);
+			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.Options.HasFlag(PathFinderOptions.UseAttackWord), parameter.Options.HasFlag(PathFinderOptions.UseEndWord));
+		}
+		catch (Exception e)
+		{
+			stopWatch.Stop();
+			Log.Error(e, I18n.PathFinder_FindPath_Error);
+			PathUpdated(new PathUpdateEventArgs(parameter, PathFindResult.Error, 0, 0, 0));
 			return;
 		}
 
-		PathFinderOptions flags = parameter.Options;
-		PresentedWord word = parameter.Word;
-		if (word.CanSubstitution)
-			Log.Information(I18n.PathFinder_FindPath_Substituation, word.Content, word.Substitution);
-		else
-			Log.Information(I18n.PathFinder_FindPath, word.Content);
+		var totalWordCount = totalWordList.Count;
 
-		// Prevent watchdog thread from being blocked
-		Task.Run(() =>
+		// Limit the word list size
+		var maxCount = parameter.MaxDisplayed;
+		if (totalWordList.Count > maxCount)
+			totalWordList = totalWordList.Take(maxCount).ToList();
+		stopWatch.Stop();
+
+		TotalWordList = totalWordList;
+
+		IList<PathObject> availableWordList = specialPathList.FilterPathList(totalWordList);
+		// If there's no word found (or all words was filtered out)
+		if (availableWordList.Count == 0)
 		{
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
+			Log.Warning(I18n.PathFinder_FindPath_NotFound);
+			PathUpdated(new PathUpdateEventArgs(parameter, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
+			return;
+		}
 
-			// Flush previous search result
-			DisplayList = new List<PathObject>();
-			QualifiedList = new List<PathObject>();
+		// Update final lists
+		AvailableWordList = availableWordList;
 
-			// Search words from database
-			IList<PathObject>? totalWordList = null;
-			try
-			{
-				totalWordList = nodeManager.DbConnection.FindWord(mode, parameter, preference);
-				Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, flags.HasFlag(PathFinderOptions.UseAttackWord), flags.HasFlag(PathFinderOptions.UseEndWord));
-			}
-			catch (Exception e)
-			{
-				stopwatch.Stop();
-				Log.Error(e, I18n.PathFinder_FindPath_Error);
-				NotifyPathUpdate(new PathUpdateEventArgs(parameter, PathFindResult.Error, 0, 0, 0));
-				return;
-			}
-
-			var totalWordCount = totalWordList.Count;
-
-			// Limit the word list size
-			var maxCount = parameter.MaxDisplayed;
-			if (totalWordList.Count > maxCount)
-				totalWordList = totalWordList.Take(maxCount).ToList();
-			stopwatch.Stop();
-
-			DisplayList = totalWordList;
-			// TODO: Detach with 'Mediator' pattern
-			IList<PathObject> qualifiedWordList = specialPathList.FilterPathList(totalWordList);
-
-			// If there's no word found (or all words was filtered out)
-			if (qualifiedWordList.Count == 0)
-			{
-				Log.Warning(I18n.PathFinder_FindPath_NotFound);
-				NotifyPathUpdate(new PathUpdateEventArgs(parameter, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
-				return;
-			}
-
-			// Update final lists
-			QualifiedList = qualifiedWordList;
-
-			Log.Information(I18n.PathFinder_FoundPath_Ready, DisplayList.Count, stopwatch.ElapsedMilliseconds);
-			NotifyPathUpdate(new PathUpdateEventArgs(parameter, PathFindResult.Found, totalWordCount, QualifiedList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
-		});
+		Log.Information(I18n.PathFinder_FoundPath_Ready, TotalWordList.Count, stopWatch.ElapsedMilliseconds);
+		PathUpdated(new PathUpdateEventArgs(parameter, PathFindResult.Found, totalWordCount, AvailableWordList.Count, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
 	}
 
 	public void GenerateRandomPath(
@@ -139,19 +132,23 @@ public class PathFinder
 
 		var stopwatch = new Stopwatch();
 		stopwatch.Start();
-		DisplayList = new List<PathObject>();
+		TotalWordList = new List<PathObject>();
 		var random = new Random();
 		var len = random.Next(64, 256);
 		if (!string.IsNullOrWhiteSpace(param.MissionChar))
-			DisplayList.Add(new PathObject(firstChar + random.GenerateRandomString(random.Next(16, 64), false) + new string(param.MissionChar[0], len) + random.GenerateRandomString(random.Next(16, 64), false), WordCategories.None, len));
+			TotalWordList.Add(new PathObject(firstChar + random.GenerateRandomString(random.Next(16, 64), false) + new string(param.MissionChar[0], len) + random.GenerateRandomString(random.Next(16, 64), false), WordCategories.None, len));
 		for (var i = 0; i < 10; i++)
-			DisplayList.Add(new PathObject(firstChar + random.GenerateRandomString(len, false), WordCategories.None, 0));
+			TotalWordList.Add(new PathObject(firstChar + random.GenerateRandomString(len, false), WordCategories.None, 0));
 		stopwatch.Stop();
-		QualifiedList = new List<PathObject>(DisplayList);
-		NotifyPathUpdate(new PathUpdateEventArgs(param, PathFindResult.Found, DisplayList.Count, DisplayList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
+		AvailableWordList = new List<PathObject>(TotalWordList);
+		PathUpdated(new PathUpdateEventArgs(param, PathFindResult.Found, TotalWordList.Count, TotalWordList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 	}
 
-	private void NotifyPathUpdate(PathUpdateEventArgs eventArgs) => OnPathUpdated?.Invoke(null, eventArgs);
+	private void PathUpdated(PathUpdateEventArgs eventArgs) => OnPathUpdated?.Invoke(this, eventArgs);
 
-	public void ResetFinalList() => DisplayList = new List<PathObject>();
+	public void Reset()
+	{
+		TotalWordList.Clear();
+		AvailableWordList.Clear();
+	}
 }

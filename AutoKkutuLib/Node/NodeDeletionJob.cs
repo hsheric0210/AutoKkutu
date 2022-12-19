@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
+using Serilog;
 
 namespace AutoKkutuLib.Node;
 public sealed class NodeDeletionJob : NodeJob
@@ -26,11 +27,12 @@ public sealed class NodeDeletionJob : NodeJob
 			DeleteNodeInternal(node, nodeTypes, NodeTypes.KKTEndWord); // 쿵쿵따 한방 단어
 			DeleteNodeInternal(node, nodeTypes, NodeTypes.KKTAttackWord); // 쿵쿵따 공격 단어
 		}
-		catch
+		catch(Exception ex)
 		{
+			Log.Error(ex, "Exception on node deletion: {node} for {flags}'", node, nodeTypes);
 			Result.IncrementError();
 		}
 	}
 
-	private void DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? dbConnection.DeleteNode(node, targetNodeType.ToNodeTableName()) : 0);
+	private void DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? DbConnection.DeleteNode(node, targetNodeType.ToNodeTableName()) : 0);
 }

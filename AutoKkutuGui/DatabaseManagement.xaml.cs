@@ -10,9 +10,9 @@ using System.Windows;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Sqlite;
 using AutoKkutuLib;
-using AutoKkutuLib.Path;
 using AutoKkutuLib.Database.Jobs;
 using AutoKkutuLib.Node;
+using AutoKkutuLib.Word;
 
 namespace AutoKkutuGui;
 
@@ -35,7 +35,7 @@ public partial class DatabaseManagement : Window
 		var wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
 
 		AbstractDatabaseConnection connection = database.Connection;
-		WordBatchJob job = new WordBatchJob(Main.AutoKkutu.NodeManager);
+		WordJob job = new WordJob(Main.AutoKkutu.NodeManager);
 		if (mode.HasFlag(BatchJobOptions.Remove))
 			job.BatchRemoveWord(wordlist);
 		else

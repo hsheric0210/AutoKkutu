@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Extension;
+using Serilog;
 
 namespace AutoKkutuLib.Node;
 public sealed class NodeAdditionJob : NodeJob
@@ -26,11 +27,12 @@ public sealed class NodeAdditionJob : NodeJob
 			AddNodeInternal(node, nodeTypes, NodeTypes.KKTEndWord); // 쿵쿵따 한방 단어
 			AddNodeInternal(node, nodeTypes, NodeTypes.KKTAttackWord); // 쿵쿵따 공격 단어
 		}
-		catch
+		catch(Exception ex)
 		{
+			Log.Error(ex, "Exception on node addition: {node} for {flags}'", node, nodeTypes);
 			Result.IncrementError();
 		}
 	}
 
-	private void AddNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? Convert.ToInt32(dbConnection.AddNode(node, targetNodeType)) : 0);
+	private void AddNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? Convert.ToInt32(DbConnection.AddNode(node, targetNodeType)) : 0);
 }

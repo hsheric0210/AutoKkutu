@@ -4,7 +4,7 @@ namespace AutoKkutuLib.Node;
 
 public abstract class NodeJob
 {
-	protected readonly AbstractDatabaseConnection dbConnection;
+	protected AbstractDatabaseConnection DbConnection { get; }
 
-	protected NodeJob(AbstractDatabaseConnection dbConnection) => this.dbConnection = dbConnection;
+	protected NodeJob(AbstractDatabaseConnection dbConnection) => DbConnection = dbConnection;
 }

@@ -4,6 +4,16 @@ namespace AutoKkutuLib.Game.Extension;
 
 public static class OnlineVerifyExtension
 {
+	public static bool IsDictionaryAvailable(this JSEvaluator jsEvaluator)
+	{
+		return !string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJS("document.getElementById('dict-output').style"));
+
+		// FIXME: Replace with event
+		//if (string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
+		//	MessageBox.Show("끄투 사전 창을 감지하지 못했습니다.\n끄투 사전 창을 키십시오.", "Word online verification", MessageBoxButton.OK, MessageBoxImage.Warning);
+		//return false;
+	}
+
 	/// <summary>
 	/// Check if the word is available in the current server using the official kkutu dictionary feature.
 	/// </summary>
