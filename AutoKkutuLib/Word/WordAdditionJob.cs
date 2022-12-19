@@ -19,7 +19,6 @@ public sealed class WordAdditionJob : WordJob
 		this.verifyOnline = verifyOnline;
 	}
 
-
 	public WordCount BatchAddWord(string[] wordList)
 	{
 		if (wordList == null)
@@ -62,5 +61,4 @@ public sealed class WordAdditionJob : WordJob
 			wordCount.IncrementError();
 		}
 	}
-
 }

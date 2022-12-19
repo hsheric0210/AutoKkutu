@@ -9,7 +9,6 @@ public sealed class WordDeletionJob : WordJob
 	{
 	}
 
-
 	public int BatchRemoveWord(string[] wordlist)
 	{
 		if (wordlist == null)

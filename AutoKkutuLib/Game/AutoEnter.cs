@@ -166,7 +166,7 @@ public class AutoEnter
 				aborted = true; // Abort
 				break;
 			}
-			game.AppendChat(s => s.AppendChar(type, ch));
+			game.AppendChat(s => s.SimulateAppend(type, ch));
 			await Task.Delay(parameter.DelayInMillis);
 		}
 
@@ -193,7 +193,7 @@ public class AutoEnter
 		game.UpdateChat("");
 		foreach ((JamoType type, var ch) in list)
 		{
-			game.AppendChat(s => s.AppendChar(type, ch));
+			game.AppendChat(s => s.SimulateAppend(type, ch));
 			await Task.Delay(delay);
 		}
 		game.ClickSubmitButton();

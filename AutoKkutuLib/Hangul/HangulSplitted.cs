@@ -13,7 +13,7 @@ public sealed record HangulSplitted(bool IsHangul, char? InitialConsonant = null
 			enumerable.Add((JamoType.Medial, (char)Medial));
 		if (!char.IsWhiteSpace(FinalConsonant))
 		{
-			foreach (var consonant in FinalConsonant.SplitConsonantCluster())
+			foreach (var consonant in FinalConsonant.SplitCluster())
 				enumerable.Add((JamoType.Final, consonant));
 		}
 

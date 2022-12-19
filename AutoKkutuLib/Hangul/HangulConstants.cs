@@ -83,7 +83,7 @@ public static class HangulConstants
 	/// <summary>
 	/// 겹자음 조합 변환 테이블
 	/// </summary>
-	public static IDictionary<char, IDictionary<char, char>> ConsonantClusterTable
+	public static IDictionary<char, IDictionary<char, char>> ConsonantClusterCompositionTable
 	{
 		get;
 	} = new Dictionary<char, IDictionary<char, char>>()
@@ -135,7 +135,7 @@ public static class HangulConstants
 	/// <summary>
 	/// 겹자음 조합 역변환 테이블
 	/// </summary>
-	public static IDictionary<char, IList<char>> InverseConsonantClusterTable
+	public static IDictionary<char, IList<char>> ConsonantClusterDecompositionTable
 	{
 		get;
 	} = new Dictionary<char, IList<char>>()
