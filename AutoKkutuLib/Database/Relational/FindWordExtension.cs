@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using System.Globalization;
 
-namespace AutoKkutuLib.Database.Extension;
+namespace AutoKkutuLib.Database.Relational;
 
 public static class FindWordExtension
 {

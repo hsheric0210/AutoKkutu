@@ -14,15 +14,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib", "AutoKkutuLib\AutoKkutuLib.csproj", "{91AEC03F-9F06-4248-8B61-6AB6F9D9E3F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.Sqlite", "AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj", "{1058B4D9-EB16-45A5-8E10-9247165F55E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Sqlite", "AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj", "{1058B4D9-EB16-45A5-8E10-9247165F55E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.MySql", "AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj", "{78841C98-3074-4871-BC95-193F4EEE877F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.MySql", "AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj", "{78841C98-3074-4871-BC95-193F4EEE877F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.Postgres", "AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj", "{BAA7B375-B104-4FE3-86A1-1886BE136889}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Postgres", "AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj", "{BAA7B375-B104-4FE3-86A1-1886BE136889}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.CefSharp", "AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj", "{A612B087-8FBC-485F-A1B4-BAC3A033A840}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.CefSharp", "AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj", "{A612B087-8FBC-485F-A1B4-BAC3A033A840}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.WebView2", "AutoKkutuLib.WebView2\AutoKkutuLib.WebView2.csproj", "{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.WebView2", "AutoKkutuLib.WebView2\AutoKkutuLib.WebView2.csproj", "{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.RelationalDB", "AutoKkutuLib.RelationalDB\AutoKkutuLib.RelationalDB.csproj", "{D492EFB5-D057-48C1-8E7B-851734761B65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +132,18 @@ Global
 		{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}.Release|x64.Build.0 = Release|Any CPU
 		{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}.Release|x86.Build.0 = Release|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x64.Build.0 = Debug|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x86.Build.0 = Debug|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x64.ActiveCfg = Release|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x64.Build.0 = Release|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x86.ActiveCfg = Release|Any CPU
+		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

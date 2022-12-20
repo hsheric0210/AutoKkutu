@@ -93,9 +93,6 @@ public static class DatabaseConstants
 
 	public const int QueryResultLimit = 128;
 
-	// https://wiki.postgresql.org/wiki/Deleting_duplicates
-	public static readonly string DeduplicationQuery = $"DELETE FROM {WordTableName} WHERE seq IN (SELECT seq FROM (SELECT seq, ROW_NUMBER() OVER w as rnum FROM {WordTableName} WINDOW w AS (PARTITION BY word ORDER BY seq)) t WHERE t.rnum > 1);";
-
 	// Error messages
 	// TODO: Move to resources
 

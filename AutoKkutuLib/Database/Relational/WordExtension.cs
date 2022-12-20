@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Extension;
 using Dapper;
 
-namespace AutoKkutuLib.Database.Extension;
+namespace AutoKkutuLib.Database.Relational;
 
 public static class WordExtension
 {
@@ -36,10 +36,10 @@ public static class WordExtension
 	public static int DeleteWord(this AbstractDatabaseConnection connection, string word)
 	{
 		return connection == null
-			?         throw new ArgumentNullException(nameof(connection))
+			? throw new ArgumentNullException(nameof(connection))
 			: connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new
-		{
-			Word = word
-		});
+			{
+				Word = word
+			});
 	}
 }

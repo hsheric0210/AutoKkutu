@@ -1,6 +1,6 @@
 ﻿using Dapper;
 
-namespace AutoKkutuLib.Database.Extension;
+namespace AutoKkutuLib.Database.Relational;
 
 public static class TableExtension
 {

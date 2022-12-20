@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Database.Extension;
+﻿using AutoKkutuLib.Database.Relational;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Serilog;

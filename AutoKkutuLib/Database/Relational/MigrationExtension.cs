@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using Serilog;
 
-namespace AutoKkutuLib.Database.Extension;
+namespace AutoKkutuLib.Database.Relational;
 
 public static class MigrationExtension
 {
