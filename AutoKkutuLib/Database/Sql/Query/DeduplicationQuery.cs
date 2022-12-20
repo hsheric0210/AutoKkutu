@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class DeduplicationQuery : SqlQuery<int>
 {
-	internal DeduplicationQuery(AbstractDatabaseConnection connection) : base(connection)
+	public DeduplicationQuery(AbstractDatabaseConnection connection) : base(connection)
 	{
 	}
 

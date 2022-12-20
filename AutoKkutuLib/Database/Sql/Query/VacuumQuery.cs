@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class VacuumQuery : SqlQuery<int>
 {
-	internal VacuumQuery(AbstractDatabaseConnection connection) : base(connection)
+	public VacuumQuery(AbstractDatabaseConnection connection) : base(connection)
 	{
 	}
 
