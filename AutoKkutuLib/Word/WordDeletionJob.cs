@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Relational;
 using Serilog;
 
 namespace AutoKkutuLib.Word;

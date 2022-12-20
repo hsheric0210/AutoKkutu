@@ -1,4 +1,3 @@
-using AutoKkutuLib.Database.Relational;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Node;
 using Serilog;

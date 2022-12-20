@@ -1,7 +1,4 @@
-﻿using Dapper;
-using Serilog;
-
-namespace AutoKkutuLib.Database.Relational;
+﻿namespace AutoKkutuLib.Database.Sql;
 
 public static class NodeExtension
 {

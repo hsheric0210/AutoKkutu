@@ -1,5 +1,5 @@
 ﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Relational;
+using AutoKkutuLib.Database.Sql;
 using Serilog;
 
 namespace AutoKkutuLib.Node;

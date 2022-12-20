@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Database.Relational;
+﻿using AutoKkutuLib.Database.Sql;
 
 namespace AutoKkutuLib.Database;
 

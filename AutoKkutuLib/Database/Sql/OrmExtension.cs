@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AutoKkutuLib.Database.Relational;
+namespace AutoKkutuLib.Database.Sql;
 
 public static class OrmExtension
 {

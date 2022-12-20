@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using Serilog;
 
-namespace AutoKkutuLib.Database.Relational;
+namespace AutoKkutuLib.Database.Sql;
 
 public static class MigrationExtension
 {
@@ -10,13 +10,13 @@ public static class MigrationExtension
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 
-		if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName))
+		if (!connection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName).Execute())
 		{
 			connection.TryExecute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
 			Log.Warning($"Added {DatabaseConstants.ReverseWordIndexColumnName} column.");
 		}
 
-		if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName))
+		if (!connection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute())
 		{
 			connection.TryExecute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
 			Log.Warning($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
@@ -28,11 +28,11 @@ public static class MigrationExtension
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 
-		if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.SequenceColumnName))
+		if (!connection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.SequenceColumnName).Execute())
 		{
 			try
 			{
-				connection.AddSequenceColumnToWordList();
+				connection.Query.AddWordListSequenceColumn().Execute();
 				Log.Warning("Added sequence column.");
 				return true;
 			}
@@ -60,7 +60,7 @@ public static class MigrationExtension
 		if (needToCleanUp)
 		{
 			Log.Warning("Executing vacuum...");
-			connection.ExecuteVacuum();
+			connection.Query.Vacuum();
 		}
 	}
 
@@ -69,18 +69,18 @@ public static class MigrationExtension
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 
-		if (connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName))
+		if (connection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName).Execute())
 		{
 			try
 			{
-				if (!connection.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.FlagsColumnName))
+				if (!connection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.FlagsColumnName).Execute())
 				{
 					connection.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0");
 					connection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT)");
 					Log.Warning($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
 				}
 
-				connection.DropWordListColumn(DatabaseConstants.IsEndwordColumnName);
+				connection.Query.DropWordListColumn(DatabaseConstants.IsEndwordColumnName).Execute();
 				Log.Warning($"Dropped {DatabaseConstants.IsEndwordColumnName} column as it is no longer used.");
 				return true;
 			}
@@ -98,10 +98,10 @@ public static class MigrationExtension
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 
-		var kkutuindextype = connection.GetColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName);
+		var kkutuindextype = connection.Query.GetColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute();
 		if (kkutuindextype != null && (kkutuindextype.Equals("CHAR(2)", StringComparison.OrdinalIgnoreCase) || kkutuindextype.Equals("character", StringComparison.OrdinalIgnoreCase)))
 		{
-			connection.ChangeWordListColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)");
+			connection.Query.ChangeWordListColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)").Execute();
 			Log.Warning($"Changed type of '{DatabaseConstants.KkutuWordIndexColumnName}' from CHAR(2) to VARCHAR(2).");
 			return true;
 		}

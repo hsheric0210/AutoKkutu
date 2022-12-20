@@ -1,8 +1,4 @@
 ﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Extension;
-using AutoKkutuLib.Game.Extension;
-using AutoKkutuLib.Node;
-using Serilog;
 
 namespace AutoKkutuLib.Word;
 

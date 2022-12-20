@@ -1,12 +1,16 @@
-﻿using System.Data;
+﻿using AutoKkutuLib.Database.Sql.Query;
+using System.Data;
 
 namespace AutoKkutuLib.Database;
 
 public abstract class AbstractDatabaseConnection : IDbConnection
 {
 	private IDbConnection? underlyingConnection;
+	private QueryFactory? queryFactory;
 
 	protected IDbConnection Connection => underlyingConnection ?? throw new NullReferenceException("Database connection accessed before initialized");
+
+	public QueryFactory Query => queryFactory ?? throw new NullReferenceException("Database query factory accessed before initialized");
 
 	public string ConnectionString
 	{
@@ -27,16 +31,13 @@ public abstract class AbstractDatabaseConnection : IDbConnection
 	/// <summary>
 	/// This method must called on initialization phase.
 	/// </summary>
-	protected void Initialize(IDbConnection connection)
+	protected void Initialize(IDbConnection connection, QueryFactory queryFactory)
 	{
 		if (underlyingConnection != null)
 			throw new InvalidOperationException($"{nameof(Connection)} is already initialized");
 		underlyingConnection = connection;
+		this.queryFactory = queryFactory;
 	}
-
-	public abstract void AddSequenceColumnToWordList();
-
-	public abstract void ChangeWordListColumnType(string tableName, string columnName, string newType);
 
 	protected virtual void Dispose(bool disposing)
 	{
@@ -55,16 +56,6 @@ public abstract class AbstractDatabaseConnection : IDbConnection
 	public abstract string GetMissionWordPriorityFuncName();
 
 	public abstract string GetWordListColumnOptions();
-
-	public abstract void DropWordListColumn(string columnName);
-
-	public abstract string? GetColumnType(string tableName, string columnName);
-
-	public abstract bool IsColumnExists(string tableName, string columnName);
-
-	public abstract bool IsTableExists(string tableName);
-
-	public abstract void ExecuteVacuum();
 
 	/* Delegate methods */
 	public IDbTransaction BeginTransaction() => Connection.BeginTransaction();

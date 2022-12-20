@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Database.Relational;
-using AutoKkutuLib.Game.Extension;
+﻿using AutoKkutuLib.Game.Extension;
 using AutoKkutuLib.Node;
 using Serilog;
 

@@ -2,7 +2,7 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 using System.ComponentModel.DataAnnotations.Schema;
-using AutoKkutuLib.Database.Relational;
+using AutoKkutuLib.Database.Sql;
 
 namespace AutoKkutuLib.Database.Sqlite;
 

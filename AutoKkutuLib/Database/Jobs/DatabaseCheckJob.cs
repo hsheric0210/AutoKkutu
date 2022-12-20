@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Database.Query.Relational;
-using AutoKkutuLib.Extension;
+﻿using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game.Extension;
 using AutoKkutuLib.Node;
 using Dapper;

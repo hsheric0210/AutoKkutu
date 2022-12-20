@@ -1,6 +1,6 @@
 ﻿using Dapper;
 
-namespace AutoKkutuLib.Database.Relational;
+namespace AutoKkutuLib.Database.Sql;
 
 public static class TableExtension
 {
@@ -17,14 +17,14 @@ public static class TableExtension
 		connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTAttackNodeIndexTableName} SELECT * FROM {DatabaseConstants.AttackNodeIndexTableName}"));
 
 		// Create word list table
-		if (!connection.IsTableExists(DatabaseConstants.WordTableName))
+		if (!connection.Query.IsTableExists(DatabaseConstants.WordTableName).Execute())
 			connection.MakeTable(DatabaseConstants.WordTableName);
 		else
 			connection.CheckBackwardCompatibility();
 
 		// Create indexes
 		foreach (var columnName in new string[] { DatabaseConstants.WordIndexColumnName, DatabaseConstants.ReverseWordIndexColumnName, DatabaseConstants.KkutuWordIndexColumnName })
-			connection.CreateIndex(DatabaseConstants.WordTableName, columnName);
+			connection.Query.CreateIndex(DatabaseConstants.WordTableName, columnName).Execute();
 	}
 
 	public static void MakeTable(this AbstractDatabaseConnection connection, string tablename)
@@ -46,7 +46,7 @@ public static class TableExtension
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 
-		if (!connection.IsTableExists(tableName))
+		if (!connection.Query.IsTableExists(tableName).Execute())
 		{
 			connection.MakeTable(tableName);
 			callback?.Invoke();
