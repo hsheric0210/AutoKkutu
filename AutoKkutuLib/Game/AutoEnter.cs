@@ -23,7 +23,7 @@ public class AutoEnter
 
 	public AutoEnter(IGame game) => this.game = game;
 
-	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => game.IsGameStarted && game.IsMyTurn && (path == null || game.IsValidPath(path with { Options = path.Options | PathFinderOptions.DryRun }));
+	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => game.IsGameStarted && game.IsMyTurn && (path == null || game.IsValidPath(path with { Options = path.Options | PathFinderFlags.DryRun }));
 
 	#region AutoEnter starter
 	// TODO: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)
@@ -34,7 +34,7 @@ public class AutoEnter
 		if (string.IsNullOrEmpty(parameter.Content))
 			throw new ArgumentException("parameter.Content should not be empty", nameof(parameter));
 
-		if (parameter.DelayEnabled && parameter.PathFinderParams?.Options.HasFlag(PathFinderOptions.DryRun) != true)
+		if (parameter.DelayEnabled && parameter.PathFinderParams?.Options.HasFlag(PathFinderFlags.DryRun) != true)
 		{
 			var delay = parameter.RealDelay;
 			InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, parameter.WordIndex));

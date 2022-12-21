@@ -15,11 +15,13 @@ public class AutoKkutu : IDisposable
 
 	#region Module exposures
 	public NodeManager NodeManager { get; }
-	public SpecialPathList SpecialPathList { get; }
+	public PathFilter PathFilter { get; }
 	public PathFinder PathFinder { get; }
 	public AbstractDatabase Database { get; }
+	public AbstractDatabaseConnection DbConnection => Database.Connection;
 
 	public IGame Game => game ?? throw new InvalidOperationException("Game is not registered yet!");
+	public JsEvaluator GameJsEvaluator => Game.JsEvaluator;
 	public bool HasGameSet => game is not null;
 	#endregion
 
@@ -31,18 +33,40 @@ public class AutoKkutu : IDisposable
 	public event EventHandler? GameStarted;
 	public event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
 	public event EventHandler? MyTurnEnded;
-	public event EventHandler<WordPresentEventArgs>? MyWordPresented;
+	public event EventHandler<WordConditionPresentEventArgs>? MyWordPresented;
 	public event EventHandler? RoundChanged;
 	public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
+	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	#endregion
 
 	public AutoKkutu(AbstractDatabase db)
 	{
 		Database = db;
-		SpecialPathList = new SpecialPathList();
+		PathFilter = new PathFilter();
 		NodeManager = new NodeManager(db.Connection);
-		PathFinder = new PathFinder(NodeManager, SpecialPathList);
+		PathFinder = new PathFinder(NodeManager, PathFilter);
+
+		InterconnectModules();
+	}
+
+	private void InterconnectModules()
+	{
+		DiscoverWordHistory += HandleDiscoverWordHistory;
+		ExampleWordPresented += HandleExampleWordPresented;
+	}
+
+	private void HandleDiscoverWordHistory(object? sender, WordHistoryEventArgs args)
+	{
+		string word = args.Word;
+		PathFilter.NewPaths.Add(word);
+		PathFilter.PreviousPaths.Add(word);
+	}
+
+	private void HandleExampleWordPresented(object? sender, WordPresentEventArgs args)
+	{
+		string word = args.Word;
+		PathFilter.NewPaths.Add(word);
 	}
 
 	public void SetGame(IGame game)
@@ -71,6 +95,7 @@ public class AutoKkutu : IDisposable
 		game.RoundChanged += RoundChanged;
 		game.TypingWordPresented += TypingWordPresented;
 		game.UnsupportedWordEntered += UnsupportedWordEntered;
+		game.ExampleWordPresented += ExampleWordPresented;
 	}
 
 	private void UnregisterGameEventRedirects(IGame game)
@@ -86,6 +111,7 @@ public class AutoKkutu : IDisposable
 		game.RoundChanged -= RoundChanged;
 		game.TypingWordPresented -= TypingWordPresented;
 		game.UnsupportedWordEntered -= UnsupportedWordEntered;
+		game.ExampleWordPresented -= ExampleWordPresented;
 	}
 
 	#region Disposal

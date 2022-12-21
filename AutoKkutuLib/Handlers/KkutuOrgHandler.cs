@@ -6,7 +6,7 @@ internal partial class KkutuOrgHandler : AbstractHandler
 
 	public override string HandlerName => "Kkutu.org Handler";
 
-	public KkutuOrgHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	public KkutuOrgHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
 	{
 	}
 

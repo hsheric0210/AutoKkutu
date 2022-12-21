@@ -6,7 +6,7 @@ internal partial class MusicKkutuHandler : AbstractHandler
 
 	public override string HandlerName => "Musickkutu.xyz Handler";
 
-	public MusicKkutuHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	public MusicKkutuHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
 	{
 	}
 }

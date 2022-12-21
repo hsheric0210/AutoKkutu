@@ -6,7 +6,7 @@ internal class KkutuCoKrHandler : AbstractHandler
 
 	public override string HandlerName => "Kkutu.co.kr Handler";
 
-	public KkutuCoKrHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	public KkutuCoKrHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
 	{
 	}
 

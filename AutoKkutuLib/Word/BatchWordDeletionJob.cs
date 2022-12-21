@@ -3,23 +3,23 @@ using AutoKkutuLib.Database.Sql.Query;
 using Serilog;
 
 namespace AutoKkutuLib.Word;
-public sealed class WordDeletionJob : WordJob
+public sealed class BatchWordDeletionJob : BatchWordJob
 {
-	public WordDeletionJob(AbstractDatabaseConnection dbConnection) : base(dbConnection)
+	public BatchWordDeletionJob(AbstractDatabaseConnection dbConnection) : base(dbConnection)
 	{
 	}
 
-	public int BatchRemoveWord(string[] wordlist)
+	public override WordCount Execute(string[] wordList)
 	{
-		if (wordlist == null)
-			throw new ArgumentNullException(nameof(wordlist));
+		if (wordList == null)
+			throw new ArgumentNullException(nameof(wordList));
 
-		var count = 0;
+		var count = new WordCount();
 		WordDeletionQuery query = DbConnection.Query.DeleteWord();
-		foreach (var word in wordlist)
+		foreach (var word in wordList)
 		{
 			if (RemoveSingleWord(query, word))
-				count++;
+				count.Increment(WordFlags.None, 1);
 		}
 
 		return count;

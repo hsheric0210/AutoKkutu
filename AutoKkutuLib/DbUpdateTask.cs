@@ -10,16 +10,16 @@ public class DbUpdateTask
 {
 	private readonly AbstractDatabaseConnection dbConnection;
 	private readonly NodeManager nodeManager;
-	private readonly SpecialPathList specialPathList;
+	private readonly PathFilter specialPathList;
 
-	public DbUpdateTask(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, SpecialPathList specialPathList)
+	public DbUpdateTask(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, PathFilter specialPathList)
 	{
 		this.dbConnection = dbConnection;
 		this.nodeManager = nodeManager;
 		this.specialPathList = specialPathList;
 	}
 
-	public DbUpdateTask(NodeManager nodeManager, SpecialPathList specialPathList) : this(nodeManager.DbConnection, nodeManager, specialPathList)
+	public DbUpdateTask(NodeManager nodeManager, PathFilter specialPathList) : this(nodeManager.DbConnection, nodeManager, specialPathList)
 	{
 	}
 

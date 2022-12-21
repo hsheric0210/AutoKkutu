@@ -4,14 +4,14 @@ using AutoKkutuLib.Node;
 using Serilog;
 
 namespace AutoKkutuLib.Word;
-public sealed class WordAdditionJob : WordJob
+public sealed class BatchWordAdditionJob : BatchWordJob
 {
 	private readonly NodeManager nodeManager;
-	private readonly JSEvaluator jsEvaluator;
+	private readonly JsEvaluator jsEvaluator;
 	private readonly WordFlags wordFlags;
 	private readonly bool verifyOnline;
 
-	public WordAdditionJob(NodeManager nodeManager, JSEvaluator jsEvaluator, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
+	public BatchWordAdditionJob(NodeManager nodeManager, JsEvaluator jsEvaluator, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
 	{
 		this.nodeManager = nodeManager;
 		this.jsEvaluator = jsEvaluator;
@@ -19,7 +19,7 @@ public sealed class WordAdditionJob : WordJob
 		this.verifyOnline = verifyOnline;
 	}
 
-	public WordCount BatchAddWord(string[] wordList)
+	public override WordCount Execute(string[] wordList)
 	{
 		if (wordList == null)
 			throw new ArgumentNullException(nameof(wordList));

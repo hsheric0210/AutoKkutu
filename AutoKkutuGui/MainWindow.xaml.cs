@@ -131,7 +131,7 @@ public partial class MainWindow : Window
 
 	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(Main.ColorPreference).Show();
 
-	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(Main.AutoKkutu.Database).Show();
+	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(Main.AutoKkutu).Show();
 
 	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => Main.Browser.ShowDevTools();
 
@@ -213,17 +213,9 @@ public partial class MainWindow : Window
 		var path = (PathObject)currentSelected;
 		path.Excluded = true;
 		path.RemoveQueued = false;
-		SpecialPathList spl = Main.AutoKkutu.SpecialPathList;
-		try
-		{
-			spl.Lock.EnterWriteLock();
-			spl.UnsupportedPaths.Add(path.Content);
-			spl.InexistentPaths.Remove(path.Content);
-		}
-		finally
-		{
-			spl.Lock.ExitWriteLock();
-		}
+		PathFilter filter = Main.AutoKkutu.PathFilter;
+		filter.UnsupportedPaths.Add(path.Content);
+		filter.InexistentPaths.Remove(path.Content);
 	}
 
 	private void OnPathListIncludeClick(object? sender, RoutedEventArgs e)
@@ -234,17 +226,9 @@ public partial class MainWindow : Window
 		var path = (PathObject)currentSelected;
 		path.Excluded = false;
 		path.RemoveQueued = false;
-		SpecialPathList spl = Main.AutoKkutu.SpecialPathList;
-		try
-		{
-			spl.Lock.EnterWriteLock();
-			spl.UnsupportedPaths.Remove(path.Content);
-			spl.InexistentPaths.Remove(path.Content);
-		}
-		finally
-		{
-			spl.Lock.ExitWriteLock();
-		}
+		PathFilter filter = Main.AutoKkutu.PathFilter;
+		filter.UnsupportedPaths.Remove(path.Content);
+		filter.InexistentPaths.Remove(path.Content);
 	}
 
 	private void OnPathListQueueRemoveClick(object? sender, RoutedEventArgs e)
@@ -255,17 +239,9 @@ public partial class MainWindow : Window
 		var path = (PathObject)currentSelected;
 		path.Excluded = false;
 		path.RemoveQueued = true;
-		SpecialPathList spl = Main.AutoKkutu.SpecialPathList;
-		try
-		{
-			spl.Lock.EnterWriteLock();
-			spl.UnsupportedPaths.Add(path.Content);
-			spl.InexistentPaths.Add(path.Content);
-		}
-		finally
-		{
-			spl.Lock.ExitWriteLock();
-		}
+		PathFilter filter = Main.AutoKkutu.PathFilter;
+		filter.UnsupportedPaths.Add(path.Content);
+		filter.InexistentPaths.Add(path.Content);
 	}
 
 	private void OnPathListCopyClick(object? sender, RoutedEventArgs e)
@@ -356,9 +332,9 @@ public partial class MainWindow : Window
 				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
 				: I18n.PathFinderError;
 		}
-		if (parameter.Options.HasFlag(PathFinderOptions.UseEndWord))
+		if (parameter.Options.HasFlag(PathFinderFlags.UseEndWord))
 			SpecialFilterText += ", " + I18n.PathFinderEndWord;
-		if (parameter.Options.HasFlag(PathFinderOptions.UseAttackWord))
+		if (parameter.Options.HasFlag(PathFinderFlags.UseAttackWord))
 			SpecialFilterText += ", " + I18n.PathFinderAttackWord;
 
 		var newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(CultureInfo.CurrentCulture, I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
@@ -378,7 +354,7 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(SearchField.Text))
 		{
-			Main.AutoKkutu.PathFinder.FindPath(GameMode.LastAndFirst, new PathFinderParameter(new PresentedWord(SearchField.Text, false), Main.AutoKkutu.Game.CurrentMissionChar ?? "", PathFinderOptions.ManualSearch, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
+			Main.AutoKkutu.PathFinder.FindPath(GameMode.LastAndFirst, new PathFinderParameter(new PresentedWord(SearchField.Text, false), Main.AutoKkutu.Game.CurrentMissionChar ?? "", PathFinderFlags.ManualSearch, Main.Prefs.ReturnModeEnabled, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

@@ -9,6 +9,7 @@ namespace AutoKkutuLib.Game;
 public class Game : IGame
 {
 	public AutoEnter AutoEnter { get; }
+	public JsEvaluator JsEvaluator => handler.JsEvaluator;
 
 	#region Game status properties
 
@@ -17,10 +18,10 @@ public class Game : IGame
 		get; private set;
 	}
 
-	public string? CurrentMissionChar
+	public string CurrentMissionChar
 	{
 		get; private set;
-	}
+	} = "";
 
 	public GameMode CurrentGameMode
 	{
@@ -70,7 +71,7 @@ public class Game : IGame
 
 	public event EventHandler? GameEnded;
 
-	public event EventHandler<WordPresentEventArgs>? MyWordPresented;
+	public event EventHandler<WordConditionPresentEventArgs>? MyWordPresented;
 
 	public event EventHandler? MyTurnEnded;
 
@@ -87,6 +88,7 @@ public class Game : IGame
 	public event EventHandler? ChatUpdated;
 
 	public event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
+	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	#endregion
 
 	public Game(AbstractHandler handler)
@@ -247,7 +249,7 @@ public class Game : IGame
 
 				if (handler.GameMode == GameMode.Free)
 				{
-					MyWordPresented?.Invoke(this, new WordPresentEventArgs(new PresentedWord("", false), CurrentMissionChar));
+					MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(new PresentedWord("", false), CurrentMissionChar));
 					return;
 				}
 
@@ -261,7 +263,7 @@ public class Game : IGame
 				else
 					Log.Information("My turn arrived, presented word is {word}.", presentedWord.Content);
 				CurrentPresentedWord = presentedWord;
-				MyWordPresented?.Invoke(this, new WordPresentEventArgs(presentedWord, CurrentMissionChar));
+				MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(presentedWord, CurrentMissionChar));
 			}
 
 			return;
@@ -278,15 +280,15 @@ public class Game : IGame
 
 	public bool IsValidPath(PathFinderParameter path)
 	{
-		if (path.Options.HasFlag(PathFinderOptions.ManualSearch))
+		if (path.Options.HasFlag(PathFinderFlags.ManualSearch))
 			return true;
 
 		var differentWord = CurrentPresentedWord != null && !path.Word.Equals(CurrentPresentedWord);
-		var differentMissionChar = path.Options.HasFlag(PathFinderOptions.MissionWordExists) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
+		var differentMissionChar = path.Options.HasFlag(PathFinderFlags.MissionWordExists) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
 		if (IsMyTurn && (differentWord || differentMissionChar))
 		{
 			Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
-			MyWordPresented?.Invoke(this, new WordPresentEventArgs(CurrentPresentedWord!, CurrentMissionChar!)); // Re-trigger search
+			MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(CurrentPresentedWord!, CurrentMissionChar!)); // Re-trigger search
 			return false;
 		}
 		return true;
@@ -313,17 +315,7 @@ public class Game : IGame
 			if (!string.IsNullOrWhiteSpace(word) && !wordHistoryCache.Contains(word))
 			{
 				Log.Information("Found previous word : {word}", word);
-
 				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(word));
-
-				// FIXME: Handle these process with events
-				// if (!pathManager.NewPathList.Contains(word))
-				// 	pathManager.NewPathList.Add(word);
-				// 
-				// if (ReturnMode)
-				// 	pathManager.ResetPreviousPath();
-				// else
-				// 	pathManager.AddPreviousPath(word);
 			}
 		}
 
@@ -355,7 +347,6 @@ public class Game : IGame
 			return;
 		Log.Information("Round Changed : Index {0} Word {1}", roundIndex, roundText);
 		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
-		// pathManager.ResetPreviousPath();
 	}
 
 	private void UpdateUnsupportedWord()
@@ -384,7 +375,7 @@ public class Game : IGame
 			return;
 		exampleWordCache = example;
 		Log.Information("Path example detected : {word}", example);
-		// pathManager.NewPathList.Add(example);
+		ExampleWordPresented?.Invoke(this, new WordPresentEventArgs(example));
 	}
 
 	private void UpdateTypingWord()
@@ -398,7 +389,7 @@ public class Game : IGame
 			return;
 		currentPresentedWordCache = word;
 		Log.Information("Word detected : {word}", word);
-		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(new PresentedWord(word, false), ""));
+		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));
 	}
 
 	private void UpdateGameMode()

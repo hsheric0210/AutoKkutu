@@ -67,6 +67,4 @@ public partial class SqliteDatabase : AbstractDatabase
 		});
 
 	public override string GetDBType() => "SQLite";
-
-	public override AbstractDatabaseConnection OpenSecondaryConnection() => new SqliteDatabaseConnection(SqliteDatabaseHelper.OpenConnection(DataSource));
 }

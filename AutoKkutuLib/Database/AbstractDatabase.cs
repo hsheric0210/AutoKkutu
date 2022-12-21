@@ -14,8 +14,6 @@ public abstract class AbstractDatabase : IDisposable
 	{
 	}
 
-	public abstract AbstractDatabaseConnection OpenSecondaryConnection();
-
 	public abstract string GetDBType();
 
 	protected void Initialize(AbstractDatabaseConnection defaultConnection)

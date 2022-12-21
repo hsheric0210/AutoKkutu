@@ -2,19 +2,10 @@
 
 public class WordPresentEventArgs : EventArgs
 {
-	public PresentedWord Word
+	public string Word
 	{
 		get;
 	}
 
-	public string MissionChar
-	{
-		get;
-	}
-
-	public WordPresentEventArgs(PresentedWord word, string missionChar)
-	{
-		Word = word;
-		MissionChar = missionChar;
-	}
+	public WordPresentEventArgs(string word) => Word = word;
 }

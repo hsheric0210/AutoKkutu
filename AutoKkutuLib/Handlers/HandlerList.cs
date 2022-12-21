@@ -3,7 +3,7 @@ public static class HandlerList
 {
 	private static readonly ISet<AbstractHandler> RegisteredHandlers = new HashSet<AbstractHandler>();
 
-	public static void InitDefaultHandlers(JSEvaluator jsEvaluator)
+	public static void InitDefaultHandlers(JsEvaluator jsEvaluator)
 	{
 		RegisterHandler(new BFKkutuHandler(jsEvaluator));
 		RegisterHandler(new KkutuCoKrHandler(jsEvaluator));

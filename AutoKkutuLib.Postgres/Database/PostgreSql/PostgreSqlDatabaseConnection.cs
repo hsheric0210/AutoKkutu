@@ -1,10 +1,11 @@
-﻿using Npgsql;
+﻿using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
+using Npgsql;
 
 namespace AutoKkutuLib.Database.PostgreSql;
 
 public partial class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
 {
-	public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Initialize(connection, new PostgreQueryFactory());
+	public PostgreSqlDatabaseConnection(NpgsqlConnection connection) => Initialize(connection, new PostgreSqlQueryFactory(this));
 
 	public override string GetWordPriorityFuncName() => "__AutoKkutu_Rearrange";
 

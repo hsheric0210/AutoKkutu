@@ -15,9 +15,9 @@ public abstract class AbstractHandler
 
 	private readonly Dictionary<string, string> RegisteredFunctionNames = new();
 
-	private JSEvaluator jsEvaluator;
+	public JsEvaluator JsEvaluator { get; }
 
-	public AbstractHandler(JSEvaluator jsEvaluator) => this.jsEvaluator = jsEvaluator;
+	protected AbstractHandler(JsEvaluator jsEvaluator) => JsEvaluator = jsEvaluator;
 
 	#region Handler implementation
 	public abstract IReadOnlyCollection<Uri> UrlPattern
@@ -185,12 +185,12 @@ public abstract class AbstractHandler
 	#endregion
 
 	#region Javascript execute methods
-	protected bool EvaluateJSReturnError(string javaScript, out string error) => jsEvaluator.EvaluateJSReturnError(javaScript, out error);
+	protected bool EvaluateJSReturnError(string javaScript, out string error) => JsEvaluator.EvaluateJSReturnError(javaScript, out error);
 
-	protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => jsEvaluator.EvaluateJS(javaScript, defaultResult, "Error on " + moduleName);
+	protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JsEvaluator.EvaluateJS(javaScript, defaultResult, "Error on " + moduleName);
 
-	protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => jsEvaluator.EvaluateJSInt(javaScript, defaultResult, "Error on " + moduleName);
+	protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => JsEvaluator.EvaluateJSInt(javaScript, defaultResult, "Error on " + moduleName);
 
-	protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => jsEvaluator.EvaluateJSBool(javaScript, defaultResult, "Error on " + moduleName);
+	protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => JsEvaluator.EvaluateJSBool(javaScript, defaultResult, "Error on " + moduleName);
 	#endregion
 }

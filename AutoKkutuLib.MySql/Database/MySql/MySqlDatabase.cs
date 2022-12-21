@@ -86,11 +86,4 @@ END;
 	}
 
 	public override string GetDBType() => "MySQL";
-
-	public override AbstractDatabaseConnection OpenSecondaryConnection()
-	{
-		var connection = new MySqlConnection(ConnectionString);
-		connection.Open();
-		return new MySqlDatabaseConnection(connection, DatabaseName);
-	}
 }

@@ -297,9 +297,9 @@ public static class Main
 		PathFinderParameter path = args.Result;
 		lastPathFinderParameter = path;
 
-		var autoEnter = Prefs.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderOptions.ManualSearch);
+		var autoEnter = Prefs.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderFlags.ManualSearch);
 
-		if (args.ResultType == PathFindResult.NotFound && !path.Options.HasFlag(PathFinderOptions.ManualSearch))
+		if (args.ResultType == PathFindResult.NotFound && !path.Options.HasFlag(PathFinderFlags.ManualSearch))
 			UpdateStatusMessage(StatusMessage.NotFound); // Not found
 		else if (args.ResultType == PathFindResult.Error)
 			UpdateStatusMessage(StatusMessage.Error); // Error occurred
@@ -349,11 +349,11 @@ public static class Main
 	{
 		UpdateSearchState(null, false);
 		// ResetPathList();
-		AutoKkutu.SpecialPathList.UnsupportedPaths.Clear();
+		AutoKkutu.PathFilter.UnsupportedPaths.Clear();
 		if (Prefs.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-			DbUpdateTask updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.SpecialPathList);
+			DbUpdateTask updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
 			var result = updateTask.Execute();
 			if (string.IsNullOrEmpty(result))
 			{
@@ -409,7 +409,7 @@ public static class Main
 	}
 
 	// TODO: Move to Lib
-	private static void OnMyTurn(object? sender, WordPresentEventArgs args) => AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, PathFinderOptions.None, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
+	private static void OnMyTurn(object? sender, WordConditionPresentEventArgs args) => AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, PathFinderFlags.None, Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
 
 	// TODO: Move to Lib
 	private static void OnUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)
@@ -419,12 +419,12 @@ public static class Main
 		ICollection<string> list;
 		if (isInexistent)
 		{
-			list = AutoKkutu.SpecialPathList.InexistentPaths;
+			list = AutoKkutu.PathFilter.InexistentPaths;
 			Log.Warning(I18n.Main_UnsupportedWord_Inexistent, word);
 		}
 		else
 		{
-			list = AutoKkutu.SpecialPathList.UnsupportedPaths;
+			list = AutoKkutu.PathFilter.UnsupportedPaths;
 			Log.Warning(I18n.Main_UnsupportedWord_Existent, word);
 		}
 		list.Add(word);
@@ -432,7 +432,7 @@ public static class Main
 
 	private static void OnTypingWordPresented(object? sender, WordPresentEventArgs args)
 	{
-		var word = args.Word.Content;
+		var word = args.Word;
 
 		if (!Prefs.AutoEnterEnabled)
 			return;

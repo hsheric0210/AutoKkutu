@@ -6,7 +6,7 @@ internal class KkutuPinkHandler : AbstractHandler
 
 	public override string HandlerName => "Kkutu.pink Handler";
 
-	public KkutuPinkHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	public KkutuPinkHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
 	{
 	}
 }

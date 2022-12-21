@@ -81,13 +81,4 @@ $$ LANGUAGE plpgsql
 	}
 
 	public override string GetDBType() => "PostgreSQL";
-
-	public override AbstractDatabaseConnection OpenSecondaryConnection()
-	{
-		var connection = new NpgsqlConnection(ConnectionString);
-		connection.Open();
-		var wrappedConnection = new PostgreSqlDatabaseConnection(connection);
-		wrappedConnection.TryExecute($"SET Application_Name TO 'AutoKkutu';");
-		return wrappedConnection;
-	}
 }

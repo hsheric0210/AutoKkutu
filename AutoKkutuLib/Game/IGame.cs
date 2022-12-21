@@ -6,21 +6,23 @@ public interface IGame
 {
 	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
-	string? CurrentMissionChar { get; }
+	string CurrentMissionChar { get; }
 	PresentedWord? CurrentPresentedWord { get; }
 	bool IsGameStarted { get; }
 	bool IsMyTurn { get; }
+	JsEvaluator JsEvaluator { get; }
 	bool ReturnMode { get; set; }
 	int TurnTimeMillis { get; }
 
 	event EventHandler? ChatUpdated;
 	event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
+	event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	event EventHandler? GameEnded;
 	event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 	event EventHandler? GameStarted;
 	event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
 	event EventHandler? MyTurnEnded;
-	event EventHandler<WordPresentEventArgs>? MyWordPresented;
+	event EventHandler<WordConditionPresentEventArgs>? MyWordPresented;
 	event EventHandler? RoundChanged;
 	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;

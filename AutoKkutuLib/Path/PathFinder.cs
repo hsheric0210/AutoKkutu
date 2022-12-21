@@ -8,7 +8,7 @@ namespace AutoKkutuLib.Path;
 public class PathFinder
 {
 	private readonly NodeManager nodeManager;
-	private readonly SpecialPathList specialPathList;
+	private readonly PathFilter specialPathList;
 
 	public IList<PathObject> TotalWordList
 	{
@@ -23,7 +23,7 @@ public class PathFinder
 	public event EventHandler<PathFinderStateEventArgs>? OnStateChanged;
 	public event EventHandler<PathUpdateEventArgs>? OnPathUpdated;
 
-	public PathFinder(NodeManager nodeManager, SpecialPathList specialPathList)
+	public PathFinder(NodeManager nodeManager, PathFilter specialPathList)
 	{
 		this.nodeManager = nodeManager;
 		this.specialPathList = specialPathList;
@@ -32,7 +32,7 @@ public class PathFinder
 	public void FindPath(GameMode gameMode, PathFinderParameter parameter, WordPreference preference)
 	{
 		// TODO: This check could be moved to caller site
-		if (gameMode == GameMode.TypingBattle && !parameter.Options.HasFlag(PathFinderOptions.ManualSearch))
+		if (gameMode == GameMode.TypingBattle && !parameter.Options.HasFlag(PathFinderFlags.ManualSearch))
 			return;
 
 		// TODO: This implementation could be moved to caller site
@@ -87,7 +87,7 @@ public class PathFinder
 		try
 		{
 			totalWordList = nodeManager.DbConnection.Query.FindWord(mode, preference, parameter.MaxDisplayed).Execute(parameter);
-			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.Options.HasFlag(PathFinderOptions.UseAttackWord), parameter.Options.HasFlag(PathFinderOptions.UseEndWord));
+			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.Options.HasFlag(PathFinderFlags.UseAttackWord), parameter.Options.HasFlag(PathFinderFlags.UseEndWord));
 		}
 		catch (Exception e)
 		{
@@ -104,7 +104,7 @@ public class PathFinder
 
 		TotalWordList = totalWordList;
 
-		IList<PathObject> availableWordList = specialPathList.FilterPathList(totalWordList);
+		IList<PathObject> availableWordList = specialPathList.FilterPathList(totalWordList, parameter.ReuseAlreadyUsed);
 		// If there's no word found (or all words was filtered out)
 		if (availableWordList.Count == 0)
 		{

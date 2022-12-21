@@ -1,7 +1,7 @@
 ﻿namespace AutoKkutuLib;
 
 [Flags]
-public enum PathFinderOptions
+public enum PathFinderFlags
 {
 	None = 0,
 	UseEndWord = 1 << 0,

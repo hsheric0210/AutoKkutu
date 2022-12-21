@@ -12,7 +12,7 @@ internal partial class KkutuIoHandler : AbstractHandler
 
 	public override string HandlerName => "Kkutu.io Handler";
 
-	public KkutuIoHandler(JSEvaluator jsEvaluator) : base(jsEvaluator)
+	public KkutuIoHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
 	{
 	}
 

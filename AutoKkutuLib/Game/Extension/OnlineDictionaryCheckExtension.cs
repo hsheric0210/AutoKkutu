@@ -4,7 +4,7 @@ namespace AutoKkutuLib.Game.Extension;
 
 public static class OnlineVerifyExtension
 {
-	public static bool IsDictionaryAvailable(this JSEvaluator jsEvaluator)
+	public static bool IsDictionaryAvailable(this JsEvaluator jsEvaluator)
 	{
 		return !string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJS("document.getElementById('dict-output').style"));
 
@@ -19,7 +19,7 @@ public static class OnlineVerifyExtension
 	/// </summary>
 	/// <param name="word">The word to check</param>
 	/// <returns>True if existence is verified, false otherwise.</returns>
-	public static bool VerifyWordOnline(this JSEvaluator jsEvaluator, string word)
+	public static bool VerifyWordOnline(this JsEvaluator jsEvaluator, string word)
 	{
 		Log.Information(I18n.BatchJob_CheckOnline, word);
 

@@ -3,14 +3,14 @@
 		xmlns:ak="clr-namespace:AutoKkutuGui"
 		Title="MainWindow" Height="Auto" Width="Auto" ResizeMode="CanResizeWithGrip" SizeToContent="WidthAndHeight" Closing="OnWindowClose">
 	<Window.InputBindings>
-		<KeyBinding Command="{x:Static ak:AutoKkutuCommands.ToggleAutoEnter}" Gesture="ALT+A"/>
-		<KeyBinding Command="{x:Static ak:AutoKkutuCommands.ToggleDelay}" Gesture="ALT+D"/>
-		<KeyBinding Command="{x:Static ak:AutoKkutuCommands.ToggleAllDelay}" Gesture="ALT+SHIFT+D"/>
+		<KeyBinding Command="{x:Static ak:GuiCommands.ToggleAutoEnter}" Gesture="ALT+A"/>
+		<KeyBinding Command="{x:Static ak:GuiCommands.ToggleDelay}" Gesture="ALT+D"/>
+		<KeyBinding Command="{x:Static ak:GuiCommands.ToggleAllDelay}" Gesture="ALT+SHIFT+D"/>
 	</Window.InputBindings>
 	<Window.CommandBindings>
-		<CommandBinding Command="{x:Static ak:AutoKkutuCommands.ToggleAutoEnter}" Executed="OnToggleAutoEnter"/>
-		<CommandBinding Command="{x:Static ak:AutoKkutuCommands.ToggleDelay}" Executed="OnToggleDelay"/>
-		<CommandBinding Command="{x:Static ak:AutoKkutuCommands.ToggleAllDelay}" Executed="OnToggleAllDelay"/>
+		<CommandBinding Command="{x:Static ak:GuiCommands.ToggleAutoEnter}" Executed="OnToggleAutoEnter"/>
+		<CommandBinding Command="{x:Static ak:GuiCommands.ToggleDelay}" Executed="OnToggleDelay"/>
+		<CommandBinding Command="{x:Static ak:GuiCommands.ToggleAllDelay}" Executed="OnToggleAllDelay"/>
 	</Window.CommandBindings>
 	<Grid UseLayoutRounding="True">
 		<Grid Name="LoadOverlay" Background="#FFFFFFFF" Visibility="Hidden" ZIndex="1000">

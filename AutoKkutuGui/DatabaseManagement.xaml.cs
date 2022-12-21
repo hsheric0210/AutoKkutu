@@ -18,31 +18,26 @@ namespace AutoKkutuGui;
 
 public partial class DatabaseManagement : Window
 {
-	private readonly AbstractDatabase Database;
+	private readonly AutoKkutu autoKkutu;
 
-	public DatabaseManagement(AbstractDatabase database)
+	public DatabaseManagement(AutoKkutu autoKkutu)
 	{
-		Database = database;
+		this.autoKkutu = autoKkutu;
 		InitializeComponent();
 		Title = "Data-base Management";
 	}
 
-	public static void BatchWordJob(AbstractDatabase database, string content, BatchJobOptions mode, WordFlags flags)
+	private void BatchWordJob(string content, BatchJobOptions options, WordFlags flags)
 	{
-		if (database == null || string.IsNullOrWhiteSpace(content))
+		if (string.IsNullOrWhiteSpace(content) || options.HasFlag(BatchJobOptions.Verify) && !autoKkutu.HasGameSet)
 			return;
 
-		var wordlist = content.Trim().Split(Environment.NewLine.ToCharArray());
+		var wordList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-		AbstractDatabaseConnection connection = database.Connection;
-		WordJob job = new WordJob(Main.AutoKkutu.NodeManager);
-		if (mode.HasFlag(BatchJobOptions.Remove))
-			job.BatchRemoveWord(wordlist);
-		else
-			job.BatchAddWord(wordlist, Main.AutoKkutu.Game.JsEvaluator, mode, flags);
+		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.DbConnection) : new BatchWordAdditionJob(autoKkutu.NodeManager, autoKkutu.GameJsEvaluator, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
 	}
 
-	private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Database, Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
+	private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 
 	private void Batch_Submit_DB_Click(object sender, RoutedEventArgs e)
 	{
@@ -54,7 +49,7 @@ public partial class DatabaseManagement : Window
 			CheckFileExists = true
 		};
 		if (dialog.ShowDialog() ?? false)
-			SqliteDatabaseHelper.LoadFromExternalSQLite(Database.Connection, dialog.FileName);
+			SqliteDatabaseHelper.LoadFromExternalSQLite(autoKkutu.DbConnection, dialog.FileName);
 	}
 
 	private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -87,7 +82,7 @@ public partial class DatabaseManagement : Window
 				}
 			}
 
-			BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
+			BatchWordJob(builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 		}
 	}
 
@@ -113,7 +108,7 @@ public partial class DatabaseManagement : Window
 		return type;
 	}
 
-	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DatabaseCheckJob(Main.AutoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, Main.AutoKkutu.Game.JsEvaluator);
+	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DatabaseCheckJob(Main.AutoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, Main.AutoKkutu.GameJsEvaluator);
 
 	private WordFlags GetBatchAddWordDatabaseAttributes()
 	{
@@ -172,14 +167,13 @@ public partial class DatabaseManagement : Window
 
 		// Verify-before-Add
 		if (Batch_Verify.IsChecked ?? false)
-			mode |= BatchJobOptions.VerifyBeforeAdd;
+			mode |= BatchJobOptions.Verify;
 
 		return mode;
 	}
+	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
 
-	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.NodeManager.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
-
-	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.NodeManager.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
+	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
 
 	private void OnWordFolderSubmit(object sender, RoutedEventArgs e)
 	{
@@ -226,8 +220,16 @@ public partial class DatabaseManagement : Window
 			}
 		}
 
-		BatchWordJob(Database, builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
+		BatchWordJob(builder.ToString(), GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
 	}
 
 	private void OnCloseRequested(object sender, EventArgs e) => Close();
+
+	[Flags]
+	private enum BatchJobOptions
+	{
+		None = 0 << 0,
+		Remove = 1 << 0,
+		Verify = 1 << 1
+	}
 }

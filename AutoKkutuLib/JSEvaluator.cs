@@ -3,11 +3,11 @@ using System.Globalization;
 
 namespace AutoKkutuLib;
 
-public class JSEvaluator
+public class JsEvaluator
 {
 	private readonly IKkutuBrowser browser;
 
-	public JSEvaluator(IKkutuBrowser browser) => this.browser = browser;
+	public JsEvaluator(IKkutuBrowser browser) => this.browser = browser;
 
 	private object? EvaluateJSInternal(string javaScript, object? defaultResult) => browser.EvaluateScriptAsync(javaScript) ?? defaultResult;
 
