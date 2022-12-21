@@ -23,7 +23,7 @@ public class JsEvaluator
 		JSResponse task = browser.EvaluateScriptAsync(javaScript).Result;
 		if (!task.Success)
 			error = task.Message;
-		return task.Success;
+		return !task.Success;
 	}
 
 	public string EvaluateJS(string javaScript, string defaultResult = " ", string? errorMessage = null)

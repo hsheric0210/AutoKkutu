@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Serilog;
 using System.Globalization;
 
 namespace AutoKkutuLib.Database.Sql.Query;
@@ -65,15 +66,23 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 
 		FindQuery findQuery = CreateQuery(Parameter);
 		var result = new List<PathObject>();
-		foreach (WordModel found in Connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
+		try
 		{
-			var wordString = found.Word.Trim();
-			WordCategories categories = SetupWordCategories(
-				 wordString,
-				(WordFlags)found.Flags,
-				Parameter.MissionChar,
-				out var missionCharCount);
-			result.Add(new PathObject(wordString, categories, missionCharCount));
+			foreach (WordModel found in Connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
+			{
+				var wordString = found.Word.Trim();
+				WordCategories categories = SetupWordCategories(
+					 wordString,
+					(WordFlags)found.Flags,
+					Parameter.MissionChar,
+					out var missionCharCount);
+				result.Add(new PathObject(wordString, categories, missionCharCount));
+			}
+		}
+		catch
+		{
+			Log.Error("Errored query: {sql}", findQuery.Sql);
+			throw;
 		}
 
 		return result;
@@ -208,8 +217,8 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 				Connection.GetMissionWordPriorityFuncName(),
 				DatabaseConstants.WordColumnName,
 				DatabaseConstants.FlagsColumnName,
-				endWordFlag,
-				attackWordFlag,
+				(int)endWordFlag,
+				(int)attackWordFlag,
 				GetWordTypePriority(preference, WordCategories.EndWord | WordCategories.MissionWord), // End mission word
 				GetWordTypePriority(preference, WordCategories.EndWord), // End word
 				GetWordTypePriority(preference, WordCategories.AttackWord | WordCategories.MissionWord), // Attack mission word
