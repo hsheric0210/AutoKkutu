@@ -1,4 +1,5 @@
 ﻿using AutoKkutuLib;
+using AutoKkutuLib.CefSharp;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
@@ -39,7 +40,7 @@ public static class Main
 	} = null!;
 
 	/* EVENTS */
-	public static event EventHandler? InitializeUI;
+	public static event EventHandler? InitializationStarted;
 
 	public static event EventHandler? HandlerRegistered;
 
@@ -77,7 +78,7 @@ public static class Main
 				return;
 
 			// Initialize UI
-			InitializeUI?.Invoke(null, EventArgs.Empty);
+			InitializationStarted?.Invoke(null, EventArgs.Empty);
 
 			AutoKkutu = new AutoKkutu(database);
 
@@ -97,6 +98,19 @@ public static class Main
 		{
 			Log.Error(e, "Initialization failure");
 		}
+	}
+
+	public static PathFinderFlags SetupPathFinderFlags(PathFinderFlags flags = PathFinderFlags.None)
+	{
+		if (Prefs.EndWordEnabled && (flags.HasFlag(PathFinderFlags.ManualSearch) || AutoKkutu.PathFilter.PreviousPaths.Count > 0))  // 첫 턴 한방 방지
+			flags |= PathFinderFlags.UseEndWord;
+		else
+			flags &= ~PathFinderFlags.UseEndWord;
+		if (Prefs.AttackWordAllowed)
+			flags |= PathFinderFlags.UseAttackWord;
+		else
+			flags &= ~PathFinderFlags.UseAttackWord;
+		return flags;
 	}
 
 	private static void InitializeCEF()
@@ -124,7 +138,7 @@ public static class Main
 
 		try
 		{
-			if (!Cef.Initialize(settings, true, (IApp?)null))
+			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
 				Log.Warning("CEF initialization failed.");
 		}
 		catch (Exception ex)
@@ -191,6 +205,9 @@ public static class Main
 		};
 
 		Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
+		Browser.LoadError += OnBrowserLoadError;
+
+		HandlerList.InitDefaultHandlers(new JsEvaluator(new CefSharpWrapper(Browser)));
 	}
 
 	private static AbstractDatabase? InitializeDatabase()
@@ -250,6 +267,7 @@ public static class Main
 		AbstractHandler? handler = HandlerList.GetByUri(new Uri(url));
 		if (handler is not null && !(AutoKkutu.HasGameSet && AutoKkutu.Game.HasSameHandler(handler))) // TODO: Move to Lib
 		{
+			Log.Information("Browser frame loaded.");
 			AutoKkutu.SetGame(new Game(handler));
 			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
 		}
@@ -257,6 +275,13 @@ public static class Main
 		{
 			Log.Warning(I18n.Main_UnsupportedURL, url);
 		}
+	}
+
+	private static void OnBrowserLoadError(object? sender, LoadErrorEventArgs args)
+	{
+		Log.Error("Browser load error!");
+		Log.Error("Errorcode: {code}", args.ErrorCode);
+		Log.Error("Error text: {error}", args.ErrorText);
 	}
 
 	public static void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdateEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
@@ -409,7 +434,7 @@ public static class Main
 	}
 
 	// TODO: Move to Lib
-	private static void OnMyTurn(object? sender, WordConditionPresentEventArgs args) => AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, PathFinderFlags.None, Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
+	private static void OnMyTurn(object? sender, WordConditionPresentEventArgs args) => AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
 
 	// TODO: Move to Lib
 	private static void OnUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)

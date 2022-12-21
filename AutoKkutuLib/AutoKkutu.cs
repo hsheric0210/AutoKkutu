@@ -40,6 +40,12 @@ public class AutoKkutu : IDisposable
 	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	#endregion
 
+	#region AutoEnter event redirects
+	public event EventHandler<InputDelayEventArgs>? InputDelayApply;
+	public event EventHandler<AutoEnterEventArgs>? AutoEntered;
+	public event EventHandler? NoPathAvailable;
+	#endregion
+
 	public AutoKkutu(AbstractDatabase db)
 	{
 		Database = db;
@@ -96,6 +102,10 @@ public class AutoKkutu : IDisposable
 		game.TypingWordPresented += TypingWordPresented;
 		game.UnsupportedWordEntered += UnsupportedWordEntered;
 		game.ExampleWordPresented += ExampleWordPresented;
+
+		game.AutoEnter.InputDelayApply += InputDelayApply;
+		game.AutoEnter.AutoEntered += AutoEntered;
+		game.AutoEnter.NoPathAvailable += NoPathAvailable;
 	}
 
 	private void UnregisterGameEventRedirects(IGame game)
@@ -112,6 +122,10 @@ public class AutoKkutu : IDisposable
 		game.TypingWordPresented -= TypingWordPresented;
 		game.UnsupportedWordEntered -= UnsupportedWordEntered;
 		game.ExampleWordPresented -= ExampleWordPresented;
+
+		game.AutoEnter.InputDelayApply -= InputDelayApply;
+		game.AutoEnter.AutoEntered -= AutoEntered;
+		game.AutoEnter.NoPathAvailable -= NoPathAvailable;
 	}
 
 	#region Disposal

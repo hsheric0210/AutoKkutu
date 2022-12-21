@@ -9,7 +9,7 @@ public class JsEvaluator
 
 	public JsEvaluator(IKkutuBrowser browser) => this.browser = browser;
 
-	private object? EvaluateJSInternal(string javaScript, object? defaultResult) => browser.EvaluateScriptAsync(javaScript) ?? defaultResult;
+	private object? EvaluateJSInternal(string javaScript, object? defaultResult) => browser.EvaluateScriptAsync(javaScript).Result.Result ?? defaultResult;
 
 	/// <summary>
 	/// Execute the javascript and return the <u>Error Message</u>

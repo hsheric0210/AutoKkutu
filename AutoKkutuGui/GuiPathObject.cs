@@ -7,14 +7,14 @@ namespace AutoKkutuGui;
 
 public record GuiPathObject
 {
-	private readonly PathObject pathObject;
+	public PathObject Underlying { get; }
 
 	public string Color
 	{
 		get;
 	} = "#FFFFFFFF";
 
-	public string Content => pathObject.Content;
+	public string Content => Underlying.Content;
 
 	public bool MakeAttackAvailable
 	{
@@ -41,29 +41,29 @@ public record GuiPathObject
 		get;
 	}
 
-	public string Title => pathObject.Content;
+	public string Title => Underlying.Content;
 
 	public string ToolTip
 	{
 		get;
 	}
 
-	public bool AlreadyUsed => pathObject.AlreadyUsed;
-	public bool Excluded => pathObject.Excluded;
-	public bool RemoveQueued => pathObject.RemoveQueued;
+	public bool AlreadyUsed => Underlying.AlreadyUsed;
+	public bool Excluded => Underlying.Excluded;
+	public bool RemoveQueued => Underlying.RemoveQueued;
 
-	public string Decorations => pathObject.AlreadyUsed || pathObject.Excluded || pathObject.RemoveQueued ? "Strikethrough" : "None";
+	public string Decorations => Underlying.AlreadyUsed || Underlying.Excluded || Underlying.RemoveQueued ? "Strikethrough" : "None";
 
-	public string FontWeight => pathObject.RemoveQueued ? "Bold" : "Normal";
+	public string FontWeight => Underlying.RemoveQueued ? "Bold" : "Normal";
 
-	public string FontStyle => pathObject.RemoveQueued ? "Italic" : "Normal";
+	public string FontStyle => Underlying.RemoveQueued ? "Italic" : "Normal";
 
 	public GuiPathObject(PathObject pathObject)
 	{
 		if (pathObject is null)
 			throw new ArgumentNullException(nameof(pathObject));
 
-		this.pathObject = pathObject;
+		this.Underlying = pathObject;
 
 		ColorPreference colorPref = Main.ColorPreference;
 
