@@ -86,7 +86,7 @@ public class PathFinder
 		IList<PathObject>? totalWordList = null;
 		try
 		{
-			totalWordList = nodeManager.DbConnection.FindWord(mode, parameter, preference);
+			totalWordList = nodeManager.DbConnection.Query.FindWord(mode, preference, parameter.MaxDisplayed).Execute(parameter);
 			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.Options.HasFlag(PathFinderOptions.UseAttackWord), parameter.Options.HasFlag(PathFinderOptions.UseEndWord));
 		}
 		catch (Exception e)
@@ -100,9 +100,6 @@ public class PathFinder
 		var totalWordCount = totalWordList.Count;
 
 		// Limit the word list size
-		var maxCount = parameter.MaxDisplayed;
-		if (totalWordList.Count > maxCount)
-			totalWordList = totalWordList.Take(maxCount).ToList();
 		stopWatch.Stop();
 
 		TotalWordList = totalWordList;

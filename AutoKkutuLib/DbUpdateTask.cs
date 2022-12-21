@@ -1,4 +1,5 @@
 ﻿using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Node;
 using AutoKkutuLib.Path;
 using Serilog;
@@ -29,30 +30,22 @@ public class DbUpdateTask
 		//	return null;
 
 		Log.Debug(I18n.PathFinder_AutoDBUpdate);
-		try
+		var AddQueueCount = specialPathList.NewPaths.Count;
+		var RemoveQueueCount = specialPathList.InexistentPaths.Count;
+		if (AddQueueCount + RemoveQueueCount == 0)
+			Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
+		else
 		{
-			specialPathList.Lock.EnterUpgradeableReadLock();
-			var AddQueueCount = specialPathList.NewPaths.Count;
-			var RemoveQueueCount = specialPathList.InexistentPaths.Count;
-			if (AddQueueCount + RemoveQueueCount == 0)
-				Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
-			else
-			{
-				Log.Debug(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);
-				var AddSuccessfulCount = AddNewPaths(CopyPathList(specialPathList.NewPaths));
+			Log.Debug(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);
+			var AddSuccessfulCount = AddNewPaths(CopyPathList(specialPathList.NewPaths));
 
-				Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
+			Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
 
-				var RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
-				var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount);
+			var RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
+			var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount);
 
-				Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
-				return result;
-			}
-		}
-		finally
-		{
-			specialPathList.Lock.ExitUpgradeableReadLock();
+			Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
+			return result;
 		}
 
 		return null;
@@ -60,22 +53,15 @@ public class DbUpdateTask
 
 	private ICollection<string> CopyPathList(ICollection<string> pathList)
 	{
-		try
-		{
-			var copy = new List<string>(pathList);
-			specialPathList.Lock.EnterWriteLock();
-			pathList.Clear();
-			return copy;
-		}
-		finally
-		{
-			specialPathList.Lock.ExitWriteLock();
-		}
+		var copy = new List<string>(pathList);
+		pathList.Clear();
+		return copy;
 	}
 
 	private int AddNewPaths(ICollection<string> paths)
 	{
 		var count = 0;
+		WordAdditionQuery query = dbConnection.Query.AddWord();
 		foreach (var word in paths)
 		{
 			WordFlags flags = nodeManager.CalcWordFlags(word);
@@ -83,7 +69,7 @@ public class DbUpdateTask
 			try
 			{
 				Log.Debug(I18n.PathFinder_AddPath, word, flags);
-				if (dbConnection.AddWord(word, flags))
+				if (query.Execute(word, flags))
 				{
 					Log.Information(I18n.PathFinder_AddPath_Success, word);
 					count++;
@@ -101,11 +87,12 @@ public class DbUpdateTask
 	private int RemoveInexistentPaths(ICollection<string> paths)
 	{
 		var count = 0;
+		WordDeletionQuery query = dbConnection.Query.DeleteWord();
 		foreach (var word in paths)
 		{
 			try
 			{
-				count += dbConnection.DeleteWord(word);
+				count += query.Execute(word);
 			}
 			catch (Exception ex)
 			{

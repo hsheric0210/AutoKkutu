@@ -1,4 +1,5 @@
 ﻿using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Extension;
 using Serilog;
 using System.Globalization;
@@ -73,14 +74,15 @@ public class NodeManager
 
 	public void LoadNodeLists(AbstractDatabaseConnection connection)
 	{
-		AttackNodes = connection.GetNodeList(DatabaseConstants.AttackNodeIndexTableName);
-		EndNodes = connection.GetNodeList(DatabaseConstants.EndNodeIndexTableName);
-		ReverseAttackNodes = connection.GetNodeList(DatabaseConstants.ReverseAttackNodeIndexTableName);
-		ReverseEndNodes = connection.GetNodeList(DatabaseConstants.ReverseEndNodeIndexTableName);
-		KkutuAttackNodes = connection.GetNodeList(DatabaseConstants.KkutuAttackNodeIndexTableName);
-		KkutuEndNodes = connection.GetNodeList(DatabaseConstants.KkutuEndNodeIndexTableName);
-		KKTAttackNodes = connection.GetNodeList(DatabaseConstants.KKTAttackNodeIndexTableName);
-		KKTEndNodes = connection.GetNodeList(DatabaseConstants.KKTEndNodeIndexTableName);
+		NodeListQuery query = connection.Query.ListNode();
+		AttackNodes = query.Execute(DatabaseConstants.AttackNodeIndexTableName);
+		EndNodes = query.Execute(DatabaseConstants.EndNodeIndexTableName);
+		ReverseAttackNodes = query.Execute(DatabaseConstants.ReverseAttackNodeIndexTableName);
+		ReverseEndNodes = query.Execute(DatabaseConstants.ReverseEndNodeIndexTableName);
+		KkutuAttackNodes = query.Execute(DatabaseConstants.KkutuAttackNodeIndexTableName);
+		KkutuEndNodes = query.Execute(DatabaseConstants.KkutuEndNodeIndexTableName);
+		KKTAttackNodes = query.Execute(DatabaseConstants.KKTAttackNodeIndexTableName);
+		KKTEndNodes = query.Execute(DatabaseConstants.KKTEndNodeIndexTableName);
 	}
 	#endregion
 

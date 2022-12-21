@@ -3,15 +3,22 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class NodeListQuery : SqlQuery<ICollection<string>>
 {
-	private readonly string tableName;
-	public string? Node { get; set; }
+	public string? TableName { get; set; }
 
-	internal NodeListQuery(AbstractDatabaseConnection connection, string tableName) : base(connection)
+	internal NodeListQuery(AbstractDatabaseConnection connection) : base(connection)
 	{
-		if (string.IsNullOrWhiteSpace(tableName))
-			throw new ArgumentException("Table name should be filled.", nameof(tableName));
-		this.tableName = tableName;
 	}
 
-	public override ICollection<string> Execute() => Connection.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM {tableName}").AsList();
+	public ICollection<string> Execute(string tableName)
+	{
+		TableName = tableName;
+		return Execute();
+	}
+
+	public override ICollection<string> Execute()
+	{
+		if (string.IsNullOrWhiteSpace(TableName))
+			throw new InvalidOperationException("Table name should be filled.");
+		return Connection.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM @TableName;", new { TableName }).AsList();
+	}
 }

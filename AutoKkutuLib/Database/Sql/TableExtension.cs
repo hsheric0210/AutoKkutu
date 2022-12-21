@@ -13,8 +13,8 @@ public static class TableExtension
 		foreach (var tableName in new string[] { DatabaseConstants.EndNodeIndexTableName, DatabaseConstants.AttackNodeIndexTableName, DatabaseConstants.ReverseEndNodeIndexTableName, DatabaseConstants.ReverseAttackNodeIndexTableName, DatabaseConstants.KkutuEndNodeIndexTableName, DatabaseConstants.KkutuAttackNodeIndexTableName })
 			connection.MakeTableIfNotExists(tableName);
 
-		connection.MakeTableIfNotExists(DatabaseConstants.KKTEndNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTEndNodeIndexTableName} SELECT * FROM {DatabaseConstants.EndNodeIndexTableName}"));
-		connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTAttackNodeIndexTableName} SELECT * FROM {DatabaseConstants.AttackNodeIndexTableName}"));
+		connection.MakeTableIfNotExists(DatabaseConstants.KKTEndNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTEndNodeIndexTableName} SELECT * FROM {DatabaseConstants.EndNodeIndexTableName};"));
+		connection.MakeTableIfNotExists(DatabaseConstants.KKTAttackNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTAttackNodeIndexTableName} SELECT * FROM {DatabaseConstants.AttackNodeIndexTableName};"));
 
 		// Create word list table
 		if (!connection.Query.IsTableExists(DatabaseConstants.WordTableName).Execute())

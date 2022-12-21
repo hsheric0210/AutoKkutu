@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Sql;
 using Serilog;
 
 namespace AutoKkutuLib.Node;
@@ -34,5 +33,5 @@ public sealed class NodeDeletionJob : NodeJob
 		}
 	}
 
-	private void DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? DbConnection.DeleteNode(node, targetNodeType.ToNodeTableName()) : 0);
+	private void DeleteNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? DbConnection.Query.DeleteNode(targetNodeType).Execute(node) : 0);
 }

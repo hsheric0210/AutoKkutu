@@ -1,7 +1,6 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
-using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Path;
 using CefSharp;

@@ -24,6 +24,6 @@ public class NodeDeletionQuery : SqlQuery<int>
 		if (string.IsNullOrWhiteSpace(Node))
 			throw new InvalidOperationException(nameof(Node) + " not set.");
 
-		return Connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node", new { Node });
+		return Connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new { Node });
 	}
 }

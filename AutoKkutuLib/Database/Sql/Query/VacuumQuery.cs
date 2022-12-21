@@ -7,6 +7,5 @@ public class VacuumQuery : SqlQuery<int>
 	{
 	}
 
-	// https://wiki.postgresql.org/wiki/Deleting_duplicates
 	public override int Execute() => Connection.Execute("VACUUM;");
 }

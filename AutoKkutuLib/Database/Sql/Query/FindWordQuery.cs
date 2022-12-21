@@ -7,17 +7,19 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 {
 	private readonly GameMode mode;
 	private readonly WordPreference preference;
+	private readonly int maxCount;
 
 	private readonly WordFlags endWordFlag;
 	private readonly WordFlags attackWordFlag;
 
 	public PathFinderParameter? Parameter { get; set; }
 
-	internal FindWordQuery(AbstractDatabaseConnection connection, GameMode mode, WordPreference preference) : base(connection)
+	internal FindWordQuery(AbstractDatabaseConnection connection, GameMode mode, WordPreference preference, int maxCount) : base(connection)
 	{
 		this.mode = mode;
 		this.preference = preference;
 		SelectFlags(mode, out endWordFlag, out attackWordFlag);
+		this.maxCount = maxCount;
 	}
 
 	public static void SelectFlags(GameMode mode, out WordFlags endWordFlag, out WordFlags attackWordFlag)
@@ -154,7 +156,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 		}
 		var orderPriority = $"({CreateWordPriorityFuncCall(parameter.MissionChar, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
-		return new FindQuery($"SELECT {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName} FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {DatabaseConstants.QueryResultLimit}", param);
+		return new FindQuery($"SELECT {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName} FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {maxCount};", param);
 	}
 
 	private string CreateWordPriorityFuncCall(

@@ -18,6 +18,6 @@ public class WordDeletionQuery : SqlQuery<int>
 		if (string.IsNullOrWhiteSpace(Word))
 			throw new InvalidOperationException(nameof(Word) + " not set.");
 
-		return Connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new { Word });
+		return Connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word;", new { Word });
 	}
 }

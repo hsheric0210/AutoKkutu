@@ -1,8 +1,5 @@
-﻿using AutoKkutuLib.Database.Sql;
-using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
-using Dapper;
+﻿using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
 using Microsoft.Data.Sqlite;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sqlite;
 

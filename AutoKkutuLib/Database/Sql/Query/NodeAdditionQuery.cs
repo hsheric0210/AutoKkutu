@@ -28,7 +28,7 @@ public class NodeAdditionQuery : SqlQuery<bool>
 		if (CheckExistence && Connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new { Node }) > 0)
 			return false;
 
-		Connection.Execute($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@Node)", new { Node });
+		Connection.Execute($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@Node);", new { Node });
 		return true;
 	}
 }

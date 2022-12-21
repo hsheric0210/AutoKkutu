@@ -10,8 +10,8 @@ public static class PathObjectCategoryChangeExtension
 			return;
 
 		var node = pathObject.ToNode(mode);
-		connection.DeleteNode(node, GetEndWordListTableName(mode));
-		if (connection.AddNode(node, GetAttackWordListTableName(mode)))
+		connection.Query.DeleteNode(GetEndWordListTableName(mode)).Execute(node);
+		if (connection.Query.AddNode(GetAttackWordListTableName(mode)).Execute(node))
 			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
 		else
 			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
@@ -23,8 +23,8 @@ public static class PathObjectCategoryChangeExtension
 			return;
 
 		var node = pathObject.ToNode(mode);
-		connection.DeleteNode(node, GetAttackWordListTableName(mode));
-		if (connection.AddNode(node, GetEndWordListTableName(mode)))
+		connection.Query.DeleteNode(GetAttackWordListTableName(mode)).Execute(node);
+		if (connection.Query.AddNode(GetEndWordListTableName(mode)).Execute(node))
 			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_End, mode);
 		else
 			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
@@ -36,8 +36,8 @@ public static class PathObjectCategoryChangeExtension
 			return;
 
 		var node = pathObject.ToNode(mode);
-		var endWord = connection.DeleteNode(node, GetEndWordListTableName(mode)) > 0;
-		var attackWord = connection.DeleteNode(node, GetAttackWordListTableName(mode)) > 0;
+		var endWord = connection.Query.DeleteNode(GetEndWordListTableName(mode)).Execute(node) > 0;
+		var attackWord = connection.Query.DeleteNode(GetAttackWordListTableName(mode)).Execute(node) > 0;
 		if (endWord || attackWord)
 			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
 		else

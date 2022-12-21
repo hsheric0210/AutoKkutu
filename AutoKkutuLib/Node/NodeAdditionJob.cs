@@ -33,5 +33,5 @@ public sealed class NodeAdditionJob : NodeJob
 		}
 	}
 
-	private void AddNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? Convert.ToInt32(DbConnection.AddNode(node, targetNodeType)) : 0);
+	private void AddNodeInternal(string node, NodeTypes nodeTypes, NodeTypes targetNodeType) => Result.Increment(targetNodeType, nodeTypes.HasFlag(targetNodeType) ? Convert.ToInt32(DbConnection.Query.AddNode(targetNodeType).Execute(node)) : 0);
 }

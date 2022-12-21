@@ -12,5 +12,5 @@ public class IndexCreationQuery : SqlQuery<int>
 		this.columnName = columnName;
 	}
 
-	public override int Execute() => Connection.Execute($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName})");
+	public override int Execute() => Connection.Execute($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName});");
 }

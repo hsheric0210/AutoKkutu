@@ -228,7 +228,7 @@ public class DatabaseCheckJob
 		var watch = new Stopwatch();
 		Log.Information("Executing vacuum...");
 		watch.Restart();
-		DbConnection.ExecuteVacuum();
+		DbConnection.Query.Vacuum().Execute();
 		watch.Stop();
 		Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 	}
@@ -261,7 +261,7 @@ public class DatabaseCheckJob
 		Log.Information("Deduplicating entries...");
 		try
 		{
-			count = DbConnection.DeduplicateDatabase();
+			count = DbConnection.Query.Deduplicate().Execute();
 			watch.Stop();
 			Log.Information("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 		}

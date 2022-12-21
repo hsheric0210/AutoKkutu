@@ -1,7 +1,7 @@
 ﻿namespace AutoKkutuLib.Extension;
 public static class GameModeExtension
 {
-	public static string? ConvertToPresentedWord(this GameMode gameMode, string path)
+	public static string? ConvertWordToTailNode(this GameMode gameMode, string path)
 	{
 		if (string.IsNullOrWhiteSpace(path))
 			throw new ArgumentException("Parameter is null or blank", nameof(path));
@@ -14,7 +14,7 @@ public static class GameModeExtension
 				return path.GetLaFTailNode();
 
 			case GameMode.FirstAndLast:
-				return path.GetFaLHeadNode();
+				return path.GetFaLTailNode();
 
 			case GameMode.MiddleAndFirst:
 				if (path.Length > 2 && path.Length % 2 == 1)
@@ -25,11 +25,7 @@ public static class GameModeExtension
 				return path.GetKkutuTailNode();
 
 			case GameMode.TypingBattle:
-				break;
-
 			case GameMode.All:
-				break;
-
 			case GameMode.Free:
 				break;
 		}
@@ -39,7 +35,7 @@ public static class GameModeExtension
 
 	public static bool IsFreeMode(this GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
 
-	public static string? GetGameModeName(this GameMode gameMode) => gameMode switch
+	public static string? GameModeName(this GameMode gameMode) => gameMode switch
 	{
 		GameMode.LastAndFirst => I18n.GameMode_LastAndFirst,
 		GameMode.FirstAndLast => I18n.GameMode_FirstAndLast,

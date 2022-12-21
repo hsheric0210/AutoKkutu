@@ -20,14 +20,13 @@ public abstract class QueryFactory
 
 	#region Virtual(overridable) methods
 	public virtual DeduplicationQuery Deduplicate() => new(Connection);
-	public virtual FindWordQuery FindWord(GameMode gameMode, WordPreference wordPreference) => new(Connection, gameMode, wordPreference);
+	public virtual FindWordQuery FindWord(GameMode gameMode, WordPreference wordPreference, int maxCount) => new(Connection, gameMode, wordPreference, maxCount);
 	public virtual IndexCreationQuery CreateIndex(string tableName, string columnName) => new(Connection, tableName, columnName);
 	public virtual NodeAdditionQuery AddNode(string tableName) => new(Connection, tableName);
 	public virtual NodeAdditionQuery AddNode(NodeTypes nodeType) => new(Connection, nodeType.ToNodeTableName());
 	public virtual NodeDeletionQuery DeleteNode(string tableName) => new(Connection, tableName);
 	public virtual NodeDeletionQuery DeleteNode(NodeTypes nodeType) => new(Connection, nodeType.ToNodeTableName());
-	public virtual NodeListQuery ListNode(string tableName) => new(Connection, tableName);
-	public virtual NodeListQuery ListNode(NodeTypes nodeType) => new(Connection, nodeType.ToNodeTableName());
+	public virtual NodeListQuery ListNode() => new(Connection);
 	public virtual VacuumQuery Vacuum() => new(Connection);
 	public virtual WordAdditionQuery AddWord() => new(Connection);
 	public virtual WordDeletionQuery DeleteWord() => new(Connection);

@@ -1,4 +1,5 @@
 ﻿using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.Sql.Query;
 using Serilog;
 
 namespace AutoKkutuLib.Word;
@@ -14,23 +15,24 @@ public sealed class WordDeletionJob : WordJob
 			throw new ArgumentNullException(nameof(wordlist));
 
 		var count = 0;
+		WordDeletionQuery query = DbConnection.Query.DeleteWord();
 		foreach (var word in wordlist)
 		{
-			if (RemoveSingleWord(word))
+			if (RemoveSingleWord(query, word))
 				count++;
 		}
 
 		return count;
 	}
 
-	private bool RemoveSingleWord(string word)
+	private bool RemoveSingleWord(WordDeletionQuery query, string word)
 	{
 		if (string.IsNullOrWhiteSpace(word))
 			return false;
 
 		try
 		{
-			return DbConnection.DeleteWord(word) > 0;
+			return query.Execute(word) > 0;
 		}
 		catch (Exception ex)
 		{

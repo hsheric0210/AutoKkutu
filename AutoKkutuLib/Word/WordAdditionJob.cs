@@ -1,4 +1,5 @@
-﻿using AutoKkutuLib.Game.Extension;
+﻿using AutoKkutuLib.Database.Sql.Query;
+using AutoKkutuLib.Game.Extension;
 using AutoKkutuLib.Node;
 using Serilog;
 
@@ -24,6 +25,7 @@ public sealed class WordAdditionJob : WordJob
 			throw new ArgumentNullException(nameof(wordList));
 
 		var count = new WordCount();
+		var query = DbConnection.Query.AddWord();
 		foreach (var word in wordList)
 		{
 			if (string.IsNullOrWhiteSpace(word))
@@ -38,20 +40,20 @@ public sealed class WordAdditionJob : WordJob
 			}
 
 			if (!verifyOnline || jsEvaluator.VerifyWordOnline(word))
-				AddSingleWord(word, wordFlags, ref count);
+				AddSingleWord(query, word, wordFlags, ref count);
 		}
 
 		return count;
 	}
 
-	private void AddSingleWord(string word, WordFlags flags, ref WordCount wordCount)
+	private void AddSingleWord(WordAdditionQuery query, string word, WordFlags flags, ref WordCount wordCount)
 	{
 		try
 		{
 			nodeManager.UpdateNodeListsByWord(word, ref flags);
 
 			Log.Information("Adding {word} into database... (flags: {flags})", word, flags);
-			if (DbConnection.AddWord(word, flags))
+			if (query.Execute(word,flags))
 				wordCount.Increment(flags, 1);
 		}
 		catch (Exception ex)

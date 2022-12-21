@@ -2,7 +2,6 @@
 
 public static class NodeExtension
 {
-	#region Conversion between NodeType and node table name
 	public static string ToNodeTableName(this NodeTypes nodeType) => nodeType switch
 	{
 		NodeTypes.EndWord => DatabaseConstants.EndNodeIndexTableName,
@@ -15,5 +14,4 @@ public static class NodeExtension
 		NodeTypes.KKTAttackWord => DatabaseConstants.KKTAttackNodeIndexTableName,
 		_ => throw new ArgumentException("Unsuppored node type: " + nodeType, nameof(nodeType))
 	};
-	#endregion
 }

@@ -407,7 +407,7 @@ public class Game : IGame
 		if (gameMode == CurrentGameMode)
 			return;
 		CurrentGameMode = gameMode;
-		Log.Information("Game mode change detected : {gameMode}", gameMode.GetGameModeName());
+		Log.Information("Game mode change detected : {gameMode}", gameMode.GameModeName());
 		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 	}
 
@@ -434,10 +434,10 @@ public class Game : IGame
 		}
 		else  // 가끔가다가 서버 렉때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 그대로 넘어오는 경우가 왕왕 있음. 특히 양쪽이 오토 켜놓고 대결할 때.
 		{
-			var converted = CurrentGameMode.ConvertToPresentedWord(content);
-			if (converted == null)
+			var tailNode = CurrentGameMode.ConvertWordToTailNode(content);
+			if (tailNode == null)
 				return null;
-			primary = converted;
+			primary = tailNode;
 		}
 
 		return new PresentedWord(primary, hasSecondary, secondary);

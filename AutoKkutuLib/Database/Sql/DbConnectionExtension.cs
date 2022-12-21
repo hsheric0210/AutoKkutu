@@ -18,11 +18,11 @@ public static class DbConnectionExtension
 		return 0;
 	}
 
-	public static V? TryExecuteScalar<V>(this IDbConnection connection, string query, object? parameters = null)
+	public static T? TryExecuteScalar<T>(this IDbConnection connection, string query, object? parameters = null)
 	{
 		try
 		{
-			return connection.ExecuteScalar<V>(query, parameters);
+			return connection.ExecuteScalar<T>(query, parameters);
 		}
 		catch (Exception ex)
 		{

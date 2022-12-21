@@ -155,7 +155,7 @@ public class AutoEnter
 		var aborted = false;
 		var list = new List<(JamoType, char)>();
 		foreach (var ch in content)
-			list.AddRange(ch.SplitConsonants().Serialize());
+			list.AddRange(ch.Split().Serialize());
 
 		Log.Information(I18n.Main_InputSimulating, wordIndex, content);
 		game.UpdateChat("");
@@ -187,7 +187,7 @@ public class AutoEnter
 
 		var list = new List<(JamoType, char)>();
 		foreach (var ch in message)
-			list.AddRange(ch.SplitConsonants().Serialize());
+			list.AddRange(ch.Split().Serialize());
 
 		Log.Information(I18n.Main_InputSimulating, "Input", message);
 		game.UpdateChat("");

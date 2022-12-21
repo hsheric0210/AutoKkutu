@@ -89,12 +89,8 @@ public static class DatabaseConstants
 	/// </summary>
 	public const string IsEndwordColumnName = "is_endword";
 
+	// FIXME: Move to resources
 	public const string LoadFromLocalSQLite = "SQLite 데이터베이스 불러오기";
-
-	public const int QueryResultLimit = 128;
-
-	// Error messages
-	// TODO: Move to resources
 
 	public const string ErrorConnect = "Failed to connect to the database";
 
