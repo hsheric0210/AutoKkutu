@@ -2,9 +2,9 @@
 using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreIsTableExistsQuery : AbstractIsTableExistsQuery
+public class PostgreSqlIsTableExistsQuery : AbstractIsTableExistsQuery
 {
-	internal PostgreIsTableExistsQuery(AbstractDatabaseConnection connection, string tableName) : base(connection, tableName) { }
+	internal PostgreSqlIsTableExistsQuery(AbstractDatabaseConnection connection, string tableName) : base(connection, tableName) { }
 
 	public override bool Execute()
 	{

@@ -2,9 +2,9 @@
 using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreGetColumnTypeQuery : AbstractGetColumnTypeQuery
+public class PostgreSqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
 {
-	internal PostgreGetColumnTypeQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
+	internal PostgreSqlGetColumnTypeQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 
 	public override string Execute()
 	{

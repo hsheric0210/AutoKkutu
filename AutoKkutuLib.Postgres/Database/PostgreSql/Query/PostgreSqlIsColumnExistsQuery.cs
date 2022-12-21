@@ -2,9 +2,9 @@
 using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreIsColumnExistsQuery : AbstractIsColumnExistsQuery
+public class PostgreSqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
 {
-	internal PostgreIsColumnExistsQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
+	internal PostgreSqlIsColumnExistsQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 
 	public override bool Execute()
 	{
