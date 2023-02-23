@@ -154,10 +154,10 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 			}
 
 			// Use end-words?
-			ApplyFilter(parameter.Options, PathFinderFlags.UseEndWord, endWordFlag, ref filter);
+			ApplyFlagFilter(parameter.Options, PathFinderFlags.UseEndWord, endWordFlag, ref filter);
 
 			// Use attack-words?
-			ApplyFilter(parameter.Options, PathFinderFlags.UseAttackWord, attackWordFlag, ref filter);
+			ApplyFlagFilter(parameter.Options, PathFinderFlags.UseAttackWord, attackWordFlag, ref filter);
 
 			// Only KungKungTta words if we're on KungKungTta mode
 			if (mode == GameMode.KungKungTta)
@@ -235,7 +235,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 		return fullAttribs.Length - (index >= 0 ? index : fullAttribs.Length) - 1;
 	}
 
-	private static void ApplyFilter(
+	private static void ApplyFlagFilter(
 		PathFinderFlags haystack,
 		PathFinderFlags needle,
 		WordFlags flag,
