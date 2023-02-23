@@ -359,7 +359,44 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(SearchField.Text))
 		{
-			Main.AutoKkutu.PathFinder.FindPath(GameMode.LastAndFirst, new PathFinderParameter(new PresentedWord(SearchField.Text, false), Main.AutoKkutu.Game.CurrentMissionChar ?? "", Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch), Main.Prefs.ReturnModeEnabled, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
+			GameMode gameMode;
+			switch (SearchGameMode.SelectedIndex)
+			{
+				case 1:
+					gameMode = GameMode.LastAndFirst;
+					break;
+				case 2:
+					gameMode = GameMode.FirstAndLast;
+					break;
+				case 3:
+					gameMode = GameMode.MiddleAndFirst;
+					break;
+				case 4:
+					gameMode = GameMode.Kkutu;
+					break;
+				case 5:
+					gameMode = GameMode.KungKungTta;
+					break;
+				case 6:
+					gameMode = GameMode.All;
+					break;
+				case 7:
+					gameMode = GameMode.Free;
+					break;
+				case 8:
+					gameMode = GameMode.LastAndFirstFree;
+					break;
+				default:
+					gameMode = Main.AutoKkutu.Game.CurrentGameMode;
+					break;
+
+			}
+
+			var missionChar = SearchMissionChar.Text;
+			if (string.IsNullOrWhiteSpace(missionChar))
+				missionChar = Main.AutoKkutu.Game.CurrentMissionChar;
+
+			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(new PresentedWord(SearchField.Text, false), missionChar ?? "", Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch), Main.Prefs.ReturnModeEnabled, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

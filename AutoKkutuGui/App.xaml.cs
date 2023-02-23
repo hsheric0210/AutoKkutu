@@ -24,7 +24,7 @@ public partial class App : Application
 			// Initialize logger
 			Log.Logger = new LoggerConfiguration()
 				.MinimumLevel.Verbose()
-				.WriteTo.Console(outputTemplate: LoggingTemplate, theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true)
+				.WriteTo.Console(outputTemplate: LoggingTemplate, theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
 				.WriteTo.Async(c => c.File(path: "AutoKkutu.log", outputTemplate: LoggingTemplate, fileSizeLimitBytes: MaxSizeBytes, rollOnFileSizeLimit: true, buffered: true, flushToDiskInterval: FlushPeriod))
 				.Enrich.WithThreadId()
 				.CreateLogger();

@@ -102,16 +102,41 @@
 							<TextBlock Name="SearchResult" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="11" Foreground="#FFFFFFFF" TextWrapping="Wrap" VerticalAlignment="Center">총 112개의 단어 중, 30개 고려 27ms 소요. (한방 단어 사용)</TextBlock>
 						</Border>
 					</Grid>
-					<Label Grid.Row="1" Content="수동 검색" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,170" VerticalAlignment="Bottom" />
-					<Button Name="SubmitSearch" Content="검색" Margin="15,0,0,150" Grid.Row="1" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="SubmitSearch_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="40" />
-					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,150" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" />
-					<TextBlock Text="검색할 키워드를 입력해주세요" Grid.Row="1" IsHitTestVisible="False" Margin="65,0,15,150" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0">
+					<Label Grid.Row="1" Content="수동 검색" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Margin="12,0,38,190" VerticalAlignment="Bottom" />
+					<Button Name="SubmitSearch" Content="검색" Margin="15,0,0,170" Grid.Row="1" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Click="SubmitSearch_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="40" />
+					<TextBox x:Name="SearchField" Grid.Row="1" Margin="60,0,15,170" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" />
+					<TextBlock Text="검색할 키워드를 입력해주세요" Grid.Row="1" IsHitTestVisible="False" Margin="65,0,15,170" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0">
 						<TextBlock.Style>
 							<Style TargetType="TextBlock">
 								<Setter Property="Visibility" Value="Hidden" />
 								<Setter Property="Foreground" Value="Gray" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding Text, ElementName=SearchField}" Value="">
+										<Setter Property="Visibility" Value="Visible" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
+					<ComboBox x:Name="SearchGameMode" Grid.Row="1" Margin="15,0,80,140" VerticalAlignment="Bottom" SelectedIndex="0" >
+						<ComboBoxItem>현재 게임모드 따라가기</ComboBoxItem>
+						<ComboBoxItem>끝말잇기</ComboBoxItem>
+						<ComboBoxItem>앞말잇기</ComboBoxItem>
+						<ComboBoxItem>가운뎃말잇기</ComboBoxItem>
+						<ComboBoxItem>끄투</ComboBoxItem>
+						<ComboBoxItem>쿵쿵따</ComboBoxItem>
+						<ComboBoxItem>전체</ComboBoxItem>
+						<ComboBoxItem>자유</ComboBoxItem>
+						<ComboBoxItem>자유 끝말잇기</ComboBoxItem>
+					</ComboBox>
+					<TextBox x:Name="SearchMissionChar" Grid.Row="1" Margin="260,0,15,140" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" Height="22" />
+					<TextBlock Text="미션 단어" Grid.Row="1" IsHitTestVisible="False" Margin="260,0,15,145"  HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Padding="0,0,0,0">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock">
+								<Setter Property="Visibility" Value="Hidden" />
+								<Setter Property="Foreground" Value="Gray" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Text, ElementName=SearchMissionChar}" Value="">
 										<Setter Property="Visibility" Value="Visible" />
 									</DataTrigger>
 								</Style.Triggers>
