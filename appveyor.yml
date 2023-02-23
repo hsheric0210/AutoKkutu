@@ -13,7 +13,7 @@ build_script:
 - dotnet sonarscanner begin /o:"hsheric0210" /k:"hsheric0210_AutoKkutu" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login=%sonarcloud_apikey%
 - nuget restore
 - dotnet restore
-- dotnet publish /verbosity:normal "AutoKkutuGui.csproj" --no-self-contained -c %CONFIGURATION%  -a %PLATFORM% -o "publish/%CONFIGURATION%.%PLATFORM%"
+- dotnet publish /verbosity:normal "AutoKkutuGui/AutoKkutuGui.csproj" --no-self-contained -c %CONFIGURATION%  -a %PLATFORM% -o "publish/%CONFIGURATION%.%PLATFORM%"
 - dotnet sonarscanner end /d:sonar.login=%sonarcloud_apikey%
 - 7z a -t7z -ms=on -mqs -slp -bt -bb3 -bsp1 -sae -m0=LZMA2 -mx=9 -myx=9 -md=128m -mfb=273 -mmt=8 -- "Windows.%PLATFORM%.%CONFIGURATION%.7z" "%APPVEYOR_BUILD_FOLDER%\publish\%CONFIGURATION%.%PLATFORM%"
 artifacts:
