@@ -103,7 +103,7 @@ namespace AutoKkutu
 			{
 				LogFile = "CefSharp.log",
 				LogSeverity = LogSeverity.Default,
-				
+
 				CefCommandLineArgs =
 				{
 					{
@@ -202,7 +202,7 @@ namespace AutoKkutu
 				Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 				watch.Restart();
-				PathManager.Initialize();
+				PathManager.Initialize(Database.Connection);
 				Log.Information(I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
 
 				watch.Stop();

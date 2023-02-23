@@ -54,6 +54,8 @@ namespace AutoKkutu.Modules
 			get; private set;
 		}
 
+		private static AbstractDatabaseConnection dbConnection;
+
 		/* Path lists */
 
 		public static ICollection<string> InexistentPathList { get; } = new HashSet<string>();
@@ -68,11 +70,12 @@ namespace AutoKkutu.Modules
 
 		/* Initialization */
 
-		public static void Initialize()
+		public static void Initialize(AbstractDatabaseConnection connection)
 		{
+			dbConnection = connection;
 			try
 			{
-				UpdateNodeLists(AutoKkutuMain.Database.Connection);
+				UpdateNodeLists(dbConnection);
 			}
 			catch (Exception ex)
 			{
@@ -179,7 +182,7 @@ namespace AutoKkutu.Modules
 				try
 				{
 					Log.Debug(I18n.PathFinder_AddPath, word, flags);
-					if (AutoKkutuMain.Database.Connection.AddWord(word, flags))
+					if (dbConnection.AddWord(word, flags))
 					{
 						Log.Information(I18n.PathFinder_AddPath_Success, word);
 						count++;
@@ -212,7 +215,7 @@ namespace AutoKkutu.Modules
 			{
 				try
 				{
-					count += AutoKkutuMain.Database.Connection.RequireNotNull().DeleteWord(word);
+					count += dbConnection.RequireNotNull().DeleteWord(word);
 				}
 				catch (Exception ex)
 				{
@@ -238,6 +241,38 @@ namespace AutoKkutu.Modules
 			else if (tryAdd && flags.HasFlag(theFlag))
 			{
 				nodeList.Add(item);
+
+				string? tableName = null;
+				switch (theFlag)
+				{
+					case WordDbTypes.EndWord:
+					case WordDbTypes.MiddleEndWord:
+						tableName = DatabaseConstants.EndNodeIndexTableName;
+						break;
+					case WordDbTypes.AttackWord:
+					case WordDbTypes.MiddleAttackWord:
+						tableName = DatabaseConstants.AttackNodeIndexTableName;
+						break;
+					case WordDbTypes.ReverseEndWord:
+						tableName = DatabaseConstants.ReverseEndNodeIndexTableName;
+						break;
+					case WordDbTypes.ReverseAttackWord:
+						tableName = DatabaseConstants.ReverseAttackNodeIndexTableName;
+						break;
+					case WordDbTypes.KkutuEndWord:
+						tableName = DatabaseConstants.KkutuEndNodeIndexTableName;
+						break;
+					case WordDbTypes.KkutuAttackWord:
+						tableName = DatabaseConstants.KkutuAttackNodeIndexTableName;
+						break;
+					case WordDbTypes.KKTEndWord:
+						tableName = DatabaseConstants.KKTEndNodeIndexTableName;
+						break;
+					case WordDbTypes.KKTAttackWord:
+						tableName = DatabaseConstants.KKTAttackNodeIndexTableName;
+						break;
+				}
+				dbConnection.AddNode(item, tableName);
 				Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, nodeType, item));
 				return true;
 			}
