@@ -1,0 +1,25 @@
+﻿using Dapper;
+using Serilog;
+
+namespace AutoKkutuLib.Database.Sql.Query;
+public class PostgreSqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
+{
+	internal PostgreSqlGetColumnTypeQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
+
+	public override string Execute()
+	{
+		try
+		{
+			return Connection.ExecuteScalar<string>("SELECT data_type FROM information_schema.columns WHERE table_name=@TableName AND column_name=@ColumnName;", new
+			{
+				TableName,
+				ColumnName
+			});
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
+		}
+		return "";
+	}
+}

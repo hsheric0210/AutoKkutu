@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CefSharp.Common.NETCore" Version="107.1.120" />
+    <PackageReference Include="chromiumembeddedframework.runtime" Version="107.1.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
+  </ItemGroup>
+
+</Project>
