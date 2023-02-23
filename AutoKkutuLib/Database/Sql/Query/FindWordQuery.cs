@@ -64,10 +64,13 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 		if (Parameter is null)
 			throw new InvalidOperationException(nameof(Parameter) + " not set.");
 
+		Log.Debug(nameof(FindWordQuery) + ": Finding the optimal word list for {0}.", Parameter);
 		FindQuery findQuery = CreateQuery(Parameter);
 		var result = new List<PathObject>();
 		try
 		{
+			Log.Debug(nameof(FindWordQuery) + ": Full query string is {0}.", findQuery.Sql);
+
 			foreach (WordModel found in Connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
 			{
 				var wordString = found.Word.Trim();
@@ -246,5 +249,5 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 	}
 
 	private sealed record FindQuery(string Sql, IDictionary<string, object> Parameters);
-#endregion
+	#endregion
 }

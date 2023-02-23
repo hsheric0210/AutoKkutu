@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class NodeAdditionQuery : SqlQuery<bool>
@@ -28,7 +29,8 @@ public class NodeAdditionQuery : SqlQuery<bool>
 		if (CheckExistence && Connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new { Node }) > 0)
 			return false;
 
-		Connection.Execute($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@Node);", new { Node });
-		return true;
+		var count = Connection.Execute($"INSERT INTO {tableName}({DatabaseConstants.WordIndexColumnName}) VALUES(@Node);", new { Node });
+		Log.Debug(nameof(NodeAdditionQuery) + ": Added {0} of node {1} to database table {2}.", count, Node, tableName);
+		return count > 0;
 	}
 }

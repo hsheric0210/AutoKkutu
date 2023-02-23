@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Extension;
 using Dapper;
+using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class WordAdditionQuery : SqlQuery<bool>
@@ -26,7 +27,7 @@ public class WordAdditionQuery : SqlQuery<bool>
 		if (Connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word;", new { Word }) > 0)
 			return false;
 
-		Connection.Execute(
+		var count = Connection.Execute(
 			$"INSERT INTO {DatabaseConstants.WordTableName}({DatabaseConstants.WordColumnName}, {DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES(@Word, @LaFHead, @FaLHead, @KkutuHead, @Flags);",
 			new
 			{
@@ -36,6 +37,7 @@ public class WordAdditionQuery : SqlQuery<bool>
 				KkutuHead = Word.GetKkutuHeadNode(),
 				Flags = (int)WordFlags
 			});
-		return true;
+		Log.Debug(nameof(WordAdditionQuery) + ": Adding {0} of word {1} to database with flags {2}.", count, Word, WordFlags);
+		return count > 0;
 	}
 }

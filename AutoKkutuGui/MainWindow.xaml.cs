@@ -6,6 +6,7 @@ using AutoKkutuLib.Path;
 using CefSharp;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -62,7 +63,7 @@ public partial class MainWindow : Window
 
 	/* EVENTS: AutoKkutu */
 
-	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.TotalWordList.Select(po  => new GuiPathObject(po)));
+	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.TotalWordList.Select(po => new GuiPathObject(po)));
 
 	private void OnInitializeStarted(object? sender, EventArgs args)
 	{
@@ -223,6 +224,7 @@ public partial class MainWindow : Window
 		PathFilter filter = Main.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Add(path.Content);
 		filter.InexistentPaths.Remove(path.Content);
+		PathList.Items.Refresh();
 	}
 
 	private void OnPathListIncludeClick(object? sender, RoutedEventArgs e)
@@ -235,6 +237,7 @@ public partial class MainWindow : Window
 		PathFilter filter = Main.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Remove(path.Content);
 		filter.InexistentPaths.Remove(path.Content);
+		PathList.Items.Refresh();
 	}
 
 	private void OnPathListQueueRemoveClick(object? sender, RoutedEventArgs e)
@@ -247,6 +250,7 @@ public partial class MainWindow : Window
 		PathFilter filter = Main.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Add(path.Content);
 		filter.InexistentPaths.Add(path.Content);
+		PathList.Items.Refresh();
 	}
 
 	private void OnPathListCopyClick(object? sender, RoutedEventArgs e)

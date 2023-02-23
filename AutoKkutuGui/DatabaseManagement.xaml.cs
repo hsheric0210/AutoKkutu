@@ -171,9 +171,9 @@ public partial class DatabaseManagement : Window
 
 		return mode;
 	}
-	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
+	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
 
-	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
+	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
 
 	private void OnWordFolderSubmit(object sender, RoutedEventArgs e)
 	{
