@@ -265,15 +265,17 @@ public static class Main
 
 		// Find appropriate handler for current URL
 		AbstractHandler? handler = HandlerList.GetByUri(new Uri(url));
-		if (handler is not null && !(AutoKkutu.HasGameSet && AutoKkutu.Game.HasSameHandler(handler))) // TODO: Move to Lib
+		if (handler is null)
+		{
+			Log.Warning(I18n.Main_UnsupportedURL, url);
+			return;
+		}
+
+		if (!AutoKkutu.HasGameSet || !AutoKkutu.Game.HasSameHandler(handler)) // TODO: Move to Lib
 		{
 			Log.Information("Browser frame loaded.");
 			AutoKkutu.SetGame(new Game(handler));
 			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
-		}
-		else
-		{
-			Log.Warning(I18n.Main_UnsupportedURL, url);
 		}
 	}
 

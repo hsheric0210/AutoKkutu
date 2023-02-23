@@ -18,6 +18,13 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * 사용중인 운영 체제에 맞는 버전(32비트 또는 64비트)를 다운로드 후, 압축을 풀고, AutoKkutu.exe 파일을 실행시키면 됩니다.
   * .NET Framework가 설치되어 있지 않을 경우, 이에 대한 설치 요구 메세지가 뜰 수 있습니다.
 
+## 메인 창
+![Idle](Images/MainWindow.idle.drawio.png)
+![InGame](Images/MainWindow.ingame.drawio.png)
+
+## 설정 창
+![ConfigWindow](Images/Configuration.drawio.png)
+
 ## 지원 기능
 
 * 단어 자동 입력
