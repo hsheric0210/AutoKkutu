@@ -2,6 +2,8 @@
 using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Extension;
 using Serilog;
+using System.Data;
+using System.Data.Common;
 using System.Globalization;
 
 namespace AutoKkutuLib.Node;
@@ -222,7 +224,7 @@ public class NodeManager
 	/// <summary>
 	/// node -> nodeList
 	/// </summary>
-	private static void UpdateNodeListsByWordInternal(string node, ICollection<string> nodeList, WordFlags targetFlag, WordFlags flagsIn, ref WordCount count)
+	private void UpdateNodeListsByWordInternal(string node, ICollection<string> nodeList, WordFlags targetFlag, WordFlags flagsIn, ref WordCount count)
 	{
 		if (string.IsNullOrWhiteSpace(node))
 			return;
@@ -230,6 +232,38 @@ public class NodeManager
 		if (!nodeList.Contains(node) && flagsIn.HasFlag(targetFlag))
 		{
 			nodeList.Add(node);
+			NodeTypes? nodeType = null;
+			switch (targetFlag)
+			{
+				case WordFlags.EndWord:
+				case WordFlags.MiddleEndWord:
+					nodeType = NodeTypes.EndWord;
+					break;
+				case WordFlags.AttackWord:
+				case WordFlags.MiddleAttackWord:
+					nodeType = NodeTypes.AttackWord;
+					break;
+				case WordFlags.ReverseEndWord:
+					nodeType = NodeTypes.ReverseEndWord;
+					break;
+				case WordFlags.ReverseAttackWord:
+					nodeType = NodeTypes.ReverseAttackWord;
+					break;
+				case WordFlags.KkutuEndWord:
+					nodeType = NodeTypes.KkutuEndWord;
+					break;
+				case WordFlags.KkutuAttackWord:
+					nodeType = NodeTypes.KkutuAttackWord;
+					break;
+				case WordFlags.KKTEndWord:
+					nodeType = NodeTypes.KKTEndWord;
+					break;
+				case WordFlags.KKTAttackWord:
+					nodeType = NodeTypes.KKTAttackWord;
+					break;
+			}
+			if (nodeType != null)
+				DbConnection.Query.AddNode((NodeTypes)nodeType).Execute(node);
 			count.Increment(targetFlag, 1);
 			Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, targetFlag, node));
 		}
