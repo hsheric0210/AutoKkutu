@@ -1,4 +1,5 @@
 ﻿using CefSharp;
+using Serilog;
 
 namespace AutoKkutuLib.CefSharp;
 public class CefSharpWrapper : IKkutuBrowser
@@ -23,7 +24,7 @@ public class CefSharpWrapper : IKkutuBrowser
 		if (frame is null)
 			return new JSResponse("MainFrame is null", false, null);
 
-		JavascriptResponse response = await frame.EvaluateScriptAsync(script);
+		JavascriptResponse response = await frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(3));
 		return new JSResponse(response.Message, response.Success, response.Result);
 	}
 }

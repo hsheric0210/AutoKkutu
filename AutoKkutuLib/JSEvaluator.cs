@@ -9,7 +9,13 @@ public class JsEvaluator
 
 	public JsEvaluator(IKkutuBrowser browser) => this.browser = browser;
 
-	private object? EvaluateJSInternal(string javaScript, object? defaultResult) => browser.EvaluateScriptAsync(javaScript).Result.Result ?? defaultResult;
+	private object? EvaluateJSInternal(string javaScript, object? defaultResult)
+	{
+		var task = browser.EvaluateScriptAsync(javaScript);
+		if (!task.Wait(TimeSpan.FromSeconds(5)))
+			throw new TimeoutException("Javascript execution timed out!");
+		return task.Result.Result ?? defaultResult;
+	}
 
 	/// <summary>
 	/// Execute the javascript and return the <u>Error Message</u>
@@ -24,6 +30,18 @@ public class JsEvaluator
 		if (!task.Success)
 			error = task.Message;
 		return !task.Success;
+	}
+
+	public void ExecuteJS(string javaScript, string? errorMessage = null)
+	{
+		try
+		{
+			browser.ExecuteScriptAsync(javaScript);
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, errorMessage ?? "Failed to run script on site.");
+		}
 	}
 
 	public string EvaluateJS(string javaScript, string defaultResult = " ", string? errorMessage = null)

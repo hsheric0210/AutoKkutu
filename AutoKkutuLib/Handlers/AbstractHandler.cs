@@ -158,9 +158,9 @@ public abstract class AbstractHandler
 			: EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", nameof(GetWordInHistory));
 	}
 
-	public virtual void UpdateChat(string input) => EvaluateJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", nameof(UpdateChat));
+	public virtual void UpdateChat(string input) => ExecuteJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", nameof(UpdateChat));
 
-	public virtual void ClickSubmit() => EvaluateJS("document.getElementById('ChatBtn').click()", nameof(ClickSubmit));
+	public virtual void ClickSubmit() => ExecuteJS("document.getElementById('ChatBtn').click()", nameof(ClickSubmit));
 	#endregion
 
 	#region Javascript function registration
@@ -185,6 +185,8 @@ public abstract class AbstractHandler
 	#endregion
 
 	#region Javascript execute methods
+	protected void ExecuteJS(string javaScript, string? moduleName = null) => JsEvaluator.ExecuteJS(javaScript, "Error on " + moduleName);
+
 	protected bool EvaluateJSReturnError(string javaScript, out string error) => JsEvaluator.EvaluateJSReturnError(javaScript, out error);
 
 	protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JsEvaluator.EvaluateJS(javaScript, defaultResult, "Error on " + moduleName);

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Common.NETCore" Version="107.1.120" />
-    <PackageReference Include="chromiumembeddedframework.runtime" Version="107.1.12" />
+    <PackageReference Include="CefSharp.Common.NETCore" Version="110.0.280" />
+    <PackageReference Include="chromiumembeddedframework.runtime" Version="110.0.28" />
   </ItemGroup>
 
   <ItemGroup>

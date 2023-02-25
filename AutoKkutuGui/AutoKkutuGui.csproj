@@ -86,7 +86,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf.NETCore" Version="108.4.130" />
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="110.0.280" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
         <NoWarn>NU1701</NoWarn>
     </PackageReference>
