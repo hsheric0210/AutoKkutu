@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Sql.Query;
+using AutoKkutuLib.Extension;
 using AutoKkutuLib.Node;
 using AutoKkutuLib.Path;
 using Serilog;
@@ -25,9 +26,23 @@ public class DbUpdateTask
 
 	public string Execute()
 	{
-		// fixme: this check should be performed by caller, not here.
-		//if (!AutoKkutuMain.Configuration.AutoDBUpdateEnabled)
-		//	return null;
+		if (specialPathList.NewEndPaths.Count > 0)
+		{
+			var count = 0;
+			foreach ((GameMode gm, string node) pair in specialPathList.NewEndPaths)
+			{
+				try
+				{
+					if (dbConnection.Query.AddNode(pair.gm.GetEndWordListTableName()).Execute(pair.node))
+						count++;
+				}
+				catch (Exception ex)
+				{
+					Log.Error(ex, "Error adding {0} end-node: {1}.", pair.gm, pair.node);
+				}
+			}
+			Log.Information("Added {0} end-nodes.", count);
+		}
 
 		Log.Debug(I18n.PathFinder_AutoDBUpdate);
 		var AddQueueCount = specialPathList.NewPaths.Count;

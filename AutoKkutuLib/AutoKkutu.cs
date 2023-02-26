@@ -60,20 +60,23 @@ public class AutoKkutu : IDisposable
 	{
 		DiscoverWordHistory += HandleDiscoverWordHistory;
 		ExampleWordPresented += HandleExampleWordPresented;
+		RoundChanged += HandleRoundChanged;
 	}
 
 	private void HandleDiscoverWordHistory(object? sender, WordHistoryEventArgs args)
 	{
-		string word = args.Word;
+		var word = args.Word;
 		PathFilter.NewPaths.Add(word);
 		PathFilter.PreviousPaths.Add(word);
 	}
 
 	private void HandleExampleWordPresented(object? sender, WordPresentEventArgs args)
 	{
-		string word = args.Word;
+		var word = args.Word;
 		PathFilter.NewPaths.Add(word);
 	}
+
+	private void HandleRoundChanged(object? sender, EventArgs args) => PathFilter.PreviousPaths.Clear();
 
 	public void SetGame(IGame game)
 	{

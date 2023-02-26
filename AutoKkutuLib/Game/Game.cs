@@ -356,11 +356,15 @@ public class Game : IGame
 			return;
 
 		var isExistingWord = unsupportedWord.Contains(':', StringComparison.Ordinal); // '첫 턴 한방 금지: ', '한방 단어: ' 등등...
+		var isEndWord = false;
+		if (isExistingWord)
+			isEndWord = unsupportedWord[..unsupportedWord.IndexOf(':')].Contains("한방");
+
 		unsupportedWordCache = unsupportedWord;
 
-		UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+		UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord, isEndWord));
 		if (IsMyTurn)
-			MyPathIsUnsupported?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord));
+			MyPathIsUnsupported?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord, isEndWord));
 	}
 
 	/// <summary>

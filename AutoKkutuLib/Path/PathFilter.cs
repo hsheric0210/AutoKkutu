@@ -15,6 +15,8 @@ public class PathFilter
 	// TODO: Move to other class
 	public ICollection<string> NewPaths { get; } = new ConcurrentHashSet<string>();
 
+	public ICollection<(GameMode, string)> NewEndPaths { get; } = new ConcurrentHashSet<(GameMode, string)>();
+
 	public ICollection<string> PreviousPaths { get; } = new ConcurrentHashSet<string>();
 
 	public ICollection<string> UnsupportedPaths { get; } = new ConcurrentHashSet<string>();

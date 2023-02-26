@@ -380,7 +380,7 @@ public static class Main
 		if (Prefs.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-			DbUpdateTask updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
+			var updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
 			var result = updateTask.Execute();
 			if (string.IsNullOrEmpty(result))
 			{
@@ -452,6 +452,13 @@ public static class Main
 		else
 		{
 			list = AutoKkutu.PathFilter.UnsupportedPaths;
+			if (args.IsEndWord)
+			{
+				GameMode gm = AutoKkutu.Game.CurrentGameMode;
+				var node = gm.ConvertWordToTailNode(word);
+				if (!string.IsNullOrWhiteSpace(node))
+					AutoKkutu.PathFilter.NewEndPaths.Add((gm, node));
+			}
 			Log.Warning(I18n.Main_UnsupportedWord_Existent, word);
 		}
 		list.Add(word);

@@ -16,7 +16,7 @@ public class WebView2Wrapper : IKkutuBrowser
 
 	public async Task<JSResponse> EvaluateScriptAsync(string script)
 	{
-		string message = await core.ExecuteScriptAsync(script);
+		var message = await core.ExecuteScriptAsync(script);
 		return new JSResponse(message, true, message);
 	}
 }

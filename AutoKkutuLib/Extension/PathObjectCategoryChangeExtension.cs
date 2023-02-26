@@ -10,8 +10,8 @@ public static class PathObjectCategoryChangeExtension
 			return;
 
 		var node = pathObject.ToNode(mode);
-		connection.Query.DeleteNode(GetEndWordListTableName(mode)).Execute(node);
-		if (connection.Query.AddNode(GetAttackWordListTableName(mode)).Execute(node))
+		connection.Query.DeleteNode(mode.GetEndWordListTableName()).Execute(node);
+		if (connection.Query.AddNode(mode.GetAttackWordListTableName()).Execute(node))
 			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
 		else
 			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
@@ -23,8 +23,8 @@ public static class PathObjectCategoryChangeExtension
 			return;
 
 		var node = pathObject.ToNode(mode);
-		connection.Query.DeleteNode(GetAttackWordListTableName(mode)).Execute(node);
-		if (connection.Query.AddNode(GetEndWordListTableName(mode)).Execute(node))
+		connection.Query.DeleteNode(mode.GetAttackWordListTableName()).Execute(node);
+		if (connection.Query.AddNode(mode.GetEndWordListTableName()).Execute(node))
 			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_End, mode);
 		else
 			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
@@ -36,15 +36,15 @@ public static class PathObjectCategoryChangeExtension
 			return;
 
 		var node = pathObject.ToNode(mode);
-		var endWord = connection.Query.DeleteNode(GetEndWordListTableName(mode)).Execute(node) > 0;
-		var attackWord = connection.Query.DeleteNode(GetAttackWordListTableName(mode)).Execute(node) > 0;
+		var endWord = connection.Query.DeleteNode(mode.GetEndWordListTableName()).Execute(node) > 0;
+		var attackWord = connection.Query.DeleteNode(mode.GetAttackWordListTableName()).Execute(node) > 0;
 		if (endWord || attackWord)
 			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
 		else
 			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
 	}
 
-	private static string GetAttackWordListTableName(GameMode mode) => mode switch
+	public static string GetAttackWordListTableName(this GameMode mode) => mode switch
 	{
 		GameMode.FirstAndLast => DatabaseConstants.ReverseAttackNodeIndexTableName,
 		GameMode.Kkutu => DatabaseConstants.KkutuAttackNodeIndexTableName,
@@ -52,7 +52,7 @@ public static class PathObjectCategoryChangeExtension
 		_ => DatabaseConstants.AttackNodeIndexTableName,
 	};
 
-	private static string GetEndWordListTableName(GameMode mode) => mode switch
+	public static string GetEndWordListTableName(this GameMode mode) => mode switch
 	{
 		GameMode.FirstAndLast => DatabaseConstants.ReverseEndNodeIndexTableName,
 		GameMode.Kkutu => DatabaseConstants.KkutuEndNodeIndexTableName,
@@ -62,7 +62,7 @@ public static class PathObjectCategoryChangeExtension
 
 	private static string ToNode(this PathObject pathObject, GameMode mode)
 	{
-		string content = pathObject.Content;
+		var content = pathObject.Content;
 		switch (mode)
 		{
 			case GameMode.FirstAndLast:

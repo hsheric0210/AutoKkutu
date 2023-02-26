@@ -129,8 +129,8 @@
 						<ComboBoxItem>자유</ComboBoxItem>
 						<ComboBoxItem>자유 끝말잇기</ComboBoxItem>
 					</ComboBox>
-					<TextBox x:Name="SearchMissionChar" Grid.Row="1" Margin="260,0,15,140" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" Height="22" />
-					<TextBlock Text="미션 단어" Grid.Row="1" IsHitTestVisible="False" Margin="260,0,15,145"  HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Padding="0,0,0,0">
+					<TextBox x:Name="SearchMissionChar" Grid.Row="1" Margin="0,0,15,140" VerticalAlignment="Bottom" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" VerticalContentAlignment="Center" BorderBrush="#434346" Padding="5,0,10,0" KeyDown="SearchField_KeyDown" Height="22" HorizontalAlignment="Right" MinWidth="55" />
+					<TextBlock Text="미션 단어" Grid.Row="1" IsHitTestVisible="False" Margin="0,0,18,145"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Padding="0,0,0,0">
 						<TextBlock.Style>
 							<Style TargetType="TextBlock">
 								<Setter Property="Visibility" Value="Hidden" />
