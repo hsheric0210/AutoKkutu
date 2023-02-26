@@ -59,12 +59,12 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 
 ## 현재 (공식적으로) 지원되는 사이트
 
-* 이름 없는 끄투(https://kkutu.org/)
-* 핑크끄투(https://kkutu.pink/)
-* BF 끄투(https://bfkkutu.kr/)
-* 끄투코리아(https://kkutu.co.kr/)
-* 뮤직끄투(https://musickkutu.xyz/)
-* <s>끄투리오(https://kkutu.io)</s> - 안티 치트 바이패스 실패
+* [이름 없는 끄투](https://kkutu.org/)
+* [핑크끄투](https://kkutu.pink/)
+* [BF 끄투](https://bfkkutu.kr/)
+* [끄투코리아](https://kkutu.co.kr/)
+* [뮤직끄투](https://musickkutu.xyz/)
+* <s>[끄투리오](https://kkutu.io)</s> - 안티 치트 바이패스 실패
 
 ## 아이콘 출처
 
@@ -79,19 +79,25 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 
 ## 의존성 및 관련 프로젝트
 
-* [CefSharp](https://github.com/cefsharp/CefSharp/) - AutoKkutu는 CefSharp을(를) 기반으로 만들어졌습니다
+* [CefSharp](https://github.com/cefsharp/CefSharp/) - .NET용 Chromium Embedded Framework 구현체
 * [Npgsql](https://github.com/npgsql/npgsql) - .NET용 PostgreSQL 접속 및 데이터 제공 라이브러리
-* [NLog](https://github.com/NLog/NLog) - .NET용 로깅 라이브러리
+* [Serilog](https://github.com/serilog/serilog) - 현재 사용중인 .NET용 로깅 라이브러리
+* [NLog](https://github.com/NLog/NLog) - 또 다른 .NET용 로깅 라이브러리
+* [log4net](https://logging.apache.org/log4net/) - 또 또 다른 .NET용 로깅 라이브러리
 * [MySqlConnector](https://github.com/mysql-net/MySqlConnector) - .NET용 MySQL 접속 및 데이터 제공 라이브러리
 * [글자로 놀자! 끄투 온라인](https://github.com/jjoriping/kkutu)
 
 ## MySQL 또는 MariaDB 사용 시 주의사항
-MySQL 또는 MariaDB 사용 시 데이터베이스의 Character Set과 Collation이 각각 ```utf8mb4```와 ```utf8mb4-general-ci```로 설정되었는지 확인해 주세요.
+
+MySQL 또는 MariaDB 사용 시 데이터베이스의 Character Set과 Collation이 각각 ```utf8mb4```와 ```utf8mb4_general_ci```로 설정되었는지 확인해 주세요.
+
+특히, 만약 사용 중이신 MySQL의 버전이 8.0.1 이상인 경우, Default Collation이 ```utf8mb4_0900_ai_ci```이기에, 반드시 Collation을 변경해 주셔야 합니다.
+(```utf8mb4_0900_ai_ci```에 존재하는 치명적인 한글 처리 문제점은 [여기](https://rastalion.me/mysql-8-0-1-%EB%B2%84%EC%A0%84%EB%B6%80%ED%84%B0-%EC%B1%84%ED%83%9D%EB%90%9C-utf8mb4_0900_ai_ci%EC%9D%98-%ED%95%9C%EA%B8%80-%EC%82%AC%EC%9A%A9%EC%97%90-%EB%8C%80%ED%95%9C-%EB%AC%B8%EC%A0%9C%EC%A0%90/)에서 더 읽어보실 수 있습니다)
 
 다음과 같은 명령으로 utf8 데이터베이스를 생성할 수 있습니다:
 
 ```sql
-CREATE DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATION utf8mb4-general-ci;
+CREATE DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
 또는 이미 존재하는 데이터베이스 및 테이블을 바꿀 수도 있습니다:
@@ -99,12 +105,12 @@ CREATE DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATION utf8
 데이터베이스:
 
 ```sql
-ALTER DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATION utf8mb4-general-ci;
+ALTER DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
 테이블:
 ```sql
-ALTER TABLE <데이터베이스 이름> CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE <데이터베이스 이름> CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
 이미 데이터베이스를 기본 설정으로 만드셨다면, 데이터베이스와 모든 테이블에 대하여 각각 캐릭터 셋을 바꿔 주셔야 합니다.
@@ -112,14 +118,14 @@ ALTER TABLE <데이터베이스 이름> CONVERT TO CHARACTER SET utf8mb4 COLLATE
 예시: 데이터베이스 이름이 'autokkutu'인 경우
 
 ```sql
-ALTER DATABASE autokkutu CHARACTER SET utf8mb4 COLLATION utf8mb4-general-ci;
-ALTER TABLE word_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE reverse_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE reverse_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE kkutu_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE kkutu_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE kkt_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
-ALTER TABLE kkt_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER DATABASE autokkutu CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE word_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE reverse_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE reverse_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE kkutu_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE kkutu_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE kkt_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE kkt_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
