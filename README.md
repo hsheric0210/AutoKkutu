@@ -84,3 +84,42 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 * [NLog](https://github.com/NLog/NLog) - .NET용 로깅 라이브러리
 * [MySqlConnector](https://github.com/mysql-net/MySqlConnector) - .NET용 MySQL 접속 및 데이터 제공 라이브러리
 * [글자로 놀자! 끄투 온라인](https://github.com/jjoriping/kkutu)
+
+## MySQL 또는 MariaDB 사용 시 주의사항
+MySQL 또는 MariaDB 사용 시 데이터베이스의 Character Set과 Collation이 각각 ```utf8mb4```와 ```utf8mb4-general-ci```로 설정되었는지 확인해 주세요.
+
+다음과 같은 명령으로 utf8 데이터베이스를 생성할 수 있습니다:
+
+```sql
+CREATE DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATION utf8mb4-general-ci;
+```
+
+또는 이미 존재하는 데이터베이스 및 테이블을 바꿀 수도 있습니다:
+
+데이터베이스:
+
+```sql
+ALTER DATABASE <데이터베이스 이름> CHARACTER SET utf8mb4 COLLATION utf8mb4-general-ci;
+```
+
+테이블:
+```sql
+ALTER TABLE <데이터베이스 이름> CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+```
+
+이미 데이터베이스를 기본 설정으로 만드셨다면, 데이터베이스와 모든 테이블에 대하여 각각 캐릭터 셋을 바꿔 주셔야 합니다.
+
+예시: 데이터베이스 이름이 'autokkutu'인 경우
+
+```sql
+ALTER DATABASE autokkutu CHARACTER SET utf8mb4 COLLATION utf8mb4-general-ci;
+ALTER TABLE word_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE reverse_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE reverse_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE kkutu_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE kkutu_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE kkt_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+ALTER TABLE kkt_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4-general-ci;
+```
