@@ -4,6 +4,7 @@ using AutoKkutuLib.Node;
 using Dapper;
 using Serilog;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace AutoKkutuLib.Database.Jobs;
 
@@ -145,7 +146,7 @@ public class DatabaseCheckJob
 	/// <returns>단어가 유효할 시 false, 그렇지 않을 경우 true</returns>
 	private bool IsInvalid(string content)
 	{
-		if (content.Length == 1 || int.TryParse(content[0].ToString(), out var _))
+		if (content.Length == 1)
 			return true;
 
 		var first = content[0];
@@ -153,10 +154,11 @@ public class DatabaseCheckJob
 			return true;
 
 		var last = content.Last();
-		return last is ')' or '}' or ']' ? true : InvalidChars.Any(ch => content.Contains(ch, StringComparison.Ordinal));
+		return last is ')' or '}' or ']' || SimpleMatch.Any(ch => content.Contains(ch, StringComparison.Ordinal)) || RegexMatch.Match(content).Success;
 	}
 
-	private readonly char[] InvalidChars = new char[] { ' ', ':', ';', '?', '!' };
+	private readonly char[] SimpleMatch = new char[] { ' ', ':', ';', '?', '!' };
+	private readonly Regex RegexMatch = new("[^a-zA-Z0-9ㄱ-ㅎ가-힣]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 	#endregion
 
 	#region Database fixings

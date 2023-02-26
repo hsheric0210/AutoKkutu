@@ -27,6 +27,9 @@ public partial class MySqlDatabase : AbstractDatabase
 			connection.Open();
 			Initialize(new MySqlDatabaseConnection(connection, DatabaseName));
 
+			Connection.TryExecute("SET SESSION CHARACTER_SET_CONNECTION=UTF8;");
+			Connection.TryExecute("SET SESSION CHARACTER_SET_CLIENT=UTF8;");
+			Connection.TryExecute("SET SESSION CHARACTER_SET_RESULTS=UTF8;");
 			Connection.TryExecute($"DROP FUNCTION IF EXISTS {Connection.GetWordPriorityFuncName()};");
 			Connection.TryExecute($@"CREATE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT) RETURNS INT
 DETERMINISTIC
@@ -72,7 +75,6 @@ BEGIN
 	END IF;
 END;
 ");
-
 			// Check the database tables
 			Connection.CheckTable();
 

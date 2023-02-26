@@ -19,6 +19,7 @@ public class WordDeletionQuery : SqlQuery<int>
 		if (string.IsNullOrWhiteSpace(Word))
 			throw new InvalidOperationException(nameof(Word) + " not set.");
 
+		Log.Debug(nameof(WordDeletionQuery) + ": Deleting word {0} from database.", Word);
 		var count = Connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word;", new { Word });
 		Log.Debug(nameof(WordDeletionQuery) + ": Deleted {0} of word {1} from database.", count, Word);
 		return count;

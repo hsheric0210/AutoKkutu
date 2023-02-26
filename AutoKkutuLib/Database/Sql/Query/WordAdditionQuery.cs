@@ -24,8 +24,12 @@ public class WordAdditionQuery : SqlQuery<bool>
 		if (WordFlags is null)
 			throw new InvalidOperationException(nameof(WordFlags) + " not set.");
 
+		Log.Debug(nameof(WordDeletionQuery) + ": Adding word {0} from database.", Word);
 		if (Connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word;", new { Word }) > 0)
+		{
+			Log.Debug(nameof(WordDeletionQuery) + ": Word {0} already exists in database.", Word);
 			return false;
+		}
 
 		var count = Connection.Execute(
 			$"INSERT INTO {DatabaseConstants.WordTableName}({DatabaseConstants.WordColumnName}, {DatabaseConstants.WordIndexColumnName}, {DatabaseConstants.ReverseWordIndexColumnName}, {DatabaseConstants.KkutuWordIndexColumnName}, {DatabaseConstants.FlagsColumnName}) VALUES(@Word, @LaFHead, @FaLHead, @KkutuHead, @Flags);",
@@ -37,7 +41,7 @@ public class WordAdditionQuery : SqlQuery<bool>
 				KkutuHead = Word.GetKkutuHeadNode(),
 				Flags = (int)WordFlags
 			});
-		Log.Debug(nameof(WordAdditionQuery) + ": Adding {0} of word {1} to database with flags {2}.", count, Word, WordFlags);
+		Log.Debug(nameof(WordAdditionQuery) + ": Added {0} of word {1} to database with flags {2}.", count, Word, WordFlags);
 		return count > 0;
 	}
 }

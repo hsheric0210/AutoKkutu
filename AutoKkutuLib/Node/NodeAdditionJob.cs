@@ -26,7 +26,7 @@ public sealed class NodeAdditionJob : NodeJob
 			AddNodeInternal(node, nodeTypes, NodeTypes.KKTEndWord); // 쿵쿵따 한방 단어
 			AddNodeInternal(node, nodeTypes, NodeTypes.KKTAttackWord); // 쿵쿵따 공격 단어
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			Log.Error(ex, "Exception on node addition: {node} for {flags}'", node, nodeTypes);
 			Result.IncrementError();

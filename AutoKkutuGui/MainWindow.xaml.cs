@@ -19,7 +19,7 @@ namespace AutoKkutuGui;
 
 public partial class MainWindow : Window
 {
-	public const string VERSION = "1.0.0000";
+	public const string VERSION = "beta-1.1";
 
 	// Succeed KKutu-Helper Release v5.6.8500
 	private const string TITLE = "AutoKkutu - Improved KKutu-Helper";
@@ -29,7 +29,7 @@ public partial class MainWindow : Window
 		// Visual components setup
 		InitializeComponent();
 		Title = TITLE;
-		VersionLabel.Content = "v1.0";
+		VersionLabel.Content = VERSION;
 
 		Log.Information(I18n.Main_StartLoad);
 		LoadOverlay.Visibility = Visibility.Visible;

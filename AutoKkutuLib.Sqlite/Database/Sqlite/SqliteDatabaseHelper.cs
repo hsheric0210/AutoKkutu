@@ -34,10 +34,12 @@ public static class SqliteDatabaseHelper
 				var ReverseEndWordCount = ImportNode(args, DatabaseConstants.ReverseEndNodeIndexTableName);
 				var KkutuAttackWordCount = ImportNode(args, DatabaseConstants.KkutuAttackNodeIndexTableName);
 				var KkutuEndWordCount = ImportNode(args, DatabaseConstants.KkutuEndNodeIndexTableName);
+				var KKTAttackWordCount = ImportNode(args, DatabaseConstants.KKTAttackNodeIndexTableName);
+				var KKTEndWordCount = ImportNode(args, DatabaseConstants.KKTEndNodeIndexTableName);
 
-				Log.Information("DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount);
+				Log.Information("DB Import Complete. ({0} Words / {1} Attack word nodes / {2} End-word nodes / {3} Reverse attack word nodes / {4} Reverse end-word nodes / {5} Kkutu attack word nodes / {6} Kkutu end-word nodes / {7} KungKuntTta attack word nodes / {8} KungKungTta end-word nodes)", WordCount, AttackWordCount, EndWordCount, ReverseAttackWordCount, ReverseEndWordCount, KkutuAttackWordCount, KkutuEndWordCount, KKTAttackWordCount, KKTEndWordCount);
 
-				new DatabaseImportEventArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {AttackWordCount} 개의 공격 노드 / {EndWordCount} 개의 한방 노드 / {ReverseAttackWordCount} 개의 앞말잇기 공격 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuAttackWordCount} 개의 끄투 공격 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드").TriggerDatabaseImportDone();
+				new DatabaseImportEventArgs(DatabaseConstants.LoadFromLocalSQLite, $"{WordCount} 개의 단어 / {AttackWordCount} 개의 공격 노드 / {EndWordCount} 개의 한방 노드 / {ReverseAttackWordCount} 개의 앞말잇기 공격 노드 / {ReverseEndWordCount} 개의 앞말잇기 한방 노드 / {KkutuAttackWordCount} 개의 끄투 공격 노드 / {KkutuEndWordCount} 개의 끄투 한방 노드 / {KKTAttackWordCount} 개의 쿵쿵따 공격 노드 / {KKTEndWordCount} 개의 쿵쿵따 한방 노드").TriggerDatabaseImportDone();
 			}
 			catch (Exception ex)
 			{
@@ -62,10 +64,7 @@ public static class SqliteDatabaseHelper
 		}
 
 		var counter = 0;
-		foreach (var wordIndex in args.source.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM @TableName", new
-		{
-			TableName = tableName
-		}))
+		foreach (var wordIndex in args.source.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM {tableName}"))
 		{
 			if (args.destination.Query.AddNode(tableName).Execute(wordIndex))
 				Log.Information("Added {node} to {tableName}.", wordIndex, tableName);

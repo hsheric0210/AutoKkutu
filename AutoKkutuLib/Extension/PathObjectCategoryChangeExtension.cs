@@ -48,6 +48,7 @@ public static class PathObjectCategoryChangeExtension
 	{
 		GameMode.FirstAndLast => DatabaseConstants.ReverseAttackNodeIndexTableName,
 		GameMode.Kkutu => DatabaseConstants.KkutuAttackNodeIndexTableName,
+		GameMode.KungKungTta => DatabaseConstants.KKTAttackNodeIndexTableName,
 		_ => DatabaseConstants.AttackNodeIndexTableName,
 	};
 
@@ -55,6 +56,7 @@ public static class PathObjectCategoryChangeExtension
 	{
 		GameMode.FirstAndLast => DatabaseConstants.ReverseEndNodeIndexTableName,
 		GameMode.Kkutu => DatabaseConstants.KkutuEndNodeIndexTableName,
+		GameMode.KungKungTta => DatabaseConstants.KKTEndNodeIndexTableName,
 		_ => DatabaseConstants.EndNodeIndexTableName,
 	};
 
