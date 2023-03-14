@@ -1,8 +1,8 @@
 ﻿namespace AutoKkutuLib.Hangul;
 
-public static class HangulConsonantExtension
+internal static class HangulConsonantExtension
 {
-	public static char Merge(this HangulSplitted splitted)
+	internal static char Merge(this HangulSplitted splitted)
 	{
 		if (splitted is null)
 			throw new ArgumentNullException(nameof(splitted));
@@ -13,7 +13,7 @@ public static class HangulConsonantExtension
 			: Merge((char)splitted.InitialConsonant, splitted.Medial, splitted.FinalConsonant);
 	}
 
-	private static char Merge(char initial, char? medial, char final)
+	internal static char Merge(char initial, char? medial, char final)
 	{
 		// 중성 없이는 종성도 없고, 조합도 없다
 		return medial == null

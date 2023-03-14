@@ -10,6 +10,8 @@ public static class HangulInputSimulate
 		return lastSplit?.IsHangul == true ? CombineSebeol(str, type, ch, lastSplit) : str + ch;
 	}
 
+	// FIXME: 두벌식 입력 알고리즘은 현재 지원되지 않습니다 (도깨비불 현상을 아직 제대로 재현하지 못하였습니다)
+	/*
 	/// <summary>
 	/// 세벌식 (자음-모음 구분) 입력 방식 - todo: 도깨비불 현상 재현
 	/// </summary>
@@ -54,6 +56,7 @@ public static class HangulInputSimulate
 		}
 		return (isFull ? str : str[..^1]) + result.ToString();
 	}
+	*/
 
 	/// <summary>
 	/// 세벌식 (초-중-종 구분) 입력 방식

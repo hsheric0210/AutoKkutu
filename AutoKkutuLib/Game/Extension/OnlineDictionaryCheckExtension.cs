@@ -2,7 +2,7 @@
 
 namespace AutoKkutuLib.Game.Extension;
 
-public static class OnlineVerifyExtension
+public static class OnlineDictionaryCheckExtension
 {
 	public static bool IsDictionaryAvailable(this JsEvaluator jsEvaluator)
 	{

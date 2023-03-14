@@ -3,87 +3,87 @@
 namespace AutoKkutuLib.Hangul;
 
 // TODO: 중세 자음, 모음 지원
-public static class HangulConstants
+internal static class HangulConstants
 {
 	/// <summary>
 	/// 초성
 	/// </summary>
-	public static readonly string InitialConsonantTable = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+	internal static readonly string InitialConsonantTable = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
 
 	/// <summary>
 	/// 중성
 	/// </summary>
-	public static readonly string MedialTable = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
+	internal static readonly string MedialTable = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
 
 	/// <summary>
 	/// 종성
 	/// </summary>
-	public static readonly string FinalConsonantTable = " ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+	internal static readonly string FinalConsonantTable = " ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 초성 시작 위치
 	/// </summary>
-	public const ushort HangulJamoChoseongOrigin = 0x1100;
+	internal const ushort HangulJamoChoseongOrigin = 0x1100;
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 초성 끝 위치
 	/// </summary>
-	public const ushort HangulJamoChoseongBound = 0x115F;
+	internal const ushort HangulJamoChoseongBound = 0x115F;
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 중성 시작 위치
 	/// </summary>
-	public const ushort HangulJamoJungseongOrigin = 0x1160;
+	internal const ushort HangulJamoJungseongOrigin = 0x1160;
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 중성 끝 위치
 	/// </summary>
-	public const ushort HangulJamoJungseongBound = 0x11A7;
+	internal const ushort HangulJamoJungseongBound = 0x11A7;
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 종성 시작 위치
 	/// </summary>
-	public const ushort HangulJamoJongseongOrigin = 0x11A8;
+	internal const ushort HangulJamoJongseongOrigin = 0x11A8;
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 종성 끝 위치
 	/// </summary>
-	public const ushort HangulJamoJongseongBound = 0x11FF;
+	internal const ushort HangulJamoJongseongBound = 0x11FF;
 
 	/// <summary>
 	/// 유니코드 'Hangul Compatibility Jamo' 자음 시작 위치
 	/// </summary>
-	public const ushort HangulCompatibilityJamoConsonantOrigin = 0x3131;
+	internal const ushort HangulCompatibilityJamoConsonantOrigin = 0x3131;
 
 	/// <summary>
 	/// 유니코드 'Hangul Compatibility Jamo' 자음 끝 위치
 	/// </summary>
-	public const ushort HangulCompatibilityJamoConsonantBound = 0x314E;
+	internal const ushort HangulCompatibilityJamoConsonantBound = 0x314E;
 
 	/// <summary>
 	/// 유니코드 'Hangul Compatibility Jamo' 모음 시작 위치
 	/// </summary>
-	public const ushort HangulCompatibilityJamoVowelOrigin = 0x314F;
+	internal const ushort HangulCompatibilityJamoVowelOrigin = 0x314F;
 
 	/// <summary>
 	/// 유니코드 'Hangul Compatibility Jamo' 모음 끝 위치
 	/// </summary>
-	public const ushort HangulCompatibilityJamoVowelBound = 0x3163;
+	internal const ushort HangulCompatibilityJamoVowelBound = 0x3163;
 
 	/// <summary>
 	/// 유니코드 'Hangul Syllables' 시작 위치
 	/// </summary>
-	public const ushort HangulSyllablesOrigin = 0xAC00;
+	internal const ushort HangulSyllablesOrigin = 0xAC00;
 
 	/// <summary>
 	/// 유니코드 'Hangul Syllables' 끝 위치
 	/// </summary>
-	public const ushort HangulSyllablesBound = 0xD79F;
+	internal const ushort HangulSyllablesBound = 0xD79F;
 
 	/// <summary>
-	/// 겹자음 조합 변환 테이블
+	/// 자음군 조합 변환 테이블
 	/// </summary>
-	public static IDictionary<char, IDictionary<char, char>> ConsonantClusterCompositionTable
+	internal static IDictionary<char, IDictionary<char, char>> ConsonantClusterCompositionTable
 	{
 		get;
 	} = new Dictionary<char, IDictionary<char, char>>()
@@ -133,9 +133,9 @@ public static class HangulConstants
 	};
 
 	/// <summary>
-	/// 겹자음 조합 역변환 테이블
+	/// 자음군 조합 역변환 테이블
 	/// </summary>
-	public static IDictionary<char, IList<char>> ConsonantClusterDecompositionTable
+	internal static IDictionary<char, IList<char>> ConsonantClusterDecompositionTable
 	{
 		get;
 	} = new Dictionary<char, IList<char>>()

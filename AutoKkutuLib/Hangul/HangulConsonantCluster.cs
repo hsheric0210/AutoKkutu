@@ -1,11 +1,11 @@
 ﻿namespace AutoKkutuLib.Hangul;
 
-public static class HangulConsonantCluster
+internal static class HangulConsonantCluster
 {
 	/// <summary>
 	/// 자음군 합치기
 	/// </summary>
-	public static char MergeCluster(params char[] consonants)
+	internal static char MergeCluster(params char[] consonants)
 	{
 		if (consonants is null)
 			throw new ArgumentNullException(nameof(consonants));
@@ -33,7 +33,7 @@ public static class HangulConsonantCluster
 	/// <summary>
 	/// 자음군 분리
 	/// </summary>
-	public static IList<char> SplitCluster(this char consonantCluster)
+	internal static IList<char> SplitCluster(this char consonantCluster)
 	{
 		return HangulConstants.ConsonantClusterDecompositionTable.TryGetValue(consonantCluster, out IList<char>? consonants)
 			? consonants
