@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F85E7448-8C52-4788-A487-500635E83702}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		TODO.md = TODO.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib", "AutoKkutuLib\AutoKkutuLib.csproj", "{91AEC03F-9F06-4248-8B61-6AB6F9D9E3F4}"
@@ -23,8 +24,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.CefSharp", "AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj", "{A612B087-8FBC-485F-A1B4-BAC3A033A840}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.WebView2", "AutoKkutuLib.WebView2\AutoKkutuLib.WebView2.csproj", "{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.RelationalDB", "AutoKkutuLib.RelationalDB\AutoKkutuLib.RelationalDB.csproj", "{D492EFB5-D057-48C1-8E7B-851734761B65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,18 +131,6 @@ Global
 		{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}.Release|x64.Build.0 = Release|Any CPU
 		{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{3BDDBC48-0961-412F-BB90-714DAA9F2CA2}.Release|x86.Build.0 = Release|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x64.Build.0 = Debug|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Debug|x86.Build.0 = Debug|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x64.ActiveCfg = Release|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x64.Build.0 = Release|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x86.ActiveCfg = Release|Any CPU
-		{D492EFB5-D057-48C1-8E7B-851734761B65}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
