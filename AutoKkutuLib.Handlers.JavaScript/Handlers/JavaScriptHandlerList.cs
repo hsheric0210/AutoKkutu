@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.Handlers;
+﻿namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
 public class JavaScriptHandlerList : IHandlerList
 {
 	private readonly ISet<HandlerBase> RegisteredHandlers = new HashSet<HandlerBase>();

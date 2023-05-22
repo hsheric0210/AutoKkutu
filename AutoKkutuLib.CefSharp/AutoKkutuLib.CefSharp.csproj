@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="CefSharp.Common.NETCore" Version="112.3.0" />
         <PackageReference Include="CefSharp.Wpf.NETCore" Version="112.3.0" />
     </ItemGroup>
 

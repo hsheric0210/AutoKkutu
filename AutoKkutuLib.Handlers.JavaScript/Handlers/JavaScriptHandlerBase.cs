@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Extension;
 using Serilog;
 
-namespace AutoKkutuLib.Handlers;
+namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
 
 public abstract class JavaScriptHandlerBase : HandlerBase
 {
@@ -145,7 +145,7 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 	protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
 	{
 		if (!RegisteredFunctionNames.ContainsKey(funcName))
-			RegisteredFunctionNames[funcName] = $"__{RandomExtension.GenerateRandomString(Random.Shared, 64, true)}";
+			RegisteredFunctionNames[funcName] = $"__{Random.Shared.GenerateRandomString(64, true)}";
 
 		var realFuncName = RegisteredFunctionNames[funcName];
 		if (EvaluateJSBool($"typeof {realFuncName} != 'function'")) // check if already registered

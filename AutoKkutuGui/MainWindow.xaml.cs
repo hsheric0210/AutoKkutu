@@ -70,7 +70,7 @@ public partial class MainWindow : Window
 		Dispatcher.Invoke(() =>
 		{
 			// Apply browser frame
-			BrowserContainer.Content = Main.Browser;
+			BrowserContainer.Content = Main.Browser.BrowserControl;
 
 			// Hide LoadOverlay
 			LoadOverlay.Visibility = Visibility.Hidden;

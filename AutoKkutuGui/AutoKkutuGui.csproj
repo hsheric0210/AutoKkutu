@@ -1,162 +1,163 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <EnableNETAnalyzers>True</EnableNETAnalyzers>
-	<AnalysisLevel>latest</AnalysisLevel>
-	<AnalysisMode>All</AnalysisMode>
-	<CodeAnalysisRuleSet>.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
-	<StartupObject>AutoKkutuGui.App</StartupObject>
-	<ApplicationIcon>jjoriping.ico</ApplicationIcon>
-	<RepositoryUrl>https://github.com/hsheric0210/AutoKkutu</RepositoryUrl>
-	<PackageProjectUrl>https://github.com/hsheric0210/AutoKkutu</PackageProjectUrl>
-	<Nullable>enable</Nullable>
-	<NeutralLanguage>en-US</NeutralLanguage>
-	<Platforms>AnyCPU;x64;x86</Platforms>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <EnableNETAnalyzers>True</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>All</AnalysisMode>
+        <CodeAnalysisRuleSet>.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
+        <StartupObject>AutoKkutuGui.App</StartupObject>
+        <ApplicationIcon>jjoriping.ico</ApplicationIcon>
+        <RepositoryUrl>https://github.com/hsheric0210/AutoKkutu</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/hsheric0210/AutoKkutu</PackageProjectUrl>
+        <Nullable>enable</Nullable>
+        <NeutralLanguage>en-US</NeutralLanguage>
+        <Platforms>AnyCPU;x64;x86</Platforms>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="database.config" />
-    <None Remove="Images\attack.png" />
-    <None Remove="Images\cleaning.png" />
-    <None Remove="Images\error.png" />
-    <None Remove="Images\MariaDB.png" />
-    <None Remove="Images\mission.png" />
-    <None Remove="Images\MySQL.png" />
-    <None Remove="Images\ok.png" />
-    <None Remove="Images\PostgreSQL.png" />
-    <None Remove="Images\searching.png" />
-    <None Remove="Images\skull.png" />
-    <None Remove="Images\SQLite.png" />
-    <None Remove="Images\waiting.png" />
-    <None Remove="Images\warning.png" />
-    <None Remove="Properties\Logger.config" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="database.config" />
+        <None Remove="Images\attack.png" />
+        <None Remove="Images\cleaning.png" />
+        <None Remove="Images\error.png" />
+        <None Remove="Images\MariaDB.png" />
+        <None Remove="Images\mission.png" />
+        <None Remove="Images\MySQL.png" />
+        <None Remove="Images\ok.png" />
+        <None Remove="Images\PostgreSQL.png" />
+        <None Remove="Images\searching.png" />
+        <None Remove="Images\skull.png" />
+        <None Remove="Images\SQLite.png" />
+        <None Remove="Images\waiting.png" />
+        <None Remove="Images\warning.png" />
+        <None Remove="Properties\Logger.config" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <AdditionalFiles Include=".sonarlint\hsheric0210_autokkutu\CSharp\SonarLint.xml" />
-    <Content Include="database.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="jjoriping.ico" />
-  </ItemGroup>
+    <ItemGroup>
+        <AdditionalFiles Include=".sonarlint\hsheric0210_autokkutu\CSharp\SonarLint.xml" />
+        <Content Include="database.config">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="jjoriping.ico" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Images\attack.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\cleaning.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\error.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\MariaDB.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\mission.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\MySQL.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\ok.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\PostgreSQL.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\searching.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\skull.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\SQLite.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\waiting.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\warning.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
+    <ItemGroup>
+        <Resource Include="Images\attack.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\cleaning.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\error.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\MariaDB.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\mission.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\MySQL.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\ok.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\PostgreSQL.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\searching.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\skull.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\SQLite.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\waiting.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Images\warning.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Resource>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
-        <NoWarn>NU1701</NoWarn>
-    </PackageReference>
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CefSharp.Common.NETCore" Version="113.1.40" />
+        <PackageReference Include="CefSharp.Wpf.NETCore" Version="113.1.40" />
+        <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
+        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+        <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
-    <ProjectReference Include="..\AutoKkutuLib.Handlers.JavaScript\AutoKkutuLib.Handlers.JavaScript.csproj" />
-    <ProjectReference Include="..\AutoKkutuLib.Handlers.PureJS\AutoKkutuLib.Handlers.JavaScript.csproj" />
-    <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
-    <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
-    <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
-    <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.Handlers.JavaScript\AutoKkutuLib.Handlers.JavaScript.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="ColorManagement.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="GuiI18n.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>GuiI18n.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="ColorManagement.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="GuiI18n.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>GuiI18n.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Settings.Designer.cs">
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="GuiI18n.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>GuiI18n.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="GuiI18n.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>GuiI18n.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="App.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="App.config">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Settings.settings">
+            <Generator>SettingsSingleFileGenerator</Generator>
+            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+        </None>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="ColorManagement.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
+    <ItemGroup>
+        <Page Update="ColorManagement.xaml">
+            <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="108.4.13" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="108.4.13" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="108.4.13" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="108.4.13" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="108.4.13" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="108.4.13" />
+    </ItemGroup>
 
 </Project>

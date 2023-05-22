@@ -1,4 +1,4 @@
-﻿namespace AutoKkutuLib.Handlers;
+﻿namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
 
 internal class SimpleBypassHandler : JavaScriptHandlerBase
 {

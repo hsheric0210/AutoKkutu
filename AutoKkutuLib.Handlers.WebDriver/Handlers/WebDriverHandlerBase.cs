@@ -3,7 +3,7 @@ using AutoKkutuLib.Selenium;
 using OpenQA.Selenium;
 using Serilog;
 
-namespace AutoKkutuLib.Handlers;
+namespace AutoKkutuLib.Handlers.WebDriver.Handlers;
 
 public abstract class WebDriverHandlerBase : HandlerBase
 {
@@ -99,7 +99,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		get
 		{
 			var elem = Browser.FindElementClassName("items")!;
-			return (elem.GetCssValue("opacity") == "1") ? elem.Text.Trim() : "";
+			return elem.GetCssValue("opacity") == "1" ? elem.Text.Trim() : "";
 		}
 	}
 
