@@ -1,6 +1,7 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Serilog;
+using System.Collections.ObjectModel;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase
@@ -52,12 +53,12 @@ public class SeleniumBrowser : BrowserBase
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected. Please close it.");
+			Log.Warning("Alert window detected");
 			return null;
 		}
 	}
 
-	public IReadOnlyCollection<IWebElement> FindElementsQuery(string cssSelector)
+	public ReadOnlyCollection<IWebElement> FindElementsQuery(string cssSelector)
 	{
 		try
 		{
@@ -69,7 +70,7 @@ public class SeleniumBrowser : BrowserBase
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected. Please close it.");
+			Log.Warning("Alert window detected");
 			return null;
 		}
 	}
@@ -86,12 +87,12 @@ public class SeleniumBrowser : BrowserBase
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected. Please close it.");
+			Log.Warning("Alert window detected");
 			return null;
 		}
 	}
 
-	public IReadOnlyCollection<IWebElement> FindElementsClassName(string className)
+	public ReadOnlyCollection<IWebElement> FindElementsClassName(string className)
 	{
 		try
 		{
@@ -103,7 +104,7 @@ public class SeleniumBrowser : BrowserBase
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected. Please close it.");
+			Log.Warning("Alert window detected");
 			return null;
 		}
 	}
@@ -120,7 +121,7 @@ public class SeleniumBrowser : BrowserBase
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected. Please close it.");
+			Log.Warning("Alert window detected");
 			return null;
 		}
 	}

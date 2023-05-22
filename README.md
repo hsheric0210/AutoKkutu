@@ -11,6 +11,9 @@
 AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌습니다
 (제작자가 리버싱 후 수정 허용함)
 
+>현재 Selenium 버전 사용 시, 브라우저 창과 메인 GUI를 닫아도 프로그램이 종료되지 않는(콘솔 창이 꺼지지 않는) 문제가 있습니다.
+>프로그램을 종료하시려면 콘솔 창에서 `Ctrl+C`나 `Ctrl+Break`를 눌러 종료해 주세요.
+
 ## 다운로드 / 설치 방법
 
 * README 상단의 Build status 버튼 또는 [이 링크](https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main)을 클릭하여 AppVeyor CI에서 nightly 버전을 다운로드받으실 수 있습니다.

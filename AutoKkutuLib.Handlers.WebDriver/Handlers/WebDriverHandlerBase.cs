@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Extension;
 using AutoKkutuLib.Selenium;
 using OpenQA.Selenium;
+using OpenQA.Selenium.DevTools.V111.CSS;
 using OpenQA.Selenium.Internal;
 using Serilog;
 
@@ -17,39 +18,97 @@ public abstract class WebDriverHandlerBase : HandlerBase
 	{
 		get
 		{
-			var display = Browser.FindElementQuery("[class='GameBox Product']")?.Displayed == true;
-			var height = Browser.FindElementQuery("[class='GameBox Product']")?.GetCssValue("height");
-			return display || !string.IsNullOrWhiteSpace(height);
+			try
+			{
+				var elem = Browser.FindElementQuery("[class='GameBox Product']");
+				if (elem == null)
+					return false;
+
+				return elem.Displayed || !string.IsNullOrWhiteSpace(elem.GetCssValue("height"));
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return false; }
 		}
 	}
 
-	public override bool IsMyTurn => Browser.FindElementClassName("game-input")?.Displayed == true;
+	public override bool IsMyTurn
+	{
+		get
+		{
+			try
+			{
+				var elem = Browser.FindElementClassName("game-input");
+				if (elem == null)
+					return false;
 
-	public override string PresentedWord => Browser.FindElementQuery("[class='jjo-display ellipse']")?.Text.Trim() ?? "";
+				return elem.Displayed;
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return false; }
+		}
+	}
 
-	public override string RoundText => Browser.FindElementClassName("rounds-current")?.Text.Trim() ?? "";
+	public override string PresentedWord
+	{
+		get
+		{
+			try
+			{
+				return Browser.FindElementQuery("[class='jjo-display ellipse']")?.Text?.Trim() ?? "";
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+		}
+	}
+
+	public override string RoundText
+	{
+		get
+		{
+			try
+			{
+				return Browser.FindElementClassName("rounds-current")?.Text?.Trim() ?? "";
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+		}
+	}
 
 	public override int RoundIndex
 	{
 		get
 		{
-			var list = Browser.FindElementsQuery("#Middle > div.GameBox.Product > div > div.game-head > div.rounds label").ToList();
-			var point = Browser.FindElementQuery(".rounds-current");
-			if (point == null)
-				return -1;
-			return list.IndexOf(point);
+			try
+			{
+				var list = Browser.FindElementsQuery("#Middle > div.GameBox.Product > div > div.game-head > div.rounds label");
+				var point = Browser.FindElementQuery(".rounds-current");
+				if (point == null)
+					return -1;
+
+				return list?.IndexOf(point) ?? -1;
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return -1; }
 		}
 	}
 
-	public override string UnsupportedWord => Browser.FindElementClassName("game-fail-text")?.Text.Trim() ?? "";
+	public override string UnsupportedWord
+	{
+		get
+		{
+			try
+			{
+				return Browser.FindElementClassName("game-fail-text")?.Text?.Trim() ?? "";
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+		}
+	}
 
 	public override GameMode GameMode
 	{
 		get
 		{
-			var roomMode = Browser.FindElementClassName("room-head-mode")?.Text.Trim();
-			if (!string.IsNullOrWhiteSpace(roomMode))
+			try
 			{
+				var roomMode = Browser.FindElementClassName("room-head-mode")?.Text?.Trim();
+				if (string.IsNullOrWhiteSpace(roomMode))
+					return GameMode.LastAndFirst;
+
 				var trimmed = roomMode.Split('/')[0].Trim();
 				switch (trimmed[(trimmed.IndexOf(' ', StringComparison.Ordinal) + 1)..])
 				{
@@ -77,27 +136,52 @@ public abstract class WebDriverHandlerBase : HandlerBase
 					case "타자 대결":
 						return GameMode.TypingBattle;
 				}
+				return GameMode.LastAndFirst;
 			}
-			return GameMode.LastAndFirst;
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return GameMode.LastAndFirst; }
 		}
 	}
 
-	public override float TurnTime => float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time'] > [class='graph-bar']")?.Text.TrimEnd('초'), out var time) ? time : 150;
+	public override float TurnTime
+	{
+		get
+		{
+			try
+			{
+				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time'] > [class='graph-bar']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return 150; }
+		}
+	}
 
-	public override float RoundTime => float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time'] > [class='graph-bar round-extreme']")?.Text.TrimEnd('초'), out var time) ? time : 150;
+	public override float RoundTime
+	{
+		get
+		{
+			try
+			{
+				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time'] > [class='graph-bar round-extreme']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return 150; }
+		}
+	}
 
 	public override string ExampleWord
 	{
 		get
 		{
-			IWebElement? elem = Browser.FindElementQuery("[class='jjo-display ellipse']");
-			if (elem == null)
-				return "";
+			try
+			{
+				IWebElement? elem = Browser.FindElementQuery("[class='jjo-display ellipse']");
+				if (elem == null)
+					return "";
 
-			var content = elem.Text;
-			return elem.GetAttribute("type")?.Equals("label", StringComparison.OrdinalIgnoreCase) == true
-				&& (elem.GetCssValue("color")?.Contains("170,", StringComparison.Ordinal) ?? true)
-				&& content.Length > 1 ? content : "";
+				var content = elem.Text;
+				return elem.GetAttribute("type")?.Equals("label", StringComparison.OrdinalIgnoreCase) == true
+					&& (elem.GetCssValue("color")?.Contains("170,", StringComparison.Ordinal) ?? true)
+					&& content.Length > 1 ? content : "";
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
 		}
 	}
 
@@ -105,21 +189,46 @@ public abstract class WebDriverHandlerBase : HandlerBase
 	{
 		get
 		{
-			IWebElement? elem = Browser.FindElementClassName("items");
-			return elem?.GetCssValue("opacity") == "1" ? (elem?.Text.Trim() ?? "") : "";
+			try
+			{
+				IWebElement? elem = Browser.FindElementClassName("items");
+				if (elem == null)
+					return "";
+
+				return elem.GetCssValue("opacity") == "1" ? elem.Text.Trim() : "";
+			}
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
 		}
 	}
 
 	public override string GetWordInHistory(int index)
 	{
-		if (index is < 0 or >= 6)
-			throw new ArgumentOutOfRangeException($"index: {index}");
-		var list = Browser.FindElementsQuery("[class='ellipse history-item expl-mother']").ToList();
-		return list.Count <= index ? "" : list[index].GetAttribute("innerHTML") ?? "";
+		try
+		{
+			if (index is < 0 or >= 6)
+				throw new ArgumentOutOfRangeException($"index: {index}");
+			var list = Browser.FindElementsQuery("[class='ellipse history-item expl-mother']");
+			return list == null || list.Count <= index ? "" : list[index].GetAttribute("innerHTML") ?? "";
+		}
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
 	}
 
-	public override void UpdateChat(string input) => Browser.FindElementId("Talk")?.SendKeys(input.Trim());
+	public override void UpdateChat(string input)
+	{
+		try
+		{
+			Browser.FindElementId("Talk")?.SendKeys(input.Trim());
+		}
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { }
+	}
 
-	public override void ClickSubmit() => Browser.FindElementId("ChatBtn")?.Click();
+	public override void ClickSubmit()
+	{
+		try
+		{
+			Browser.FindElementId("ChatBtn")?.Click();
+		}
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { }
+	}
 	#endregion
 }
