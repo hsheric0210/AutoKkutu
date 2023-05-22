@@ -5,7 +5,7 @@ public class WebDriverHandlerList
 {
 	private readonly ISet<HandlerBase> RegisteredHandlers = new HashSet<HandlerBase>();
 
-	public void InitDefaultHandlers(SeleniumBrowserBase browser)
+	public void InitDefaultHandlers(SeleniumBrowser browser)
 	{
 		RegisterHandler(new BasicHandler(browser));
 		RegisterHandler(new SimpleBypassHandler(browser));

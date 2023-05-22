@@ -1,14 +1,12 @@
 ﻿using AutoKkutuLib;
-using AutoKkutuLib.CefSharp;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Handlers;
-using AutoKkutuLib.Handlers.JavaScript.Handlers;
+using AutoKkutuLib.Handlers.WebDriver.Handlers;
 using AutoKkutuLib.Path;
-using CefSharp;
-using CefSharp.Wpf;
+using AutoKkutuLib.Selenium;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -32,7 +30,7 @@ public static class Main
 
 	public static BrowserBase Browser { get; private set; } = null!;
 
-	public static IHandlerList Handler { get; private set; } = null!;
+	public static WebDriverHandlerList Handler { get; private set; } = null!;
 
 	public static AutoKkutu AutoKkutu
 	{
@@ -69,7 +67,7 @@ public static class Main
 			InitializeConfiguration();
 
 			// Initialize browser
-			InitializeBrowser();
+			SetupBrowser();
 
 			// Initialize database
 			AbstractDatabase? database = InitializeDatabase();
@@ -93,6 +91,8 @@ public static class Main
 			AutoKkutu.TypingWordPresented += OnTypingWordPresented;
 			AutoKkutu.ChatUpdated += OnChatUpdated;
 			InitializationFinished?.Invoke(null, EventArgs.Empty);
+
+			Browser.LoadFrontPage();
 		}
 		catch (Exception e)
 		{
@@ -115,6 +115,7 @@ public static class Main
 
 	private static void InitializeCEF()
 	{
+#if CEFSHARP
 		Log.Information("Initializing CEF");
 
 		// TODO: Configurable CEF settings
@@ -145,6 +146,7 @@ public static class Main
 		{
 			Log.Error(ex, "CEF initialization exception.");
 		}
+#endif
 	}
 
 	private static void InitializeConfiguration()
@@ -193,17 +195,17 @@ public static class Main
 		}
 	}
 
-	private static void InitializeBrowser()
+	private static void SetupBrowser()
 	{
 		Log.Information("Initializing browser");
 
 		// Initialize Browser
-		Browser = new CefSharpBrowser();
+		Browser = new SeleniumBrowser();
 		Browser.PageLoaded += OnPageLoaded;
 		Browser.PageError += OnPageError;
 
-		Handler = new JavaScriptHandlerList();
-		Handler.InitDefaultHandlers(Browser);
+		Handler = new WebDriverHandlerList();
+		Handler.InitDefaultHandlers((SeleniumBrowser)Browser);
 	}
 
 	private static AbstractDatabase? InitializeDatabase()
@@ -312,7 +314,10 @@ public static class Main
 			UpdateStatusMessage(StatusMessage.Normal);
 
 		if (!AutoKkutu.Game.IsValidPath(path))
+		{
+			Log.Warning("Invalid path {path} (missionChar: {missionChar}) rejected.", path.Word, path.MissionChar);
 			return;
+		}
 
 		UpdateSearchState(args);
 
@@ -322,6 +327,7 @@ public static class Main
 		{
 			if (args.ResultType == PathFindResult.NotFound)
 			{
+
 				Log.Warning(I18n.Auto_NoMorePathAvailable);
 				UpdateStatusMessage(StatusMessage.NotFound);
 			}
@@ -330,6 +336,7 @@ public static class Main
 				var wordToEnter = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
 				if (string.IsNullOrEmpty(wordToEnter))
 				{
+
 					Log.Warning(I18n.Auto_TimeOver);
 					UpdateStatusMessage(StatusMessage.NotFound);
 				}

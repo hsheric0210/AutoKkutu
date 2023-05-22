@@ -100,10 +100,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
-        <ProjectReference Include="..\AutoKkutuLib.Handlers.JavaScript\AutoKkutuLib.Handlers.JavaScript.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.Handlers.WebDriver\AutoKkutuLib.Handlers.WebDriver.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
         <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
     </ItemGroup>

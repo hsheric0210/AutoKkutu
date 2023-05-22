@@ -5,22 +5,23 @@ using Serilog;
 namespace AutoKkutuLib.CefSharp;
 public class WebView2Browser : BrowserBase
 {
-	private readonly WebView2 control;
+	private WebView2 control;
 
 	public override object? BrowserControl => control;
 
-	public WebView2Browser()
+	public override void LoadFrontPage()
 	{
 		control = new WebView2();
+		control.Source = new Uri("https://kkutu.pink/");
 		control.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 	}
 
 	public void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs args)
 	{
 		if (args.IsSuccess)
-			PageLoaded.Invoke(sender, new PageLoadedEventArgs(control.Source.ToString()));
+			PageLoaded?.Invoke(sender, new PageLoadedEventArgs(control.Source.ToString()));
 		else
-			PageError.Invoke(sender, new PageErrorEventArgs($"HTTP {args.HttpStatusCode}, WebError {args.WebErrorStatus}", control.Source.ToString()));
+			PageError?.Invoke(sender, new PageErrorEventArgs($"HTTP {args.HttpStatusCode}, WebError {args.WebErrorStatus}", control.Source.ToString()));
 	}
 
 	public override void Load(string url) => control.Source = new Uri(url);

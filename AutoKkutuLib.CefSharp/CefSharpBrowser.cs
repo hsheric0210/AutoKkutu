@@ -5,11 +5,11 @@ using Serilog;
 namespace AutoKkutuLib.CefSharp;
 public class CefSharpBrowser : BrowserBase
 {
-	private readonly IWebBrowser browser;
+	private IWebBrowser browser;
 
 	public override object? BrowserControl => browser;
 
-	public CefSharpBrowser()
+	public override void LoadFrontPage()
 	{
 		browser = new ChromiumWebBrowser()
 		{
@@ -19,9 +19,9 @@ public class CefSharpBrowser : BrowserBase
 		browser.LoadError += OnLoadError;
 	}
 
-	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args) => PageLoaded.Invoke(sender, new PageLoadedEventArgs(args.Url));
+	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args) => PageLoaded?.Invoke(sender, new PageLoadedEventArgs(args.Url));
 
-	public void OnLoadError(object? sender, LoadErrorEventArgs args) => PageError.Invoke(sender, new PageErrorEventArgs(args.ErrorText, args.FailedUrl));
+	public void OnLoadError(object? sender, LoadErrorEventArgs args) => PageError?.Invoke(sender, new PageErrorEventArgs(args.ErrorText, args.FailedUrl));
 
 	public override void Load(string url) => browser.LoadUrl(url);
 

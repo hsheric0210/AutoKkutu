@@ -12,7 +12,7 @@ internal class BasicHandler : WebDriverHandlerBase
 
 	public override string HandlerName => "Basic Handler";
 
-	public BasicHandler(SeleniumBrowserBase jsEvaluator) : base(jsEvaluator)
+	public BasicHandler(SeleniumBrowser jsEvaluator) : base(jsEvaluator)
 	{
 	}
 }

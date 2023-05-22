@@ -14,6 +14,7 @@ public abstract class BrowserBase
 	public EventHandler<PageLoadedEventArgs> PageLoaded;
 	public EventHandler<PageErrorEventArgs> PageError;
 
+	public abstract void LoadFrontPage();
 	public abstract void Load(string url);
 	public abstract void ShowDevTools();
 	public abstract void ExecuteJavaScript(string script, string? errorMessage = null);

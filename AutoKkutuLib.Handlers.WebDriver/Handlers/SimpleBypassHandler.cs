@@ -12,7 +12,7 @@ internal class SimpleBypassHandler : WebDriverHandlerBase
 
 	public override string HandlerName => "Simple Fake-element Bypassing Handler";
 
-	public SimpleBypassHandler(SeleniumBrowserBase browser) : base(browser)
+	public SimpleBypassHandler(SeleniumBrowser browser) : base(browser)
 	{
 	}
 
