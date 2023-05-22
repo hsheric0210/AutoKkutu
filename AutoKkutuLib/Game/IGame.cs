@@ -10,7 +10,7 @@ public interface IGame
 	PresentedWord? CurrentPresentedWord { get; }
 	bool IsGameStarted { get; }
 	bool IsMyTurn { get; }
-	JsEvaluator JsEvaluator { get; }
+	BrowserBase Browser { get; }
 	bool ReturnMode { get; set; }
 	int TurnTimeMillis { get; }
 
@@ -31,7 +31,7 @@ public interface IGame
 	void ClickSubmitButton();
 	void Dispose();
 	string GetID();
-	bool HasSameHandler(AbstractHandler otherHandler);
+	bool HasSameHandler(HandlerBase otherHandler);
 	bool IsValidPath(PathFinderParameter path);
 	void Start();
 	void Stop();

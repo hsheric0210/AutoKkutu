@@ -7,11 +7,11 @@ namespace AutoKkutuLib.Word;
 public sealed class BatchWordAdditionJob : BatchWordJob
 {
 	private readonly NodeManager nodeManager;
-	private readonly JsEvaluator jsEvaluator;
+	private readonly BrowserBase jsEvaluator;
 	private readonly WordFlags wordFlags;
 	private readonly bool verifyOnline;
 
-	public BatchWordAdditionJob(NodeManager nodeManager, JsEvaluator jsEvaluator, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
+	public BatchWordAdditionJob(NodeManager nodeManager, BrowserBase jsEvaluator, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
 	{
 		this.nodeManager = nodeManager;
 		this.jsEvaluator = jsEvaluator;

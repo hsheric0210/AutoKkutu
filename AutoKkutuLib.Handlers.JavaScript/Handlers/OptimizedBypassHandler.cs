@@ -4,15 +4,19 @@
 // 단어를 '글자 별로 하나하나' 입력하는 기능(CEF의 KeyEvent 활용), 딜레이 강제 적용(한 글자 당 100ms 이상)을 해야지만 제대로 우회할 수 있다.
 // https://github.com/horyu1234/KKuTu/blob/91118d0db5a2cc35147c86bdac7ca8df9bdf0f4f/Server/lib/Web/lib/kkutu/body.js#L95
 
-internal partial class KkutuIoHandler : AbstractHandler
+/// <summary>
+/// 끄투리오는 CSS 대신 HTML Header에 display: none 스타일을 걸어 놓았습니다. 이 경우, 굳이 오버헤드 큰 window.getComputedStyle()를 안 써도 됩니다.
+/// </summary>
+
+internal partial class OptimizedBypassHandler : JavaScriptHandlerBase
 {
 	private const string ParseExtraVisibilityStyleTagsFunc = "ParseExtraVisibilityStyleTagsFunc";
 
 	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://kkutu.io/") };
 
-	public override string HandlerName => "Kkutu.io Handler";
+	public override string HandlerName => "Optimized Fake-element Bypassing Handler";
 
-	public KkutuIoHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
+	public OptimizedBypassHandler(BrowserBase jsEvaluator) : base(jsEvaluator)
 	{
 	}
 

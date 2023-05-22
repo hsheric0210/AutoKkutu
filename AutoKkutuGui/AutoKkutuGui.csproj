@@ -86,7 +86,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf.NETCore" Version="110.0.280" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
         <NoWarn>NU1701</NoWarn>
     </PackageReference>
@@ -100,6 +99,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
+    <ProjectReference Include="..\AutoKkutuLib.Handlers.JavaScript\AutoKkutuLib.Handlers.JavaScript.csproj" />
+    <ProjectReference Include="..\AutoKkutuLib.Handlers.PureJS\AutoKkutuLib.Handlers.JavaScript.csproj" />
     <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
     <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
     <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />

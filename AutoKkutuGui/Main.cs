@@ -29,10 +29,9 @@ public static class Main
 		get; set;
 	} = null!;
 
-	public static ChromiumWebBrowser Browser
-	{
-		get; private set;
-	} = null!;
+	public static BrowserBase Browser { get; private set; } = null!;
+
+	public static IHandlerList Handler { get; private set; } = null!;
 
 	public static AutoKkutu AutoKkutu
 	{
@@ -198,16 +197,12 @@ public static class Main
 		Log.Information("Initializing browser");
 
 		// Initialize Browser
-		Browser = new ChromiumWebBrowser
-		{
-			Address = "https://kkutu.pink",
-			UseLayoutRounding = true
-		};
+		Browser = new CefSharpBrowser();
+		Browser.PageLoaded += OnPageLoaded;
+		Browser.PageError += OnPageError;
 
-		Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
-		Browser.LoadError += OnBrowserLoadError;
-
-		HandlerList.InitDefaultHandlers(new JsEvaluator(new CefSharpWrapper(Browser)));
+		Handler = new JavaScriptHandlerList();
+		Handler.InitDefaultHandlers(Browser);
 	}
 
 	private static AbstractDatabase? InitializeDatabase()
@@ -238,33 +233,16 @@ public static class Main
 
 	/* Browser-related */
 
-	public static void FrameReloaded() => Browser.FrameLoadEnd += OnBrowserFrameLoadEnd;
-
-	// TODO: Move to Lib
-	private static void RemoveAd()
-	{
-		// Kkutu.co.kr
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.body.style.overflow ='hidden'", false);
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADBox').style = 'display:none'", false);
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADVERTISEMENT').style = 'display:none'", false);
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('ADVERTISEMENT_TITLE').style = 'display:none'", false);
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('kktukorea__1LZzX_0')[0].style = 'display:none'", false);
-
-		// Kkutu.pink
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementById('google-center-div')[0].style = 'display:none'", false);
-
-		// Kkutu.org
-		Browser.ExecuteScriptAsyncWhenPageLoaded("document.getElementsByClassName('ADBox Product')[0].style = 'display:none'", false);
-	}
+	public static void FrameReloaded() => Browser.PageLoaded += OnPageLoaded;
 
 	/* EVENTS: Browser */
 
-	private static void OnBrowserFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)
+	private static void OnPageLoaded(object? sender, PageLoadedEventArgs args)
 	{
 		var url = args.Url;
 
 		// Find appropriate handler for current URL
-		AbstractHandler? handler = HandlerList.GetByUri(new Uri(url));
+		HandlerBase? handler = Handler.GetByUri(new Uri(url));
 		if (handler is null)
 		{
 			Log.Warning(I18n.Main_UnsupportedURL, url);
@@ -275,15 +253,14 @@ public static class Main
 		{
 			Log.Information("Browser frame loaded.");
 			AutoKkutu.SetGame(new Game(handler));
-			Browser.FrameLoadEnd -= OnBrowserFrameLoadEnd;
+			Browser.PageLoaded -= OnPageLoaded;
 		}
 	}
 
-	private static void OnBrowserLoadError(object? sender, LoadErrorEventArgs args)
+	private static void OnPageError(object? sender, PageErrorEventArgs args)
 	{
 		Log.Error("Browser load error!");
-		Log.Error("Errorcode: {code}", args.ErrorCode);
-		Log.Error("Error text: {error}", args.ErrorText);
+		Log.Error("Error: {error}", args.ErrorText);
 	}
 
 	public static void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdateEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));

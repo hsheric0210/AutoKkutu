@@ -4,9 +4,9 @@ namespace AutoKkutuLib.Game.Extension;
 
 public static class OnlineDictionaryCheckExtension
 {
-	public static bool IsDictionaryAvailable(this JsEvaluator jsEvaluator)
+	public static bool IsDictionaryAvailable(this BrowserBase jsEvaluator)
 	{
-		return !string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJS("document.getElementById('dict-output').style"));
+		return !string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJavaScript("document.getElementById('dict-output').style"));
 
 		// FIXME: Replace with event
 		//if (string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
@@ -19,21 +19,21 @@ public static class OnlineDictionaryCheckExtension
 	/// </summary>
 	/// <param name="word">The word to check</param>
 	/// <returns>True if existence is verified, false otherwise.</returns>
-	public static bool VerifyWordOnline(this JsEvaluator jsEvaluator, string word)
+	public static bool VerifyWordOnline(this BrowserBase jsEvaluator, string word)
 	{
 		Log.Information(I18n.BatchJob_CheckOnline, word);
 
 		// Enter the word to dictionary search field
-		jsEvaluator.EvaluateJS($"document.getElementById('dict-input').value = '{word}'");
+		jsEvaluator.EvaluateJavaScript($"document.getElementById('dict-input').value = '{word}'");
 
 		// Click search button
-		jsEvaluator.EvaluateJS("document.getElementById('dict-search').click()");
+		jsEvaluator.EvaluateJavaScript("document.getElementById('dict-search').click()");
 
 		// Wait for response
 		Thread.Sleep(1500);
 
 		// Query the response
-		var result = jsEvaluator.EvaluateJS("document.getElementById('dict-output').innerHTML");
+		var result = jsEvaluator.EvaluateJavaScript("document.getElementById('dict-output').innerHTML");
 		Log.Information(I18n.BatchJob_CheckOnline_Response, result);
 		if (string.IsNullOrWhiteSpace(result) || string.Equals(result, "404: 유효하지 않은 단어입니다.", StringComparison.OrdinalIgnoreCase))
 		{

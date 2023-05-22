@@ -21,7 +21,7 @@ public class AutoKkutu : IDisposable
 	public AbstractDatabaseConnection DbConnection => Database.Connection;
 
 	public IGame Game => game ?? throw new InvalidOperationException("Game is not registered yet!");
-	public JsEvaluator GameJsEvaluator => Game.JsEvaluator;
+	public BrowserBase GameJsEvaluator => Game.Browser;
 	public bool HasGameSet => game is not null;
 	#endregion
 

@@ -1,5 +1,6 @@
-# AutoKkutuLib.Handlers
+# AutoKkutuLib.Handlers.WebDriver
 
 AutoKkutu에서 지원하는 끄투 웹사이트들에 맞게 최적화된 핸들러들이 정의된 네임스페이스입니다.
-
 각 사이트들은 조금씩 레이아웃이 다르거나, 끄투 자체의 버전이 다를 수도 있고, 안티 치트 등의 장치들이 존재할 수도 있기에 반드시 전용 핸들러가 필요합니다.
+
+순수한 JavaScript 뿐만 아니라 WebDriver에서 지원하는 최적화된 기능들을 활용하여 사이트와 상호 작용합니다.

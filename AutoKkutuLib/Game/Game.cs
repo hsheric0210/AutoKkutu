@@ -9,7 +9,7 @@ namespace AutoKkutuLib.Game;
 public class Game : IGame
 {
 	public AutoEnter AutoEnter { get; }
-	public JsEvaluator JsEvaluator => handler.JsEvaluator;
+	public BrowserBase Browser => handler.Browser;
 
 	#region Game status properties
 
@@ -47,7 +47,7 @@ public class Game : IGame
 	#endregion
 
 	#region Internal handle holder fields
-	private readonly AbstractHandler handler;
+	private readonly HandlerBase handler;
 
 	private Task? primaryWatchdogTask;
 
@@ -91,7 +91,7 @@ public class Game : IGame
 	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	#endregion
 
-	public Game(AbstractHandler handler)
+	public Game(HandlerBase handler)
 	{
 		this.handler = handler;
 		AutoEnter = new AutoEnter(this);
@@ -99,7 +99,7 @@ public class Game : IGame
 
 	public string GetID() => $"{handler.HandlerName} - #{(primaryWatchdogTask == null ? "Global" : primaryWatchdogTask.Id.ToString(CultureInfo.InvariantCulture))}";
 
-	public bool HasSameHandler(AbstractHandler otherHandler) => handler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
+	public bool HasSameHandler(HandlerBase otherHandler) => handler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
 
 	#region Watchdog proc. helper methods
 

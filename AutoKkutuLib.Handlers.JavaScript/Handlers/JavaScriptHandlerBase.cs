@@ -3,7 +3,7 @@ using Serilog;
 
 namespace AutoKkutuLib.Handlers;
 
-public abstract class AbstractHandler
+public abstract class JavaScriptHandlerBase : HandlerBase
 {
 	#region Frequently-used function names
 	protected const string WriteInputFunc = "WriteInputFunc";
@@ -15,24 +15,14 @@ public abstract class AbstractHandler
 
 	private readonly Dictionary<string, string> RegisteredFunctionNames = new();
 
-	public JsEvaluator JsEvaluator { get; }
+	public override BrowserBase Browser { get; }
 
-	protected AbstractHandler(JsEvaluator jsEvaluator) => JsEvaluator = jsEvaluator;
+	protected JavaScriptHandlerBase(BrowserBase browser) => Browser = browser;
 
 	#region Handler implementation
-	public abstract IReadOnlyCollection<Uri> UrlPattern
-	{
-		get;
-	}
-
-	public abstract string HandlerName
-	{
-		get;
-	}
-
 	protected virtual string CurrentRoundIndexFuncCode => "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));";
 
-	public virtual bool IsGameInProgress
+	public override bool IsGameInProgress
 	{
 		get
 		{
@@ -42,7 +32,7 @@ public abstract class AbstractHandler
 		}
 	}
 
-	public virtual bool IsMyTurn
+	public override bool IsMyTurn
 	{
 		get
 		{
@@ -55,15 +45,15 @@ public abstract class AbstractHandler
 		}
 	}
 
-	public virtual string PresentedWord => EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(PresentedWord)).Trim();
+	public override string PresentedWord => EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(PresentedWord)).Trim();
 
-	public virtual string RoundText => EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", nameof(RoundText)).Trim();
+	public override string RoundText => EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", nameof(RoundText)).Trim();
 
-	public virtual int RoundIndex => EvaluateJSInt($"{GetRegisteredJSFunctionName(CurrentRoundIndexFunc)}()", nameof(RoundIndex));
+	public override int RoundIndex => EvaluateJSInt($"{GetRegisteredJSFunctionName(CurrentRoundIndexFunc)}()", nameof(RoundIndex));
 
-	public virtual string UnsupportedWord => EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", nameof(UnsupportedWord)).Trim() : "";
+	public override string UnsupportedWord => EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", nameof(UnsupportedWord)).Trim() : "";
 
-	public virtual GameMode GameMode
+	public override GameMode GameMode
 	{
 		get
 		{
@@ -102,19 +92,7 @@ public abstract class AbstractHandler
 		}
 	}
 
-	public virtual string RoomInfo
-	{
-		get
-		{
-			var roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent", nameof(RoomInfo));
-			var roomLimit = EvaluateJS("document.getElementsByClassName('room-head-limit')[0].textContent", nameof(RoomInfo));
-			var roomRounds = EvaluateJS("document.getElementsByClassName('room-head-round')[0].textContent", nameof(RoomInfo));
-			var roomTime = EvaluateJS("document.getElementsByClassName('room-head-time')[0].textContent", nameof(RoomInfo));
-			return $"{roomMode} | {roomLimit} | {roomRounds} | {roomTime}"; // TODO: Change this to struct or record
-		}
-	}
-
-	public virtual float TurnTime
+	public override float TurnTime
 	{
 		get
 		{
@@ -124,7 +102,7 @@ public abstract class AbstractHandler
 		}
 	}
 
-	public virtual float RoundTime
+	public override float RoundTime
 	{
 		get
 		{
@@ -134,7 +112,7 @@ public abstract class AbstractHandler
 		}
 	}
 
-	public virtual string ExampleWord
+	public override string ExampleWord
 	{
 		get
 		{
@@ -147,9 +125,9 @@ public abstract class AbstractHandler
 		}
 	}
 
-	public virtual string MissionChar => EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", nameof(MissionChar)).Trim() : "";
+	public override string MissionChar => EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", nameof(MissionChar)).Trim() : "";
 
-	public virtual string GetWordInHistory(int index)
+	public override string GetWordInHistory(int index)
 	{
 		if (index is < 0 or >= 6)
 			throw new ArgumentOutOfRangeException($"index: {index}");
@@ -158,9 +136,9 @@ public abstract class AbstractHandler
 			: EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", nameof(GetWordInHistory));
 	}
 
-	public virtual void UpdateChat(string input) => ExecuteJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", nameof(UpdateChat));
+	public override void UpdateChat(string input) => ExecuteJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", nameof(UpdateChat));
 
-	public virtual void ClickSubmit() => ExecuteJS("document.getElementById('ChatBtn').click()", nameof(ClickSubmit));
+	public override void ClickSubmit() => ExecuteJS("document.getElementById('ChatBtn').click()", nameof(ClickSubmit));
 	#endregion
 
 	#region Javascript function registration
@@ -181,18 +159,18 @@ public abstract class AbstractHandler
 
 	protected string GetRegisteredJSFunctionName(string funcName) => RegisteredFunctionNames[funcName];
 
-	public void RegisterRoundIndexFunction() => RegisterJSFunction(CurrentRoundIndexFunc, "", CurrentRoundIndexFuncCode);
+	public override void RegisterRoundIndexFunction() => RegisterJSFunction(CurrentRoundIndexFunc, "", CurrentRoundIndexFuncCode);
 	#endregion
 
 	#region Javascript execute methods
-	protected void ExecuteJS(string javaScript, string? moduleName = null) => JsEvaluator.ExecuteJS(javaScript, "Error on " + moduleName);
+	protected void ExecuteJS(string javaScript, string? moduleName = null) => Browser.ExecuteJavaScript(javaScript, "Error on " + moduleName);
 
-	protected bool EvaluateJSReturnError(string javaScript, out string error) => JsEvaluator.EvaluateJSReturnError(javaScript, out error);
+	protected bool EvaluateJSReturnError(string javaScript, out string error) => Browser.EvaluateJSAndGetError(javaScript, out error);
 
-	protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => JsEvaluator.EvaluateJS(javaScript, defaultResult, "Error on " + moduleName);
+	protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => Browser.EvaluateJavaScript(javaScript, defaultResult, "Error on " + moduleName);
 
-	protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => JsEvaluator.EvaluateJSInt(javaScript, defaultResult, "Error on " + moduleName);
+	protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => Browser.EvaluateJavaScriptInt(javaScript, defaultResult, "Error on " + moduleName);
 
-	protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => JsEvaluator.EvaluateJSBool(javaScript, defaultResult, "Error on " + moduleName);
+	protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => Browser.EvaluateJavaScriptBool(javaScript, defaultResult, "Error on " + moduleName);
 	#endregion
 }

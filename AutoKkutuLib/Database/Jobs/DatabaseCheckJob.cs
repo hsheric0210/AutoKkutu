@@ -20,7 +20,7 @@ public class DatabaseCheckJob
 	/// 데이터베이스의 무결성을 검증하고, 문제를 발견하면 수정합니다.
 	/// </summary>
 	/// <param name="UseOnlineDB">온라인 검사(끄투 사전을 통한 검사)를 진행하는지의 여부</param>
-	public void CheckDB(bool UseOnlineDB, JsEvaluator jsEvaluator)
+	public void CheckDB(bool UseOnlineDB, BrowserBase jsEvaluator)
 	{
 		// FIXME: Move to caller
 		//if (UseOnlineDB && string.IsNullOrWhiteSpace(JSEvaluator.EvaluateJS("document.getElementById('dict-output').style")))

@@ -1,23 +1,27 @@
 ﻿namespace AutoKkutuLib.Handlers;
 
-internal class BFKkutuHandler : AbstractHandler
+internal class SimpleBypassHandler : JavaScriptHandlerBase
 {
-	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://bfkkutu.kr/") };
+	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] {
+		new Uri("https://kkutu.co.kr/"),
+		new Uri("https://bfkkutu.kr/"),
 
-	public override string HandlerName => "BFKkutu.kr Handler";
+	};
 
-	public BFKkutuHandler(JsEvaluator jsEvaluator) : base(jsEvaluator)
+	public override string HandlerName => "Simple Fake-element Bypassing Handler";
+
+	public SimpleBypassHandler(BrowserBase jsEvaluator) : base(jsEvaluator)
 	{
 	}
 
 	public override void UpdateChat(string input)
 	{
 		RegisterJSFunction(WriteInputFunc, "input", @"
-var chatFields = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
-var maxIndex = chatFields.length, index = 0;
+var userMessages = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input')
+var maxIndex = userMessages.length, index = 0;
 while (index < maxIndex) {{
-    if (window.getComputedStyle(chatFields[index]).display != 'none') {{
-		chatFields[index].value = input;
+    if (window.getComputedStyle(userMessages[index]).display != 'none') {{
+		userMessages[index].value = input;
         break;
     }}
 	index++;
