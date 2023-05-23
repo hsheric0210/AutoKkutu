@@ -26,7 +26,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 
 				return elem.Displayed || !string.IsNullOrWhiteSpace(elem.GetCssValue("height"));
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return false; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return false; }
 		}
 	}
 
@@ -42,7 +42,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 
 				return elem.Displayed;
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return false; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return false; }
 		}
 	}
 
@@ -54,7 +54,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			{
 				return Browser.FindElementQuery("[class='jjo-display ellipse']")?.Text?.Trim() ?? "";
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 		}
 	}
 
@@ -66,7 +66,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			{
 				return Browser.FindElementClassName("rounds-current")?.Text?.Trim() ?? "";
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 		}
 	}
 
@@ -83,7 +83,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 
 				return list?.IndexOf(point) ?? -1;
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return -1; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException or StaleElementReferenceException) { return -1; }
 		}
 	}
 
@@ -95,7 +95,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			{
 				return Browser.FindElementClassName("game-fail-text")?.Text?.Trim() ?? "";
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 		}
 	}
 
@@ -138,7 +138,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 				}
 				return GameMode.LastAndFirst;
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return GameMode.LastAndFirst; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return GameMode.LastAndFirst; }
 		}
 	}
 
@@ -150,7 +150,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			{
 				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time'] > [class='graph-bar']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return 150; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 		}
 	}
 
@@ -162,7 +162,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			{
 				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time'] > [class='graph-bar round-extreme']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return 150; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 		}
 	}
 
@@ -181,7 +181,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 					&& (elem.GetCssValue("color")?.Contains("170,", StringComparison.Ordinal) ?? true)
 					&& content.Length > 1 ? content : "";
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 		}
 	}
 
@@ -197,7 +197,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 
 				return elem.GetCssValue("opacity") == "1" ? elem.Text.Trim() : "";
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 		}
 	}
 
@@ -210,7 +210,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			var list = Browser.FindElementsQuery("[class='ellipse history-item expl-mother']");
 			return list == null || list.Count <= index ? "" : list[index].GetAttribute("innerHTML") ?? "";
 		}
-		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { return ""; }
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
 	public override void UpdateChat(string input)
@@ -219,7 +219,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			Browser.FindElementId("Talk")?.SendKeys(input.Trim());
 		}
-		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { }
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { }
 	}
 
 	public override void ClickSubmit()
@@ -228,7 +228,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			Browser.FindElementId("ChatBtn")?.Click();
 		}
-		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException) { }
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { }
 	}
 	#endregion
 }

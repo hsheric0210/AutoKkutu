@@ -60,9 +60,6 @@ public static class Main
 	{
 		try
 		{
-			// Initialize CEF
-			InitializeCEF();
-
 			// Load default config
 			InitializeConfiguration();
 
@@ -111,42 +108,6 @@ public static class Main
 		else
 			flags &= ~PathFinderFlags.UseAttackWord;
 		return flags;
-	}
-
-	private static void InitializeCEF()
-	{
-#if CEFSHARP
-		Log.Information("Initializing CEF");
-
-		// TODO: Configurable CEF settings
-		using var settings = new CefSettings
-		{
-			LogFile = "CefSharp.log",
-			LogSeverity = LogSeverity.Default,
-
-			CefCommandLineArgs =
-			{
-				{
-					"disable-direct-write",
-					"1"
-				},
-				"disable-gpu",
-				"enable-begin-frame-scheduling"
-			},
-			UserAgent = "Chrome",
-			CachePath = Environment.CurrentDirectory + "\\CefSharp"
-		};
-
-		try
-		{
-			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
-				Log.Warning("CEF initialization failed.");
-		}
-		catch (Exception ex)
-		{
-			Log.Error(ex, "CEF initialization exception.");
-		}
-#endif
 	}
 
 	private static void InitializeConfiguration()

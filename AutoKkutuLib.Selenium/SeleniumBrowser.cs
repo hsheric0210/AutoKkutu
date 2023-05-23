@@ -2,16 +2,68 @@
 using OpenQA.Selenium.Chrome;
 using Serilog;
 using System.Collections.ObjectModel;
+using SeleniumUndetectedChromeDriver;
+using System.Xml.Serialization;
+using System.Diagnostics.Contracts;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase
 {
-	private WebDriver driver;
+	private const string ConfigFile = "Selenium.xml";
+	private UndetectedChromeDriver driver;
 
-	public override void LoadFrontPage()
+	public override async void LoadFrontPage()
 	{
-		driver = new ChromeDriver();
-		driver.Url = "https://kkutu.pink/";
+		var serializer = new XmlSerializer(typeof(SeleniumConfigDto));
+
+		// Default config
+		var config = new SeleniumConfigDto()
+		{
+			MainPage = "https://kkutu.pink/",
+		};
+
+		if (File.Exists(ConfigFile))
+		{
+			try
+			{
+				using FileStream stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+				config = (SeleniumConfigDto?)serializer.Deserialize(stream)!;
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Failed to read Selenium config.");
+			}
+		}
+		else
+		{
+			try
+			{
+				using FileStream stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+				serializer.Serialize(stream, config);
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Failed to write default Selenium config.");
+			}
+		}
+
+		var opt = new ChromeOptions()
+		{
+			BinaryLocation = config.BinaryLocation,
+			LeaveBrowserRunning = config.LeaveBrowserRunning,
+			DebuggerAddress = config.DebuggerAddress,
+			MinidumpPath = config.MinidumpPath
+		};
+
+		if (config.Arguments != null)
+			opt.AddArguments(config.Arguments.ToArray());
+		if (config.ExcludedArguments != null)
+			opt.AddExcludedArguments(config.ExcludedArguments.ToArray());
+		if (config.EncodedExtensions != null)
+			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
+
+		driver = UndetectedChromeDriver.Create(opt, driverExecutablePath: "chromedriver.exe");
+		driver.Url = config.MainPage;
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}
 
