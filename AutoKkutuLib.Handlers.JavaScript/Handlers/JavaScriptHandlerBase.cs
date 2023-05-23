@@ -5,22 +5,12 @@ namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
 
 public abstract class JavaScriptHandlerBase : HandlerBase
 {
-	#region Frequently-used function names
-	protected const string WriteInputFunc = "WriteInputFunc";
-
-	protected const string ClickSubmitFunc = "ClickSubmitFunc";
-
-	protected const string CurrentRoundIndexFunc = "CurrentRoundIndexFunc";
-	#endregion
-
-	private readonly Dictionary<string, string> RegisteredFunctionNames = new();
-
 	public override BrowserBase Browser { get; }
 
 	protected JavaScriptHandlerBase(BrowserBase browser) => Browser = browser;
 
 	#region Handler implementation
-	protected virtual string CurrentRoundIndexFuncCode => "return Array.from(document.querySelectorAll('#Middle > div.GameBox.Product > div > div.game-head > div.rounds label')).indexOf(document.querySelector('.rounds-current'));";
+	protected virtual string CurrentRoundIndexFuncCode => "return Array.from(document.querySelectorAll('#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label')).indexOf(document.querySelector('.rounds-current'));";
 
 	public override bool IsGameInProgress
 	{
@@ -96,7 +86,7 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 	{
 		get
 		{
-			return float.TryParse(EvaluateJS("document.querySelector('[class=\"graph jjo-turn-time\"] > [class=\"graph-bar\"]').textContent", nameof(TurnTime)).TrimEnd('초'), out var time)
+			return float.TryParse(EvaluateJS("document.querySelector(\"[class='graph jjo-turn-time']>[class='graph-bar']\").textContent", nameof(TurnTime)).TrimEnd('초'), out var time)
 				? time
 				: 150;
 		}
@@ -106,7 +96,7 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 	{
 		get
 		{
-			return float.TryParse(EvaluateJS("document.querySelector('[class=\"graph jjo-round-time\"] > [class=\"graph-bar round-extreme\"]').textContent", nameof(RoundTime)).TrimEnd('초'), out var time)
+			return float.TryParse(EvaluateJS("document.querySelector(\"[class='graph jjo-round-time']>[class='graph-bar round-extreme']\").textContent", nameof(RoundTime)).TrimEnd('초'), out var time)
 				? time
 				: 150;
 		}
@@ -140,27 +130,7 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 
 	public override void ClickSubmit() => ExecuteJS("document.getElementById('ChatBtn').click()", nameof(ClickSubmit));
 	#endregion
-
-	#region Javascript function registration
-	protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
-	{
-		if (!RegisteredFunctionNames.ContainsKey(funcName))
-			RegisteredFunctionNames[funcName] = $"__{Random.Shared.GenerateRandomString(64, true)}";
-
-		var realFuncName = RegisteredFunctionNames[funcName];
-		if (EvaluateJSBool($"typeof {realFuncName} != 'function'")) // check if already registered
-		{
-			if (EvaluateJSReturnError($"function {realFuncName}({funcArgs}) {{{funcBody}}}", out var error))
-				Log.Error("Failed to register JavaScript function {funcName} : {error}", funcName, error);
-			else
-				Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", funcName, realFuncName);
-		}
-	}
-
-	protected string GetRegisteredJSFunctionName(string funcName) => RegisteredFunctionNames[funcName];
-
 	public override void RegisterRoundIndexFunction() => RegisterJSFunction(CurrentRoundIndexFunc, "", CurrentRoundIndexFuncCode);
-	#endregion
 
 	#region Javascript execute methods
 	protected void ExecuteJS(string javaScript, string? moduleName = null) => Browser.ExecuteJavaScript(javaScript, "Error on " + moduleName);

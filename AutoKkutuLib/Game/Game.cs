@@ -222,7 +222,7 @@ public class Game : IGame
 			if (!IsGameStarted)
 			{
 				handler.RegisterRoundIndexFunction();
-				Log.Debug("New game started; Previous word list flushed.");
+				Log.Debug("New game started; Used word history flushed.");
 				GameStarted?.Invoke(this, EventArgs.Empty);
 				IsGameStarted = true;
 			}
@@ -314,7 +314,7 @@ public class Game : IGame
 			var word = tmpWordCache[index];
 			if (!string.IsNullOrWhiteSpace(word) && !wordHistoryCache.Contains(word))
 			{
-				Log.Information("Found previous word : {word}", word);
+				Log.Information("Found new used word in history : {word}", word);
 				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(word));
 			}
 		}

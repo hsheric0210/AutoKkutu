@@ -76,7 +76,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			try
 			{
-				var list = Browser.FindElementsQuery("#Middle > div.GameBox.Product > div > div.game-head > div.rounds label");
+				var list = Browser.FindElementsQuery("#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label");
 				var point = Browser.FindElementQuery(".rounds-current");
 				if (point == null)
 					return -1;
@@ -148,7 +148,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			try
 			{
-				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time'] > [class='graph-bar']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
+				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time']>[class='graph-bar']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
 			}
 			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 		}
@@ -160,7 +160,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			try
 			{
-				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time'] > [class='graph-bar round-extreme']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
+				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time']>[class='graph-bar round-extreme']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
 			}
 			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 		}
@@ -217,7 +217,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 	{
 		try
 		{
-			Browser.FindElementId("Talk")?.SendKeys(input.Trim());
+			Browser.ExecuteJavaScript($"document.getElementById('Talk').value='{input.Trim()}'");
 		}
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { }
 	}

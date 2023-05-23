@@ -74,7 +74,7 @@ public class SeleniumBrowser : BrowserBase
 	{
 		try
 		{
-			driver.ExecuteAsyncScript(script);
+			driver.ExecuteScript(script);
 		}
 		catch (Exception ex)
 		{
