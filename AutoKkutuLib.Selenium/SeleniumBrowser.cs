@@ -20,6 +20,7 @@ public class SeleniumBrowser : BrowserBase
 		var config = new SeleniumConfigDto()
 		{
 			MainPage = "https://kkutu.pink/",
+			DriverExecutable = "chromedriver.exe"
 		};
 
 		if (File.Exists(ConfigFile))
@@ -62,7 +63,7 @@ public class SeleniumBrowser : BrowserBase
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
-		driver = UndetectedChromeDriver.Create(opt, driverExecutablePath: "chromedriver.exe");
+		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.Url = config.MainPage;
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}
