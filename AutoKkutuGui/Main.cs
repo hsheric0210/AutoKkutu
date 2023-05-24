@@ -292,12 +292,20 @@ public static class Main
 			}
 			else
 			{
-				(var wordToEnter, var timeover) = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
+				var time = AutoKkutu.Game.TurnTimeMillis;
+				(var wordToEnter, var timeover) = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, time);
 				if (string.IsNullOrEmpty(wordToEnter))
 				{
-
-					Log.Warning(timeover ? I18n.Auto_TimeOver : I18n.Auto_NoMorePathAvailable);
-					UpdateStatusMessage(timeover ? StatusMessage.AllWordTimeOver : StatusMessage.NotFound);
+					if (timeover)
+					{
+						Log.Warning(I18n.Auto_TimeOver);
+						UpdateStatusMessage(StatusMessage.AllWordTimeOver, time);
+					}
+					else
+					{
+						Log.Warning(I18n.Auto_NoMorePathAvailable);
+						UpdateStatusMessage(StatusMessage.NotFound);
+					}
 				}
 				else
 				{
@@ -380,7 +388,10 @@ public static class Main
 	}
 
 	// TODO: Move to Lib
-	private static void OnMyTurn(object? sender, WordConditionPresentEventArgs args) => AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
+	private static void OnMyTurn(object? sender, WordConditionPresentEventArgs args)
+	{
+		AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
+	}
 
 	// TODO: Move to Lib
 	private static void OnUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)

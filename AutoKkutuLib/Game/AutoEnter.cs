@@ -2,6 +2,7 @@
 using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Hangul;
 using Serilog;
+using System.Collections.Specialized;
 using System.Diagnostics;
 
 namespace AutoKkutuLib.Game;
@@ -94,7 +95,8 @@ public class AutoEnter
 	private async Task AutoEnterDelayTask(AutoEnterParameter parameter)
 	{
 		var delay = parameter.RealDelay;
-		delay = (int)(delay - InputStopwatch.ElapsedMilliseconds);
+		delay = Math.Max(delay, (int)(delay - InputStopwatch.ElapsedMilliseconds)); // Failsafe to prevent way-too-fast input
+		Log.Information("Waiting {time}ms.", delay);
 		await Task.Delay(delay);
 
 		if (parameter.CanSimulateInput)

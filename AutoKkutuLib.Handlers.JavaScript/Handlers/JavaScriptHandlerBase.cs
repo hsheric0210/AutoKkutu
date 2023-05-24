@@ -67,9 +67,9 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 		}
 	}
 
-	public override float TurnTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.TurnTime), errorMessage: nameof(TurnTime)), out var time) ? time : 150;
+	public override float TurnTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.TurnTime), errorMessage: nameof(TurnTime)), out var time) && time > 0 ? time : 150;
 
-	public override float RoundTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundTime), errorMessage: nameof(RoundTime)), out var time) ? time : 150;
+	public override float RoundTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundTime), errorMessage: nameof(RoundTime)), out var time) && time > 0 ? time : 150;
 
 	public override string ExampleWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ExampleWord), errorMessage: nameof(ExampleWord)).Trim();
 

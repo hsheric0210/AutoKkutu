@@ -18,7 +18,7 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 
 * README 상단의 Build status 버튼 또는 [이 링크](https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main)을 클릭하여 AppVeyor CI에서 nightly 버전을 다운로드받으실 수 있습니다.
   * 상단의 AppVeyor 링크를 클릭하신 후, ```Artifacts```라는 버튼을 찾아 클릭합니다. 그러면 ```Windows.x64.Release.7z```라는 파일이 보일 것입니다. 이를 클릭하여 다운받으신 후 [반디집](https://kr.bandisoft.com/bandizip/), [7-zip](https://www.7-zip.org/download.html) 또는 [PeaZip](https://peazip.github.io/peazip-64bit.html) 등으로 압축을 풀고 사용하시면 됩니다.
-* 사용중인 운영 체제에 맞는 버전(32비트 또는 64비트)를 다운로드 후, 압축을 풀고, AutoKkutu.exe 파일을 실행시키면 됩니다.
+* 사용중인 운영 체제에 맞는 버전(32비트 또는 64비트)를 다운로드 후, 압축을 풀고, AutoKkutuGui.exe 파일을 실행시키면 됩니다.
   * .NET Framework가 설치되어 있지 않을 경우, 이에 대한 설치 요구 메세지가 뜰 수 있습니다.
 
 ## 메인 창

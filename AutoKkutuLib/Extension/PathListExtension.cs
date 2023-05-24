@@ -12,11 +12,17 @@ public static class PathListExtension
 		if (delayPerChar)
 		{
 			var remain = Math.Max(300, remainingTurnTime);
+			Log.Debug("(TimeFilter) turnTime={time}, clamped={cTime}", remainingTurnTime, remain);
 			PathObject[] arr = qualifiedWordList.Where(po => po!.Content.Length * delay <= remain).ToArray();
 			var word = arr.Length <= wordIndex ? null : arr[wordIndex].Content;
 			if (word == null)
 			{
 				Log.Warning(I18n.TimeFilter_TimeOver, remain);
+
+				PathObject? closest = qualifiedWordList.MinBy(w => w!.Content.Length * delay);
+				if (closest != null)
+					Log.Warning("(TimeFilter) Closest word to the delay: {word} (time: {time})", closest.Content, closest.Content.Length * delay);
+
 				return (null, true);
 			}
 

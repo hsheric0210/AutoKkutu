@@ -118,7 +118,14 @@ public static class StatusUtils
 		window.Dispatcher.Invoke(() =>
 		{
 			window.StatusGrid.Background = new SolidColorBrush(color);
-			window.StatusLabel.Content = string.Format(CultureInfo.CurrentCulture, explain, formatterArgs);
+			try
+			{
+				window.StatusLabel.Content = string.Format(CultureInfo.CurrentCulture, explain, formatterArgs);
+			}
+			catch
+			{
+				window.StatusLabel.Content = explain;
+			}
 			var img = new BitmapImage();
 			img.BeginInit();
 			img.UriSource = new Uri($@"images\{image}.png", UriKind.Relative);

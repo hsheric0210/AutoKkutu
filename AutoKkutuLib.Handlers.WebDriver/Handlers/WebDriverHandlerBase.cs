@@ -152,7 +152,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			try
 			{
-				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time']>[class='graph-bar']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
+				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-turn-time']>[class='graph-bar']")?.Text?.TrimEnd('초'), out var time) && time > 0 ? time : 150;
 			}
 			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 		}
@@ -164,7 +164,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		{
 			try
 			{
-				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time']>[class='graph-bar round-extreme']")?.Text?.TrimEnd('초'), out var time) ? time : 150;
+				return float.TryParse(Browser.FindElementQuery("[class='graph jjo-round-time']>[class='graph-bar round-extreme']")?.Text?.TrimEnd('초'), out var time) && time > 0 ? time : 150;
 			}
 			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 		}
