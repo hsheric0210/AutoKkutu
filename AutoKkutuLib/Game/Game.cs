@@ -55,8 +55,9 @@ public class Game : IGame
 	#endregion
 
 	#region Game state cache fields
-	private readonly int checkgameInterval = 3000;
-	private readonly int ingameInterval = 1;
+	private readonly int idleInterval = 3000;
+	private readonly int intenseInterval = 10;
+	private readonly int primaryInterval = 100;
 	private bool isWatchdogWokeUp;
 	private readonly string[] wordHistoryCache = new string[6];
 	private int roundIndexCache;
@@ -130,11 +131,11 @@ public class Game : IGame
 			if (IsGameStarted)
 			{
 				action();
-				await Task.Delay(ingameInterval, cancelToken);
+				await Task.Delay(intenseInterval, cancelToken);
 			}
 			else
 			{
-				await Task.Delay(checkgameInterval, cancelToken);
+				await Task.Delay(idleInterval, cancelToken);
 			}
 		}, ex => Log.Error(ex, "{0}-watchdog task interrupted.", watchdogName), cancelToken);
 	}
@@ -160,7 +161,7 @@ public class Game : IGame
 			Task.Run(async () => await AssistantWatchdog("Example word", UpdateExample, token));
 			Task.Run(async () => await GameModeWatchdog(token));
 			Task.Run(async () => await AssistantWatchdog("My turn", () => CheckTurn(), token));
-			Task.Run(async () => await PresentedWordGameMode(token));
+			Task.Run(async () => await TypingBattleWatchdog(token));
 
 			Log.Information("Watchdog threads are started.");
 		}
@@ -182,7 +183,7 @@ public class Game : IGame
 		await WatchdogProc(async () =>
 		{
 			CheckGameStarted();
-			await Task.Delay(IsGameStarted ? ingameInterval : checkgameInterval, cancelToken);
+			await Task.Delay(IsGameStarted ? primaryInterval : idleInterval, cancelToken);
 		}, ex => Log.Error(ex, "Primary watchdog task interrupted."), cancelToken);
 	}
 
@@ -191,12 +192,12 @@ public class Game : IGame
 		await WatchdogProc(async () =>
 			{
 				UpdateGameMode();
-				await Task.Delay(checkgameInterval, cancelToken);
+				await Task.Delay(idleInterval, cancelToken);
 			}, ex => Log.Error(ex, "GameMode watchdog task interrupted."), cancelToken);
 	}
 
 	// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
-	private async Task PresentedWordGameMode(CancellationToken cancelToken)
+	private async Task TypingBattleWatchdog(CancellationToken cancelToken)
 	{
 		await WatchdogProc(async () =>
 			{
@@ -204,11 +205,11 @@ public class Game : IGame
 				{
 					if (IsMyTurn)
 						UpdateTypingWord();
-					await Task.Delay(ingameInterval, cancelToken);
+					await Task.Delay(intenseInterval, cancelToken);
 				}
 				else
 				{
-					await Task.Delay(checkgameInterval, cancelToken);
+					await Task.Delay(idleInterval, cancelToken);
 				}
 			}, ex => Log.Error(ex, "Presented-word watchdog task interrupted."), cancelToken);
 	}
@@ -217,11 +218,11 @@ public class Game : IGame
 	#region Game status update
 	private void CheckGameStarted()
 	{
+		handler.RegisterInGameFunctions();
 		if (handler.IsGameInProgress)
 		{
 			if (!IsGameStarted)
 			{
-				handler.RegisterRoundIndexFunction();
 				Log.Debug("New game started; Used word history flushed.");
 				GameStarted?.Invoke(this, EventArgs.Empty);
 				IsGameStarted = true;
@@ -304,9 +305,9 @@ public class Game : IGame
 
 		for (var index = 0; index < 6; index++)
 		{
-			var previousWord = handler.GetWordInHistory(index);
-			if (!string.IsNullOrWhiteSpace(previousWord) && previousWord.Contains('<', StringComparison.Ordinal))
-				tmpWordCache[index] = previousWord[..previousWord.IndexOf('<', StringComparison.Ordinal)].Trim();
+			var history = handler.GetWordInHistory(index);
+			if (!string.IsNullOrWhiteSpace(history) && history.Contains('<', StringComparison.Ordinal))
+				tmpWordCache[index] = history[..history.IndexOf('<', StringComparison.Ordinal)].Trim();
 		}
 
 		for (var index = 0; index < 6; index++)
@@ -399,7 +400,7 @@ public class Game : IGame
 	private void UpdateGameMode()
 	{
 		GameMode gameMode = handler.GameMode;
-		if (gameMode == CurrentGameMode)
+		if (gameMode == GameMode.None || gameMode == CurrentGameMode)
 			return;
 		CurrentGameMode = gameMode;
 		Log.Information("Game mode change detected : {gameMode}", gameMode.GameModeName());

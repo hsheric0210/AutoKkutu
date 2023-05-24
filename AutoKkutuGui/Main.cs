@@ -1,12 +1,12 @@
 ﻿using AutoKkutuLib;
+using AutoKkutuLib.CefSharp;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Handlers;
-using AutoKkutuLib.Handlers.WebDriver.Handlers;
+using AutoKkutuLib.Handlers.JavaScript.Handlers;
 using AutoKkutuLib.Path;
-using AutoKkutuLib.Selenium;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ public static class Main
 
 	public static BrowserBase Browser { get; private set; } = null!;
 
-	public static WebDriverHandlerList Handler { get; private set; } = null!;
+	public static IHandlerList Handler { get; private set; } = null!;
 
 	public static AutoKkutu AutoKkutu
 	{
@@ -38,7 +38,7 @@ public static class Main
 	} = null!;
 
 	/* EVENTS */
-	public static event EventHandler? InitializationStarted;
+	public static event EventHandler? BrowserFrameLoad;
 
 	public static event EventHandler? HandlerRegistered;
 
@@ -72,9 +72,6 @@ public static class Main
 			if (database is null) // Not triggered; because InitializeDatabase calls Application.Exit()
 				return;
 
-			// Initialize UI
-			InitializationStarted?.Invoke(null, EventArgs.Empty);
-
 			AutoKkutu = new AutoKkutu(database);
 
 			AutoKkutu.PathFinder.OnPathUpdated += OnPathUpdated;
@@ -90,6 +87,7 @@ public static class Main
 			InitializationFinished?.Invoke(null, EventArgs.Empty);
 
 			Browser.LoadFrontPage();
+			BrowserFrameLoad?.Invoke(null, EventArgs.Empty);
 		}
 		catch (Exception e)
 		{
@@ -161,12 +159,12 @@ public static class Main
 		Log.Information("Initializing browser");
 
 		// Initialize Browser
-		Browser = new SeleniumBrowser();
+		Browser = new CefSharpBrowser();
 		Browser.PageLoaded += OnPageLoaded;
 		Browser.PageError += OnPageError;
 
-		Handler = new WebDriverHandlerList();
-		Handler.InitDefaultHandlers((SeleniumBrowser)Browser);
+		Handler = new JavaScriptHandlerList();
+		Handler.InitDefaultHandlers(Browser);
 	}
 
 	private static AbstractDatabase? InitializeDatabase()

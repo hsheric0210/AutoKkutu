@@ -1,4 +1,5 @@
-﻿using CefSharp;
+﻿//#define CEF_TEST
+using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
 using System.IO;
@@ -8,30 +9,64 @@ namespace AutoKkutuLib.CefSharp;
 public class CefSharpBrowser : BrowserBase
 {
 	private const string ConfigFile = "CefSharp.xml";
+	private CefConfigDto config;
 	private IWebBrowser browser;
 
 	public override object? BrowserControl => browser;
 
-	public override void LoadFrontPage()
+	public CefSharpBrowser()
 	{
-		Log.Information("Initializing CefSharp");
-
-		var serializer = new XmlSerializer(typeof(CefConfigDto));
-
-		// Default config
-		var config = new CefConfigDto()
+#if CEF_TEST
+		using var settings = new CefSettings
 		{
-			MainPage = "https://kkutu.pink/",
 			LogFile = "CefSharp.log",
-			LogSeverity = LogSeverity.Default,
+			LogSeverity = LogSeverity.Verbose,
+
 			CefCommandLineArgs =
 			{
-				"disable-direct-write=1",
+				{
+					"disable-direct-write",
+					"1"
+				},
 				"disable-gpu",
 				"enable-begin-frame-scheduling"
 			},
 			UserAgent = "Chrome",
 			CachePath = Environment.CurrentDirectory + "\\CefSharp"
+		};
+#else
+		var serializer = new XmlSerializer(typeof(CefConfigDto));
+
+		var dflt = new CefSettings();
+		config = new CefConfigDto()
+		{
+			MainPage = "https://kkutu.pink/",
+			ResourcesDirPath = dflt.ResourcesDirPath,
+			LogFile = "CefSharp.log",
+			LogSeverity = LogSeverity.Default,
+			JavascriptFlags = dflt.JavascriptFlags,
+			PackLoadingDisabled = dflt.PackLoadingDisabled,
+			UserAgentProduct = dflt.UserAgentProduct,
+			UserAgent = dflt.UserAgent,
+			LocalesDirPath = dflt.LocalesDirPath,
+			RemoteDebuggingPort = dflt.RemoteDebuggingPort,
+			WindowlessRenderingEnabled = dflt.WindowlessRenderingEnabled,
+			PersistSessionCookies = dflt.PersistSessionCookies,
+			PersistUserPreferences = dflt.PersistUserPreferences,
+			AcceptLanguageList = dflt.AcceptLanguageList,
+			BackgroundColor = dflt.BackgroundColor,
+			UncaughtExceptionStackSize = dflt.UncaughtExceptionStackSize,
+			Locale = dflt.Locale,
+			IgnoreCertificateErrors = dflt.IgnoreCertificateErrors,
+			UserDataPath = Environment.CurrentDirectory + "\\CefUser",
+			CookieableSchemesList = dflt.CookieableSchemesList,
+			ChromeRuntime = dflt.ChromeRuntime,
+			MultiThreadedMessageLoop = dflt.MultiThreadedMessageLoop,
+			BrowserSubprocessPath = dflt.BrowserSubprocessPath,
+			CachePath = dflt.CachePath,
+			RootCachePath = dflt.RootCachePath,
+			ExternalMessagePump = dflt.ExternalMessagePump,
+			CookieableSchemesExcludeDefaults = dflt.CookieableSchemesExcludeDefaults,
 		};
 
 		if (File.Exists(ConfigFile))
@@ -59,40 +94,58 @@ public class CefSharpBrowser : BrowserBase
 			}
 		}
 
-		using var settings = new CefSettings
-		{
-			ResourcesDirPath = config.ResourcesDirPath,
-			LogFile = config.LogFile,
-			LogSeverity = config.LogSeverity,
-			JavascriptFlags = config.JavascriptFlags,
-			PackLoadingDisabled = config.PackLoadingDisabled,
-			UserAgentProduct = config.UserAgentProduct,
-			LocalesDirPath = config.LocalesDirPath,
-			RemoteDebuggingPort = config.RemoteDebuggingPort,
-			UserAgent = config.UserAgent,
-			WindowlessRenderingEnabled = config.WindowlessRenderingEnabled,
-			PersistSessionCookies = config.PersistSessionCookies,
-			PersistUserPreferences = config.PersistUserPreferences,
-			AcceptLanguageList = config.AcceptLanguageList,
-			BackgroundColor = config.BackgroundColor,
-			UncaughtExceptionStackSize = config.UncaughtExceptionStackSize,
-			Locale = config.Locale,
-			IgnoreCertificateErrors = config.IgnoreCertificateErrors,
-			UserDataPath = config.UserDataPath,
-			CookieableSchemesList = config.CookieableSchemesList,
-			ChromeRuntime = config.ChromeRuntime,
-			MultiThreadedMessageLoop = config.MultiThreadedMessageLoop,
-			BrowserSubprocessPath = config.BrowserSubprocessPath,
-			CachePath = config.CachePath,
-			RootCachePath = config.RootCachePath,
-			ExternalMessagePump = config.ExternalMessagePump,
-			CookieableSchemesExcludeDefaults = config.CookieableSchemesExcludeDefaults
-		};
-		if (!config.GpuAcceleration)
-			settings.DisableGpuAcceleration();
-		foreach (var arg in config.CefCommandLineArgs)
-			settings.CefCommandLineArgs.Add(arg);
-
+		var settings = new CefSettings();
+		if (!string.IsNullOrWhiteSpace(config.ResourcesDirPath))
+			settings.ResourcesDirPath = config.ResourcesDirPath;
+		if (!string.IsNullOrWhiteSpace(config.LogFile))
+			settings.LogFile = config.LogFile;
+		settings.LogSeverity = config.LogSeverity;
+		if (!string.IsNullOrWhiteSpace(config.JavascriptFlags))
+			settings.JavascriptFlags = config.JavascriptFlags;
+		settings.PackLoadingDisabled = config.PackLoadingDisabled;
+		if (!string.IsNullOrWhiteSpace(config.UserAgentProduct))
+			settings.UserAgentProduct = config.UserAgentProduct;
+		if (!string.IsNullOrWhiteSpace(config.LocalesDirPath))
+			settings.LocalesDirPath = config.LocalesDirPath;
+		settings.RemoteDebuggingPort = config.RemoteDebuggingPort;
+		if (!string.IsNullOrWhiteSpace(config.UserAgent))
+			settings.UserAgent = config.UserAgent;
+		settings.WindowlessRenderingEnabled = config.WindowlessRenderingEnabled;
+		settings.PersistSessionCookies = config.PersistSessionCookies;
+		settings.PersistUserPreferences = config.PersistUserPreferences;
+		if (!string.IsNullOrWhiteSpace(config.AcceptLanguageList))
+			settings.AcceptLanguageList = config.AcceptLanguageList;
+		settings.BackgroundColor = config.BackgroundColor;
+		settings.UncaughtExceptionStackSize = config.UncaughtExceptionStackSize;
+		if (!string.IsNullOrWhiteSpace(config.Locale))
+			settings.Locale = config.Locale;
+		settings.IgnoreCertificateErrors = config.IgnoreCertificateErrors;
+		if (!string.IsNullOrWhiteSpace(config.UserDataPath))
+			settings.UserDataPath = config.UserDataPath;
+		if (!string.IsNullOrWhiteSpace(config.CookieableSchemesList))
+			settings.CookieableSchemesList = config.CookieableSchemesList;
+		settings.ChromeRuntime = config.ChromeRuntime;
+		settings.MultiThreadedMessageLoop = config.MultiThreadedMessageLoop;
+		if (!string.IsNullOrWhiteSpace(config.BrowserSubprocessPath))
+			settings.BrowserSubprocessPath = config.BrowserSubprocessPath;
+		if (!string.IsNullOrWhiteSpace(config.CachePath))
+			settings.CachePath = config.CachePath;
+		if (!string.IsNullOrWhiteSpace(config.RootCachePath))
+			settings.RootCachePath = config.RootCachePath;
+		settings.ExternalMessagePump = config.ExternalMessagePump;
+		settings.CookieableSchemesExcludeDefaults = config.CookieableSchemesExcludeDefaults;
+		if (config.CefCommandLineArgs != null)
+			foreach (var arg in config.CefCommandLineArgs)
+			{
+				if (arg.Contains('='))
+				{
+					var pieces = arg.Split('=', 2);
+					settings?.CefCommandLineArgs.Add(pieces[0], pieces[1]);
+				}
+				else
+					settings?.CefCommandLineArgs?.Add(arg);
+			}
+#endif
 		try
 		{
 			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
@@ -103,15 +156,31 @@ public class CefSharpBrowser : BrowserBase
 			Log.Error(ex, "CefSharp initialization exception.");
 		}
 
+		Log.Information("Cef settings applied.");
+	}
+
+	public override void LoadFrontPage()
+	{
+		Log.Information("Initializing CefSharp");
+
 		browser = new ChromiumWebBrowser()
 		{
-			Address = config.MainPage,
+			Address = config?.MainPage ?? "https://www.whatsmyip.org/",
 		};
+		// Prevent getting detected by 'window.CefSharp' property existence checks
+		browser.JavascriptObjectRepository.Settings.JavascriptBindingApiEnabled = false;
+
+		Log.Information("ChromiumWebBrowser instance created.");
+
 		browser.FrameLoadEnd += OnFrameLoadEnd;
 		browser.LoadError += OnLoadError;
 	}
 
-	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args) => PageLoaded?.Invoke(sender, new PageLoadedEventArgs(args.Url));
+	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)
+	{
+		Log.Verbose("CefSharp frame loaded: {url}", args.Url);
+		PageLoaded?.Invoke(sender, new PageLoadedEventArgs(args.Url));
+	}
 
 	public void OnLoadError(object? sender, LoadErrorEventArgs args) => PageError?.Invoke(sender, new PageErrorEventArgs(args.ErrorText, args.FailedUrl));
 

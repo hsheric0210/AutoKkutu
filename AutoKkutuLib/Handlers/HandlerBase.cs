@@ -1,37 +1,59 @@
 ﻿using AutoKkutuLib.Extension;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace AutoKkutuLib.Handlers;
 
 public abstract class HandlerBase
 {
 	#region Frequently-used function names
-	protected const string WriteInputFunc = "WriteInputFunc";
-
-	protected const string ClickSubmitFunc = "ClickSubmitFunc";
-
-	protected const string CurrentRoundIndexFunc = "CurrentRoundIndexFunc";
+	protected enum CommonFunctionNames
+	{
+		None = 0,
+		GameInProgress,
+		UpdateChat,
+		ClickSubmit,
+		RoundIndex,
+		IsMyTurn,
+		PresentedWord,
+		RoundText,
+		UnsupportedWord,
+		GameMode,
+		TurnTime,
+		RoundTime,
+		ExampleWord,
+		MissionChar,
+		WordHistory
+	}
 	#endregion
 
-	private readonly Dictionary<string, string> RegisteredFunctionNames = new();
+	private readonly ConcurrentDictionary<int, string> RegisteredFunctions = new();
 
 	#region Javascript function registration
-	protected void RegisterJSFunction(string funcName, string funcArgs, string funcBody)
-	{
-		if (!RegisteredFunctionNames.ContainsKey(funcName))
-			RegisteredFunctionNames[funcName] = $"jQuery{Random.Shared.GenerateRandomString(37, true)}";
+	protected void RegisterJavaScriptFunction(CommonFunctionNames funcId, string funcArgs, string funcBody) => RegisterJavaScriptFunction((int)funcId, funcArgs, funcBody);
 
-		var realFuncName = RegisteredFunctionNames[funcName];
-		if (Browser.EvaluateJavaScriptBool($"typeof({realFuncName})!='function'")) // check if already registered
+	protected void RegisterJavaScriptFunction(int funcId, string funcArgs, string funcBody)
+	{
+		if (!RegisteredFunctions.TryGetValue(funcId, out var realFuncName))
 		{
-			if (Browser.EvaluateJSAndGetError($"function {realFuncName}({funcArgs}){{{funcBody}}}", out var error))
-				Log.Error("Failed to register JavaScript function {funcName} : {error}", funcName, error);
-			else
-				Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", funcName, realFuncName);
+			realFuncName = $"jQuery_{funcId}_{Random.Shared.GenerateRandomString(37, true)}";
+			RegisteredFunctions[funcId] = realFuncName;
 		}
+
+		Task.Run(() =>
+		{
+			if (Browser.EvaluateJavaScriptBool($"typeof({realFuncName})!='function'")) // check if already registered
+			{
+				if (Browser.EvaluateJSAndGetError($"function {realFuncName}({funcArgs}){{{funcBody}}}", out var error))
+					Log.Error("Failed to register JavaScript function {funcName} : {error}", (CommonFunctionNames)funcId, error);
+				else
+					Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", (CommonFunctionNames)funcId, realFuncName);
+			}
+		});
 	}
 
-	protected string GetRegisteredJSFunctionName(string funcName) => RegisteredFunctionNames[funcName];
+	protected string GetRegisteredJSFunctionName(CommonFunctionNames funcId) => GetRegisteredJSFunctionName((int)funcId);
+	protected string GetRegisteredJSFunctionName(int funcId) => RegisteredFunctions[funcId];
 	#endregion
 
 	public abstract string HandlerName { get; }
@@ -52,6 +74,6 @@ public abstract class HandlerBase
 
 	public abstract void ClickSubmit();
 	public abstract string GetWordInHistory(int index);
-	public virtual void RegisterRoundIndexFunction() { }
+	public virtual void RegisterInGameFunctions() { }
 	public abstract void UpdateChat(string input);
 }

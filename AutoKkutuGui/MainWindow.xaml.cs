@@ -42,7 +42,7 @@ public partial class MainWindow : Window
 		DatabaseEvents.DatabaseImportDone += OnDatabaseImportDone;
 
 		Main.PathListUpdated += OnPathListUpdated;
-		Main.InitializationStarted += OnInitializeStarted;
+		Main.BrowserFrameLoad += OnBrowserFrameLoad;
 		Main.InitializationFinished += OnInitializeFinished;
 		Main.SearchStateChanged += OnSearchStateChanged;
 		Main.StatusMessageChanged += OnStatusMessageChanged;
@@ -65,7 +65,7 @@ public partial class MainWindow : Window
 
 	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.TotalWordList.Select(po => new GuiPathObject(po)));
 
-	private void OnInitializeStarted(object? sender, EventArgs args)
+	private void OnBrowserFrameLoad(object? sender, EventArgs args)
 	{
 		Dispatcher.Invoke(() =>
 		{

@@ -17,15 +17,15 @@ internal class SimpleBypassHandler : WebDriverHandlerBase
 	{
 	}
 
-	public override void UpdateChat(string input)
-	{
-		RegisterJSFunction(WriteInputFunc, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
-		Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
-	}
-
 	public override void ClickSubmit()
 	{
-		RegisterJSFunction(ClickSubmitFunc, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
-		Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
+		Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit)}()");
+	}
+
+	public override void RegisterInGameFunctions()
+	{
+		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
+		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
+		base.RegisterInGameFunctions();
 	}
 }

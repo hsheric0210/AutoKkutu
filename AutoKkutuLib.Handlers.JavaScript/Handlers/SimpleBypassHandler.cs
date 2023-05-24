@@ -1,4 +1,6 @@
-﻿namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
+﻿using Microsoft.Win32.SafeHandles;
+
+namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
 
 internal class SimpleBypassHandler : JavaScriptHandlerBase
 {
@@ -14,15 +16,10 @@ internal class SimpleBypassHandler : JavaScriptHandlerBase
 	{
 	}
 
-	public override void UpdateChat(string input)
+	public override void RegisterInGameFunctions()
 	{
-		RegisterJSFunction(WriteInputFunc, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
-		ExecuteJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
-	}
-
-	public override void ClickSubmit()
-	{
-		RegisterJSFunction(ClickSubmitFunc, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
-		ExecuteJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
+		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
+		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
+		base.RegisterInGameFunctions();
 	}
 }

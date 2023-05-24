@@ -37,7 +37,7 @@ public class CefConfigDto
 	public string UserAgent { get; set; }
 
 	[XmlElement]
-	public bool WindowlessRenderingEnabled { get; set; }
+	public bool WindowlessRenderingEnabled { get; set; } = true;
 
 	[XmlElement]
 	public bool PersistSessionCookies { get; set; }
@@ -93,7 +93,4 @@ public class CefConfigDto
 
 	[XmlElement]
 	public bool CookieableSchemesExcludeDefaults { get; set; }
-
-	[XmlElement]
-	public bool GpuAcceleration { get; set; }
 }

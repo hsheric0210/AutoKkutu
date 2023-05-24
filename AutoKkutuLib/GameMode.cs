@@ -2,6 +2,7 @@
 
 public enum GameMode
 {
+	None = 0,
 	/// <summary>
 	/// 끝말잇기
 	/// </summary>

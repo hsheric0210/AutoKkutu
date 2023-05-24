@@ -10,49 +10,30 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 	protected JavaScriptHandlerBase(BrowserBase browser) => Browser = browser;
 
 	#region Handler implementation
-	protected virtual string CurrentRoundIndexFuncCode => "return Array.from(document.querySelectorAll('#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label')).indexOf(document.querySelector('.rounds-current'));";
+	public override bool IsGameInProgress => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.GameInProgress) + "()", errorMessage: nameof(IsGameInProgress));
 
-	public override bool IsGameInProgress
-	{
-		get
-		{
-			var display = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.display", nameof(IsGameInProgress));
-			var height = EvaluateJS("document.getElementsByClassName('GameBox Product')[0].style.height", nameof(IsGameInProgress));
-			return string.IsNullOrWhiteSpace(display) ? !string.IsNullOrWhiteSpace(height) : !display.Equals("none", StringComparison.OrdinalIgnoreCase);
-		}
-	}
+	public override bool IsMyTurn => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.IsMyTurn) + "()", errorMessage: nameof(IsMyTurn));
 
-	public override bool IsMyTurn
-	{
-		get
-		{
-			var element = EvaluateJS("document.getElementsByClassName('game-input')[0]", nameof(IsMyTurn));
-			if (string.Equals(element, "undefined", StringComparison.Ordinal))
-				return false;
+	public override string PresentedWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.PresentedWord) + "()", errorMessage: nameof(PresentedWord));
 
-			var displayOpt = EvaluateJS("document.getElementsByClassName('game-input')[0].style.display", nameof(IsMyTurn));
-			return !string.IsNullOrWhiteSpace(displayOpt) && !displayOpt.Equals("none", StringComparison.Ordinal);
-		}
-	}
+	public override string RoundText => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundText) + "()", errorMessage: nameof(RoundText));
 
-	public override string PresentedWord => EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(PresentedWord)).Trim();
+	public override int RoundIndex => Browser.EvaluateJavaScriptInt(GetRegisteredJSFunctionName(CommonFunctionNames.RoundIndex) + "()", errorMessage: nameof(RoundIndex));
 
-	public override string RoundText => EvaluateJS("document.getElementsByClassName('rounds-current')[0].textContent", nameof(RoundText)).Trim();
-
-	public override int RoundIndex => EvaluateJSInt($"{GetRegisteredJSFunctionName(CurrentRoundIndexFunc)}()", nameof(RoundIndex));
-
-	public override string UnsupportedWord => EvaluateJS("document.getElementsByClassName('game-fail-text')[0]", "GetUnsupportedWord") != "undefined" ? EvaluateJS("document.getElementsByClassName('game-fail-text')[0].textContent", nameof(UnsupportedWord)).Trim() : "";
+	public override string UnsupportedWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.UnsupportedWord) + "()", errorMessage: nameof(UnsupportedWord));
 
 	public override GameMode GameMode
 	{
 		get
 		{
-			var roomMode = EvaluateJS("document.getElementsByClassName('room-head-mode')[0].textContent", nameof(GameMode));
-			if (!string.IsNullOrWhiteSpace(roomMode))
+			var gameMode = Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.GameMode), errorMessage: nameof(GameMode));
+			if (!string.IsNullOrWhiteSpace(gameMode))
 			{
-				var trimmed = roomMode.Split('/')[0].Trim();
-				switch (trimmed[(trimmed.IndexOf(' ', StringComparison.Ordinal) + 1)..])
+				switch (gameMode)
 				{
+					case "끝말잇기":
+						return GameMode.LastAndFirst;
+
 					case "앞말잇기":
 						return GameMode.FirstAndLast;
 
@@ -78,69 +59,45 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 						return GameMode.TypingBattle;
 				}
 			}
-			return GameMode.LastAndFirst;
+			return GameMode.None;
 		}
 	}
 
-	public override float TurnTime
-	{
-		get
-		{
-			return float.TryParse(EvaluateJS("document.querySelector(\"[class='graph jjo-turn-time']>[class='graph-bar']\").textContent", nameof(TurnTime)).TrimEnd('초'), out var time)
-				? time
-				: 150;
-		}
-	}
+	public override float TurnTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.TurnTime) + "()", errorMessage: nameof(TurnTime)), out var time) ? time : 150;
 
-	public override float RoundTime
-	{
-		get
-		{
-			return float.TryParse(EvaluateJS("document.querySelector(\"[class='graph jjo-round-time']>[class='graph-bar round-extreme']\").textContent", nameof(RoundTime)).TrimEnd('초'), out var time)
-				? time
-				: 150;
-		}
-	}
+	public override float RoundTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundTime) + "()", errorMessage: nameof(RoundTime)), out var time) ? time : 150;
 
-	public override string ExampleWord
-	{
-		get
-		{
-			var innerHTML = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].innerHTML", nameof(ExampleWord));
-			var content = EvaluateJS("document.getElementsByClassName('jjo-display ellipse')[0].textContent", nameof(ExampleWord));
-			return innerHTML.Contains("label", StringComparison.OrdinalIgnoreCase)
-				&& innerHTML.Contains("color", StringComparison.OrdinalIgnoreCase)
-				&& innerHTML.Contains("170,", StringComparison.Ordinal)
-				&& content.Length > 1 ? content : "";
-		}
-	}
+	public override string ExampleWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ExampleWord) + "()", errorMessage: nameof(ExampleWord)).Trim();
 
-	public override string MissionChar => EvaluateJS("document.getElementsByClassName('items')[0].style.opacity", "GetMissionWord") == "1" ? EvaluateJS("document.getElementsByClassName('items')[0].textContent", nameof(MissionChar)).Trim() : "";
+	public override string MissionChar => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.MissionChar) + "()", errorMessage: nameof(MissionChar)).Trim();
 
 	public override string GetWordInHistory(int index)
 	{
 		if (index is < 0 or >= 6)
 			throw new ArgumentOutOfRangeException($"index: {index}");
-		return EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}]", nameof(GetWordInHistory)).Equals("undefined", StringComparison.OrdinalIgnoreCase)
-			? ""
-			: EvaluateJS($"document.getElementsByClassName('ellipse history-item expl-mother')[{index}].innerHTML", nameof(GetWordInHistory));
+		return Browser.EvaluateJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.WordHistory)}({index})", errorMessage: nameof(GetWordInHistory));
 	}
 
-	public override void UpdateChat(string input) => ExecuteJS($"document.querySelector('[id=\"Talk\"]').value='{input?.Trim()}'", nameof(UpdateChat));
+	public override void UpdateChat(string input) => Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.UpdateChat)}('{input}')", errorMessage: nameof(UpdateChat));
 
-	public override void ClickSubmit() => ExecuteJS("document.getElementById('ChatBtn').click()", nameof(ClickSubmit));
+	public override void ClickSubmit() => Browser.ExecuteJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit) + "()", errorMessage: nameof(ClickSubmit));
 	#endregion
-	public override void RegisterRoundIndexFunction() => RegisterJSFunction(CurrentRoundIndexFunc, "", CurrentRoundIndexFuncCode);
 
-	#region Javascript execute methods
-	protected void ExecuteJS(string javaScript, string? moduleName = null) => Browser.ExecuteJavaScript(javaScript, "Error on " + moduleName);
-
-	protected bool EvaluateJSReturnError(string javaScript, out string error) => Browser.EvaluateJSAndGetError(javaScript, out error);
-
-	protected string EvaluateJS(string javaScript, string? moduleName = null, string defaultResult = " ") => Browser.EvaluateJavaScript(javaScript, defaultResult, "Error on " + moduleName);
-
-	protected int EvaluateJSInt(string javaScript, string? moduleName = null, int defaultResult = -1) => Browser.EvaluateJavaScriptInt(javaScript, defaultResult, "Error on " + moduleName);
-
-	protected bool EvaluateJSBool(string javaScript, string? moduleName = null, bool defaultResult = false) => Browser.EvaluateJavaScriptBool(javaScript, defaultResult, "Error on " + moduleName);
-	#endregion
+	public override void RegisterInGameFunctions()
+	{
+		RegisterJavaScriptFunction(CommonFunctionNames.GameInProgress, "", "var s=document.getElementsByClassName('GameBox Product')[0]?.style;return s!=undefined&&(s?.display ? s.display!='none' : s.height!='');");
+		RegisterJavaScriptFunction(CommonFunctionNames.GameMode, "", "let s=document.getElementsByClassName('room-head-mode')[0]?.textContent?.split('/')[0]?.trim();return s?.substring(s.indexOf(' ')+1)||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.PresentedWord, "", "return document.getElementsByClassName('jjo-display ellipse')[0]?.textContent||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.RoundText, "", "return document.getElementsByClassName('rounds-current')[0]?.textContent||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.IsMyTurn, "", "let s=document.getElementsByClassName('game-input')[0];return s!=undefined&&s.style.display!='none'");
+		RegisterJavaScriptFunction(CommonFunctionNames.UnsupportedWord, "", "return document.getElementsByClassName('game-fail-text')[0]?.textContent||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.TurnTime, "", "let s=document.querySelector(\"[class='graph jjo-turn-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.RoundTime, "", "let s=document.querySelector(\"[class='graph jjo-round-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.RoundIndex, "", "return Array.from(document.querySelectorAll('#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label')).indexOf(document.querySelector('.rounds-current'))");
+		RegisterJavaScriptFunction(CommonFunctionNames.ExampleWord, "", "let s=document.getElementsByClassName('jjo-display ellipse')[0];return (s&&s.innerHTML.includes('label')&&s.innerHTML.includes('color')&&s.innerHTML.includes('170,')) ? s.textContent : ''");
+		RegisterJavaScriptFunction(CommonFunctionNames.MissionChar, "", "let s=document.getElementsByClassName('items')[0];return s&&s.style.opacity>=1 ? s.textContent : ''");
+		RegisterJavaScriptFunction(CommonFunctionNames.WordHistory, "i", "return document.getElementsByClassName('ellipse history-item expl-mother')[i]?.innerHTML||''");
+		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "document.querySelector('[id=\"Talk\"]').value=input");
+		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", "document.getElementById('ChatBtn').click()");
+	}
 }

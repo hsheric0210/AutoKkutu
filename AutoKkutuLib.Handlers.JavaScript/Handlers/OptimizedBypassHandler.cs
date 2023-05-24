@@ -8,10 +8,8 @@
 /// 끄투리오는 CSS 대신 HTML Header에 display: none 스타일을 걸어 놓았습니다. 이 경우, 굳이 오버헤드 큰 window.getComputedStyle()를 안 써도 됩니다.
 /// </summary>
 
-internal partial class OptimizedBypassHandler : JavaScriptHandlerBase
+internal class OptimizedBypassHandler : JavaScriptHandlerBase
 {
-	private const string ParseExtraVisibilityStyleTagsFunc = "ParseExtraVisibilityStyleTagsFunc";
-
 	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://kkutu.io/") };
 
 	public override string HandlerName => "Optimized Fake-element Bypassing Handler";
@@ -20,9 +18,10 @@ internal partial class OptimizedBypassHandler : JavaScriptHandlerBase
 	{
 	}
 
-	public override void UpdateChat(string input)
+	public override void RegisterInGameFunctions()
 	{
-		RegisterJSFunction(ParseExtraVisibilityStyleTagsFunc, "", @"
+		//ParseExtraVisibilityStyleTagsFunc
+		RegisterJavaScriptFunction(99, "", @"
 var styles = document.querySelectorAll('style');
 var maxIndex = styles.length, index = 0;
 var visibleStyles = [];
@@ -43,9 +42,9 @@ while (index < maxIndex) {
 return visibleStyles;
 ");
 
-		RegisterJSFunction(WriteInputFunc, "input", $@"
+		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", $@"
 var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
-var visible = {GetRegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
+var visible = {GetRegisteredJSFunctionName(99)}(), nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (talks[index].id == visible[index2]) {{
@@ -56,35 +55,9 @@ for (let index=0;index<maxTalks;index++) {{
 }}
 ");
 
-		EvaluateJS($"{GetRegisteredJSFunctionName(WriteInputFunc)}('{input}')");
-	}
-
-	public override void ClickSubmit()
-	{
-		RegisterJSFunction(ParseExtraVisibilityStyleTagsFunc, "", @"
-var styles = document.querySelectorAll('style');
-var maxIndex = styles.length, index = 0;
-var visibleStyles = [];
-while (index < maxIndex) {
-	var doc = document.implementation.createHTMLDocument(""),
-        styleElement = document.createElement('style');
-
-	styleElement.textContent = styles[index].textContent;
-	doc.body.appendChild(styleElement);
-
-	var css = styleElement.sheet.cssRules[0];
-	if (css.selectorText[0] == '#' && css.style.display != 'none' && css.style.visibility != 'hidden')
-	{
-		visibleStyles.push(css.selectorText.substring(1));
-	}
-	index++;
-}
-return visibleStyles;
-");
-
-		RegisterJSFunction(ClickSubmitFunc, "", $@"
+		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", $@"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
-var visible = {GetRegisteredJSFunctionName(ParseExtraVisibilityStyleTagsFunc)}(), nVisible = visible.length;
+var visible = {GetRegisteredJSFunctionName(99)}(), nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (buttons[index].id == visible[index2]) {{
@@ -94,7 +67,6 @@ for (let index=0;index<maxButtons;index++) {{
 	}}
 }}
 ");
-
-		EvaluateJS($"{GetRegisteredJSFunctionName(ClickSubmitFunc)}()");
+		base.RegisterInGameFunctions();
 	}
 }

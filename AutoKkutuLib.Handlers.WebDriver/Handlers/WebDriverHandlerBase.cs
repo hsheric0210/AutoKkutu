@@ -107,11 +107,14 @@ public abstract class WebDriverHandlerBase : HandlerBase
 			{
 				var roomMode = Browser.FindElementClassName("room-head-mode")?.Text?.Trim();
 				if (string.IsNullOrWhiteSpace(roomMode))
-					return GameMode.LastAndFirst;
+					return GameMode.None;
 
 				var trimmed = roomMode.Split('/')[0].Trim();
 				switch (trimmed[(trimmed.IndexOf(' ', StringComparison.Ordinal) + 1)..])
 				{
+					case "끝말잇기":
+						return GameMode.LastAndFirst;
+
 					case "앞말잇기":
 						return GameMode.FirstAndLast;
 
@@ -136,9 +139,10 @@ public abstract class WebDriverHandlerBase : HandlerBase
 					case "타자 대결":
 						return GameMode.TypingBattle;
 				}
-				return GameMode.LastAndFirst;
+
+				return GameMode.None;
 			}
-			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return GameMode.LastAndFirst; }
+			catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return GameMode.None; }
 		}
 	}
 
@@ -217,7 +221,7 @@ public abstract class WebDriverHandlerBase : HandlerBase
 	{
 		try
 		{
-			Browser.ExecuteJavaScript($"document.getElementById('Talk').value='{input.Trim()}'");
+			Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.UpdateChat)}({input})");
 		}
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { }
 	}
@@ -231,4 +235,6 @@ public abstract class WebDriverHandlerBase : HandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { }
 	}
 	#endregion
+
+	public override void RegisterInGameFunctions() => RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "document.getElementById('Talk').value=input");
 }
