@@ -30,15 +30,21 @@ public static class StatusUtils
 				image = "warning";
 				break;
 
+			case StatusMessage.AllWordTimeOver:
+				color = ColorDefinitions.WarningColor;
+				explain = "이번 턴 시간 {0}ms 안에 입력할 수 있는 단어가 없습니다!";
+				image = "waiting";
+				break;
+
 			case StatusMessage.EndWord:
 				color = ColorDefinitions.ErrorColor;
-				explain = "더 이상 이 턴에 낼 수 있는 단어가 없습니다.";
+				explain = "한방 단어에 당했습니다!";
 				image = "skull";
 				break;
 
 			case StatusMessage.Error:
 				color = ColorDefinitions.ErrorColor;
-				explain = "프로그램에 오류가 발생하였습니다. 자세한 사항은 콘솔을 참조하십시오.";
+				explain = "프로그램에 오류가 발생하였습니다! 자세한 사항은 콘솔을 참조하십시오.";
 				image = "error";
 				break;
 
@@ -143,6 +149,11 @@ public enum StatusMessage
 	/// 단어를 찾을 수 없음
 	/// </summary>
 	NotFound,
+
+	/// <summary>
+	/// 제 시간 안에 입력 가능한 단어 찾을 수 없음
+	/// </summary>
+	AllWordTimeOver,
 
 	/// <summary>
 	/// 오류 발생

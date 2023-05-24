@@ -64,6 +64,7 @@ public class Game : IGame
 	private string unsupportedWordCache = "";
 	private string exampleWordCache = "";
 	private string currentPresentedWordCache = "";
+	private long currentPresentedWordCacheTime = -1;
 	private string lastChat = "";
 	#endregion
 
@@ -151,6 +152,7 @@ public class Game : IGame
 			cancelTokenSrc = new CancellationTokenSource();
 			CancellationToken token = cancelTokenSrc.Token;
 
+			handler.RegisterInGameFunctions();
 			primaryWatchdogTask = new Task(async () => await PrimaryWatchdog(token), token);
 			primaryWatchdogTask.Start();
 
@@ -205,7 +207,7 @@ public class Game : IGame
 				{
 					if (IsMyTurn)
 						UpdateTypingWord();
-					await Task.Delay(intenseInterval, cancelToken);
+					await Task.Delay(primaryInterval, cancelToken);
 				}
 				else
 				{
@@ -390,10 +392,12 @@ public class Game : IGame
 			return;
 		if (word.Contains(' ', StringComparison.Ordinal))
 			word = word[..word.IndexOf(' ', StringComparison.Ordinal)];
-		if (string.Equals(word, currentPresentedWordCache, StringComparison.OrdinalIgnoreCase))
+		var tDelta = Environment.TickCount64 - currentPresentedWordCacheTime;
+		if (string.Equals(word, currentPresentedWordCache, StringComparison.OrdinalIgnoreCase) && tDelta <= 1000)
 			return;
 		currentPresentedWordCache = word;
-		Log.Information("Word detected : {word}", word);
+		currentPresentedWordCacheTime = Environment.TickCount64;
+		Log.Information("Word detected : {word} (delay: {delta})", word, tDelta);
 		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));
 	}
 

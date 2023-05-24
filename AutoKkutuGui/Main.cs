@@ -292,12 +292,12 @@ public static class Main
 			}
 			else
 			{
-				var wordToEnter = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
+				(var wordToEnter, var timeover) = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, AutoKkutu.Game.TurnTimeMillis);
 				if (string.IsNullOrEmpty(wordToEnter))
 				{
 
-					Log.Warning(I18n.Auto_TimeOver);
-					UpdateStatusMessage(StatusMessage.NotFound);
+					Log.Warning(timeover ? I18n.Auto_TimeOver : I18n.Auto_NoMorePathAvailable);
+					UpdateStatusMessage(timeover ? StatusMessage.AllWordTimeOver : StatusMessage.NotFound);
 				}
 				else
 				{

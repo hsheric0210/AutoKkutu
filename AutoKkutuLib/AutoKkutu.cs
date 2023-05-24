@@ -43,7 +43,7 @@ public class AutoKkutu : IDisposable
 	#region AutoEnter event redirects
 	public event EventHandler<InputDelayEventArgs>? InputDelayApply;
 	public event EventHandler<AutoEnterEventArgs>? AutoEntered;
-	public event EventHandler? NoPathAvailable;
+	public event EventHandler<NoPathAvailableEventArgs>? NoPathAvailable;
 	#endregion
 
 	public AutoKkutu(AbstractDatabase db)

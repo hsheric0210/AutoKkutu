@@ -10,17 +10,17 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 	protected JavaScriptHandlerBase(BrowserBase browser) => Browser = browser;
 
 	#region Handler implementation
-	public override bool IsGameInProgress => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.GameInProgress) + "()", errorMessage: nameof(IsGameInProgress));
+	public override bool IsGameInProgress => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.GameInProgress), errorMessage: nameof(IsGameInProgress));
 
-	public override bool IsMyTurn => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.IsMyTurn) + "()", errorMessage: nameof(IsMyTurn));
+	public override bool IsMyTurn => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.IsMyTurn), errorMessage: nameof(IsMyTurn));
 
-	public override string PresentedWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.PresentedWord) + "()", errorMessage: nameof(PresentedWord));
+	public override string PresentedWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.PresentedWord), errorMessage: nameof(PresentedWord));
 
-	public override string RoundText => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundText) + "()", errorMessage: nameof(RoundText));
+	public override string RoundText => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundText), errorMessage: nameof(RoundText));
 
-	public override int RoundIndex => Browser.EvaluateJavaScriptInt(GetRegisteredJSFunctionName(CommonFunctionNames.RoundIndex) + "()", errorMessage: nameof(RoundIndex));
+	public override int RoundIndex => Browser.EvaluateJavaScriptInt(GetRegisteredJSFunctionName(CommonFunctionNames.RoundIndex), errorMessage: nameof(RoundIndex));
 
-	public override string UnsupportedWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.UnsupportedWord) + "()", errorMessage: nameof(UnsupportedWord));
+	public override string UnsupportedWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.UnsupportedWord), errorMessage: nameof(UnsupportedWord));
 
 	public override GameMode GameMode
 	{
@@ -57,30 +57,34 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 
 					case "타자 대결":
 						return GameMode.TypingBattle;
+
+					default:
+						Log.Warning("Unsupported game mode: {gameMode}", gameMode);
+						break;
 				}
 			}
 			return GameMode.None;
 		}
 	}
 
-	public override float TurnTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.TurnTime) + "()", errorMessage: nameof(TurnTime)), out var time) ? time : 150;
+	public override float TurnTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.TurnTime), errorMessage: nameof(TurnTime)), out var time) ? time : 150;
 
-	public override float RoundTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundTime) + "()", errorMessage: nameof(RoundTime)), out var time) ? time : 150;
+	public override float RoundTime => float.TryParse(Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.RoundTime), errorMessage: nameof(RoundTime)), out var time) ? time : 150;
 
-	public override string ExampleWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ExampleWord) + "()", errorMessage: nameof(ExampleWord)).Trim();
+	public override string ExampleWord => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ExampleWord), errorMessage: nameof(ExampleWord)).Trim();
 
-	public override string MissionChar => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.MissionChar) + "()", errorMessage: nameof(MissionChar)).Trim();
+	public override string MissionChar => Browser.EvaluateJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.MissionChar), errorMessage: nameof(MissionChar)).Trim();
 
 	public override string GetWordInHistory(int index)
 	{
 		if (index is < 0 or >= 6)
 			throw new ArgumentOutOfRangeException($"index: {index}");
-		return Browser.EvaluateJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.WordHistory)}({index})", errorMessage: nameof(GetWordInHistory));
+		return Browser.EvaluateJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.WordHistory, false)}({index})", errorMessage: nameof(GetWordInHistory));
 	}
 
-	public override void UpdateChat(string input) => Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.UpdateChat)}('{input}')", errorMessage: nameof(UpdateChat));
+	public override void UpdateChat(string input) => Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.UpdateChat, false)}('{input}')", errorMessage: nameof(UpdateChat));
 
-	public override void ClickSubmit() => Browser.ExecuteJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit) + "()", errorMessage: nameof(ClickSubmit));
+	public override void ClickSubmit() => Browser.ExecuteJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit), errorMessage: nameof(ClickSubmit));
 	#endregion
 
 	public override void RegisterInGameFunctions()

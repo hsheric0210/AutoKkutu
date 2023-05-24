@@ -44,7 +44,7 @@ return visibleStyles;
 
 		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", $@"
 var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
-var visible = {GetRegisteredJSFunctionName(99)}(), nVisible = visible.length;
+var visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (talks[index].id == visible[index2]) {{
@@ -57,7 +57,7 @@ for (let index=0;index<maxTalks;index++) {{
 
 		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", $@"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
-var visible = {GetRegisteredJSFunctionName(99)}(), nVisible = visible.length;
+var visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (buttons[index].id == visible[index2]) {{

@@ -36,7 +36,7 @@ public abstract class HandlerBase
 	{
 		if (!RegisteredFunctions.TryGetValue(funcId, out var realFuncName))
 		{
-			realFuncName = $"jQuery_{funcId}_{Random.Shared.GenerateRandomString(37, true)}";
+			realFuncName = $"jQuery{Random.Shared.NextInt64()}{Random.Shared.NextInt64()}";
 			RegisteredFunctions[funcId] = realFuncName;
 		}
 
@@ -52,8 +52,8 @@ public abstract class HandlerBase
 		});
 	}
 
-	protected string GetRegisteredJSFunctionName(CommonFunctionNames funcId) => GetRegisteredJSFunctionName((int)funcId);
-	protected string GetRegisteredJSFunctionName(int funcId) => RegisteredFunctions[funcId];
+	protected string GetRegisteredJSFunctionName(CommonFunctionNames funcId, bool appendParentheses = true) => GetRegisteredJSFunctionName((int)funcId, appendParentheses);
+	protected string GetRegisteredJSFunctionName(int funcId, bool appendParentheses = true) => RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
 	#endregion
 
 	public abstract string HandlerName { get; }

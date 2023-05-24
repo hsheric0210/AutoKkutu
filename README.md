@@ -45,8 +45,7 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 
 1. :+1: 전반적인 자동 반응 속도가 빠릅니다.
 2. :+1: 핸들러 코드가 비교적 최적화되어 있습니다.
-3. :-1: 구글 로그인 시, 약간의 꼼수가 필요합니다.
-4. :-1: CefSharp에 메모리 누수 이슈가 있습니다.
+3. :-1: 구글 로그인 시, 약간의 꼼수가 필요합니다. (User-Agent 변경)
 
 ### 웹 드라이버: Selenium + UndetectedChromeDriver
 

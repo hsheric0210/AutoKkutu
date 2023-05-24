@@ -47,6 +47,7 @@ public class PathFinder
 			PresentedWord word = parameter.Word;
 			if (nodeManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || nodeManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
 			{
+				Log.Warning("End node: {node1}, {node2}", word.Content, word.Substitution);
 				// 진퇴양난
 				Log.Warning(I18n.PathFinderFailed_Endword);
 				// AutoKkutuMain.ResetPathList();

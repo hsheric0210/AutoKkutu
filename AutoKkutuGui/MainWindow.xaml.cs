@@ -57,7 +57,7 @@ public partial class MainWindow : Window
 
 	private void OnEnterDelaying(object? sender, InputDelayEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
 
-	private void OnPathNotFound(object? sender, EventArgs args) => this.UpdateStatusMessage(StatusMessage.NotFound);
+	private void OnPathNotFound(object? sender, NoPathAvailableEventArgs args) => this.UpdateStatusMessage(args.TimeOver ? StatusMessage.AllWordTimeOver : StatusMessage.NotFound, args.RemainingTurnTime);
 
 	private void OnAutoEntered(object? sender, AutoEnterEventArgs args) => this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
 

@@ -11,7 +11,7 @@ public class AutoEnter
 	#region Events
 	public event EventHandler<InputDelayEventArgs>? InputDelayApply;
 	public event EventHandler<AutoEnterEventArgs>? AutoEntered;
-	public event EventHandler? NoPathAvailable;
+	public event EventHandler<NoPathAvailableEventArgs>? NoPathAvailable;
 	#endregion
 
 	public static Stopwatch InputStopwatch
@@ -62,11 +62,11 @@ public class AutoEnter
 
 		try
 		{
-			var content = availablePaths.GetWordByIndex(parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
-			if (content is null)
+			(var content, var timeover) = availablePaths.GetWordByIndex(parameter.DelayPerCharEnabled, parameter.DelayInMillis, remainingTurnTime, parameter.WordIndex);
+			if (string.IsNullOrEmpty(content))
 			{
 				Log.Warning(I18n.Main_NoMorePathAvailable);
-				NoPathAvailable?.Invoke(this, EventArgs.Empty);
+				NoPathAvailable?.Invoke(this, new NoPathAvailableEventArgs(timeover, remainingTurnTime));
 				return;
 			}
 
@@ -93,7 +93,9 @@ public class AutoEnter
 	#region AutoEnter delay task proc.
 	private async Task AutoEnterDelayTask(AutoEnterParameter parameter)
 	{
-		await Task.Delay(parameter.RealDelay);
+		var delay = parameter.RealDelay;
+		delay = (int)(delay - InputStopwatch.ElapsedMilliseconds);
+		await Task.Delay(delay);
 
 		if (parameter.CanSimulateInput)
 		{
