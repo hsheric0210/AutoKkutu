@@ -18,10 +18,10 @@ internal class OptimizedBypassHandler : JavaScriptHandlerBase
 	{
 	}
 
-	public override void RegisterInGameFunctions()
+	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		//ParseExtraVisibilityStyleTagsFunc
-		RegisterJavaScriptFunction(99, "", @"
+		RegisterJavaScriptFunction(alreadyRegistered, 99, "", @"
 var styles = document.querySelectorAll('style');
 var maxIndex = styles.length, index = 0;
 var visibleStyles = [];
@@ -42,7 +42,7 @@ while (index < maxIndex) {
 return visibleStyles;
 ");
 
-		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", $@"
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", $@"
 var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
 var visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
@@ -55,7 +55,7 @@ for (let index=0;index<maxTalks;index++) {{
 }}
 ");
 
-		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", $@"
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ClickSubmit, "", $@"
 var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
 var visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{
@@ -67,6 +67,6 @@ for (let index=0;index<maxButtons;index++) {{
 	}}
 }}
 ");
-		base.RegisterInGameFunctions();
+		base.RegisterInGameFunctions(alreadyRegistered);
 	}
 }

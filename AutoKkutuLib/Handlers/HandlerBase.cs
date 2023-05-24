@@ -7,7 +7,7 @@ namespace AutoKkutuLib.Handlers;
 public abstract class HandlerBase
 {
 	#region Frequently-used function names
-	protected enum CommonFunctionNames
+	public enum CommonFunctionNames
 	{
 		None = 0,
 		GameInProgress,
@@ -30,13 +30,24 @@ public abstract class HandlerBase
 	private readonly ConcurrentDictionary<int, string> RegisteredFunctions = new();
 
 	#region Javascript function registration
+	protected void RegisterJavaScriptFunction(ISet<int> alreadyRegistered, CommonFunctionNames funcId, string funcArgs, string funcBody) => RegisterJavaScriptFunction(alreadyRegistered, (int)funcId, funcArgs, funcBody);
+
 	protected void RegisterJavaScriptFunction(CommonFunctionNames funcId, string funcArgs, string funcBody) => RegisterJavaScriptFunction((int)funcId, funcArgs, funcBody);
+
+	protected void RegisterJavaScriptFunction(ISet<int> alreadyRegistered, int funcId, string funcArgs, string funcBody)
+	{
+		if (!alreadyRegistered.Contains(funcId))
+		{
+			RegisterJavaScriptFunction(funcId, funcArgs, funcBody);
+			alreadyRegistered.Add(funcId);
+		}
+	}
 
 	protected void RegisterJavaScriptFunction(int funcId, string funcArgs, string funcBody)
 	{
 		if (!RegisteredFunctions.TryGetValue(funcId, out var realFuncName))
 		{
-			realFuncName = $"jQuery{Random.Shared.NextInt64()}{Random.Shared.NextInt64()}";
+			realFuncName = $"jQuery{funcId}{Random.Shared.NextInt64()}";
 			RegisteredFunctions[funcId] = realFuncName;
 		}
 
@@ -74,6 +85,6 @@ public abstract class HandlerBase
 
 	public abstract void ClickSubmit();
 	public abstract string GetWordInHistory(int index);
-	public virtual void RegisterInGameFunctions() { }
+	public virtual void RegisterInGameFunctions(ISet<int> alreadyRegistered) { }
 	public abstract void UpdateChat(string input);
 }

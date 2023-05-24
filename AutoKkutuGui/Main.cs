@@ -412,7 +412,10 @@ public static class Main
 				GameMode gm = AutoKkutu.Game.CurrentGameMode;
 				var node = gm.ConvertWordToTailNode(word);
 				if (!string.IsNullOrWhiteSpace(node))
+				{
+					Log.Information("New end node: {node}", node);
 					AutoKkutu.PathFilter.NewEndPaths.Add((gm, node));
+				}
 			}
 			Log.Warning(I18n.Main_UnsupportedWord_Existent, word);
 		}

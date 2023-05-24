@@ -22,10 +22,10 @@ internal class SimpleBypassHandler : WebDriverHandlerBase
 		Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit)}()");
 	}
 
-	public override void RegisterInGameFunctions()
+	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
-		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
-		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
-		base.RegisterInGameFunctions();
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ClickSubmit, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
+		base.RegisterInGameFunctions(alreadyRegistered);
 	}
 }

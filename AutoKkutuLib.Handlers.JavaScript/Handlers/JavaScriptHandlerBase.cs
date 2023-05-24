@@ -87,21 +87,21 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 	public override void ClickSubmit() => Browser.ExecuteJavaScript(GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit), errorMessage: nameof(ClickSubmit));
 	#endregion
 
-	public override void RegisterInGameFunctions()
+	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
-		RegisterJavaScriptFunction(CommonFunctionNames.GameInProgress, "", "var s=document.getElementsByClassName('GameBox Product')[0]?.style;return s!=undefined&&(s?.display ? s.display!='none' : s.height!='');");
-		RegisterJavaScriptFunction(CommonFunctionNames.GameMode, "", "let s=document.getElementsByClassName('room-head-mode')[0]?.textContent?.split('/')[0]?.trim();return s?.substring(s.indexOf(' ')+1)||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.PresentedWord, "", "return document.getElementsByClassName('jjo-display ellipse')[0]?.textContent||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.RoundText, "", "return document.getElementsByClassName('rounds-current')[0]?.textContent||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.IsMyTurn, "", "let s=document.getElementsByClassName('game-input')[0];return s!=undefined&&s.style.display!='none'");
-		RegisterJavaScriptFunction(CommonFunctionNames.UnsupportedWord, "", "return document.getElementsByClassName('game-fail-text')[0]?.textContent||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.TurnTime, "", "let s=document.querySelector(\"[class='graph jjo-turn-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.RoundTime, "", "let s=document.querySelector(\"[class='graph jjo-round-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.RoundIndex, "", "return Array.from(document.querySelectorAll('#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label')).indexOf(document.querySelector('.rounds-current'))");
-		RegisterJavaScriptFunction(CommonFunctionNames.ExampleWord, "", "let s=document.getElementsByClassName('jjo-display ellipse')[0];return (s&&s.innerHTML.includes('label')&&s.innerHTML.includes('color')&&s.innerHTML.includes('170,')) ? s.textContent : ''");
-		RegisterJavaScriptFunction(CommonFunctionNames.MissionChar, "", "let s=document.getElementsByClassName('items')[0];return s&&s.style.opacity>=1 ? s.textContent : ''");
-		RegisterJavaScriptFunction(CommonFunctionNames.WordHistory, "i", "return document.getElementsByClassName('ellipse history-item expl-mother')[i]?.innerHTML||''");
-		RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "document.querySelector('[id=\"Talk\"]').value=input");
-		RegisterJavaScriptFunction(CommonFunctionNames.ClickSubmit, "", "document.getElementById('ChatBtn').click()");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.GameInProgress, "", "var s=document.getElementsByClassName('GameBox Product')[0]?.style;return s!=undefined&&(s?.display ? s.display!='none' : s.height!='');");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.GameMode, "", "let s=document.getElementsByClassName('room-head-mode')[0]?.textContent?.split('/')[0]?.trim();return s?.substring(s.indexOf(' ')+1)||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.PresentedWord, "", "return document.getElementsByClassName('jjo-display ellipse')[0]?.textContent||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.RoundText, "", "return document.getElementsByClassName('rounds-current')[0]?.textContent||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.IsMyTurn, "", "let s=document.getElementsByClassName('game-input')[0];return s!=undefined&&s.style.display!='none'");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UnsupportedWord, "", "return document.getElementsByClassName('game-fail-text')[0]?.textContent||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.TurnTime, "", "let s=document.querySelector(\"[class='graph jjo-turn-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.RoundTime, "", "let s=document.querySelector(\"[class='graph jjo-round-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.RoundIndex, "", "return Array.from(document.querySelectorAll('#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label')).indexOf(document.querySelector('.rounds-current'))");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ExampleWord, "", "let s=document.getElementsByClassName('jjo-display ellipse')[0];return (s&&s.innerHTML.includes('label')&&s.innerHTML.includes('color')&&s.innerHTML.includes('170,')) ? s.textContent : ''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.MissionChar, "", "let s=document.getElementsByClassName('items')[0];return s&&s.style.opacity>=1 ? s.textContent : ''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.WordHistory, "i", "return document.getElementsByClassName('ellipse history-item expl-mother')[i]?.innerHTML||''");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", "document.querySelector('[id=\"Talk\"]').value=input");
+		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ClickSubmit, "", "document.getElementById('ChatBtn').click()");
 	}
 }

@@ -19,7 +19,7 @@ namespace AutoKkutuGui;
 
 public partial class MainWindow : Window
 {
-	public const string VERSION = "beta-1.1";
+	public const string VERSION = "beta-1.2";
 
 	// Succeed KKutu-Helper Release v5.6.8500
 	private const string TITLE = "AutoKkutu - Improved KKutu-Helper";

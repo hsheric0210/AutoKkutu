@@ -152,7 +152,7 @@ public class Game : IGame
 			cancelTokenSrc = new CancellationTokenSource();
 			CancellationToken token = cancelTokenSrc.Token;
 
-			handler.RegisterInGameFunctions();
+			handler.RegisterInGameFunctions(new HashSet<int>());
 			primaryWatchdogTask = new Task(async () => await PrimaryWatchdog(token), token);
 			primaryWatchdogTask.Start();
 
@@ -220,7 +220,7 @@ public class Game : IGame
 	#region Game status update
 	private void CheckGameStarted()
 	{
-		handler.RegisterInGameFunctions();
+		handler.RegisterInGameFunctions(new HashSet<int>());
 		if (handler.IsGameInProgress)
 		{
 			if (!IsGameStarted)

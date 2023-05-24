@@ -236,5 +236,5 @@ public abstract class WebDriverHandlerBase : HandlerBase
 	}
 	#endregion
 
-	public override void RegisterInGameFunctions() => RegisterJavaScriptFunction(CommonFunctionNames.UpdateChat, "input", "document.getElementById('Talk').value=input");
+	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered) => RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", "document.getElementById('Talk').value=input");
 }
