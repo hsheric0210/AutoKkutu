@@ -368,7 +368,7 @@
     <comment>0: 단어 갯수</comment>
   </data>
   <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
-    <value>{1}개 중에서 {0}개의 단어가 추가되었고, {3}개 중에서 {2}개의 단어가 삭제되었습니다.</value>
+    <value>{1}개 중에서 {0}개의 단어가 추가되었고, {3}개 중에서 {2}개의 단어가 삭제되었으며, 한방 단어 노드 {5}개 중에서 {4}가 추가되었습니다.</value>
     <comment>0: 실제로 추가된 단어 갯수, 1: 추가할 단어 갯수, 2: 실제로 제거된 단어 갯수, 3: 제거할 단어 갯수</comment>
   </data>
   <data name="PathFinder_FindPath" xml:space="preserve">

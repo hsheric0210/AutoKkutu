@@ -5,6 +5,7 @@ using AutoKkutuLib.Node;
 using AutoKkutuLib.Path;
 using Serilog;
 using System.Globalization;
+using System.Xml.Linq;
 
 namespace AutoKkutuLib;
 public class DbUpdateTask
@@ -26,27 +27,10 @@ public class DbUpdateTask
 
 	public string Execute()
 	{
-		if (specialPathList.NewEndPaths.Count > 0)
-		{
-			var count = 0;
-			foreach ((GameMode gm, string node) pair in specialPathList.NewEndPaths)
-			{
-				try
-				{
-					if (dbConnection.Query.AddNode(pair.gm.GetEndWordListTableName()).Execute(pair.node))
-						count++;
-				}
-				catch (Exception ex)
-				{
-					Log.Error(ex, "Error adding {0} end-node: {1}.", pair.gm, pair.node);
-				}
-			}
-			Log.Information("Added {0} end-nodes.", count);
-		}
-
 		Log.Debug(I18n.PathFinder_AutoDBUpdate);
 		var AddQueueCount = specialPathList.NewPaths.Count;
 		var RemoveQueueCount = specialPathList.InexistentPaths.Count;
+		var EndNodeQueueCount = specialPathList.NewEndPaths.Count;
 		if (AddQueueCount + RemoveQueueCount == 0)
 			Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
 		else
@@ -57,7 +41,10 @@ public class DbUpdateTask
 			Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
 
 			var RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
-			var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount);
+
+			var EndNodeSuccessfulCount = AddEndNodes(CopyPathList(specialPathList.NewEndPaths));
+
+			var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount, EndNodeQueueCount, EndNodeSuccessfulCount);
 
 			Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
 			return result;
@@ -66,9 +53,9 @@ public class DbUpdateTask
 		return null;
 	}
 
-	private ICollection<string> CopyPathList(ICollection<string> pathList)
+	private ICollection<T> CopyPathList<T>(ICollection<T> pathList)
 	{
-		var copy = new List<string>(pathList);
+		var copy = new List<T>(pathList);
 		pathList.Clear();
 		return copy;
 	}
@@ -114,6 +101,45 @@ public class DbUpdateTask
 				Log.Error(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
 			}
 		}
+		return count;
+	}
+
+	private int AddEndNodes(ICollection<(GameMode, string)> nodeMap)
+	{
+		if (nodeMap.Count == 0)
+			return 0;
+
+		var dict = new Dictionary<GameMode, ICollection<string>>();
+		foreach ((GameMode gm, var nodeList) in nodeMap)
+		{
+			if (!dict.TryGetValue(gm, out ICollection<string>? list))
+				dict.Add(gm, list = new List<string>());
+			list.Add(nodeList);
+		}
+
+		var count = 0;
+		foreach ((GameMode gm, ICollection<string> nodeList) in dict)
+		{
+			NodeAdditionQuery query = dbConnection.Query.AddNode(gm.GetEndWordListTableName());
+			foreach (var node in nodeList)
+			{
+				try
+				{
+					Log.Debug("Trying to add {0} end-node {1} to the database.", gm, node);
+					if (query.Execute(node))
+					{
+						Log.Information("Added {0} end-node {1} to the database.", gm, node);
+						count++;
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Error(ex, "Error adding {0} end-node: {1}.", gm, node);
+				}
+			}
+		}
+
+		Log.Information("Added {0} end-nodes.", count);
 
 		return count;
 	}

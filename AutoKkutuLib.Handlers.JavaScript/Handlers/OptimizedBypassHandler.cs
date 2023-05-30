@@ -10,7 +10,7 @@
 
 internal class OptimizedBypassHandler : JavaScriptHandlerBase
 {
-	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://kkutu.io/") };
+	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] { new Uri("https://kkutu.io/") }; // 여기는 jjo-display도 페이크 만듦 + 100ms 이내에 4글자 이상 입력 시 detect
 
 	public override string HandlerName => "Optimized Fake-element Bypassing Handler";
 
@@ -22,20 +22,23 @@ internal class OptimizedBypassHandler : JavaScriptHandlerBase
 	{
 		//ParseExtraVisibilityStyleTagsFunc
 		RegisterJavaScriptFunction(alreadyRegistered, 99, "", @"
-var styles = document.querySelectorAll('style');
-var maxIndex = styles.length, index = 0;
-var visibleStyles = [];
+let styles = document.querySelectorAll('style');
+let maxIndex = styles.length, index = 0;
+let visibleStyles = [];
 while (index < maxIndex) {
-	var doc = document.implementation.createHTMLDocument(""),
-        styleElement = document.createElement('style');
-
-	styleElement.textContent = styles[index].textContent;
-	doc.body.appendChild(styleElement);
-
-	var css = styleElement.sheet.cssRules[0];
-	if (css.selectorText[0] == '#' && css.style.display != 'none' && css.style.visibility != 'hidden')
+	let doc = document.implementation.createHTMLDocument('');
+	let styleElement = document.createElement('style');
+	let content = styles[index]?.textContent;
+	if (content)
 	{
-		visibleStyles.push(css.selectorText.substring(1));
+		styleElement.textContent = content;
+		doc.body.appendChild(styleElement);
+
+		let css = styleElement.sheet.cssRules[0];
+		if (css && css.selectorText[0] == '#' && css.style.display != 'none' && css.style.visibility != 'hidden')
+		{
+			visibleStyles.push(css.selectorText.substring(1));
+		}
 	}
 	index++;
 }
@@ -43,8 +46,8 @@ return visibleStyles;
 ");
 
 		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", $@"
-var talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
-var visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
+let talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
+let visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (talks[index].id == visible[index2]) {{
@@ -56,8 +59,8 @@ for (let index=0;index<maxTalks;index++) {{
 ");
 
 		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ClickSubmit, "", $@"
-var buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
-var visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
+let buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
+let visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (buttons[index].id == visible[index2]) {{

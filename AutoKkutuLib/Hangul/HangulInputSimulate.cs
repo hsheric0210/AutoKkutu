@@ -64,7 +64,6 @@ public static class HangulInputSimulate
 	private static string CombineSebeol(string str, JamoType appendCharType, char charToAppend, HangulSplitted lastSplit)
 	{
 		var result = charToAppend;
-		var isFull = lastSplit.IsFull;
 		switch (appendCharType)
 		{
 			case JamoType.Initial:
@@ -102,6 +101,6 @@ public static class HangulInputSimulate
 					})).Merge();
 				return str[..^1] + result.ToString();
 		}
-		return (isFull ? str : str[..^1]) + result.ToString();
+		return (appendCharType == JamoType.Initial ? str : str[..^1]) + result.ToString();
 	}
 }

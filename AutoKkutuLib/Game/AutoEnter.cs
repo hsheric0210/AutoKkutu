@@ -95,8 +95,9 @@ public class AutoEnter
 	private async Task AutoEnterDelayTask(AutoEnterParameter parameter)
 	{
 		var delay = parameter.RealDelay;
-		delay = Math.Max(delay, (int)(delay - InputStopwatch.ElapsedMilliseconds)); // Failsafe to prevent way-too-fast input
-		Log.Information("Waiting {time}ms.", delay);
+		var delayBetweenInput = (int)(delay - InputStopwatch.ElapsedMilliseconds);
+		delay = Math.Max(delay, delayBetweenInput); // Failsafe to prevent way-too-fast input
+		Log.Information("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", parameter.RealDelay, delayBetweenInput, delay);
 		await Task.Delay(delay);
 
 		if (parameter.CanSimulateInput)

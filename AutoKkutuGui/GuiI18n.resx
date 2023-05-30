@@ -387,7 +387,7 @@
     <comment>0: Element count</comment>
   </data>
   <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
-    <value>{0} of {1} added, {2} of {3} removed.</value>
+    <value>{0} of {1} word(s) added, {2} of {3} word(s) removed, {4} of {5} end-node(s) added.</value>
     <comment>0: Added path count, 1: New path count, 2: Removed path count, 3: Inexistent path count</comment>
   </data>
   <data name="PathFinder_FindPath" xml:space="preserve">

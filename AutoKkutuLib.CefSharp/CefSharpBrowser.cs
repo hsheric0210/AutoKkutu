@@ -1,4 +1,5 @@
-﻿//#define CEF_TEST
+﻿using AutoKkutuLib.CefSharp.Properties;
+using AutoKkutuLib.Extension;
 using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
@@ -10,31 +11,12 @@ public class CefSharpBrowser : BrowserBase
 {
 	private const string ConfigFile = "CefSharp.xml";
 	private CefConfigDto config;
-	private IWebBrowser browser;
+	private ChromiumWebBrowser browser;
 
 	public override object? BrowserControl => browser;
 
 	public CefSharpBrowser()
 	{
-#if CEF_TEST
-		using var settings = new CefSettings
-		{
-			LogFile = "CefSharp.log",
-			LogSeverity = LogSeverity.Verbose,
-
-			CefCommandLineArgs =
-			{
-				{
-					"disable-direct-write",
-					"1"
-				},
-				"disable-gpu",
-				"enable-begin-frame-scheduling"
-			},
-			UserAgent = "Chrome",
-			CachePath = Environment.CurrentDirectory + "\\CefSharp"
-		};
-#else
 		var serializer = new XmlSerializer(typeof(CefConfigDto));
 
 		var dflt = new CefSettings();
@@ -145,7 +127,7 @@ public class CefSharpBrowser : BrowserBase
 				else
 					settings?.CefCommandLineArgs?.Add(arg);
 			}
-#endif
+
 		try
 		{
 			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
@@ -174,6 +156,17 @@ public class CefSharpBrowser : BrowserBase
 
 		browser.FrameLoadEnd += OnFrameLoadEnd;
 		browser.LoadError += OnLoadError;
+		browser.FrameLoadStart += OnFrameLoadStart;
+	}
+
+	public void OnFrameLoadStart(object? sender, FrameLoadStartEventArgs args)
+	{
+		Log.Information("Injecting wsHook: {url}", args.Url);
+		var random = "jQuery" + Random.Shared.NextInt64();
+		Log.Information("wsHook func name: {name}", random);
+		browser.ExecuteScriptAsync(Resources.wsHookObf.Replace("%wsHook%", random), false);
+		browser.ExecuteScriptAsync($"{random}.before=(function(data,url,ws){{console.log('send:'+data);return data;}});", false);
+		browser.ExecuteScriptAsync($"{random}.after=(function(data,url,ws){{console.log('recv:'+data.data);return data;}});", false);
 	}
 
 	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)

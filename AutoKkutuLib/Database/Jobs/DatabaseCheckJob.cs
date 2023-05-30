@@ -58,7 +58,7 @@ public class DatabaseCheckJob
 				{
 					currentElementIndex++;
 					var word = element.Word;
-					Log.Information("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
+					//Log.Information("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
 
 					// Check word validity
 					if (IsInvalid(word))
@@ -124,7 +124,7 @@ public class DatabaseCheckJob
 		var correctFlagsInt = (int)correctFlags;
 		if (correctFlagsInt != currentFlags)
 		{
-			Log.Information("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, currentFlags, correctFlags);
+			Log.Information("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, correctFlags);
 			correction.Add(word, correctFlagsInt);
 		}
 	}

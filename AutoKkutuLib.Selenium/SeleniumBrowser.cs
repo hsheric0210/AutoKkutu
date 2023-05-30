@@ -65,6 +65,10 @@ public class SeleniumBrowser : BrowserBase
 
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.Url = config.MainPage;
+		//driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
+		//{
+		//	["source"] = 
+		//})
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}
 

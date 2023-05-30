@@ -637,7 +637,7 @@ namespace AutoKkutuGui {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} of {1} added, {2} of {3} removed..
+        ///   Looks up a localized string similar to {0} of {1} word(s) added, {2} of {3} word(s) removed, {4} of {5} end-node(s) added..
         /// </summary>
         public static string PathFinder_AutoDBUpdate_Result {
             get {

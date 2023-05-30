@@ -2,8 +2,6 @@
 
 public sealed record HangulSplitted(bool IsHangul, char? InitialConsonant = null, char? Medial = null, char FinalConsonant = ' ')
 {
-	public bool IsFull => InitialConsonant is not null && Medial is not null;
-
 	public IList<(JamoType, char)> Serialize()
 	{
 		var enumerable = new List<(JamoType, char)>(3);

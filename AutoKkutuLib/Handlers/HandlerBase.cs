@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Extension;
 using Serilog;
+using System;
 using System.Collections.Concurrent;
 
 namespace AutoKkutuLib.Handlers;
@@ -45,11 +46,7 @@ public abstract class HandlerBase
 
 	protected void RegisterJavaScriptFunction(int funcId, string funcArgs, string funcBody)
 	{
-		if (!RegisteredFunctions.TryGetValue(funcId, out var realFuncName))
-		{
-			realFuncName = $"jQuery{funcId}{Random.Shared.NextInt64()}";
-			RegisteredFunctions[funcId] = realFuncName;
-		}
+		var realFuncName = RegisterJavaScriptRandomName(funcId);
 
 		Task.Run(() =>
 		{
@@ -61,6 +58,16 @@ public abstract class HandlerBase
 					Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", (CommonFunctionNames)funcId, realFuncName);
 			}
 		});
+	}
+
+	protected string RegisterJavaScriptRandomName(int id)
+	{
+		if (!RegisteredFunctions.TryGetValue(id, out var randomString))
+		{
+			randomString = $"jQuery{id}{Random.Shared.NextInt64()}";
+			RegisteredFunctions[id] = randomString;
+		}
+		return randomString;
 	}
 
 	protected string GetRegisteredJSFunctionName(CommonFunctionNames funcId, bool appendParentheses = true) => GetRegisteredJSFunctionName((int)funcId, appendParentheses);
