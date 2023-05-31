@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.CefSharp.Properties;
 using AutoKkutuLib.Extension;
+using AutoKkutuLib.Properties;
 using CefSharp;
 using CefSharp.Wpf;
 using Serilog;
@@ -13,11 +14,22 @@ public class CefSharpBrowser : BrowserBase
 	private CefConfigDto config;
 	private ChromiumWebBrowser browser;
 
+	// Will be randomized
+	private string JavascriptBindingGlobalObjectName = "jsbGlobal";
+	private string JavascriptBindingObjectName = "jsbObj";
+	private string WsHookName = "wsHook";
+	private string OriginalWsName = "wsHook";
+
 	public override object? BrowserControl => browser;
 
 	public CefSharpBrowser()
 	{
 		var serializer = new XmlSerializer(typeof(CefConfigDto));
+
+		JavascriptBindingGlobalObjectName = "Vue" + Random.Shared.NextInt64();
+		JavascriptBindingObjectName = "Vue" + Random.Shared.NextInt64();
+		WsHookName = "Vue" + Random.Shared.NextInt64();
+		OriginalWsName = "Vue" + Random.Shared.NextInt64();
 
 		var dflt = new CefSettings();
 		config = new CefConfigDto()
@@ -150,7 +162,12 @@ public class CefSharpBrowser : BrowserBase
 			Address = config?.MainPage ?? "https://www.whatsmyip.org/",
 		};
 		// Prevent getting detected by 'window.CefSharp' property existence checks
-		browser.JavascriptObjectRepository.Settings.JavascriptBindingApiEnabled = false;
+		browser.JavascriptObjectRepository.Settings.JavascriptBindingApiGlobalObjectName = JavascriptBindingGlobalObjectName;
+		var bindingObject = new JavaScriptBindingObject();
+		bindingObject.WebSocketSend += OnWebSocketSend;
+		bindingObject.WebSocketReceive += OnWebSocketReceive;
+		browser.JavascriptObjectRepository.Register(JavascriptBindingObjectName, bindingObject);
+		Log.Information("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}", JavascriptBindingGlobalObjectName, JavascriptBindingObjectName, WsHookName);
 
 		Log.Information("ChromiumWebBrowser instance created.");
 
@@ -159,14 +176,38 @@ public class CefSharpBrowser : BrowserBase
 		browser.FrameLoadStart += OnFrameLoadStart;
 	}
 
+	public void OnWebSocketSend(object? sender, JavaScriptBindingObject.WebSocketJsonMessageEventArgs args)
+	{
+		try
+		{
+			WebSocketMessage?.Invoke(this, new WebSocketMessageEventArgs(false, args.Json));
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, "Handling WebSocket send event error.");
+		}
+	}
+
+	public void OnWebSocketReceive(object? sender, JavaScriptBindingObject.WebSocketJsonMessageEventArgs args)
+	{
+		try
+		{
+			WebSocketMessage?.Invoke(this, new WebSocketMessageEventArgs(true, args.Json));
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, "Handling WebSocket receive event error.");
+		}
+	}
+
 	public void OnFrameLoadStart(object? sender, FrameLoadStartEventArgs args)
 	{
-		Log.Information("Injecting wsHook: {url}", args.Url);
-		var random = "jQuery" + Random.Shared.NextInt64();
-		Log.Information("wsHook func name: {name}", random);
-		browser.ExecuteScriptAsync(Resources.wsHookObf.Replace("%wsHook%", random), false);
-		browser.ExecuteScriptAsync($"{random}.before=(function(data,url,ws){{console.log('send:'+data);return data;}});", false);
-		browser.ExecuteScriptAsync($"{random}.after=(function(data,url,ws){{console.log('recv:'+data.data);return data;}});", false);
+		Log.Information("Injecting wsHook and wsListener: {url}", args.Url);
+		browser.ExecuteScriptAsync((LibResources.wsHookObf + ';' + CefSharpResources.wsListenerObf)
+			.Replace("___wsHook___", WsHookName)
+			.Replace("___jsbGlobal___", JavascriptBindingGlobalObjectName)
+			.Replace("___jsbObj___", JavascriptBindingObjectName)
+			.Replace("___originalWS___", OriginalWsName), false);
 	}
 
 	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)

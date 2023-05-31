@@ -11,6 +11,7 @@ public abstract class HandlerBase
 	public enum CommonFunctionNames
 	{
 		None = 0,
+		Namespace = 2023,
 		GameInProgress,
 		UpdateChat,
 		ClickSubmit,
@@ -42,36 +43,52 @@ public abstract class HandlerBase
 			RegisterJavaScriptFunction(funcId, funcArgs, funcBody);
 			alreadyRegistered.Add(funcId);
 		}
+		else
+			Log.Information("Function {func} is already registered.", (CommonFunctionNames)funcId);
 	}
 
-	protected void RegisterJavaScriptFunction(int funcId, string funcArgs, string funcBody)
+	protected virtual void RegisterJavaScriptFunction(int funcId, string funcArgs, string funcBody)
 	{
-		var realFuncName = RegisterJavaScriptRandomName(funcId);
+		var nsName = RegisterRandomScriptName((int)CommonFunctionNames.Namespace, true);
+		var realFuncName = RegisterRandomScriptName(funcId);
 
 		Task.Run(() =>
 		{
-			if (Browser.EvaluateJavaScriptBool($"typeof({realFuncName})!='function'")) // check if already registered
+			try
 			{
-				if (Browser.EvaluateJSAndGetError($"function {realFuncName}({funcArgs}){{{funcBody}}}", out var error))
-					Log.Error("Failed to register JavaScript function {funcName} : {error}", (CommonFunctionNames)funcId, error);
-				else
-					Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", (CommonFunctionNames)funcId, realFuncName);
+				// Define namespace. Workaround for IIFE's. https://stackoverflow.com/a/14245853
+				if (Browser.EvaluateJavaScriptBool($"typeof(window.{nsName})!='function'")) // check if already registered
+				{
+					Browser.EvaluateJavaScript($"window.{nsName}=function(){{}}");
+				}
+
+				if (Browser.EvaluateJavaScriptBool($"typeof({realFuncName})!='function'")) // check if already registered
+				{
+					if (Browser.EvaluateJSAndGetError($"{realFuncName}=function({funcArgs}){{{funcBody}}}", out var error))
+						Log.Error("Failed to register JavaScript function {funcName} : {error}", (CommonFunctionNames)funcId, error);
+					else
+						Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", (CommonFunctionNames)funcId, realFuncName);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Failed to register JavaScript function {funcName}", (CommonFunctionNames)funcId);
 			}
 		});
 	}
 
-	protected string RegisterJavaScriptRandomName(int id)
+	protected string RegisterRandomScriptName(int id, bool noNamespace = false)
 	{
 		if (!RegisteredFunctions.TryGetValue(id, out var randomString))
 		{
-			randomString = $"jQuery{id}{Random.Shared.NextInt64()}";
+			randomString = $"v{Math.Abs(id)}{Random.Shared.NextInt64()}";
 			RegisteredFunctions[id] = randomString;
 		}
-		return randomString;
+		return (noNamespace ? "" : $"{RegisterRandomScriptName((int)CommonFunctionNames.Namespace, true)}.") + randomString;
 	}
 
 	protected string GetRegisteredJSFunctionName(CommonFunctionNames funcId, bool appendParentheses = true) => GetRegisteredJSFunctionName((int)funcId, appendParentheses);
-	protected string GetRegisteredJSFunctionName(int funcId, bool appendParentheses = true) => RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
+	protected string GetRegisteredJSFunctionName(int funcId, bool appendParentheses = true) => RegisteredFunctions[(int)CommonFunctionNames.Namespace] + '.' + RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
 	#endregion
 
 	public abstract string HandlerName { get; }

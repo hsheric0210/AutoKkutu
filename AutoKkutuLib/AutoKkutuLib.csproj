@@ -38,6 +38,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="Properties\LibResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LibResources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 
@@ -48,6 +53,10 @@
     <EmbeddedResource Update="I18n.resx">
       <LastGenOutput>I18n.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\LibResources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>LibResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

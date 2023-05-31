@@ -5,6 +5,10 @@ using System.Collections.ObjectModel;
 using SeleniumUndetectedChromeDriver;
 using System.Xml.Serialization;
 using System.Diagnostics.Contracts;
+using AutoKkutuLib.Properties;
+using AutoKkutuLib.Selenium.Properties;
+using System.Net;
+using System.Net.Sockets;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase
@@ -63,18 +67,64 @@ public class SeleniumBrowser : BrowserBase
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
+		var wsHook = "Vue" + Random.Shared.NextInt64();
+		var wsOriginal = "Vue" + Random.Shared.NextInt64();
+		var wsVar = "Vue" + Random.Shared.NextInt64();
+		var wsPort = FindFreePort();
+		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
+		var wsAddrServer = "ws://" + new IPEndPoint(IPAddress.Any, wsPort).ToString();
+		var wsServer = new EventListenerWebSocket(wsAddrServer);
+		wsServer.OnReceive += WebSocketMessage;
+
+		Log.Information("wsHook func: {wsHook}", wsHook);
+
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.Url = config.MainPage;
-		//driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
-		//{
-		//	["source"] = 
-		//})
+
+		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
+		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
+		{
+			["source"] = (LibResources.wsHook + ';' + SeleniumResources.wsListener)
+				.Replace("___wsHook___", wsHook)
+				.Replace("___originalWS___", wsOriginal)
+				.Replace("___wsAddr___", wsAddrClient)
+				.Replace("___wsVar___", wsVar)
+		});
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
+	}
+
+	/// <summary>
+	/// https://stackoverflow.com/a/58924521
+	/// </summary>
+	/// <returns>Free port number</returns>
+	public static int FindFreePort()
+	{
+		var port = 0;
+		var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+		try
+		{
+			var localEP = new IPEndPoint(IPAddress.Any, 0);
+			socket.Bind(localEP);
+			localEP = (IPEndPoint)socket.LocalEndPoint!;
+			port = localEP.Port;
+		}
+		finally
+		{
+			socket.Close();
+		}
+		return port;
 	}
 
 	public override object? BrowserControl => null;
 
-	public override Task<JavaScriptCallback> EvaluateJavaScriptAsync(string script) => Task.FromResult(new JavaScriptCallback("", true, driver.ExecuteScript(script)));
+	public override Task<JavaScriptCallback> EvaluateJavaScriptAsync(string script)
+	{
+		var result = driver.ExecuteScript("return " + script); // EVERTHING is IIFE(Immediately Invoked Function Expressions) in WebDriver >:(
+		if (result == null)
+			Log.Error("Result is null of {js}", script);
+		return Task.FromResult(new JavaScriptCallback(result?.ToString() ?? "null", true, result));
+	}
+
 	public override void ExecuteJavaScript(string script, string? errorMessage = null)
 	{
 		try

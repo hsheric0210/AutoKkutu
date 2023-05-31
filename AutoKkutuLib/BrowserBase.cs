@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Game;
 using Serilog;
 using System.Globalization;
+using System.Text.Json.Nodes;
 
 namespace AutoKkutuLib;
 
@@ -11,8 +12,9 @@ public abstract class BrowserBase
 	/// May be null if the WPF frame is not available
 	/// </summary>
 	public abstract object? BrowserControl { get; }
-	public EventHandler<PageLoadedEventArgs> PageLoaded;
-	public EventHandler<PageErrorEventArgs> PageError;
+	public EventHandler<PageLoadedEventArgs>? PageLoaded;
+	public EventHandler<PageErrorEventArgs>? PageError;
+	public EventHandler<WebSocketMessageEventArgs>? WebSocketMessage;
 
 	public abstract void LoadFrontPage();
 	public abstract void Load(string url);
@@ -58,7 +60,7 @@ public abstract class BrowserBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, errorMessage ?? "JavaScript execution error");
+			Log.Warning(ex, errorMessage ?? "JavaScript execution error");
 			return defaultResult;
 		}
 	}
@@ -76,7 +78,7 @@ public abstract class BrowserBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, errorMessage ?? "Failed to run script on site.");
+			Log.Warning(ex, errorMessage ?? "Failed to run script on site.");
 			return defaultResult;
 		}
 	}
@@ -85,7 +87,7 @@ public abstract class BrowserBase
 	{
 		try
 		{
-			return Convert.ToBoolean(EvaluateJavaScriptSync(javaScript, defaultResult), CultureInfo.InvariantCulture);
+			return Convert.ToBoolean(EvaluateJavaScriptSync(javaScript, defaultResult));
 		}
 		catch (NullReferenceException)
 		{
@@ -93,7 +95,7 @@ public abstract class BrowserBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, errorMessage ?? "Failed to run script on site.");
+			Log.Warning(ex, errorMessage ?? "Failed to run script on site.");
 			return defaultResult;
 		}
 	}
@@ -118,4 +120,18 @@ public class PageErrorEventArgs : EventArgs
 
 	public string FailedUrl { get; }
 	public string ErrorText { get; }
+}
+
+public class WebSocketMessageEventArgs : EventArgs
+{
+	public bool IsReceived { get; set; }
+	public string Type { get; set; }
+	public JsonNode Json { get; set; }
+
+	public WebSocketMessageEventArgs(bool received, string json)
+	{
+		IsReceived = received;
+		Json = JsonNode.Parse(json) ?? throw new AggregateException("Failed to parse JSON");
+		Type = Json["type"]?.ToJsonString() ?? throw new AggregateException("Message type unavailable");
+	}
 }

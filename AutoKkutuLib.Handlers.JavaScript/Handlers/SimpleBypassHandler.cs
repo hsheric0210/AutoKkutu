@@ -18,8 +18,8 @@ internal class SimpleBypassHandler : JavaScriptHandlerBase
 
 	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
-		var chatBoxCacheName = RegisterJavaScriptRandomName(1023);
-		var chatBtnCacheName = RegisterJavaScriptRandomName(1024);
+		var chatBoxCacheName = RegisterRandomScriptName(1023);
+		var chatBtnCacheName = RegisterRandomScriptName(1024);
 		Browser.ExecuteJavaScript(@$"(function(){{if(window.{chatBoxCacheName}===undefined){{Object.defineProperty(window,'{chatBoxCacheName}',{{value:null,writable:true,configurable:true,enumerable:false}});}}
 		if(window.{chatBtnCacheName}===undefined){{Object.defineProperty(window,'{chatBtnCacheName}',{{value:null,writable:true,configurable:true,enumerable:false}});}}}})()");
 		// 어차피 웬만한 사이트들은 '게임 도중에 버튼 ID는 유지하고 display 여부만 바꿔치기'하지 않음. 덕분에 DOM Element를 미리 캐싱해놨다가 변경 발생 시에만 갱신할 수 있음.
