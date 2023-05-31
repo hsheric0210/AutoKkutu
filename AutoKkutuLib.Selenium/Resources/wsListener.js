@@ -22,11 +22,11 @@ ___wsVar___.onerror = function (err) {
 }
 ___wsVar___.onopen = function () { console.log('ws conn'); open = true };
 ___wsHook___.before = function (data, url, ws) {
-    if (open) ___wsVar___.send('s' + JSON.stringify(data))
+    if (open) ___wsVar___.send('s' + data)
     return data;
 };
 
 ___wsHook___.after = function (data, url, ws) {
-    if (open) ___wsVar___.send('r' + JSON.stringify(data.data))
+    if (open) ___wsVar___.send('r' + data.data)
     return data
 };

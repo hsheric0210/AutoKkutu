@@ -73,8 +73,8 @@ public class SeleniumBrowser : BrowserBase
 		var wsPort = FindFreePort();
 		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
 		var wsAddrServer = "ws://" + new IPEndPoint(IPAddress.Any, wsPort).ToString();
-		var wsServer = new EventListenerWebSocket(wsAddrServer);
-		wsServer.OnReceive += WebSocketMessage;
+		var wsServer = new LocalWebSocketServer(wsPort, wsAddrClient);
+		LocalWebSocketServer.OnReceive += WebSocketMessage;
 
 		Log.Information("wsHook func: {wsHook}", wsHook);
 
@@ -99,20 +99,11 @@ public class SeleniumBrowser : BrowserBase
 	/// <returns>Free port number</returns>
 	public static int FindFreePort()
 	{
-		var port = 0;
-		var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-		try
-		{
-			var localEP = new IPEndPoint(IPAddress.Any, 0);
-			socket.Bind(localEP);
-			localEP = (IPEndPoint)socket.LocalEndPoint!;
-			port = localEP.Port;
-		}
-		finally
-		{
-			socket.Close();
-		}
-		return port;
+		using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+		var localEP = new IPEndPoint(IPAddress.Any, 0);
+		socket.Bind(localEP);
+		localEP = (IPEndPoint)socket.LocalEndPoint!;
+		return localEP.Port;
 	}
 
 	public override object? BrowserControl => null;
