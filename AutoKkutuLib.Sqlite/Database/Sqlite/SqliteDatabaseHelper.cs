@@ -64,6 +64,8 @@ public static class SqliteDatabaseHelper
 		}
 
 		var counter = 0;
+
+		// Inevitable dynamically-formatted SQL: The table name could't be parameterized
 		foreach (var wordIndex in args.source.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM {tableName}"))
 		{
 			if (args.destination.Query.AddNode(tableName).Execute(wordIndex))
@@ -107,6 +109,7 @@ public static class SqliteDatabaseHelper
 			? DatabaseConstants.WordColumnName + ", " + DatabaseConstants.IsEndwordColumnName
 			: DatabaseConstants.WordColumnName + ", " + DatabaseConstants.FlagsColumnName;
 
+		// Inevitable dynamically-formatted SQL: The column name could't be parameterized
 		foreach (CompatibleWordModel word in args.source.Query<CompatibleWordModel>($"SELECT {columns} FROM {DatabaseConstants.WordTableName}"))
 		{
 			if (hasIsEndwordColumn)

@@ -4,12 +4,17 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CodeAnalysisRuleSet>..\.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Constants\**" />
     <EmbeddedResource Remove="Constants\**" />
     <None Remove="Constants\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\.sonarlint\hsheric0210_autokkutu\CSharp\SonarLint.xml" Link="SonarLint.xml" />
   </ItemGroup>
 
 
