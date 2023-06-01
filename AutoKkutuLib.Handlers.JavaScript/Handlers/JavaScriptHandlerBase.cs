@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Extension;
 using Serilog;
+using System.Runtime.InteropServices.ObjectiveC;
 
 namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
 
@@ -9,7 +10,16 @@ public abstract class JavaScriptHandlerBase : HandlerBase
 
 	protected JavaScriptHandlerBase(BrowserBase browser) => Browser = browser;
 
+	public void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
+	{
+		Log.Information("[{handlerName}] {type} websocket message:\r\n{msg}", HandlerName, args.IsReceived ? "Incoming" : "Outgoing", args.Json.ToString());
+	}
+
 	#region Handler implementation
+	public override void Start() => Browser.WebSocketMessage += OnWebSocketMessage;
+
+	public override void Stop() => Browser.WebSocketMessage -= OnWebSocketMessage;
+
 	public override bool IsGameInProgress => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.GameInProgress), errorMessage: nameof(IsGameInProgress));
 
 	public override bool IsMyTurn => Browser.EvaluateJavaScriptBool(GetRegisteredJSFunctionName(CommonFunctionNames.IsMyTurn), errorMessage: nameof(IsMyTurn));

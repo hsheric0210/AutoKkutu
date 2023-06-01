@@ -111,4 +111,7 @@ public abstract class HandlerBase
 	public abstract string GetWordInHistory(int index);
 	public virtual void RegisterInGameFunctions(ISet<int> alreadyRegistered) { }
 	public abstract void UpdateChat(string input);
+
+	public virtual void Start() { }
+	public virtual void Stop() { }
 }

@@ -2,7 +2,7 @@
 using AutoKkutuLib.Handlers;
 
 namespace AutoKkutuLib.Game;
-public interface IGame
+public interface IGame : IDisposable
 {
 	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
@@ -29,7 +29,6 @@ public interface IGame
 
 	void AppendChat(Func<string, string> appender);
 	void ClickSubmitButton();
-	void Dispose();
 	string GetID();
 	bool HasSameHandler(HandlerBase otherHandler);
 	bool IsValidPath(PathFinderParameter path);

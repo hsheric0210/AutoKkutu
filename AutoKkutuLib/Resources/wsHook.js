@@ -54,7 +54,7 @@ var ___wsHook___ = {};
     }
 
     var _WS = window.WebSocket
-    window.___originalWS___ = _WS;
+    window['___originalWS___'] = _WS;
     window.WebSocket = function (url, protocols) {
         var WSObject
         url = ___wsHook___.modifyUrl(url) || url

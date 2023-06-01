@@ -152,6 +152,7 @@ public class Game : IGame
 			cancelTokenSrc = new CancellationTokenSource();
 			CancellationToken token = cancelTokenSrc.Token;
 
+			handler.Start();
 			handler.RegisterInGameFunctions(new HashSet<int>());
 			primaryWatchdogTask = new Task(async () => await PrimaryWatchdog(token), token);
 			primaryWatchdogTask.Start();
@@ -176,6 +177,7 @@ public class Game : IGame
 			Log.Information("Watchdog stop requested.");
 			cancelTokenSrc?.Cancel();
 			primaryWatchdogTask?.Wait(); // await to be terminated
+			handler.Stop();
 			isWatchdogWokeUp = false;
 		}
 	}

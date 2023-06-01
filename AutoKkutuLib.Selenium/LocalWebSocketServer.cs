@@ -10,7 +10,7 @@ namespace AutoKkutuLib.Selenium;
 
 internal class LocalWebSocketServer
 {
-	public static event EventHandler<WebSocketMessageEventArgs>? OnReceive;
+	public static event EventHandler<WebSocketMessageEventArgs>? MessageReceived;
 
 	public class TheSession : WsSession
 	{
@@ -33,12 +33,11 @@ internal class LocalWebSocketServer
 			if (size - offset <= 0)
 				return;
 			var msg = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
-			Log.Warning("message recv: " + msg);
 			if (msg[0] is 'r' or 's')
 			{
 				try
 				{
-					OnReceive?.Invoke(null, new WebSocketMessageEventArgs(msg[0] == 'r', msg[1..])); // Message prefix: Received = 'r', Send = 's'
+					MessageReceived?.Invoke(null, new WebSocketMessageEventArgs(Id, msg[0] == 'r', msg[1..])); // Message prefix: Received = 'r', Send = 's'
 				}
 				catch (Exception ex)
 				{
@@ -55,16 +54,21 @@ internal class LocalWebSocketServer
 		{
 		}
 
-		protected override TcpSession CreateSession() => new TheSession(this);
+		protected override TcpSession CreateSession()
+		{
+			var session = new TheSession(this);
+			return session;
+		}
 
 		protected override void OnError(SocketError error) => Log.Error("WebSocket error: {err}", error);
 	}
 
-	public LocalWebSocketServer(int port, string caddr)
+	public static IDisposable Start(int port)
 	{
 		Log.Information("Event listener WebSocket running on port {port}", port);
 
-		var srv = new TheServer(IPAddress.Any, port);
-		srv.Start();
+		var server = new TheServer(IPAddress.Any, port);
+		server.Start();
+		return server;
 	}
 }

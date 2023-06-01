@@ -1,4 +1,5 @@
 ﻿using AutoKkutuLib;
+using AutoKkutuLib.CefSharp;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
@@ -6,7 +7,6 @@ using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Handlers;
 using AutoKkutuLib.Handlers.JavaScript.Handlers;
 using AutoKkutuLib.Path;
-using AutoKkutuLib.Selenium;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -159,7 +159,7 @@ public static class Main
 		Log.Information("Initializing browser");
 
 		// Initialize Browser
-		Browser = new SeleniumBrowser();
+		Browser = new CefSharpBrowser();
 		Browser.PageLoaded += OnPageLoaded;
 		Browser.PageError += OnPageError;
 

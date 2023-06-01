@@ -180,7 +180,7 @@ public class CefSharpBrowser : BrowserBase
 	{
 		try
 		{
-			WebSocketMessage?.Invoke(this, new WebSocketMessageEventArgs(false, args.Json));
+			WebSocketMessage?.Invoke(this, new WebSocketMessageEventArgs(Guid.Empty, false, args.Json));
 		}
 		catch (Exception ex)
 		{
@@ -192,7 +192,7 @@ public class CefSharpBrowser : BrowserBase
 	{
 		try
 		{
-			WebSocketMessage?.Invoke(this, new WebSocketMessageEventArgs(true, args.Json));
+			WebSocketMessage?.Invoke(this, new WebSocketMessageEventArgs(Guid.Empty, true, args.Json));
 		}
 		catch (Exception ex)
 		{
