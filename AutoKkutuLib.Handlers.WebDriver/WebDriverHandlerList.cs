@@ -1,6 +1,6 @@
 ﻿using AutoKkutuLib.Selenium;
 
-namespace AutoKkutuLib.Handlers.WebDriver.Handlers;
+namespace AutoKkutuLib.Handlers.WebDriver;
 public class WebDriverHandlerList
 {
 	private readonly ISet<HandlerBase> RegisteredHandlers = new HashSet<HandlerBase>();

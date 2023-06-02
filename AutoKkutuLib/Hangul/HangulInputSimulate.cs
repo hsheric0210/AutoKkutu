@@ -89,7 +89,6 @@ public static class HangulInputSimulate
 				break;
 
 			case JamoType.Final:
-				// 종성은 비어 있을 수도, 차 있을 수도 있기에 IsFull로 검사가 불가능하다.
 				result = (char.IsWhiteSpace(lastSplit.FinalConsonant)
 					? (lastSplit with
 					{

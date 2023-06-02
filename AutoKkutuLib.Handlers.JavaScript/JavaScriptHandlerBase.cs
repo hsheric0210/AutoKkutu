@@ -2,7 +2,7 @@
 using Serilog;
 using System.Runtime.InteropServices.ObjectiveC;
 
-namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
+namespace AutoKkutuLib.Handlers.JavaScript;
 
 public abstract class JavaScriptHandlerBase : HandlerBase
 {

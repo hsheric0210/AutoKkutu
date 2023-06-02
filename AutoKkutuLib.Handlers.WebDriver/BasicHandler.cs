@@ -1,6 +1,6 @@
 ﻿using AutoKkutuLib.Selenium;
 
-namespace AutoKkutuLib.Handlers.WebDriver.Handlers;
+namespace AutoKkutuLib.Handlers.WebDriver;
 
 internal class BasicHandler : WebDriverHandlerBase
 {

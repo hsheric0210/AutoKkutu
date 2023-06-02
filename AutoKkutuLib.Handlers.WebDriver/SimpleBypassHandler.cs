@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Selenium;
 using OpenQA.Selenium;
 
-namespace AutoKkutuLib.Handlers.WebDriver.Handlers;
+namespace AutoKkutuLib.Handlers.WebDriver;
 
 internal class SimpleBypassHandler : WebDriverHandlerBase
 {

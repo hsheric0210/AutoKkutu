@@ -8,7 +8,8 @@
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=hsheric0210_AutoKkutu)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=hsheric0210_AutoKkutu)
 
-AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌습니다
+AutoKkutu는 끄투 헬퍼 V (KKutu-Helper V) Release v5.6.8500 버전을 개조하여 만들어졌습니다.
+원 프로그램은 [여기](https://drive.google.com/file/d/1p_vTzLbkIPz-NBLuhEKTdK3ij55u7KNk/view?usp=sharing)에서, 글은 [여기](https://gall.dcinside.com/mgallery/board/view/?id=kkutu&no=395)에서 보실 수 있습니다.
 (제작자가 리버싱 후 수정 허용함)
 
 >현재 Selenium 버전 사용 시, 브라우저 창과 메인 GUI를 닫아도 프로그램이 종료되지 않는(콘솔 창이 꺼지지 않는) 문제가 있습니다.
@@ -30,14 +31,30 @@ AutoKkutu는 KKutu-Helper Release v5.6.8500버전을 개조하여 만들어졌�
 
 ## 지원 기능
 
-* 단어 자동 입력
-  * 단어 입력 딜레이
-    * 글자 수 비례 딜레이
+* 내 턴에 단어 자동 검색
+  * 검색 시 **미션 단어** 자동 감지 및 단어 우선 순위 자동 조정
+  * 단어의 종류가 '한방 단어', '공격 단어', '일반 단어'로 나뉘어 있으며, '한방 단어'와 '공격 단어'는 비활성화 가능
+    * 이러한 '한방 단어', '공격 단어'는 각 게임 모드에 따라 모두 분리되어 있음 (예시: '기쁨'은 '끝말잇기' 모드에서는 한방 단어이나 '앞말잇기' 모드에서는 단어에서는 일반 단어임)
+    * 이러한 단어의 종류는 특정 '노드'(끝말잇기에서는 끝 글자, 앞말잇기에서는 앞 글자 등등...)에 의해 관리됨. 즉, '듐'을 한방 노드로 등록시켜 놓고 데이터베이스 업데이트 시 '소듐', '라듐', '스칸듐' 등은 모두 한방 단어로 취급됨.
+
+* 자동 입력: 검색된 단어 중 가장 최적의 것을 자동으로 입력
+  * 단어 입력 시 일정 시간 지연(딜레이)
+    * 글자 수에 비례한 딜레이
+      * 만약 단어의 길이가 너무 길어 현재 남은 턴 시간 안에 입력을 마치지 못하고 게임 오버될 것이 예상되는 경우, 해당 단어는 입력 후보에서 자동으로 제외
     * 딜레이 시작 타이밍을 '나에게 턴이 돌아왔을 때'와 '마지막 단어를 입력한 이후' 둘 중에서 선택 가능
-* '한방 단어 우선, 공격 단어 우선, 단어 길이 우선'과 같은 단어 검색 기준 설정 가능
-* 입력되었던 단어 기반 데이터베이스 자동 업데이트 (새로운 단어 자동 추가, 존재하지 않는 단어 삭제) 기능
-* 단어, 노드 일괄 추가, 파일로부터 추가, 이전 데이터베이스 파일 불러오기 기능
-* 임베디드 브라우저로 돌리거나, Selenium과 같은 WebDriver로 구동하는 것 둘 다 지원.
+
+* 게임 종료 후 해당 게임에서 입력되었던 단어 이력을 기반으로 데이터베이스 자동 업데이트
+  * 새로운 단어 자동으로 추가
+  * 지원되지 않는 단어 자동으로 삭제
+  * 새로운 한방 단어 노드 자동으로 추가
+
+* 단어 및 노드 일괄 추가 기능
+  * 파일로부터 추가, 폴더의 파일들로부터 추가 이전 데이터베이스 파일 불러오기 기능
+
+* [CefSharp](https://github.com/cefsharp/CefSharp) 기반 임베디드 브라우저와 [Selenium](https://www.selenium.dev/) 기반 WebDriver 브라우저 모두 지원.
+  * Selenium 사용 시, WebDriver 감지를 피하기 위해 [UndetectedChromeDriver](https://github.com/fysh711426/UndetectedChromeDriver) 사용
+
+* 특수 단어(한방 단어, 공격 단어, 미션 단어 등) 강조 색상 사용자가 지정 가능
 
 ## 임베디드 브라우저(CefSharp 등) vs 웹 드라이버(Selenium 등)
 
@@ -154,3 +171,7 @@ ALTER TABLE kkutu_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_
 ALTER TABLE kkt_attackword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE kkt_endword_list CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
+
+## 관련 레포지토리
+
+* [univdev/Kkutu-helper](https://github.com/univdev/Kkutu-helper)

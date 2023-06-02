@@ -5,7 +5,7 @@ using OpenQA.Selenium.DevTools.V111.CSS;
 using OpenQA.Selenium.Internal;
 using Serilog;
 
-namespace AutoKkutuLib.Handlers.WebDriver.Handlers;
+namespace AutoKkutuLib.Handlers.WebDriver;
 
 public abstract class WebDriverHandlerBase : HandlerBase
 {

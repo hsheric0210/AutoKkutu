@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Serilog;
 
-namespace AutoKkutuLib.Handlers.JavaScript.Handlers;
+namespace AutoKkutuLib.Handlers.JavaScript;
 
 internal class SimpleBypassHandler : JavaScriptHandlerBase
 {

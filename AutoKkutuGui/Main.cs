@@ -5,7 +5,7 @@ using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Handlers;
-using AutoKkutuLib.Handlers.JavaScript.Handlers;
+using AutoKkutuLib.Handlers.JavaScript;
 using AutoKkutuLib.Path;
 using Serilog;
 using System;
