@@ -169,7 +169,7 @@ public class CefSharpBrowser : BrowserBase
 		bindingObject.WebSocketSend += OnWebSocketSend;
 		bindingObject.WebSocketReceive += OnWebSocketReceive;
 		browser.JavascriptObjectRepository.Register(JavascriptBindingObjectName, bindingObject);
-		Log.Information("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}", JavascriptBindingGlobalObjectName, JavascriptBindingObjectName, WsHookName);
+		Log.Debug("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}", JavascriptBindingGlobalObjectName, JavascriptBindingObjectName, WsHookName);
 
 		Log.Information("ChromiumWebBrowser instance created.");
 
@@ -204,7 +204,7 @@ public class CefSharpBrowser : BrowserBase
 
 	public void OnFrameLoadStart(object? sender, FrameLoadStartEventArgs args)
 	{
-		Log.Information("Injecting wsHook and wsListener: {url}", args.Url);
+		Log.Verbose("Injecting wsHook and wsListener: {url}", args.Url);
 		browser.ExecuteScriptAsync((LibResources.wsHookObf + ';' + CefSharpResources.wsListenerObf)
 			.Replace("___wsHook___", WsHookName)
 			.Replace("___jsbGlobal___", JavascriptBindingGlobalObjectName)

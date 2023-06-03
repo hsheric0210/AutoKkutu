@@ -55,14 +55,27 @@ public class WsClassicTurnEnd : EventArgs
 
 public class WsTurnError : EventArgs
 {
+	public enum TurnErrorCode
+	{
+		None = 0,
+		DatabaseError = 400,
+		NoEndWordOnBegin = 402,
+		EndWord = 403,
+		NotFound = 404,
+		Loanword = 405,
+		Strict = 406,
+		WrongSubject = 407,
+		AlreadyUsed = 409
+	}
+
 	/// <summary>
 	/// https://github.com/JJoriping/KKuTu/blob/a2c240bc31fe2dea31d26fb1cf7625b4645556a6/Server/lib/Web/lang/en_US.json#L213 참조
 	/// </summary>
-	public int ErrorCode { get; }
+	public TurnErrorCode ErrorCode { get; }
 	public string? Value { get; }
 	public WsTurnError(int errCode, string? value)
 	{
-		ErrorCode = errCode;
+		ErrorCode = (TurnErrorCode)errCode;
 		Value = value;
 	}
 }

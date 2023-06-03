@@ -18,7 +18,6 @@ public partial class Game
 
 		Log.Information("WebSocket Sniffer initialized.");
 		specializedSniffers = new Dictionary<string, Action<JsonNode>>();
-		Log.Information("Welcome WS: {name}", wsSniffHandler.MessageType_Welcome);
 		specializedSniffers[wsSniffHandler.MessageType_Welcome] = json => OnWsWelcome(wsSniffHandler.ParseWelcome(json));
 		specializedSniffers[wsSniffHandler.MessageType_Room] = json => OnWsRoom(wsSniffHandler.ParseRoom(json));
 		specializedSniffers[wsSniffHandler.MessageType_TurnStart] = json => OnWsClassicTurnStart(wsSniffHandler.ParseClassicTurnStart(json));
@@ -45,7 +44,7 @@ public partial class Game
 	{
 		if (specializedSniffers?.TryGetValue(args.Type, out Action<JsonNode>? mySniffer) ?? false)
 		{
-			Log.Information("WS Message (type: {type}) - {json}", args.Type, args.Json.ToString());
+			Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToString());
 			mySniffer(args.Json);
 		}
 	}

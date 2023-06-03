@@ -10,15 +10,16 @@ namespace AutoKkutuLib.Game.WebSocketListener;
 /// </summary>
 public abstract class WsSniffingHandlerBase
 {
-	public virtual string HandlerName { get; }
-	public abstract IReadOnlyCollection<Uri> UrlPattern { get; }
 	protected BrowserBase Browser { get; }
 
-	public virtual string MessageType_Welcome { get; }
-	public virtual string MessageType_Room { get; }
-	public virtual string MessageType_TurnStart { get; }
-	public virtual string MessageType_TurnEnd { get; }
-	public virtual string MessageType_TurnError { get; }
+	public abstract string HandlerName { get; }
+	public abstract IReadOnlyCollection<Uri> UrlPattern { get; }
+
+	public abstract string MessageType_Welcome { get; }
+	public abstract string MessageType_Room { get; }
+	public abstract string MessageType_TurnStart { get; }
+	public abstract string MessageType_TurnEnd { get; }
+	public abstract string MessageType_TurnError { get; }
 
 	protected WsSniffingHandlerBase(BrowserBase browser) => Browser = browser;
 

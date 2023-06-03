@@ -40,7 +40,7 @@ public static class BrowserJavaScriptNameRegistryExtension
 				if (err)
 					Log.Error("Failed to register JavaScript function {funcName} : {error}", (CommonNameRegistry)id, errMessage);
 				else
-					Log.Information("Registered JavaScript function {funcName} : {realFuncName}()", (CommonNameRegistry)id, realFuncName);
+					Log.Debug("Generated JavaScript type name - {funcName} : {realFuncName}", (CommonNameRegistry)id, realFuncName);
 			}
 		}
 		catch (Exception ex)

@@ -51,7 +51,6 @@ public class WsSniffingHandlerJJoriping : WsSniffingHandlerBase
 
 	public override WsRoom ParseRoom(JsonNode json)
 	{
-		Log.Information("Received Room: {roomJs}", json.ToString());
 		var roomObject = json["room"]?.AsObject();
 		if (roomObject == null)
 		{
