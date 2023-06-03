@@ -70,16 +70,20 @@ public partial class Game : IGame
 		if (!active)
 		{
 			active = true;
-			var registeredFunctions = new HashSet<int>();
 			Task.Run(async () =>
 			{
-				await domHandler.RegisterInGameFunctions(registeredFunctions); // TODO: Await for this to prevent initial js errors when startup
-				if (wsSniffHandler != null)
-					await wsSniffHandler.RegisterInGameFunctions(registeredFunctions);
+				await RegisterInGameFunctions(new HashSet<int>());
 				StartPollers();
 			});
 			BeginWebSocketSniffing();
 		}
+	}
+
+	public async Task RegisterInGameFunctions(ISet<int> registeredFunctions)
+	{
+		await domHandler.RegisterInGameFunctions(registeredFunctions);
+		if (wsSniffHandler != null)
+			await wsSniffHandler.RegisterInGameFunctions(registeredFunctions);
 	}
 
 	public void Stop()

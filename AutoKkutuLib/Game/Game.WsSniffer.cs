@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Browser.Events;
 using Serilog;
+using System.Collections.Specialized;
 using System.Text.Json.Nodes;
 
 namespace AutoKkutuLib.Game;
@@ -7,20 +8,22 @@ public partial class Game
 {
 	private IDictionary<string, Action<JsonNode>>? specializedSniffers;
 	private string myUserId;
+	private int mySeqIndex;
+	private IList<string>? myGameSeq;
 
 	private void BeginWebSocketSniffing()
 	{
 		if (wsSniffHandler == null)
 			return;
 
-		specializedSniffers = new Dictionary<string, Action<JsonNode>>()
-		{
-			[wsSniffHandler.MessageType_Welcome] = json => OnWsWelcome(wsSniffHandler.ParseWelcome(json)),
-			[wsSniffHandler.MessageType_Room] = json => OnWsRoom(wsSniffHandler.ParseRoom(json)),
-			[wsSniffHandler.MessageType_TurnStart] = json => OnWsClassicTurnStart(wsSniffHandler.ParseClassicTurnStart(json)),
-			[wsSniffHandler.MessageType_TurnEnd] = json => OnWsClassicTurnEnd(wsSniffHandler.ParseClassicTurnEnd(json)),
-			[wsSniffHandler.MessageType_TurnError] = json => OnWsTurnError(wsSniffHandler.ParseClassicTurnError(json)),
-		};
+		Log.Information("WebSocket Sniffer initialized.");
+		specializedSniffers = new Dictionary<string, Action<JsonNode>>();
+		Log.Information("Welcome WS: {name}", wsSniffHandler.MessageType_Welcome);
+		specializedSniffers[wsSniffHandler.MessageType_Welcome] = json => OnWsWelcome(wsSniffHandler.ParseWelcome(json));
+		specializedSniffers[wsSniffHandler.MessageType_Room] = json => OnWsRoom(wsSniffHandler.ParseRoom(json));
+		specializedSniffers[wsSniffHandler.MessageType_TurnStart] = json => OnWsClassicTurnStart(wsSniffHandler.ParseClassicTurnStart(json));
+		specializedSniffers[wsSniffHandler.MessageType_TurnEnd] = json => OnWsClassicTurnEnd(wsSniffHandler.ParseClassicTurnEnd(json));
+		specializedSniffers[wsSniffHandler.MessageType_TurnError] = json => OnWsTurnError(wsSniffHandler.ParseClassicTurnError(json));
 		Browser.WebSocketMessage += OnWebSocketMessage;
 	}
 
@@ -31,6 +34,7 @@ public partial class Game
 
 		Browser.WebSocketMessage -= OnWebSocketMessage;
 		specializedSniffers = null;
+		Log.Information("WebSocket Sniffer uninitialized.");
 	}
 
 	/// <summary>
@@ -40,7 +44,10 @@ public partial class Game
 	private void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
 	{
 		if (specializedSniffers?.TryGetValue(args.Type, out Action<JsonNode>? mySniffer) ?? false)
+		{
+			Log.Information("WS Message (type: {type}) - {json}", args.Type, args.Json.ToString());
 			mySniffer(args.Json);
+		}
 	}
 
 	private void OnWsWelcome(WsWelcome data)
@@ -51,6 +58,19 @@ public partial class Game
 
 	private void OnWsRoom(WsRoom data)
 	{
+		if (!data.Players.Contains(myUserId)) // It's other room
+			return;
+
+		if (data.Gaming && data.GameSequence.Count > 0)
+		{
+			mySeqIndex = data.GameSequence.IndexOf(myUserId);
+			if (mySeqIndex >= 0)
+			{
+				myGameSeq = data.GameSequence;
+				Log.Information("MyGameSeqIdx: {idx}", mySeqIndex);
+			}
+		}
+
 		GameMode gameMode = data.Mode;
 		if (gameMode != GameMode.None && gameMode != CurrentGameMode)
 		{
@@ -61,13 +81,28 @@ public partial class Game
 
 	private void OnWsClassicTurnStart(WsClassicTurnStart data)
 	{
+		if (myGameSeq != null && data.Turn % myGameSeq.Count == mySeqIndex)
+			Log.Information("WS: My turn start!");
 	}
 
 	private void OnWsClassicTurnEnd(WsClassicTurnEnd data)
 	{
+		if (data.Ok && myGameSeq != null)
+		{
+			var idx = myGameSeq.IndexOf(data.Target);
+			var totalSeqCount = myGameSeq.Count;
+			var turn = (idx + totalSeqCount) % totalSeqCount;
+			var myPrevTurn = (mySeqIndex - 1 + totalSeqCount) % totalSeqCount;
+			Log.Information("target idx: {tidx} turn idx: {turn} my-prev idx: {midx} my-idx: {mydx}", idx, turn, myPrevTurn, mySeqIndex);
+			if (idx >= 0 && turn == myPrevTurn)
+			{
+				Log.Information("WS: The previous person submitted: {txt}!", data.Value);
+			}
+		}
 	}
 
 	private void OnWsTurnError(WsTurnError data)
 	{
+		Log.Warning("Turn error: {txt} - error code {err}", data.Value, data.ErrorCode);
 	}
 }

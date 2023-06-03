@@ -42,7 +42,7 @@ public partial class Game
 
 	private async Task PollGameProgress()
 	{
-		domHandler.RegisterInGameFunctions(new HashSet<int>()); //FIXME: move to elsewhere
+		await RegisterInGameFunctions(new HashSet<int>());
 		if (await domHandler.GetIsGameInProgress())
 		{
 			if (!IsGameStarted)

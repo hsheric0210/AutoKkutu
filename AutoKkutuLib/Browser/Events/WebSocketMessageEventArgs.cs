@@ -14,6 +14,6 @@ public class WebSocketMessageEventArgs : EventArgs
 		SocketId = socketId;
 		IsReceived = received;
 		Json = JsonNode.Parse(json) ?? throw new AggregateException("Failed to parse JSON");
-		Type = Json["type"]?.ToJsonString() ?? throw new AggregateException("Message type unavailable");
+		Type = Json["type"]?.GetValue<string>() ?? throw new AggregateException("Message type unavailable");
 	}
 }
