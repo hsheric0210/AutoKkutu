@@ -10,6 +10,9 @@ public partial class Game
 
 	private void BeginWebSocketSniffing()
 	{
+		if (wsSniffHandler == null)
+			return;
+
 		specializedSniffers = new Dictionary<string, Action<JsonNode>>()
 		{
 			[wsSniffHandler.MessageType_Welcome] = json => OnWsWelcome(wsSniffHandler.ParseWelcome(json)),
@@ -23,6 +26,9 @@ public partial class Game
 
 	private void EndWebSocketSniffing()
 	{
+		if (wsSniffHandler == null)
+			return;
+
 		Browser.WebSocketMessage -= OnWebSocketMessage;
 		specializedSniffers = null;
 	}

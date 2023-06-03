@@ -141,8 +141,8 @@ public partial class Game
 	private async Task PollRound()
 	{
 		// Wait simultaneously
-		Task<int> roundIndexTask = domHandler.GetRoundIndex();
-		Task<string> roundTextTask = domHandler.GetRoundText();
+		var roundIndexTask = domHandler.GetRoundIndex().AsTask();
+		var roundTextTask = domHandler.GetRoundText().AsTask();
 		await Task.WhenAll(roundIndexTask, roundTextTask);
 
 		var roundIndex = await roundIndexTask;

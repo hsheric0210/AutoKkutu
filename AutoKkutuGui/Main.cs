@@ -6,6 +6,8 @@ using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.DomHandlers;
+using AutoKkutuLib.Game.WebSocketListener;
+using AutoKkutuLib.Game.WsHandlers;
 using AutoKkutuLib.Handlers.JavaScript;
 using AutoKkutuLib.Path;
 using Serilog;
@@ -31,7 +33,8 @@ public static class Main
 
 	public static BrowserBase Browser { get; private set; } = null!;
 
-	public static IWsSniffingHandlerList Handler { get; private set; } = null!;
+	public static IDomHandlerList DomHandlerList { get; private set; } = null!;
+	public static IWsSniffingHandlerList WsSniffingHandlerList { get; private set; } = null!;
 
 	public static AutoKkutu AutoKkutu
 	{
@@ -164,8 +167,12 @@ public static class Main
 		Browser.PageLoaded += OnPageLoaded;
 		Browser.PageError += OnPageError;
 
-		Handler = new JavaScriptHandlerList();
-		Handler.InitDefaultHandlers(Browser);
+		DomHandlerList = new JavaScriptHandlerList();
+		DomHandlerList.InitDefaultHandlers(Browser);
+
+		WsSniffingHandlerList = new WsSniffingHandlerList();
+		WsSniffingHandlerList.InitDefaultHandlers(Browser);
+
 	}
 
 	private static AbstractDatabase? InitializeDatabase()
@@ -205,17 +212,23 @@ public static class Main
 		var url = args.Url;
 
 		// Find appropriate handler for current URL
-		DomHandlerBase? handler = Handler.GetByUri(new Uri(url));
-		if (handler is null)
+		DomHandlerBase? domHandler = DomHandlerList.GetByUri(new Uri(url));
+		if (domHandler is null)
 		{
 			Log.Warning(I18n.Main_UnsupportedURL, url);
 			return;
 		}
 
-		if (!AutoKkutu.HasGameSet || !AutoKkutu.Game.HasSameHandler(handler)) // TODO: Move to Lib
+		WsSniffingHandlerBase? wsHandler = WsSniffingHandlerList.GetByUri(new Uri(url));
+		if (wsHandler is null)
+		{
+			Log.Warning("WebSocket sniffing is not supported on: {url}", url);
+		}
+
+		if (!AutoKkutu.HasGameSet || !AutoKkutu.Game.HasSameDomHandler(domHandler) || wsHandler != null && AutoKkutu.Game.HasSameWsSniffingHandler(wsHandler)) // TODO: Move to Lib
 		{
 			Log.Information("Browser frame loaded.");
-			AutoKkutu.SetGame(new Game(handler));
+			AutoKkutu.SetGame(new Game(domHandler, wsHandler));
 			Browser.PageLoaded -= OnPageLoaded;
 		}
 	}

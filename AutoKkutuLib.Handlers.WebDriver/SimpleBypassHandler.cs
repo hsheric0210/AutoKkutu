@@ -1,4 +1,5 @@
-﻿using AutoKkutuLib.Selenium;
+﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Selenium;
 using OpenQA.Selenium;
 
 namespace AutoKkutuLib.Handlers.WebDriver;
@@ -19,13 +20,13 @@ internal class SimpleBypassHandler : WebDriverHandlerBase
 
 	public override void ClickSubmit()
 	{
-		Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.ClickSubmit)}()");
+		Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.ClickSubmit)}");
 	}
 
-	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered)
+	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
-		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
-		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ClickSubmit, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
+		Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>input'),e=>window.getComputedStyle(e).display!='none')?.value=input");
+		Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ClickSubmit, "", "Array.prototype.find.call(document.querySelectorAll('#Middle>div.ChatBox.Product>div.product-body>button'),e=>window.getComputedStyle(e).display!='none')?.click()");
 		base.RegisterInGameFunctions(alreadyRegistered);
 	}
 }

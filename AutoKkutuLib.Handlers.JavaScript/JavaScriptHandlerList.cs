@@ -3,7 +3,7 @@ using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Handlers.JavaScript;
 
 namespace AutoKkutuLib.Handlers.JavaScript;
-public class JavaScriptHandlerList : IWsSniffingHandlerList
+public class JavaScriptHandlerList : IDomHandlerList
 {
 	private readonly ISet<DomHandlerBase> RegisteredHandlers = new HashSet<DomHandlerBase>();
 

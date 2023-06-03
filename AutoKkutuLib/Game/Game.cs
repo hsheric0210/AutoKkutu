@@ -28,7 +28,7 @@ public partial class Game : IGame
 
 	#region Internal handle holder fields
 	private readonly DomHandlerBase domHandler;
-	private readonly WsSniffingHandlerBase wsSniffHandler;
+	private readonly WsSniffingHandlerBase? wsSniffHandler;
 	#endregion
 
 	#region Internal states
@@ -55,7 +55,7 @@ public partial class Game : IGame
 	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	#endregion
 
-	public Game(DomHandlerBase domHandler, WsSniffingHandlerBase wsSniffHandler)
+	public Game(DomHandlerBase domHandler, WsSniffingHandlerBase? wsSniffHandler)
 	{
 		this.domHandler = domHandler;
 		this.wsSniffHandler = wsSniffHandler;
@@ -63,7 +63,7 @@ public partial class Game : IGame
 	}
 
 	public bool HasSameDomHandler(DomHandlerBase otherHandler) => domHandler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
-	public bool HasSameWsSniffingHandler(WsSniffingHandlerBase otherHandler) => wsSniffHandler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
+	public bool HasSameWsSniffingHandler(WsSniffingHandlerBase otherHandler) => wsSniffHandler?.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase) ?? false;
 
 	public void Start()
 	{
@@ -71,9 +71,13 @@ public partial class Game : IGame
 		{
 			active = true;
 			var registeredFunctions = new HashSet<int>();
-			domHandler.RegisterInGameFunctions(registeredFunctions); // TODO: Await for this to prevent initial js errors when startup
-			wsSniffHandler.RegisterInGameFunctions(registeredFunctions);
-			StartPollers();
+			Task.Run(async () =>
+			{
+				await domHandler.RegisterInGameFunctions(registeredFunctions); // TODO: Await for this to prevent initial js errors when startup
+				if (wsSniffHandler != null)
+					await wsSniffHandler.RegisterInGameFunctions(registeredFunctions);
+				StartPollers();
+			});
 			BeginWebSocketSniffing();
 		}
 	}

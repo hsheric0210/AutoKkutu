@@ -29,12 +29,12 @@ public static class BrowserJavaScriptNameRegistryExtension
 		try
 		{
 			// Define namespace. Workaround for WebDriver IIFEs'. https://stackoverflow.com/a/14245853
-			if (browser.EvaluateJavaScriptBool($"typeof(window.{nsName})!='function'")) // check if already registered
+			if (await browser.EvaluateJavaScriptBoolAsync($"typeof(window.{nsName})!='function'")) // check if already registered
 			{
-				browser.EvaluateJavaScript($"window.{nsName}=function(){{}}");
+				await browser.EvaluateJavaScriptAsync($"window.{nsName}=function(){{}}");
 			}
 
-			if (browser.EvaluateJavaScriptBool($"typeof({realFuncName})!='function'")) // check if already registered
+			if (await browser.EvaluateJavaScriptBoolAsync($"typeof({realFuncName})!='function'")) // check if already registered
 			{
 				(var err, var errMessage) = await browser.EvaluateScriptAndGetErrorAsync($"{realFuncName}=function({funcArgs}){{{funcBody}}}");
 				if (err)

@@ -13,29 +13,20 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 
 	protected JavaScriptHandlerBase(BrowserBase browser) => Browser = browser;
 
-	public void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
-	{
-		Log.Information("[{handlerName}] {type} websocket message:\r\n{msg}", HandlerName, args.IsReceived ? "Incoming" : "Outgoing", args.Json.ToString());
-	}
-
 	#region Handler implementation
-	public override void Start() => Browser.WebSocketMessage += OnWebSocketMessage;
+	public override async ValueTask<bool> GetIsGameInProgress() => await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.GameInProgress), errorMessage: nameof(GetIsGameInProgress));
 
-	public override void Stop() => Browser.WebSocketMessage -= OnWebSocketMessage;
+	public override async ValueTask<bool> GetIsMyTurn() => await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.IsMyTurn), errorMessage: nameof(GetIsMyTurn));
 
-	public override async Task<bool> GetIsGameInProgress() => await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.GameInProgress), errorMessage: nameof(GetIsGameInProgress));
+	public override async ValueTask<string> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
 
-	public override async Task<bool> GetIsMyTurn() => await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.IsMyTurn), errorMessage: nameof(GetIsMyTurn));
+	public override async ValueTask<string> GetRoundText() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundText), errorPrefix: nameof(GetRoundText));
 
-	public override async Task<string> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
+	public override async ValueTask<int> GetRoundIndex() => await Browser.EvaluateJavaScriptIntAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundIndex), errorPrefix: nameof(GetRoundIndex));
 
-	public override async Task<string> GetRoundText() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundText), errorPrefix: nameof(GetRoundText));
+	public override async ValueTask<string> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.UnsupportedWord), errorPrefix: nameof(GetUnsupportedWord));
 
-	public override async Task<int> GetRoundIndex() => await Browser.EvaluateJavaScriptIntAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundIndex), errorPrefix: nameof(GetRoundIndex));
-
-	public override async Task<string> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.UnsupportedWord), errorPrefix: nameof(GetUnsupportedWord));
-
-	public override async Task<GameMode> GetGameMode()
+	public override async ValueTask<GameMode> GetGameMode()
 	{
 		var gameMode = await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.GameMode), errorPrefix: nameof(GetGameMode));
 		if (!string.IsNullOrWhiteSpace(gameMode))
@@ -77,15 +68,15 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		return GameMode.None;
 	}
 
-	public override async Task<float> GetTurnTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.TurnTime), errorPrefix: nameof(GetTurnTime)), out var time) && time > 0 ? time : 150;
+	public override async ValueTask<float> GetTurnTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.TurnTime), errorPrefix: nameof(GetTurnTime)), out var time) && time > 0 ? time : 150;
 
-	public override async Task<float> GetRoundTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundTime), errorPrefix: nameof(GetRoundTime)), out var time) && time > 0 ? time : 150;
+	public override async ValueTask<float> GetRoundTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundTime), errorPrefix: nameof(GetRoundTime)), out var time) && time > 0 ? time : 150;
 
-	public override async Task<string> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.ExampleWord), errorPrefix: nameof(GetExampleWord))).Trim();
+	public override async ValueTask<string> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.ExampleWord), errorPrefix: nameof(GetExampleWord))).Trim();
 
-	public override async Task<string> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar))).Trim();
+	public override async ValueTask<string> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar))).Trim();
 
-	public override async Task<string> GetWordInHistory(int index)
+	public override async ValueTask<string> GetWordInHistory(int index)
 	{
 		if (index is < 0 or >= 6)
 			throw new ArgumentOutOfRangeException($"index: {index}");

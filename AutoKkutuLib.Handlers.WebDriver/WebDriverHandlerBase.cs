@@ -1,4 +1,5 @@
-﻿using AutoKkutuLib.Extension;
+﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Selenium;
 using OpenQA.Selenium;
@@ -15,7 +16,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 	protected WebDriverHandlerBase(SeleniumBrowser browser) => Browser = browser;
 
 	#region Handler implementation
-	public override bool GetIsGameInProgress()
+	public override async ValueTask<bool> GetIsGameInProgress()
 	{
 		try
 		{
@@ -28,7 +29,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return false; }
 	}
 
-	public override bool GetIsMyTurn()
+	public override async ValueTask<bool> GetIsMyTurn()
 	{
 		try
 		{
@@ -41,7 +42,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return false; }
 	}
 
-	public override string GetPresentedWord()
+	public override async ValueTask<string> GetPresentedWord()
 	{
 		try
 		{
@@ -50,7 +51,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override string GetRoundText()
+	public override async ValueTask<string> GetRoundText()
 	{
 		try
 		{
@@ -59,7 +60,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override int GetRoundIndex()
+	public override async ValueTask<int> GetRoundIndex()
 	{
 		try
 		{
@@ -73,7 +74,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException or StaleElementReferenceException) { return -1; }
 	}
 
-	public override string GetUnsupportedWord()
+	public override async ValueTask<string> GetUnsupportedWord()
 	{
 		try
 		{
@@ -82,7 +83,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override GameMode GetGameMode()
+	public override async ValueTask<GameMode> GetGameMode()
 	{
 		try
 		{
@@ -126,7 +127,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return GameMode.None; }
 	}
 
-	public override float GetTurnTime()
+	public override async ValueTask<float> GetTurnTime()
 	{
 		try
 		{
@@ -135,7 +136,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 	}
 
-	public override float GetRoundTime()
+	public override async ValueTask<float> GetRoundTime()
 	{
 		try
 		{
@@ -144,7 +145,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 	}
 
-	public override string GetExampleWord()
+	public override async ValueTask<string> GetExampleWord()
 	{
 		try
 		{
@@ -160,7 +161,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override string GetMissionChar()
+	public override async ValueTask<string> GetMissionChar()
 	{
 		try
 		{
@@ -173,7 +174,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override string GetWordInHistory(int index)
+	public override async ValueTask<string> GetWordInHistory(int index)
 	{
 		try
 		{
@@ -189,7 +190,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 	{
 		try
 		{
-			Browser.ExecuteJavaScript($"{GetRegisteredJSFunctionName(CommonFunctionNames.UpdateChat)}({input})");
+			Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.UpdateChat)}({input})");
 		}
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { }
 	}
@@ -204,5 +205,5 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 	}
 	#endregion
 
-	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered) => RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", "document.getElementById('Talk').value=input");
+	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered) => await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "document.getElementById('Talk').value=input");
 }

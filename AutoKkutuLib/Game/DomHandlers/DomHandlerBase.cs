@@ -8,18 +8,18 @@ public abstract class DomHandlerBase
 	public abstract IReadOnlyCollection<Uri> UrlPattern { get; }
 	public abstract BrowserBase Browser { get; }
 
-	public abstract Task<GameMode> GetGameMode();
-	public abstract Task<bool> GetIsGameInProgress();
-	public abstract Task<bool> GetIsMyTurn();
-	public abstract Task<string> GetPresentedWord();
-	public abstract Task<string> GetMissionChar();
-	public abstract Task<string> GetExampleWord();
-	public abstract Task<int> GetRoundIndex();
-	public abstract Task<string> GetRoundText();
-	public abstract Task<float> GetRoundTime();
-	public abstract Task<float> GetTurnTime();
-	public abstract Task<string> GetUnsupportedWord();
-	public abstract Task<string> GetWordInHistory(int index);
+	public abstract ValueTask<GameMode> GetGameMode();
+	public abstract ValueTask<bool> GetIsGameInProgress();
+	public abstract ValueTask<bool> GetIsMyTurn();
+	public abstract ValueTask<string> GetPresentedWord();
+	public abstract ValueTask<string> GetMissionChar();
+	public abstract ValueTask<string> GetExampleWord();
+	public abstract ValueTask<int> GetRoundIndex();
+	public abstract ValueTask<string> GetRoundText();
+	public abstract ValueTask<float> GetRoundTime();
+	public abstract ValueTask<float> GetTurnTime();
+	public abstract ValueTask<string> GetUnsupportedWord();
+	public abstract ValueTask<string> GetWordInHistory(int index);
 
 	public abstract void UpdateChat(string input);
 	public abstract void ClickSubmit();

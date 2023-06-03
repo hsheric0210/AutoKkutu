@@ -118,7 +118,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 	public override object? BrowserControl => null;
 
-	public override Task<JavaScriptCallback> EvaluateJavaScriptAsync(string script)
+	public override Task<JavaScriptCallback> EvaluateJavaScriptRawAsync(string script)
 	{
 		var result = driver.ExecuteScript("return " + script); // EVERTHING is IIFE(Immediately Invoked Function Expressions) in WebDriver >:(
 		if (result == null)
