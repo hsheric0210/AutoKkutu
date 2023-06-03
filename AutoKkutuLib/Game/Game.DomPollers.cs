@@ -9,7 +9,7 @@ public partial class Game
 
 	private readonly string[] wordHistoryCache = new string[6];
 	private int roundIndexCache;
-	private string unsupportedWordCache = "";
+	private string turnErrorWordCache = "";
 	private string exampleWordCache = "";
 	private string currentPresentedWordCache = "";
 	private long currentPresentedWordCacheTime = -1;
@@ -43,64 +43,10 @@ public partial class Game
 	private async Task PollGameProgress()
 	{
 		await RegisterInGameFunctions(new HashSet<int>());
-		if (await domHandler.GetIsGameInProgress())
-		{
-			if (!IsGameStarted)
-			{
-				Log.Debug("New game started; Used word history flushed.");
-				GameStarted?.Invoke(this, EventArgs.Empty);
-				IsGameStarted = true;
-			}
-		}
-		else
-		{
-			if (!IsGameStarted)
-				return;
-
-			Log.Debug("Game ended.");
-			GameEnded?.Invoke(this, EventArgs.Empty);
-			IsGameStarted = false;
-		}
+		NotifyGameProgress(await domHandler.GetIsGameInProgress());
 	}
 
-	private async Task PollTurn()
-	{
-		if (await domHandler.GetIsMyTurn())
-		{
-			if (!IsMyTurn)
-			{
-				// When my turn comes...
-				IsMyTurn = true;
-
-				if (CurrentGameMode == GameMode.Free)
-				{
-					MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(new WordCondition("", false), CurrentMissionChar));
-					return;
-				}
-
-				WordCondition? presentedWord = await PollPresentedWord();
-
-				if (presentedWord == null)
-					return;
-
-				if (presentedWord.CanSubstitution)
-					Log.Information("My turn arrived, presented word is {word} (Subsitution: {subsituation})", presentedWord.Content, presentedWord.Substitution);
-				else
-					Log.Information("My turn arrived, presented word is {word}.", presentedWord.Content);
-				CurrentPresentedWord = presentedWord;
-				MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(presentedWord, CurrentMissionChar));
-			}
-
-			return;
-		}
-
-		if (!IsMyTurn)
-			return;
-		IsMyTurn = false;
-		// When my turn ends...
-		Log.Debug("My turn ended.");
-		MyTurnEnded?.Invoke(this, EventArgs.Empty);
-	}
+	private async Task PollTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition());
 
 	private async Task PollWordHistory()
 	{
@@ -132,51 +78,34 @@ public partial class Game
 	private async Task PollMissionWord()
 	{
 		var missionWord = await domHandler.GetMissionChar();
-		if (string.IsNullOrWhiteSpace(missionWord) || string.Equals(missionWord, CurrentMissionChar, StringComparison.Ordinal))
-			return;
-		Log.Information("Mission word change detected : {word}", missionWord);
-		CurrentMissionChar = missionWord;
+		if (!string.IsNullOrWhiteSpace(missionWord))
+			NotifyMissionChar(missionWord);
 	}
 
-	private async Task PollRound()
-	{
-		// Wait simultaneously
-		var roundIndexTask = domHandler.GetRoundIndex().AsTask();
-		var roundTextTask = domHandler.GetRoundText().AsTask();
-		await Task.WhenAll(roundIndexTask, roundTextTask);
-
-		var roundIndex = await roundIndexTask;
-		if (roundIndex == roundIndexCache) // Detect round change by round index
-			return;
-
-		var roundText = await roundTextTask;
-		if (string.IsNullOrWhiteSpace(roundText))
-			return;
-
-		roundIndexCache = roundIndex;
-
-		if (roundIndex <= 0)
-			return;
-		Log.Information("Round Changed : Index {0} Word {1}", roundIndex, roundText);
-		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex, roundText));
-	}
+	private async Task PollRound() => NotifyRound(await domHandler.GetRoundIndex());
 
 	private async Task PollWordError()
 	{
-		var unsupportedWord = await domHandler.GetUnsupportedWord();
-		if (string.IsNullOrWhiteSpace(unsupportedWord) || string.Equals(unsupportedWord, unsupportedWordCache, StringComparison.OrdinalIgnoreCase) || unsupportedWord.Contains("T.T", StringComparison.OrdinalIgnoreCase))
+		var word = await domHandler.GetUnsupportedWord();
+		if (string.IsNullOrWhiteSpace(word))
 			return;
 
-		var isExistingWord = unsupportedWord.Contains(':', StringComparison.Ordinal); // '첫 턴 한방 금지: ', '한방 단어: ' 등등...
-		var isEndWord = false;
-		if (isExistingWord)
-			isEndWord = unsupportedWord[..unsupportedWord.IndexOf(':')].Contains("한방"); // '한방 단어: ', '첫 턴 한방 금지: '
-
-		unsupportedWordCache = unsupportedWord;
-
-		UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord, isEndWord));
-		if (IsMyTurn)
-			MyPathIsUnsupported?.Invoke(this, new UnsupportedWordEventArgs(unsupportedWord, isExistingWord, isEndWord));
+		TurnErrorCode errorCode = TurnErrorCode.NotFound;
+		if (word.Contains(':'))
+		{
+			var details = word[..word.IndexOf(':')];
+			if (details.Contains("한방"))
+				errorCode = details.Contains("첫 턴") ? TurnErrorCode.NoEndWordOnBegin : TurnErrorCode.EndWord; // '첫 턴 한방 금지' / '한방 단어'
+			else if (details.Contains("외래")) // '외래어'
+				errorCode = TurnErrorCode.Loanword;
+			else if (details.Contains('깐')) // '깐깐!'
+				errorCode = TurnErrorCode.Strict;
+			else if (details.Contains("주제")) // '다른 주제'
+				errorCode = TurnErrorCode.WrongSubject;
+			else if (details.Contains("이미")) // '이미 사용된 단어'
+				errorCode = TurnErrorCode.AlreadyUsed;
+		}
+		NotifyTurnError(word, errorCode);
 	}
 
 	/// <summary>
@@ -184,14 +113,9 @@ public partial class Game
 	/// </summary>
 	private async Task PollWordHint()
 	{
-		var example = await domHandler.GetExampleWord();
-		if (string.IsNullOrWhiteSpace(example) || example.StartsWith("게임 끝", StringComparison.Ordinal))
-			return;
-		if (string.Equals(example, exampleWordCache, StringComparison.OrdinalIgnoreCase))
-			return;
-		exampleWordCache = example;
-		Log.Information("Path example detected : {word}", example);
-		ExampleWordPresented?.Invoke(this, new WordPresentEventArgs(example));
+		var word = await domHandler.GetExampleWord();
+		if (!string.IsNullOrWhiteSpace(word) && !word.StartsWith("게임 끝", StringComparison.Ordinal))
+			NotifyWordHint(word);
 	}
 
 	private async Task PollTypingWord() // TODO: Remove it and merge with UpdateWord
@@ -213,14 +137,12 @@ public partial class Game
 	private async Task PollGameMode()
 	{
 		GameMode gameMode = await domHandler.GetGameMode();
-		if (gameMode == GameMode.None || gameMode == CurrentGameMode)
-			return;
-		CurrentGameMode = gameMode;
-		Log.Information("Game mode change detected : {gameMode}", gameMode.GameModeName());
-		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
+		if (gameMode != GameMode.None)
+			NotifyGameMode(gameMode);
 	}
 
-	private async Task<WordCondition?> PollPresentedWord()
+	// TODO: Return nothing when the current gamemode is 'Free'
+	private async Task<WordCondition?> PollWordCondition()
 	{
 		var content = await domHandler.GetPresentedWord();
 

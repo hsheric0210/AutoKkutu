@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Browser.Events;
 using AutoKkutuLib.CefSharp.Properties;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Properties;

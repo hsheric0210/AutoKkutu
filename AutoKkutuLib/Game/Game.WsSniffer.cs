@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Browser.Events;
+﻿using AutoKkutuLib.Browser;
 using Serilog;
 using System.Collections.Specialized;
 using System.Text.Json.Nodes;

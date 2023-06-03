@@ -1,6 +1,25 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace AutoKkutuLib.Browser.Events;
+namespace AutoKkutuLib.Browser;
+
+public class PageErrorEventArgs : EventArgs
+{
+	public PageErrorEventArgs(string errorText, string failedUrl)
+	{
+		ErrorText = errorText;
+		FailedUrl = failedUrl;
+	}
+
+	public string FailedUrl { get; }
+	public string ErrorText { get; }
+}
+
+public class PageLoadedEventArgs : EventArgs
+{
+	public PageLoadedEventArgs(string url) => Url = url;
+
+	public string Url { get; }
+}
 
 public class WebSocketMessageEventArgs : EventArgs
 {

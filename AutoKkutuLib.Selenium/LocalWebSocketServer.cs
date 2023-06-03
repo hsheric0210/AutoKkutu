@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Browser.Events;
+﻿using AutoKkutuLib.Browser;
 using NetCoreServer;
 using OpenQA.Selenium.Internal;
 using Serilog;

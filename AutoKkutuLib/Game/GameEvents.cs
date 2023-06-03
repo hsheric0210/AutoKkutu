@@ -36,12 +36,7 @@ public class NoPathAvailableEventArgs : EventArgs
 public class RoundChangeEventArgs : EventArgs
 {
 	public int RoundIndex { get; }
-	public string RoundWord { get; }
-	public RoundChangeEventArgs(int roundIndex, string roundWord)
-	{
-		RoundIndex = roundIndex;
-		RoundWord = roundWord;
-	}
+	public RoundChangeEventArgs(int roundIndex) => RoundIndex = roundIndex;
 }
 
 public class UnsupportedWordEventArgs : EventArgs

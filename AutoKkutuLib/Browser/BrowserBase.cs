@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Browser.Events;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace AutoKkutuLib.Browser;
 
