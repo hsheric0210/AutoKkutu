@@ -1,10 +1,11 @@
 ﻿using AutoKkutuLib;
+using AutoKkutuLib.Browser;
+using AutoKkutuLib.Browser.Events;
 using AutoKkutuLib.CefSharp;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
-using AutoKkutuLib.Game.Events;
-using AutoKkutuLib.Handlers;
+using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Handlers.JavaScript;
 using AutoKkutuLib.Path;
 using Serilog;
@@ -30,7 +31,7 @@ public static class Main
 
 	public static BrowserBase Browser { get; private set; } = null!;
 
-	public static IHandlerList Handler { get; private set; } = null!;
+	public static IWsSniffingHandlerList Handler { get; private set; } = null!;
 
 	public static AutoKkutu AutoKkutu
 	{
@@ -204,7 +205,7 @@ public static class Main
 		var url = args.Url;
 
 		// Find appropriate handler for current URL
-		HandlerBase? handler = Handler.GetByUri(new Uri(url));
+		DomHandlerBase? handler = Handler.GetByUri(new Uri(url));
 		if (handler is null)
 		{
 			Log.Warning(I18n.Main_UnsupportedURL, url);
@@ -292,7 +293,7 @@ public static class Main
 			}
 			else
 			{
-				var time = AutoKkutu.Game.TurnTimeMillis;
+				var time = AutoKkutu.Game.GetTurnTimeMillis();
 				(var wordToEnter, var timeover) = AutoKkutu.PathFinder.AvailableWordList.GetWordByIndex(Prefs.DelayEnabled && Prefs.DelayPerCharEnabled, Prefs.DelayInMillis, time);
 				if (string.IsNullOrEmpty(wordToEnter))
 				{
@@ -377,7 +378,7 @@ public static class Main
 						Prefs.DelayInMillis,
 						Prefs.DelayPerCharEnabled,
 						Prefs.InputSimulate,
-						lastPathFinderParameter, WordIndex: ++wordIndex), AutoKkutu.Game.TurnTimeMillis); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
+						lastPathFinderParameter, WordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
 	}
 
 	private static void OnMyTurnEnded(object? sender, EventArgs e)

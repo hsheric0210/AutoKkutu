@@ -2,8 +2,6 @@
 using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Extension;
 using Serilog;
-using System.Data;
-using System.Data.Common;
 using System.Globalization;
 
 namespace AutoKkutuLib.Node;

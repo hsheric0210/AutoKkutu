@@ -1,8 +1,6 @@
 ﻿using AutoKkutuLib.Extension;
-using AutoKkutuLib.Game.Events;
 using AutoKkutuLib.Hangul;
 using Serilog;
-using System.Collections.Specialized;
 using System.Diagnostics;
 
 namespace AutoKkutuLib.Game;

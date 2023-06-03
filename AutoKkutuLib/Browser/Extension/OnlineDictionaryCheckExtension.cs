@@ -1,12 +1,13 @@
-﻿using Serilog;
+﻿using AutoKkutuLib.Browser;
+using Serilog;
 
-namespace AutoKkutuLib.Game.Extension;
+namespace AutoKkutuLib.Browser.Extension;
 
 public static class OnlineDictionaryCheckExtension
 {
-	public static bool IsDictionaryAvailable(this BrowserBase jsEvaluator)
+	public static bool IsDictionaryAvailable(this BrowserBase browser)
 	{
-		return !string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJavaScript("document.getElementById('dict-output').style"));
+		return !string.IsNullOrWhiteSpace(browser.EvaluateJavaScript("document.getElementById('dict-output').style"));
 
 		// FIXME: Replace with event
 		//if (string.IsNullOrWhiteSpace(jsEvaluator.EvaluateJS("document.getElementById('dict-output').style")))
@@ -19,21 +20,21 @@ public static class OnlineDictionaryCheckExtension
 	/// </summary>
 	/// <param name="word">The word to check</param>
 	/// <returns>True if existence is verified, false otherwise.</returns>
-	public static bool VerifyWordOnline(this BrowserBase jsEvaluator, string word)
+	public static bool VerifyWordOnline(this BrowserBase browser, string word)
 	{
 		Log.Information(I18n.BatchJob_CheckOnline, word);
 
 		// Enter the word to dictionary search field
-		jsEvaluator.EvaluateJavaScript($"document.getElementById('dict-input').value = '{word}'");
+		browser.EvaluateJavaScript($"document.getElementById('dict-input').value = '{word}'");
 
 		// Click search button
-		jsEvaluator.EvaluateJavaScript("document.getElementById('dict-search').click()");
+		browser.EvaluateJavaScript("document.getElementById('dict-search').click()");
 
 		// Wait for response
 		Thread.Sleep(1500);
 
 		// Query the response
-		var result = jsEvaluator.EvaluateJavaScript("document.getElementById('dict-output').innerHTML");
+		var result = browser.EvaluateJavaScript("document.getElementById('dict-output').innerHTML");
 		Log.Information(I18n.BatchJob_CheckOnline_Response, result);
 		if (string.IsNullOrWhiteSpace(result) || string.Equals(result, "404: 유효하지 않은 단어입니다.", StringComparison.OrdinalIgnoreCase))
 		{
@@ -43,7 +44,7 @@ public static class OnlineDictionaryCheckExtension
 		else if (string.Equals(result, "검색 중", StringComparison.OrdinalIgnoreCase))
 		{
 			Log.Warning(I18n.BatchJob_CheckOnline_InvalidResponse);
-			return jsEvaluator.VerifyWordOnline(word); // retry
+			return browser.VerifyWordOnline(word); // retry
 		}
 		else
 		{

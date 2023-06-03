@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
-using AutoKkutuLib.Game.Events;
+using AutoKkutuLib.Game;
 using AutoKkutuLib.Path;
 using CefSharp;
 using Serilog;
@@ -396,7 +396,7 @@ public partial class MainWindow : Window
 			if (string.IsNullOrWhiteSpace(missionChar))
 				missionChar = Main.AutoKkutu.Game.CurrentMissionChar;
 
-			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(new PresentedWord(SearchField.Text, false), missionChar ?? "", Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch), Main.Prefs.ReturnModeEnabled, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
+			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(new WordCondition(SearchField.Text, false), missionChar ?? "", Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch), Main.Prefs.ReturnModeEnabled, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

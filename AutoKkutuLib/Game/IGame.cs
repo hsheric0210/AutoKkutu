@@ -1,5 +1,6 @@
-﻿using AutoKkutuLib.Game.Events;
-using AutoKkutuLib.Handlers;
+﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Game.DomHandlers;
+using AutoKkutuLib.Game.WebSocketListener;
 
 namespace AutoKkutuLib.Game;
 public interface IGame : IDisposable
@@ -7,12 +8,13 @@ public interface IGame : IDisposable
 	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
 	string CurrentMissionChar { get; }
-	PresentedWord? CurrentPresentedWord { get; }
+	WordCondition? CurrentPresentedWord { get; }
 	bool IsGameStarted { get; }
 	bool IsMyTurn { get; }
 	BrowserBase Browser { get; }
 	bool ReturnMode { get; set; }
-	int TurnTimeMillis { get; }
+
+	int GetTurnTimeMillis();
 
 	event EventHandler? ChatUpdated;
 	event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
@@ -29,8 +31,8 @@ public interface IGame : IDisposable
 
 	void AppendChat(Func<string, string> appender);
 	void ClickSubmitButton();
-	string GetID();
-	bool HasSameHandler(HandlerBase otherHandler);
+	bool HasSameDomHandler(DomHandlerBase otherHandler);
+	bool HasSameWsSniffingHandler(WsSniffingHandlerBase otherHandler);
 	bool IsValidPath(PathFinderParameter path);
 	void Start();
 	void Stop();

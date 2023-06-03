@@ -1,4 +1,6 @@
-﻿namespace AutoKkutuLib.Handlers.JavaScript;
+﻿using AutoKkutuLib.Browser;
+
+namespace AutoKkutuLib.Handlers.JavaScript;
 
 // TODO: Detected by their cheat detection
 // 단어를 '글자 별로 하나하나' 입력하는 기능(CEF의 KeyEvent 활용), 딜레이 강제 적용(한 글자 당 100ms 이상)을 해야지만 제대로 우회할 수 있다.
@@ -18,10 +20,10 @@ internal class OptimizedBypassHandler : JavaScriptHandlerBase
 	{
 	}
 
-	public override void RegisterInGameFunctions(ISet<int> alreadyRegistered)
+	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		//ParseExtraVisibilityStyleTagsFunc
-		RegisterJavaScriptFunction(alreadyRegistered, 99, "", @"
+		await Browser.GenerateScriptTypeName(alreadyRegistered, 99, "", @"
 let styles = document.querySelectorAll('style');
 let maxIndex = styles.length, index = 0;
 let visibleStyles = [];
@@ -45,9 +47,9 @@ while (index < maxIndex) {
 return visibleStyles;
 ");
 
-		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.UpdateChat, "input", $@"
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", $@"
 let talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
-let visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
+let visible = {Browser.GetScriptTypeName(99)}, nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (talks[index].id == visible[index2]) {{
@@ -58,9 +60,9 @@ for (let index=0;index<maxTalks;index++) {{
 }}
 ");
 
-		RegisterJavaScriptFunction(alreadyRegistered, CommonFunctionNames.ClickSubmit, "", $@"
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ClickSubmit, "", $@"
 let buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
-let visible = {GetRegisteredJSFunctionName(99)}, nVisible = visible.length;
+let visible = {Browser.GetScriptTypeName(99)}, nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{
 	for (let index2=0;index2<nVisible;index2++) {{
 		if (buttons[index].id == visible[index2]) {{
@@ -70,6 +72,6 @@ for (let index=0;index<maxButtons;index++) {{
 	}}
 }}
 ");
-		base.RegisterInGameFunctions(alreadyRegistered);
+		await base.RegisterInGameFunctions(alreadyRegistered);
 	}
 }

@@ -1,5 +1,6 @@
-﻿using AutoKkutuLib.Extension;
-using AutoKkutuLib.Game.Extension;
+﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Browser.Extension;
+using AutoKkutuLib.Extension;
 using AutoKkutuLib.Node;
 using Dapper;
 using Serilog;

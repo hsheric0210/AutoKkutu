@@ -1,6 +1,6 @@
 ﻿namespace AutoKkutuLib;
 
-public class PresentedWord
+public class WordCondition
 {
 	public string Content
 	{
@@ -17,7 +17,7 @@ public class PresentedWord
 		get;
 	}
 
-	public PresentedWord(string content, bool canSubsitution, string substituation = "")
+	public WordCondition(string content, bool canSubsitution, string? substituation = null)
 	{
 		Content = content;
 		CanSubstitution = canSubsitution;
@@ -26,7 +26,7 @@ public class PresentedWord
 		Substitution = substituation;
 	}
 
-	public override bool Equals(object? obj) => obj is PresentedWord other
+	public override bool Equals(object? obj) => obj is WordCondition other
 		&& string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase)
 		&& Substitution == other.Substitution
 		&& (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.OrdinalIgnoreCase));

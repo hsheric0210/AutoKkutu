@@ -1,4 +1,6 @@
-﻿namespace AutoKkutuLib.Handlers.JavaScript;
+﻿using AutoKkutuLib.Browser;
+
+namespace AutoKkutuLib.Handlers.JavaScript;
 
 internal class BasicHandler : JavaScriptHandlerBase
 {

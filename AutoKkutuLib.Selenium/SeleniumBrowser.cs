@@ -9,6 +9,8 @@ using AutoKkutuLib.Properties;
 using AutoKkutuLib.Selenium.Properties;
 using System.Net;
 using System.Net.Sockets;
+using AutoKkutuLib.Browser;
+using AutoKkutuLib.Browser.Events;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable

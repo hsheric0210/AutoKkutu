@@ -1,4 +1,6 @@
-﻿using AutoKkutuLib.CefSharp.Properties;
+﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Browser.Events;
+using AutoKkutuLib.CefSharp.Properties;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Properties;
 using CefSharp;
@@ -235,7 +237,7 @@ public class CefSharpBrowser : BrowserBase
 		}
 	}
 
-	public override async Task<JavaScriptCallback> EvaluateJavaScriptAsync(string script)
+	public override async Task<JavaScriptCallback> EvaluateJavaScriptRawAsync(string script)
 	{
 		if (!browser.CanExecuteJavascriptInMainFrame)
 			return new JavaScriptCallback("MainFrame not ready", false, null);

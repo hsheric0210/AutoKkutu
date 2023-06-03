@@ -120,7 +120,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 	#endregion
 
 	#region Query generation
-	private string GetIndexColumnName(PresentedWord word)
+	private string GetIndexColumnName(WordCondition word)
 	{
 		switch (mode)
 		{
@@ -143,7 +143,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 
 		if (mode != GameMode.All)
 		{
-			PresentedWord word = parameter.Word;
+			WordCondition word = parameter.Word;
 			var wordIndexColumn = GetIndexColumnName(word);
 			param.Add("@PrimaryWord", word.Content);
 			if (word.CanSubstitution)

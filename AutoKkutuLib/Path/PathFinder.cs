@@ -44,7 +44,7 @@ public class PathFinder
 
 		try
 		{
-			PresentedWord word = parameter.Word;
+			WordCondition word = parameter.Word;
 			if (nodeManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || nodeManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
 			{
 				Log.Warning("End node: {node1}, {node2}", word.Content, word.Substitution);

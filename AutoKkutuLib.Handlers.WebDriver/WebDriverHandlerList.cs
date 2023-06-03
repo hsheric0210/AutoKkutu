@@ -1,9 +1,10 @@
-﻿using AutoKkutuLib.Selenium;
+﻿using AutoKkutuLib.Game.DomHandlers;
+using AutoKkutuLib.Selenium;
 
 namespace AutoKkutuLib.Handlers.WebDriver;
 public class WebDriverHandlerList
 {
-	private readonly ISet<HandlerBase> RegisteredHandlers = new HashSet<HandlerBase>();
+	private readonly ISet<DomHandlerBase> RegisteredHandlers = new HashSet<DomHandlerBase>();
 
 	public void InitDefaultHandlers(SeleniumBrowser browser)
 	{
@@ -11,9 +12,9 @@ public class WebDriverHandlerList
 		RegisterHandler(new SimpleBypassHandler(browser));
 	}
 
-	public void RegisterHandler(HandlerBase handler) => RegisteredHandlers.Add(handler);
+	public void RegisterHandler(DomHandlerBase handler) => RegisteredHandlers.Add(handler);
 
-	public HandlerBase? GetByUri(Uri uri)
+	public DomHandlerBase? GetByUri(Uri uri)
 	{
 		return (from handler in RegisteredHandlers
 				where handler.UrlPattern.Any(baseUri => baseUri.IsBaseOf(uri))

@@ -5,7 +5,6 @@ using AutoKkutuLib.Node;
 using AutoKkutuLib.Path;
 using Serilog;
 using System.Globalization;
-using System.Xml.Linq;
 
 namespace AutoKkutuLib;
 public class DbUpdateTask
