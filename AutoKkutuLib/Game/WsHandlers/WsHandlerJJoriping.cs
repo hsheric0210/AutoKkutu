@@ -11,7 +11,7 @@ namespace AutoKkutuLib.Game.WebSocketListener;
 /// 만약 특정 사이트가 이와는 다른 프로토콜을 사용한다면, 이 클래스를 Override하여 속성이나 함수를 수정해 주세요.
 /// 쪼리핑의 '클래식' 모드 구현체 프로토콜 구현체: https://github.com/JJoriping/KKuTu/blob/a2c240bc31fe2dea31d26fb1cf7625b4645556a6/Server/lib/Web/lib/kkutu/rule_classic.js
 /// </summary>
-public class WsSniffingHandlerJJoriping : WsSniffingHandlerBase
+public class WsHandlerJJoriping : WsHandlerBase
 {
 	public override string HandlerName => "JJoriping-compatible";
 	public override IReadOnlyCollection<Uri> UrlPattern => new Uri[] {
@@ -28,7 +28,7 @@ public class WsSniffingHandlerJJoriping : WsSniffingHandlerBase
 	public override string MessageType_TurnEnd => "turnEnd";
 	public override string MessageType_TurnError => "turnError";
 
-	public WsSniffingHandlerJJoriping(BrowserBase browser) : base(browser) { }
+	public WsHandlerJJoriping(BrowserBase browser) : base(browser) { }
 
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 		=> await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.RoomModeToGameMode, "id", "return Object.keys(JSON.parse(document.getElementById('RULE').textContent))[id]");

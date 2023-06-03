@@ -34,7 +34,7 @@ public static class Main
 	public static BrowserBase Browser { get; private set; } = null!;
 
 	public static IDomHandlerList DomHandlerList { get; private set; } = null!;
-	public static IWsSniffingHandlerList WsSniffingHandlerList { get; private set; } = null!;
+	public static IWsHandlerList WsSniffingHandlerList { get; private set; } = null!;
 
 	public static AutoKkutu AutoKkutu
 	{
@@ -170,7 +170,7 @@ public static class Main
 		DomHandlerList = new JavaScriptHandlerList();
 		DomHandlerList.InitDefaultHandlers(Browser);
 
-		WsSniffingHandlerList = new WsSniffingHandlerList();
+		WsSniffingHandlerList = new WsHandlerList();
 		WsSniffingHandlerList.InitDefaultHandlers(Browser);
 
 	}
@@ -219,7 +219,7 @@ public static class Main
 			return;
 		}
 
-		WsSniffingHandlerBase? wsHandler = WsSniffingHandlerList.GetByUri(new Uri(url));
+		WsHandlerBase? wsHandler = WsSniffingHandlerList.GetByUri(new Uri(url));
 		if (wsHandler is null)
 		{
 			Log.Warning("WebSocket sniffing is not supported on: {url}", url);

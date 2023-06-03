@@ -32,7 +32,7 @@ public interface IGame : IDisposable
 	void AppendChat(Func<string, string> appender);
 	void ClickSubmitButton();
 	bool HasSameDomHandler(DomHandlerBase otherHandler);
-	bool HasSameWsSniffingHandler(WsSniffingHandlerBase otherHandler);
+	bool HasSameWsSniffingHandler(WsHandlerBase otherHandler);
 	bool IsValidPath(PathFinderParameter path);
 	void Start();
 	void Stop();

@@ -28,7 +28,7 @@ public partial class Game : IGame
 
 	#region Internal handle holder fields
 	private readonly DomHandlerBase domHandler;
-	private readonly WsSniffingHandlerBase? wsSniffHandler;
+	private readonly WsHandlerBase? wsSniffHandler;
 	#endregion
 
 	#region Internal states
@@ -55,7 +55,7 @@ public partial class Game : IGame
 	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
 	#endregion
 
-	public Game(DomHandlerBase domHandler, WsSniffingHandlerBase? wsSniffHandler)
+	public Game(DomHandlerBase domHandler, WsHandlerBase? wsSniffHandler)
 	{
 		this.domHandler = domHandler;
 		this.wsSniffHandler = wsSniffHandler;
@@ -63,7 +63,7 @@ public partial class Game : IGame
 	}
 
 	public bool HasSameDomHandler(DomHandlerBase otherHandler) => domHandler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
-	public bool HasSameWsSniffingHandler(WsSniffingHandlerBase otherHandler) => wsSniffHandler?.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase) ?? false;
+	public bool HasSameWsSniffingHandler(WsHandlerBase otherHandler) => wsSniffHandler?.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase) ?? false;
 
 	public void Start()
 	{

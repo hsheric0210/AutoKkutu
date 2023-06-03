@@ -23,9 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Postgres", "Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.CefSharp", "AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj", "{A612B087-8FBC-485F-A1B4-BAC3A033A840}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Handlers.JavaScript", "AutoKkutuLib.Handlers.JavaScript\AutoKkutuLib.Handlers.JavaScript.csproj", "{F5AFA21D-536B-4707-9BE0-0117713C6C58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Game.DomHandlers.JavaScript", "AutoKkutuLib.Game.DomHandlers.JavaScript\AutoKkutuLib.Game.DomHandlers.JavaScript.csproj", "{F5AFA21D-536B-4707-9BE0-0117713C6C58}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Handlers.WebDriver", "AutoKkutuLib.Handlers.WebDriver\AutoKkutuLib.Handlers.WebDriver.csproj", "{19F1750A-52F8-413D-8823-4084D5EFDE35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Game.DomHandlers.WebDriver", "AutoKkutuLib.Game.DomHandlers.WebDriver\AutoKkutuLib.Game.DomHandlers.WebDriver.csproj", "{19F1750A-52F8-413D-8823-4084D5EFDE35}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EE454914-8625-4778-90E8-9A05297198EA} = {EE454914-8625-4778-90E8-9A05297198EA}
 	EndProjectSection

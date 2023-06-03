@@ -3,9 +3,9 @@ using AutoKkutuLib.Game.WebSocketListener;
 
 namespace AutoKkutuLib.Game.WsHandlers;
 
-public interface IWsSniffingHandlerList
+public interface IWsHandlerList
 {
-	WsSniffingHandlerBase? GetByUri(Uri uri);
+	WsHandlerBase? GetByUri(Uri uri);
 	void InitDefaultHandlers(BrowserBase browser);
-	void RegisterHandler(WsSniffingHandlerBase handler);
+	void RegisterHandler(WsHandlerBase handler);
 }

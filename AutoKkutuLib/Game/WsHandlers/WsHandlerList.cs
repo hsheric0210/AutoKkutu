@@ -5,18 +5,18 @@ using AutoKkutuLib.Game.WsHandlers;
 using AutoKkutuLib.Handlers.JavaScript;
 
 namespace AutoKkutuLib.Handlers.JavaScript;
-public class WsSniffingHandlerList : IWsSniffingHandlerList
+public class WsHandlerList : IWsHandlerList
 {
-	private readonly ISet<WsSniffingHandlerBase> RegisteredHandlers = new HashSet<WsSniffingHandlerBase>();
+	private readonly ISet<WsHandlerBase> RegisteredHandlers = new HashSet<WsHandlerBase>();
 
 	public void InitDefaultHandlers(BrowserBase browser)
 	{
-		RegisterHandler(new WsSniffingHandlerJJoriping(browser));
+		RegisterHandler(new WsHandlerJJoriping(browser));
 	}
 
-	public void RegisterHandler(WsSniffingHandlerBase handler) => RegisteredHandlers.Add(handler);
+	public void RegisterHandler(WsHandlerBase handler) => RegisteredHandlers.Add(handler);
 
-	public WsSniffingHandlerBase? GetByUri(Uri uri)
+	public WsHandlerBase? GetByUri(Uri uri)
 	{
 		return (from handler in RegisteredHandlers
 				where handler.UrlPattern.Any(baseUri => baseUri.IsBaseOf(uri))
