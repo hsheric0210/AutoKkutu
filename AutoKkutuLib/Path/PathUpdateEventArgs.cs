@@ -7,7 +7,7 @@ public class PathUpdateEventArgs : EventArgs
 		get;
 	}
 
-	public PathFindResult ResultType
+	public PathFindResultType ResultType
 	{
 		get;
 	}
@@ -27,10 +27,10 @@ public class PathUpdateEventArgs : EventArgs
 		get;
 	}
 
-	public PathUpdateEventArgs(PathFinderParameter result, PathFindResult arg, int totalWordCount = 0, int calcWordCount = 0, int time = 0)
+	public PathUpdateEventArgs(PathFinderParameter result, PathFindResultType type, int totalWordCount = 0, int calcWordCount = 0, int time = 0)
 	{
 		Result = result;
-		ResultType = arg;
+		ResultType = type;
 		TotalWordCount = totalWordCount;
 		CalcWordCount = calcWordCount;
 		TimeMillis = time;

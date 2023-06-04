@@ -7,9 +7,8 @@ public interface IGame : IDisposable
 {
 	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
-	string CurrentMissionChar { get; }
 	WordCondition? CurrentPresentedWord { get; }
-	bool IsGameStarted { get; }
+	bool IsGameInProgress { get; }
 	bool IsMyTurn { get; }
 	BrowserBase Browser { get; }
 	bool ReturnMode { get; set; }
@@ -24,7 +23,7 @@ public interface IGame : IDisposable
 	event EventHandler? GameStarted;
 	event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
 	event EventHandler? MyTurnEnded;
-	event EventHandler<WordConditionPresentEventArgs>? MyWordPresented;
+	event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	event EventHandler? RoundChanged;
 	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
@@ -33,7 +32,7 @@ public interface IGame : IDisposable
 	void ClickSubmitButton();
 	bool HasSameDomHandler(DomHandlerBase otherHandler);
 	bool HasSameWsSniffingHandler(WsHandlerBase otherHandler);
-	bool IsValidPath(PathFinderParameter path);
+	bool CheckPathExpired(PathFinderParameter path);
 	void Start();
 	void Stop();
 	void UpdateChat(string input);

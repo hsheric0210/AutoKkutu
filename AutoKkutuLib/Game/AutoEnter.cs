@@ -22,7 +22,7 @@ public class AutoEnter
 
 	public AutoEnter(IGame game) => this.game = game;
 
-	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => game.IsGameStarted && game.IsMyTurn && (path == null || game.IsValidPath(path with { Options = path.Options | PathFinderFlags.DryRun }));
+	public bool CanPerformAutoEnterNow(PathFinderParameter? path) => game.IsGameInProgress && game.IsMyTurn && (path == null || game.CheckPathExpired(path with { Options = path.Options | PathFinderFlags.DryRun }));
 
 	#region AutoEnter starter
 	// TODO: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)

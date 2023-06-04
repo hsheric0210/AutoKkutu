@@ -1,6 +1,6 @@
 ﻿namespace AutoKkutuLib;
 
-public enum PathFindResult
+public enum PathFindResultType
 {
 	Found,
 	NotFound,

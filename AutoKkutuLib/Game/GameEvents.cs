@@ -55,12 +55,7 @@ public class UnsupportedWordEventArgs : EventArgs
 public class WordConditionPresentEventArgs : EventArgs
 {
 	public WordCondition Word { get; }
-	public string MissionChar { get; }
-	public WordConditionPresentEventArgs(WordCondition word, string missionChar)
-	{
-		Word = word;
-		MissionChar = missionChar;
-	}
+	public WordConditionPresentEventArgs(WordCondition condition) => Word = condition;
 }
 
 // TODO: Add more arguments such as word group, description, etc.

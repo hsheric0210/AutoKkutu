@@ -100,7 +100,7 @@ public class AutoKkutu : IDisposable
 		game.GameStarted += GameStarted;
 		game.MyPathIsUnsupported += MyPathIsUnsupported;
 		game.MyTurnEnded += MyTurnEnded;
-		game.MyWordPresented += MyWordPresented;
+		game.MyTurnStarted += MyWordPresented;
 		game.RoundChanged += RoundChanged;
 		game.TypingWordPresented += TypingWordPresented;
 		game.UnsupportedWordEntered += UnsupportedWordEntered;
@@ -120,7 +120,7 @@ public class AutoKkutu : IDisposable
 		game.GameStarted -= GameStarted;
 		game.MyPathIsUnsupported -= MyPathIsUnsupported;
 		game.MyTurnEnded -= MyTurnEnded;
-		game.MyWordPresented -= MyWordPresented;
+		game.MyTurnStarted -= MyWordPresented;
 		game.RoundChanged -= RoundChanged;
 		game.TypingWordPresented -= TypingWordPresented;
 		game.UnsupportedWordEntered -= UnsupportedWordEntered;

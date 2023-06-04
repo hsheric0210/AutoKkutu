@@ -92,16 +92,11 @@ public class WsHandlerJJoriping : WsHandlerBase
 
 	public override WsClassicTurnStart ParseClassicTurnStart(JsonNode json)
 	{
-		var substituteAvailable = true;
-		if (!json.AsObject().TryGetPropertyValue("subChar", out JsonNode? substitute))
-			substituteAvailable = false;
-
 		return new WsClassicTurnStart(
 			json["turn"]?.GetValue<int>() ?? -1,
 			json["roundTime"]?.GetValue<int>() ?? -1,
 			json["turnTime"]?.GetValue<int>() ?? -1,
-			new WordCondition(json["char"]?.GetValue<string>() ?? "", substituteAvailable, substitute?.GetValue<string>()),
-			json["mission"]?.GetValue<string>());
+			new WordCondition(json["char"]?.GetValue<string>() ?? "", json["subChar"]?.GetValue<string>(), json["mission"]?.GetValue<string>()));
 	}
 
 	// TODO: 내 바로 이전 사람 턴이 끝남을 감지하고, 그 사람이 입력한 단어에서 내가 입력해야 할 단어의 조건 노드 파싱하기 (두음법칙 적용해서)

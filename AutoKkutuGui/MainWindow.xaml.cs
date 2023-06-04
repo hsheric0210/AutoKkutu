@@ -2,6 +2,7 @@
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
+using AutoKkutuLib.Hangul;
 using AutoKkutuLib.Path;
 using CefSharp;
 using Serilog;
@@ -318,22 +319,22 @@ public partial class MainWindow : Window
 	private static string CreatePathResultExplain(PathUpdateEventArgs arg)
 	{
 		var parameter = arg.Result;
-		var filter = $"'{parameter.Word.Content}'";
-		if (parameter.Word.CanSubstitution)
-			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{parameter.Word.Substitution}'");
-		if (!string.IsNullOrWhiteSpace(parameter.MissionChar))
-			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, parameter.MissionChar);
+		var filter = $"'{parameter.Condition.Char}'";
+		if (parameter.Condition.SubAvailable)
+			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{parameter.Condition.SubChar}'");
+		if (!string.IsNullOrWhiteSpace(parameter.Condition.MissionChar))
+			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, parameter.Condition.MissionChar);
 		var FilterText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview, filter);
 		var SpecialFilterText = "";
 		string FindResult;
 		var ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.TimeMillis);
-		if (arg.ResultType == PathFindResult.Found)
+		if (arg.ResultType == PathFindResultType.Found)
 		{
 			FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
 		}
 		else
 		{
-			FindResult = arg.ResultType == PathFindResult.NotFound
+			FindResult = arg.ResultType == PathFindResultType.NotFound
 				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
 				: I18n.PathFinderError;
 		}
@@ -394,9 +395,13 @@ public partial class MainWindow : Window
 
 			var missionChar = SearchMissionChar.Text;
 			if (string.IsNullOrWhiteSpace(missionChar))
-				missionChar = Main.AutoKkutu.Game.CurrentMissionChar;
+				missionChar = Main.AutoKkutu.Game.CurrentPresentedWord?.MissionChar;
 
-			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(new WordCondition(SearchField.Text, false), missionChar ?? "", Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch), Main.Prefs.ReturnModeEnabled, Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
+			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(
+				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar ?? "")),
+				Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch),
+				Main.Prefs.ReturnModeEnabled,
+				Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

@@ -1,6 +1,21 @@
-﻿namespace AutoKkutuLib.Extension;
+﻿using AutoKkutuLib.Hangul;
+
+namespace AutoKkutuLib.Extension;
 public static class GameModeExtension
 {
+	public static WordCondition? ConvertWordToCondition(this GameMode gameMode, string path, string? missionChar, bool initialLaw = true)
+	{
+		var node = gameMode.ConvertWordToTailNode(path);
+		if (string.IsNullOrWhiteSpace(node))
+			return null;
+
+		var content = new WordCondition(node, missionChar);
+		if (initialLaw)
+			content = InitialLaw.ApplyInitialLaw(content);
+
+		return content;
+	}
+
 	public static string? ConvertWordToTailNode(this GameMode gameMode, string path)
 	{
 		if (string.IsNullOrWhiteSpace(path))

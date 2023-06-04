@@ -64,7 +64,7 @@ public partial class Game
 			action,
 			null,
 			ex => Log.Error(ex, "Game DomPoller '{0}' exception", watchdogName),
-			() => IsGameStarted,
+			() => IsGameInProgress,
 			intenseInterval,
 			idleInterval,
 			cancelToken);
@@ -76,7 +76,7 @@ public partial class Game
 			action,
 			action,
 			ex => Log.Error(ex, "Condition-less DomPoller '{0}' exception.", watchdogName),
-			() => IsGameStarted,
+			() => IsGameInProgress,
 			intenseInterval,
 			idleInterval,
 			cancelToken);
@@ -90,20 +90,6 @@ public partial class Game
 			ex => Log.Error(ex, "Slow DomPoller '{0}' exception.", watchdogName),
 			() => true,
 			idleInterval,
-			idleInterval,
-			cancelToken);
-	}
-
-	// 참고: 이 와치독은 '타자 대결' 모드에서만 사용됩니다
-	// TODO: Remove this and combine with WordConditionUpdatePoller
-	private async Task TypingBattleWatchdog(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int intenseInterval = intenseInterval)
-	{
-		await BaseDomPoller(
-			action,
-			null,
-			ex => Log.Error(ex, "Typing-battle DomPoller '{0}' exception", watchdogName),
-			() => IsGameStarted && CurrentGameMode == GameMode.TypingBattle,
-			intenseInterval,
 			idleInterval,
 			cancelToken);
 	}

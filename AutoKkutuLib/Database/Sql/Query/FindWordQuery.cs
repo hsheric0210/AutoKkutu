@@ -77,7 +77,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 				WordCategories categories = SetupWordCategories(
 					 wordString,
 					(WordFlags)found.Flags,
-					Parameter.MissionChar,
+					Parameter.Condition.MissionChar,
 					out var missionCharCount);
 				result.Add(new PathObject(wordString, categories, missionCharCount));
 			}
@@ -95,7 +95,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 	private WordCategories SetupWordCategories(
 		string word,
 		WordFlags wordFlags,
-		string missionChar,
+		string? missionChar,
 		out int missionCharCount)
 	{
 		WordCategories category = WordCategories.None;
@@ -128,7 +128,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 				return DatabaseConstants.ReverseWordIndexColumnName;
 
 			case GameMode.Kkutu: // TODO: 세 글자용 인덱스도 만들기
-				if (word.Content.Length == 2 || word.CanSubstitution && word.Substitution!.Length == 2)
+				if (word.Char.Length == 2 || word.SubAvailable && word.SubChar!.Length == 2)
 					return DatabaseConstants.KkutuWordIndexColumnName;
 				break;
 		}
@@ -143,13 +143,13 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 
 		if (mode != GameMode.All)
 		{
-			WordCondition word = parameter.Word;
+			WordCondition word = parameter.Condition;
 			var wordIndexColumn = GetIndexColumnName(word);
-			param.Add("@PrimaryWord", word.Content);
-			if (word.CanSubstitution)
+			param.Add("@PrimaryWord", word.Char);
+			if (word.SubAvailable)
 			{
 				filter = $" WHERE ({wordIndexColumn} = @PrimaryWord OR {wordIndexColumn} = @SecondaryWord)";
-				param.Add("@SecondaryWord", word.Substitution!);
+				param.Add("@SecondaryWord", word.SubChar!);
 			}
 			else
 			{
@@ -166,13 +166,13 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 			if (mode == GameMode.KungKungTta)
 				filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordFlags.KKT3} != 0)";
 		}
-		var orderPriority = $"({CreateWordPriorityFuncCall(parameter.MissionChar, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
+		var orderPriority = $"({CreateWordPriorityFuncCall(parameter.Condition.MissionChar, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
 		return new FindQuery($"SELECT {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName} FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {maxCount};", param);
 	}
 
 	private string CreateWordPriorityFuncCall(
-		string missionChar,
+		string? missionChar,
 		IDictionary<string, object> param)
 	{
 		if (string.IsNullOrWhiteSpace(missionChar))

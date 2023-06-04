@@ -1,4 +1,4 @@
 ﻿namespace AutoKkutuLib;
 
 // TODO: 미션 글자가 두 글자 이상일 경우에 대한 핸들링
-public sealed record PathFinderParameter(WordCondition Word, string MissionChar, PathFinderFlags Options, bool ReuseAlreadyUsed, int MaxDisplayed);
+public sealed record PathFinderParameter(WordCondition Condition, PathFinderFlags Options, bool ReuseAlreadyUsed, int MaxDisplayed);

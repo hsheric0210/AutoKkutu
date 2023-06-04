@@ -278,16 +278,16 @@ public static class Main
 
 		var autoEnter = Prefs.AutoEnterEnabled && !args.Result.Options.HasFlag(PathFinderFlags.ManualSearch);
 
-		if (args.ResultType == PathFindResult.NotFound && !path.Options.HasFlag(PathFinderFlags.ManualSearch))
+		if (args.ResultType == PathFindResultType.NotFound && !path.Options.HasFlag(PathFinderFlags.ManualSearch))
 			UpdateStatusMessage(StatusMessage.NotFound); // Not found
-		else if (args.ResultType == PathFindResult.Error)
+		else if (args.ResultType == PathFindResultType.Error)
 			UpdateStatusMessage(StatusMessage.Error); // Error occurred
 		else if (!autoEnter)
 			UpdateStatusMessage(StatusMessage.Normal);
 
-		if (!AutoKkutu.Game.IsValidPath(path))
+		if (!AutoKkutu.Game.CheckPathExpired(path))
 		{
-			Log.Warning("Invalid path {path} (missionChar: {missionChar}) rejected.", path.Word, path.MissionChar);
+			Log.Warning("Invalid word condition {path} rejected.", path.Condition);
 			return;
 		}
 
@@ -297,7 +297,7 @@ public static class Main
 
 		if (autoEnter)
 		{
-			if (args.ResultType == PathFindResult.NotFound)
+			if (args.ResultType == PathFindResultType.NotFound)
 			{
 
 				Log.Warning(I18n.Auto_NoMorePathAvailable);
@@ -403,7 +403,7 @@ public static class Main
 	// TODO: Move to Lib
 	private static void OnMyTurn(object? sender, WordConditionPresentEventArgs args)
 	{
-		AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, args.MissionChar, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
+		AutoKkutu.PathFinder.FindPath(AutoKkutu.Game.CurrentGameMode, new PathFinderParameter(args.Word, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount), Prefs.ActiveWordPreference);
 	}
 
 	// TODO: Move to Lib

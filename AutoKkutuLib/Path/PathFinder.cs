@@ -44,10 +44,10 @@ public class PathFinder
 
 		try
 		{
-			WordCondition word = parameter.Word;
-			if (nodeManager.GetEndNodeForMode(gameMode).Contains(word.Content) && (!word.CanSubstitution || nodeManager.GetEndNodeForMode(gameMode).Contains(word.Substitution!)))
+			WordCondition word = parameter.Condition;
+			if (nodeManager.GetEndNodeForMode(gameMode).Contains(word.Char) && (!word.SubAvailable || nodeManager.GetEndNodeForMode(gameMode).Contains(word.SubChar!)))
 			{
-				Log.Warning("End node: {node1}, {node2}", word.Content, word.Substitution);
+				Log.Warning("End node: {node1}, {node2}", word.Char, word.SubChar);
 				// 진퇴양난
 				Log.Warning(I18n.PathFinderFailed_Endword);
 				// AutoKkutuMain.ResetPathList();
@@ -60,10 +60,10 @@ public class PathFinder
 				//AutoKkutuMain.UpdateStatusMessage(StatusMessage.Searching);
 				OnStateChanged?.Invoke(this, new PathFinderStateEventArgs(PathFinderState.Finding));
 
-				if (word.CanSubstitution)
-					Log.Information(I18n.PathFinder_FindPath_Substituation, word.Content, word.Substitution);
+				if (word.SubAvailable)
+					Log.Information(I18n.PathFinder_FindPath_Substituation, word.Char, word.SubChar);
 				else
-					Log.Information(I18n.PathFinder_FindPath, word.Content);
+					Log.Information(I18n.PathFinder_FindPath, word.Char);
 
 				// Enqueue search
 				Task.Run(() => FindPathInternal(gameMode, parameter, preference));
@@ -94,7 +94,7 @@ public class PathFinder
 		{
 			stopWatch.Stop();
 			Log.Error(e, I18n.PathFinder_FindPath_Error);
-			PathUpdated(new PathUpdateEventArgs(parameter, PathFindResult.Error, 0, 0, 0));
+			PathUpdated(new PathUpdateEventArgs(parameter, PathFindResultType.Error, 0, 0, 0));
 			return;
 		}
 
@@ -110,7 +110,7 @@ public class PathFinder
 		if (availableWordList.Count == 0)
 		{
 			Log.Warning(I18n.PathFinder_FindPath_NotFound);
-			PathUpdated(new PathUpdateEventArgs(parameter, PathFindResult.NotFound, totalWordCount, 0, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
+			PathUpdated(new PathUpdateEventArgs(parameter, PathFindResultType.NotFound, totalWordCount, 0, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
 			return;
 		}
 
@@ -118,27 +118,27 @@ public class PathFinder
 		AvailableWordList = availableWordList;
 
 		Log.Information(I18n.PathFinder_FoundPath_Ready, TotalWordList.Count, stopWatch.ElapsedMilliseconds);
-		PathUpdated(new PathUpdateEventArgs(parameter, PathFindResult.Found, totalWordCount, AvailableWordList.Count, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
+		PathUpdated(new PathUpdateEventArgs(parameter, PathFindResultType.Found, totalWordCount, AvailableWordList.Count, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
 	}
 
 	public void GenerateRandomPath(
 		GameMode mode,
 		PathFinderParameter param)
 	{
-		var firstChar = mode == GameMode.LastAndFirstFree ? param.Word.Content : "";
+		var firstChar = mode == GameMode.LastAndFirstFree ? param.Condition.Char : "";
 
 		var stopwatch = new Stopwatch();
 		stopwatch.Start();
 		TotalWordList = new List<PathObject>();
 		var random = new Random();
 		var len = random.Next(64, 256);
-		if (!string.IsNullOrWhiteSpace(param.MissionChar))
-			TotalWordList.Add(new PathObject(firstChar + random.GenerateRandomString(random.Next(16, 64), false) + new string(param.MissionChar[0], len) + random.GenerateRandomString(random.Next(16, 64), false), WordCategories.None, len));
+		if (!string.IsNullOrWhiteSpace(param.Condition.MissionChar))
+			TotalWordList.Add(new PathObject(firstChar + random.GenerateRandomString(random.Next(16, 64), false) + new string(param.Condition.MissionChar[0], len) + random.GenerateRandomString(random.Next(16, 64), false), WordCategories.None, len));
 		for (var i = 0; i < 10; i++)
 			TotalWordList.Add(new PathObject(firstChar + random.GenerateRandomString(len, false), WordCategories.None, 0));
 		stopwatch.Stop();
 		AvailableWordList = new List<PathObject>(TotalWordList);
-		PathUpdated(new PathUpdateEventArgs(param, PathFindResult.Found, TotalWordList.Count, TotalWordList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
+		PathUpdated(new PathUpdateEventArgs(param, PathFindResultType.Found, TotalWordList.Count, TotalWordList.Count, Convert.ToInt32(stopwatch.ElapsedMilliseconds)));
 	}
 
 	private void PathUpdated(PathUpdateEventArgs eventArgs) => OnPathUpdated?.Invoke(this, eventArgs);

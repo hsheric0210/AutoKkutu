@@ -1,35 +1,56 @@
-﻿namespace AutoKkutuLib;
+﻿using System.Text;
 
-public class WordCondition
+namespace AutoKkutuLib;
+
+/// <summary>
+/// 단어 검색 조건을 나타냅니다
+/// </summary>
+public struct WordCondition
 {
-	public string Content
+	/// <summary>
+	/// 주 단어 조건 문자
+	/// </summary>
+	public string Char { get; }
+
+	/// <summary>
+	/// 보조 단어 조건 문자가 존재하는지의 여부
+	/// </summary>
+	public bool SubAvailable => !string.IsNullOrWhiteSpace(SubChar);
+
+	/// <summary>
+	/// 보조 단어 조건 문자 (두음법칙 등)
+	/// </summary>
+	public string? SubChar { get; }
+
+	/// <summary>
+	/// 미션 글자
+	/// </summary>
+	public string? MissionChar { get; }
+
+	public WordCondition(string content, string? substitution = null, string? missionChar = null)
 	{
-		get;
+		Char = content;
+		SubChar = substitution;
+		MissionChar = missionChar;
 	}
 
-	public bool CanSubstitution
+	public bool Equals(object? obj, bool checkMissionChar) => obj is WordCondition other
+		&& string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
+		&& (!checkMissionChar || string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase))
+		&& (!SubAvailable || string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
+
+	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar);
+
+	public override bool Equals(object? obj) => Equals(obj, true);
+
+	public override string ToString()
 	{
-		get;
+		var builder = new StringBuilder();
+		builder.Append("WordCondition[Char='").Append(Char).Append('\'');
+		if (SubAvailable)
+			builder.Append(", SubChar='").Append(SubChar).Append('\'');
+		if (!string.IsNullOrWhiteSpace(MissionChar))
+			builder.Append(", MissionChar='").Append(MissionChar).Append('\'');
+		return builder.Append(']').ToString();
 	}
-
-	public string? Substitution
-	{
-		get;
-	}
-
-	public WordCondition(string content, bool canSubsitution, string? substituation = null)
-	{
-		Content = content;
-		CanSubstitution = canSubsitution;
-		if (!CanSubstitution)
-			return;
-		Substitution = substituation;
-	}
-
-	public override bool Equals(object? obj) => obj is WordCondition other
-		&& string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase)
-		&& Substitution == other.Substitution
-		&& (!CanSubstitution || string.Equals(Substitution, other.Substitution, StringComparison.OrdinalIgnoreCase));
-
-	public override int GetHashCode() => HashCode.Combine(Content, CanSubstitution, Substitution);
 }

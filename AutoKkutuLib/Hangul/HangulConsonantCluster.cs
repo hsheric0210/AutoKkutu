@@ -1,9 +1,13 @@
 ﻿namespace AutoKkutuLib.Hangul;
 
+/// <summary>
+/// 자음군 분리 및 합치기를 위한 유틸리티 클래스
+/// </summary>
 internal static class HangulConsonantCluster
 {
 	/// <summary>
-	/// 자음군 합치기
+	/// 분리되어 있던 자음군을 합칩니다.
+	/// (예시: ['ㄱ', 'ㅅ']->'ㄳ')
 	/// </summary>
 	internal static char MergeCluster(params char[] consonants)
 	{
@@ -31,7 +35,8 @@ internal static class HangulConsonantCluster
 	}
 
 	/// <summary>
-	/// 자음군 분리
+	/// 자음군을 분리합니다.
+	/// (예시: 'ㄺ'->['ㄹ', 'ㄱ'])
 	/// </summary>
 	internal static IList<char> SplitCluster(this char consonantCluster)
 	{

@@ -7,13 +7,6 @@ public partial class Game
 	private Task? mainPoller;
 	private CancellationTokenSource? pollerCancel;
 
-	private readonly string[] wordHistoryCache = new string[6];
-	private int roundIndexCache;
-	private string turnErrorWordCache = "";
-	private string exampleWordCache = "";
-	private string currentPresentedWordCache = "";
-	private long currentPresentedWordCacheTime = -1;
-
 	private void StartPollers()
 	{
 		pollerCancel = new CancellationTokenSource();
@@ -22,14 +15,28 @@ public partial class Game
 		mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", primaryInterval), token);
 		mainPoller.Start();
 
-		Task.Run(async () => await GameDomPoller(PollWordHistory, token, "Word history poller"));
+		Task.Run(async () => await BaseDomPoller(
+			PollWordHistory,
+			null,
+			(ex) => Log.Error(ex, "'Word Histories' poller exception"),
+			() => IsGameInProgress && !CurrentGameMode.IsFreeMode(),
+			intenseInterval,
+			idleInterval,
+			token));
+		Task.Run(async () => await BaseDomPoller(
+			PollTypingWord,
+			null,
+			(ex) => Log.Error(ex, "'Typing-word' poller exception"),
+			() => IsGameInProgress && CurrentGameMode == GameMode.TypingBattle,
+			intenseInterval,
+			idleInterval,
+			token));
+
 		Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller"));
-		Task.Run(async () => await GameDomPoller(PollMissionWord, token, "Mission word poller"));
 		Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
 		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller"));
 		Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
 		Task.Run(async () => await GameDomPoller(PollTurn, token, "My turn poller"));
-		Task.Run(async () => await TypingBattleWatchdog(PollTypingWord, token, "Typing-battle word poller"));
 		Log.Debug("DOM pollers are now active.");
 	}
 
@@ -48,38 +55,19 @@ public partial class Game
 
 	private async Task PollTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition());
 
+	private readonly string[] wordHistoryCache = new string[6];
 	private async Task PollWordHistory()
 	{
-		if (CurrentGameMode.IsFreeMode())
-			return;
-
-		var tmpWordCache = new string[6];
+		var histories = new string[6];
 
 		for (var index = 0; index < 6; index++)
 		{
 			var history = await domHandler.GetWordInHistory(index); // TODO: Fix this. Do not parse by myself, instead use Json HTML DOM.
 			if (!string.IsNullOrWhiteSpace(history) && history.Contains('<', StringComparison.Ordinal))
-				tmpWordCache[index] = history[..history.IndexOf('<', StringComparison.Ordinal)].Trim();
+				histories[index] = history[..history.IndexOf('<', StringComparison.Ordinal)].Trim();
 		}
 
-		for (var index = 0; index < 6; index++)
-		{
-			var word = tmpWordCache[index];
-			if (!string.IsNullOrWhiteSpace(word) && !wordHistoryCache.Contains(word))
-			{
-				Log.Information("Found new used word in history : {word}", word);
-				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(word));
-			}
-		}
-
-		Array.Copy(tmpWordCache, wordHistoryCache, 6);
-	}
-
-	private async Task PollMissionWord()
-	{
-		var missionWord = await domHandler.GetMissionChar();
-		if (!string.IsNullOrWhiteSpace(missionWord))
-			NotifyMissionChar(missionWord);
+		NotifyWordHistories(histories);
 	}
 
 	private async Task PollRound() => NotifyRound(await domHandler.GetRoundIndex());
@@ -144,33 +132,33 @@ public partial class Game
 	// TODO: Return nothing when the current gamemode is 'Free'
 	private async Task<WordCondition?> PollWordCondition()
 	{
-		var content = await domHandler.GetPresentedWord();
+		var condition = await domHandler.GetPresentedWord();
+		var missionChar = await domHandler.GetMissionChar();
+		missionChar = string.IsNullOrWhiteSpace(missionChar) ? null : missionChar;
 
-		if (string.IsNullOrEmpty(content))
+		if (string.IsNullOrEmpty(condition))
 			return null;
 
-		string primary;
-		var secondary = string.Empty;
-		var hasSecondary = content.Contains('(', StringComparison.Ordinal) && content.Last() == ')';
-		if (hasSecondary)
+		string cChar;
+		var cSubChar = string.Empty;
+		if (condition.Contains('(') && condition.Last() == ')')
 		{
-			var parentheseStartIndex = content.IndexOf('(', StringComparison.Ordinal);
-			var parentheseEndIndex = content.IndexOf(')', StringComparison.Ordinal);
-			primary = content[..parentheseStartIndex];
-			secondary = content.Substring(parentheseStartIndex + 1, parentheseEndIndex - parentheseStartIndex - 1);
+			var parentheseStartIndex = condition.IndexOf('(');
+			var parentheseEndIndex = condition.IndexOf(')');
+			cChar = condition[..parentheseStartIndex];
+			cSubChar = condition.Substring(parentheseStartIndex + 1, parentheseEndIndex - parentheseStartIndex - 1);
 		}
-		else if (content.Length <= 1)
+		else if (condition.Length <= 1)
 		{
-			primary = content;
+			cChar = condition;
 		}
-		else  // 가끔가다가 서버 렉때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가 나한테 그대로 넘어오는 경우가 왕왕 있음. 특히 양쪽이 오토 켜놓고 대결할 때.
+		else
 		{
-			var tailNode = CurrentGameMode.ConvertWordToTailNode(content);
-			if (tailNode == null)
-				return null;
-			primary = tailNode;
+			// 가끔가다가 서버 렉때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가
+			// 나한테 그대로 넘어오는 경우가 왕왕 있음. 특히 양쪽이 오토 켜놓고 대결할 때.
+			return CurrentGameMode.ConvertWordToCondition(condition, missionChar);
 		}
 
-		return new WordCondition(primary, hasSecondary, secondary);
+		return new WordCondition(cChar, cSubChar, missionChar);
 	}
 }

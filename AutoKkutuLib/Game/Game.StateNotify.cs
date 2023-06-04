@@ -4,25 +4,31 @@ using Serilog;
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
+	private int roundIndexCache;
+	private string turnErrorWordCache = "";
+	private string exampleWordCache = "";
+	private string currentPresentedWordCache = "";
+	private long currentPresentedWordCacheTime = -1;
+
 	public void NotifyGameProgress(bool isGameInProgress)
 	{
 		if (isGameInProgress)
 		{
-			if (!IsGameStarted)
+			if (!IsGameInProgress)
 			{
 				Log.Debug("New game started; Used word history flushed.");
 				GameStarted?.Invoke(this, EventArgs.Empty);
-				IsGameStarted = true;
+				IsGameInProgress = true;
 			}
 		}
 		else
 		{
-			if (!IsGameStarted)
+			if (!IsGameInProgress)
 				return;
 
 			Log.Debug("Game ended.");
 			GameEnded?.Invoke(this, EventArgs.Empty);
-			IsGameStarted = false;
+			IsGameInProgress = false;
 		}
 	}
 
@@ -48,26 +54,23 @@ public partial class Game
 	{
 		if (isMyTurn)
 		{
-			if (!IsMyTurn)
+			if (IsMyTurn)
+				return;
+
+			IsMyTurn = true;
+
+			if (CurrentGameMode == GameMode.Free)
 			{
-				IsMyTurn = true;
-
-				if (CurrentGameMode == GameMode.Free)
-				{
-					MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(new WordCondition("", false), CurrentMissionChar));
-					return;
-				}
-
-				if (wordCondition == null)
-					return;
-
-				if (wordCondition.CanSubstitution)
-					Log.Information("My turn arrived, presented word is {word} (Subsitution: {subsituation})", wordCondition.Content, wordCondition.Substitution);
-				else
-					Log.Information("My turn arrived, presented word is {word}.", wordCondition.Content);
-				CurrentPresentedWord = (WordCondition?)wordCondition;
-				MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs((WordCondition?)wordCondition, CurrentMissionChar));
+				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs(new WordCondition("")));
+				return;
 			}
+
+			if (wordCondition == null)
+				return;
+
+			Log.Information("My turn arrived, presented word is {word}.", wordCondition);
+			CurrentPresentedWord = wordCondition;
+			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition));
 
 			return;
 		}
@@ -75,7 +78,7 @@ public partial class Game
 		if (!IsMyTurn)
 			return;
 		IsMyTurn = false;
-		// When my turn ends...
+
 		Log.Debug("My turn ended.");
 		MyTurnEnded?.Invoke(this, EventArgs.Empty);
 	}
@@ -107,11 +110,30 @@ public partial class Game
 			MyPathIsUnsupported?.Invoke(this, new UnsupportedWordEventArgs(word, errorCode != TurnErrorCode.NotFound, errorCode is TurnErrorCode.NoEndWordOnBegin or TurnErrorCode.EndWord));
 	}
 
-	public void NotifyMissionChar(string missionChar)
+	public void NotifyWordHistories(string[] newHistories)
 	{
-		if (string.Equals(missionChar, CurrentMissionChar, StringComparison.Ordinal))
+		if (CurrentGameMode.IsFreeMode())
 			return;
-		Log.Information("Mission char change detected : {word}", missionChar);
-		CurrentMissionChar = missionChar;
+
+		for (var index = 0; index < 6; index++)
+		{
+			var word = newHistories[index];
+			if (!string.IsNullOrWhiteSpace(word) && !wordHistoryCache.Contains(word))
+			{
+				Log.Information("Found new used word in history : {word}", word);
+				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(word));
+			}
+		}
+
+		Array.Copy(newHistories, wordHistoryCache, 6);
+	}
+
+	public void NotifyWordHistory(string newHistoryElement)
+	{
+		// Ugly solution :(
+		var newHistories = new string[6];
+		Array.Copy(wordHistoryCache, 0, newHistories, 1, 5);
+		newHistories[0] = newHistoryElement;
+		NotifyWordHistories(newHistories);
 	}
 }

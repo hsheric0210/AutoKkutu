@@ -15,11 +15,9 @@ public partial class Game : IGame
 
 	public WordCondition? CurrentPresentedWord { get; private set; }
 
-	public string CurrentMissionChar { get; private set; } = "";
-
 	public GameMode CurrentGameMode { get; private set; } = GameMode.LastAndFirst;
 
-	public bool IsGameStarted { get; private set; }
+	public bool IsGameInProgress { get; private set; }
 
 	public bool IsMyTurn { get; private set; }
 
@@ -42,8 +40,8 @@ public partial class Game : IGame
 	#region Game events
 	public event EventHandler? GameStarted;
 	public event EventHandler? GameEnded;
-	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnd; // TODO
-	public event EventHandler<WordConditionPresentEventArgs>? MyWordPresented;
+	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded; // TODO
+	public event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	public event EventHandler? MyTurnEnded;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 	public event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
@@ -101,17 +99,16 @@ public partial class Game : IGame
 
 	public int GetTurnTimeMillis() => GetTurnTimeMillisAsync().Result;
 
-	public bool IsValidPath(PathFinderParameter path)
+	public bool CheckPathExpired(PathFinderParameter path)
 	{
 		if (path.Options.HasFlag(PathFinderFlags.ManualSearch))
 			return true;
 
-		var differentWord = CurrentPresentedWord != null && !path.Word.Equals(CurrentPresentedWord);
-		var differentMissionChar = path.Options.HasFlag(PathFinderFlags.MissionWordExists) && !string.IsNullOrWhiteSpace(CurrentMissionChar) && !string.Equals(path.MissionChar, CurrentMissionChar, StringComparison.OrdinalIgnoreCase);
-		if (IsMyTurn && (differentWord || differentMissionChar))
+		var isConditionChanged = CurrentPresentedWord != null && !path.Condition.Equals(CurrentPresentedWord, path.Options.HasFlag(PathFinderFlags.MissionWordExists));
+		if (IsMyTurn && isConditionChanged)
 		{
-			Log.Warning(I18n.PathFinder_InvalidatedUpdate, differentWord, differentMissionChar);
-			MyWordPresented?.Invoke(this, new WordConditionPresentEventArgs(CurrentPresentedWord!, CurrentMissionChar!)); // Re-trigger search
+			Log.Warning(I18n.PathFinder_InvalidatedUpdate, isConditionChanged, false); // FIXME: Change text format
+			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentPresentedWord!)); // Re-trigger search
 			return false;
 		}
 		return true;
