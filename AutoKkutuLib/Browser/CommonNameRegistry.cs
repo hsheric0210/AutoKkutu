@@ -17,6 +17,6 @@ public enum CommonNameRegistry
 	RoundTime,
 	ExampleWord,
 	MissionChar,
-	WordHistory,
+	WordHistories,
 	RoomModeToGameMode
 }

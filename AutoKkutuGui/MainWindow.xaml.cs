@@ -64,7 +64,7 @@ public partial class MainWindow : Window
 
 	/* EVENTS: AutoKkutu */
 
-	private void OnPathListUpdated(object? sender, EventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = Main.AutoKkutu.PathFinder.TotalWordList.Select(po => new GuiPathObject(po)));
+	private void OnPathListUpdated(object? sender, PathListUpdateEventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = args.GuiPathList);
 
 	private void OnBrowserFrameLoad(object? sender, EventArgs args)
 	{
@@ -318,7 +318,7 @@ public partial class MainWindow : Window
 
 	private static string CreatePathResultExplain(PathUpdateEventArgs arg)
 	{
-		var parameter = arg.Result;
+		var parameter = arg.Info;
 		var filter = $"'{parameter.Condition.Char}'";
 		if (parameter.Condition.SubAvailable)
 			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{parameter.Condition.SubChar}'");
@@ -328,19 +328,19 @@ public partial class MainWindow : Window
 		var SpecialFilterText = "";
 		string FindResult;
 		var ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.TimeMillis);
-		if (arg.ResultType == PathFindResultType.Found)
+		if (arg.Result == PathFindResultType.Found)
 		{
-			FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.CalcWordCount);
+			FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.FilteredWordCount);
 		}
 		else
 		{
-			FindResult = arg.ResultType == PathFindResultType.NotFound
+			FindResult = arg.Result == PathFindResultType.NotFound
 				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
 				: I18n.PathFinderError;
 		}
-		if (parameter.Options.HasFlag(PathFinderFlags.UseEndWord))
+		if (parameter.HasFlag(PathFinderFlags.UseEndWord))
 			SpecialFilterText += ", " + I18n.PathFinderEndWord;
-		if (parameter.Options.HasFlag(PathFinderFlags.UseAttackWord))
+		if (parameter.HasFlag(PathFinderFlags.UseAttackWord))
 			SpecialFilterText += ", " + I18n.PathFinderAttackWord;
 
 		var newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(CultureInfo.CurrentCulture, I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
@@ -398,7 +398,7 @@ public partial class MainWindow : Window
 				missionChar = Main.AutoKkutu.Game.CurrentPresentedWord?.MissionChar;
 
 			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(
-				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar ?? "")),
+				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "")),
 				Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch),
 				Main.Prefs.ReturnModeEnabled,
 				Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);

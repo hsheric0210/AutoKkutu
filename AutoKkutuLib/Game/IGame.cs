@@ -22,8 +22,9 @@ public interface IGame : IDisposable
 	event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 	event EventHandler? GameStarted;
 	event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
-	event EventHandler? MyTurnEnded;
+	event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded;
 	event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
+	event EventHandler? MyTurnEnded;
 	event EventHandler? RoundChanged;
 	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;

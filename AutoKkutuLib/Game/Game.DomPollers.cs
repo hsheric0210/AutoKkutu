@@ -55,19 +55,11 @@ public partial class Game
 
 	private async Task PollTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition());
 
-	private readonly string[] wordHistoryCache = new string[6];
 	private async Task PollWordHistory()
 	{
-		var histories = new string[6];
-
-		for (var index = 0; index < 6; index++)
-		{
-			var history = await domHandler.GetWordInHistory(index); // TODO: Fix this. Do not parse by myself, instead use Json HTML DOM.
-			if (!string.IsNullOrWhiteSpace(history) && history.Contains('<', StringComparison.Ordinal))
-				histories[index] = history[..history.IndexOf('<', StringComparison.Ordinal)].Trim();
-		}
-
-		NotifyWordHistories(histories);
+		var histories = await domHandler.GetWordInHistories();
+		if (histories != null)
+			NotifyWordHistories(histories);
 	}
 
 	private async Task PollRound() => NotifyRound(await domHandler.GetRoundIndex());

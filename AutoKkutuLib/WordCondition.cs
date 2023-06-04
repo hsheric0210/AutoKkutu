@@ -7,6 +7,8 @@ namespace AutoKkutuLib;
 /// </summary>
 public struct WordCondition
 {
+	public static WordCondition Empty { get; } = new WordCondition("");
+
 	/// <summary>
 	/// 주 단어 조건 문자
 	/// </summary>
@@ -34,14 +36,12 @@ public struct WordCondition
 		MissionChar = missionChar;
 	}
 
-	public bool Equals(object? obj, bool checkMissionChar) => obj is WordCondition other
+	public override bool Equals(object? obj) => obj is WordCondition other
 		&& string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
-		&& (!checkMissionChar || string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase))
+		&& string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase)
 		&& (!SubAvailable || string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
 
 	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar);
-
-	public override bool Equals(object? obj) => Equals(obj, true);
 
 	public override string ToString()
 	{

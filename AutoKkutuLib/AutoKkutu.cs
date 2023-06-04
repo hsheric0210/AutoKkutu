@@ -32,8 +32,9 @@ public class AutoKkutu : IDisposable
 	public event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 	public event EventHandler? GameStarted;
 	public event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
+	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded;
+	public event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	public event EventHandler? MyTurnEnded;
-	public event EventHandler<WordConditionPresentEventArgs>? MyWordPresented;
 	public event EventHandler? RoundChanged;
 	public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
@@ -100,7 +101,8 @@ public class AutoKkutu : IDisposable
 		game.GameStarted += GameStarted;
 		game.MyPathIsUnsupported += MyPathIsUnsupported;
 		game.MyTurnEnded += MyTurnEnded;
-		game.MyTurnStarted += MyWordPresented;
+		game.MyTurnStarted += MyTurnStarted;
+		game.PreviousUserTurnEnded += PreviousUserTurnEnded;
 		game.RoundChanged += RoundChanged;
 		game.TypingWordPresented += TypingWordPresented;
 		game.UnsupportedWordEntered += UnsupportedWordEntered;
@@ -120,7 +122,8 @@ public class AutoKkutu : IDisposable
 		game.GameStarted -= GameStarted;
 		game.MyPathIsUnsupported -= MyPathIsUnsupported;
 		game.MyTurnEnded -= MyTurnEnded;
-		game.MyTurnStarted -= MyWordPresented;
+		game.MyTurnStarted -= MyTurnStarted;
+		game.PreviousUserTurnEnded -= PreviousUserTurnEnded;
 		game.RoundChanged -= RoundChanged;
 		game.TypingWordPresented -= TypingWordPresented;
 		game.UnsupportedWordEntered -= UnsupportedWordEntered;

@@ -51,6 +51,18 @@ public partial class Game
 		}
 	}
 
+	private static async Task SlowDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null)
+	{
+		await BaseDomPoller(
+			action,
+			null,
+			ex => Log.Error(ex, "Slow DomPoller '{0}' exception.", watchdogName),
+			() => true,
+			idleInterval,
+			idleInterval,
+			cancelToken);
+	}
+
 	/// <summary>
 	/// 게임이 진행 중일때만 특정 함수를 반복하여 호출하는 DomPoller를 구성합니다.
 	/// </summary>
@@ -78,18 +90,6 @@ public partial class Game
 			ex => Log.Error(ex, "Condition-less DomPoller '{0}' exception.", watchdogName),
 			() => IsGameInProgress,
 			intenseInterval,
-			idleInterval,
-			cancelToken);
-	}
-
-	private async Task SlowDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null)
-	{
-		await BaseDomPoller(
-			action,
-			null,
-			ex => Log.Error(ex, "Slow DomPoller '{0}' exception.", watchdogName),
-			() => true,
-			idleInterval,
 			idleInterval,
 			cancelToken);
 	}

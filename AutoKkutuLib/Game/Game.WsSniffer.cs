@@ -1,5 +1,7 @@
 ﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Extension;
 using Serilog;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Text.Json.Nodes;
 
@@ -7,9 +9,7 @@ namespace AutoKkutuLib.Game;
 public partial class Game
 {
 	private IDictionary<string, Action<JsonNode>>? specializedSniffers;
-	private string myUserId;
-	private int mySeqIndex;
-	private IList<string>? myGameSeq;
+	private WsSessionInfo? wsSession;
 
 	private void BeginWebSocketSniffing()
 	{
@@ -51,57 +51,70 @@ public partial class Game
 
 	private void OnWsWelcome(WsWelcome data)
 	{
-		myUserId = data.UserId ?? "<Unknown>";
-		Log.Debug("Caught user id: {id}", myUserId);
+		wsSession = new WsSessionInfo(data.UserId);
+		Log.Debug("Caught user id: {id}", data.UserId);
 	}
 
 	private void OnWsRoom(WsRoom data)
 	{
-		if (!data.Players.Contains(myUserId)) // It's other room
+		if (wsSession is not WsSessionInfo session)
+			return;
+
+		if (!data.Players.Contains(session.MyUserId)) // It's other room
 			return;
 
 		if (data.Gaming && data.GameSequence.Count > 0)
-		{
-			mySeqIndex = data.GameSequence.IndexOf(myUserId);
-			if (mySeqIndex >= 0)
-			{
-				myGameSeq = data.GameSequence;
-				Log.Information("MyGameSeqIdx: {idx}", mySeqIndex);
-			}
-		}
+			wsSession = session with { MyGameTurns = data.GameSequence.ToImmutableList() };
 
-		GameMode gameMode = data.Mode;
-		if (gameMode != GameMode.None && gameMode != CurrentGameMode)
-		{
-			CurrentGameMode = gameMode;
-			GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
-		}
+		NotifyGameMode(data.Mode);
 	}
 
 	private void OnWsClassicTurnStart(WsClassicTurnStart data)
 	{
-		if (myGameSeq != null && data.Turn % myGameSeq.Count == mySeqIndex)
-			Log.Information("WS: My turn start!");
+		if (wsSession is WsSessionInfo session && session.IsGaming)
+		{
+			if (session.IsMyTurn(data.Turn))
+			{
+				Log.Information("WS: My turn start! Condition is {cond}", data.Condition);
+				NotifyMyTurn(true, data.Condition);
+			}
+			else if (session.GetRelativeTurn(data.Turn) == session.GetMyPreviousUserTurn())
+			{
+				wsSession = session with { MyGamePreviousUserMission = data.Condition.MissionChar };
+				Log.Information("WS: Captured previous user mission char: {missionChar}", data.Condition.MissionChar);
+			}
+		}
 	}
 
 	private void OnWsClassicTurnEnd(WsClassicTurnEnd data)
 	{
-		if (data.Ok && myGameSeq != null)
+		if (data.Ok && wsSession is WsSessionInfo session && session.IsGaming && !string.IsNullOrWhiteSpace(data.Value))
 		{
-			var idx = myGameSeq.IndexOf(data.Target);
-			var totalSeqCount = myGameSeq.Count;
-			var turn = (idx + totalSeqCount) % totalSeqCount;
-			var myPrevTurn = (mySeqIndex - 1 + totalSeqCount) % totalSeqCount;
-			Log.Information("target idx: {tidx} turn idx: {turn} my-prev idx: {midx} my-idx: {mydx}", idx, turn, myPrevTurn, mySeqIndex);
-			if (idx >= 0 && turn == myPrevTurn)
+			var turn = session.GetTurnOf(data.Target);
+			if (turn >= 0 && session.GetRelativeTurn(turn) == session.GetMyPreviousUserTurn())
 			{
-				Log.Information("WS: The previous person submitted: {txt}!", data.Value);
+				Log.Debug("WS: The previous user submit: {txt}!", data.Value);
+				var missionChar = session.MyGamePreviousUserMission;
+				if (missionChar != null && data.Value.Contains(missionChar))
+					return; // The mission char will be changed. Thus, our effort to pre-search word database will become useless. Use standard search method instead. (Search on my turn started)
+
+				WordCondition? condition = CurrentGameMode.ConvertWordToCondition(data.Value, session.MyGamePreviousUserMission);
+				if (condition == null)
+					return; // Conversion unavailable
+
+				PreviousUserTurnEnded?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)condition));
 			}
+
+			if (session.IsMyTurn(turn))
+				NotifyMyTurn(false);
+			else
+				NotifyWordHistory(data.Value);
 		}
 	}
 
 	private void OnWsTurnError(WsTurnError data)
 	{
-		Log.Warning("Turn error: {txt} - error code {err}", data.Value, data.ErrorCode);
+		if (!string.IsNullOrWhiteSpace(data.Value))
+			NotifyTurnError(data.Value, data.ErrorCode);
 	}
 }

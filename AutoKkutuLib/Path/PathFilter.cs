@@ -1,4 +1,5 @@
 ﻿using ConcurrentCollections;
+using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Path;
 
@@ -27,7 +28,7 @@ public class PathFilter
 	/// <param name="pathList">The input path list</param>
 	/// <returns>Qualified path list</returns>
 	/// <exception cref="ArgumentNullException">If <paramref name="pathList"/> is null</exception>
-	public IList<PathObject> FilterPathList(IList<PathObject> pathList, bool reuseAlreadyUsed)
+	public IImmutableList<PathObject> FilterPathList(IImmutableList<PathObject> pathList, bool reuseAlreadyUsed)
 	{
 		if (pathList is null)
 			throw new ArgumentNullException(nameof(pathList));
@@ -45,6 +46,6 @@ public class PathFilter
 				qualifiedList.Add(path);
 		}
 
-		return qualifiedList;
+		return qualifiedList.ToImmutableList();
 	}
 }

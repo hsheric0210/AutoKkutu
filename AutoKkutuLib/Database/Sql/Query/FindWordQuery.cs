@@ -1,26 +1,25 @@
 ﻿using Dapper;
 using Serilog;
+using System.Collections.Immutable;
 using System.Globalization;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 
-public class FindWordQuery : SqlQuery<IList<PathObject>>
+public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 {
 	private readonly GameMode mode;
 	private readonly WordPreference preference;
-	private readonly int maxCount;
 
 	private readonly WordFlags endWordFlag;
 	private readonly WordFlags attackWordFlag;
 
 	public PathFinderParameter? Parameter { get; set; }
 
-	internal FindWordQuery(AbstractDatabaseConnection connection, GameMode mode, WordPreference preference, int maxCount) : base(connection)
+	internal FindWordQuery(AbstractDatabaseConnection connection, GameMode mode, WordPreference preference) : base(connection)
 	{
 		this.mode = mode;
 		this.preference = preference;
 		SelectFlags(mode, out endWordFlag, out attackWordFlag);
-		this.maxCount = maxCount;
 	}
 
 	public static void SelectFlags(GameMode mode, out WordFlags endWordFlag, out WordFlags attackWordFlag)
@@ -53,19 +52,19 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 		}
 	}
 
-	public IList<PathObject> Execute(PathFinderParameter parameter)
+	public IImmutableList<PathObject> Execute(PathFinderParameter parameter)
 	{
 		Parameter = parameter;
 		return Execute();
 	}
 
-	public override IList<PathObject> Execute()
+	public override IImmutableList<PathObject> Execute()
 	{
-		if (Parameter is null)
+		if (Parameter is not PathFinderParameter param)
 			throw new InvalidOperationException(nameof(Parameter) + " not set.");
 
-		Log.Debug(nameof(FindWordQuery) + ": Finding the optimal word list for {0}.", Parameter);
-		FindQuery findQuery = CreateQuery(Parameter);
+		Log.Debug(nameof(FindWordQuery) + ": Finding the optimal word list for {0}.", param);
+		FindQuery findQuery = CreateQuery(param);
 		var result = new List<PathObject>();
 		try
 		{
@@ -77,7 +76,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 				WordCategories categories = SetupWordCategories(
 					 wordString,
 					(WordFlags)found.Flags,
-					Parameter.Condition.MissionChar,
+					param.Condition.MissionChar,
 					out var missionCharCount);
 				result.Add(new PathObject(wordString, categories, missionCharCount));
 			}
@@ -88,7 +87,7 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 			throw;
 		}
 
-		return result;
+		return result.ToImmutableList();
 	}
 
 	#region Categorization
@@ -157,18 +156,20 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 			}
 
 			// Use end-words?
-			ApplyFlagFilter(parameter.Options, PathFinderFlags.UseEndWord, endWordFlag, ref filter);
+			if (!parameter.HasFlag(PathFinderFlags.UseEndWord))
+				ApplyExclusionFilter(endWordFlag, ref filter);
 
 			// Use attack-words?
-			ApplyFlagFilter(parameter.Options, PathFinderFlags.UseAttackWord, attackWordFlag, ref filter);
+			if (!parameter.HasFlag(PathFinderFlags.UseAttackWord))
+				ApplyExclusionFilter(attackWordFlag, ref filter);
 
 			// Only KungKungTta words if we're on KungKungTta mode
-			if (mode == GameMode.KungKungTta)
+			if (mode == GameMode.KungKungTta) // TODO: 3232-mode -> check KKT3 and KKT2
 				filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordFlags.KKT3} != 0)";
 		}
 		var orderPriority = $"({CreateWordPriorityFuncCall(parameter.Condition.MissionChar, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
 
-		return new FindQuery($"SELECT {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName} FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {maxCount};", param);
+		return new FindQuery($"SELECT {DatabaseConstants.WordColumnName}, {DatabaseConstants.FlagsColumnName} FROM {DatabaseConstants.WordTableName}{filter} ORDER BY {orderPriority} DESC LIMIT {parameter.MaxDisplayed};", param);
 	}
 
 	private string CreateWordPriorityFuncCall(
@@ -231,22 +232,16 @@ public class FindWordQuery : SqlQuery<IList<PathObject>>
 		}
 	}
 
-	private static int GetWordTypePriority(WordPreference preference, WordCategories attributes)
+	private static int GetWordTypePriority(WordPreference preference, WordCategories category)
 	{
 		WordCategories[] fullAttribs = preference.GetAttributes();
-		var index = Array.IndexOf(fullAttribs, attributes);
-		return fullAttribs.Length - (index >= 0 ? index : fullAttribs.Length) - 1;
+		var index = Array.IndexOf(fullAttribs, category);
+		return fullAttribs.Length - (index >= 0 ? (index - 1) : fullAttribs.Length); // Shouldn't be negative
 	}
 
-	private static void ApplyFlagFilter(
-		PathFinderFlags haystack,
-		PathFinderFlags needle,
+	private static void ApplyExclusionFilter(
 		WordFlags flag,
-		ref string filter)
-	{
-		if (!haystack.HasFlag(needle))
-			filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)flag} = 0)";
-	}
+		ref string filter) => filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)flag} = 0)";
 
 	private sealed record FindQuery(string Sql, IDictionary<string, object> Parameters);
 	#endregion

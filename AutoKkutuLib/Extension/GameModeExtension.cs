@@ -9,7 +9,7 @@ public static class GameModeExtension
 		if (string.IsNullOrWhiteSpace(node))
 			return null;
 
-		var content = new WordCondition(node, missionChar);
+		var content = new WordCondition(node, missionChar: missionChar);
 		if (initialLaw)
 			content = InitialLaw.ApplyInitialLaw(content);
 

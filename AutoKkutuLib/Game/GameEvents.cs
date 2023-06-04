@@ -54,8 +54,8 @@ public class UnsupportedWordEventArgs : EventArgs
 
 public class WordConditionPresentEventArgs : EventArgs
 {
-	public WordCondition Word { get; }
-	public WordConditionPresentEventArgs(WordCondition condition) => Word = condition;
+	public WordCondition Condition { get; }
+	public WordConditionPresentEventArgs(WordCondition condition) => Condition = condition;
 }
 
 // TODO: Add more arguments such as word group, description, etc.

@@ -9,6 +9,8 @@ public partial class Game
 	private string exampleWordCache = "";
 	private string currentPresentedWordCache = "";
 	private long currentPresentedWordCacheTime = -1;
+	private IList<string>? wordHistoriesCache;
+	private string? wordHistoryCache;
 
 	public void NotifyGameProgress(bool isGameInProgress)
 	{
@@ -50,7 +52,7 @@ public partial class Game
 		ExampleWordPresented?.Invoke(this, new WordPresentEventArgs(hint));
 	}
 
-	public void NotifyMyTurn(bool isMyTurn, WordCondition? wordCondition)
+	public void NotifyMyTurn(bool isMyTurn, WordCondition? wordCondition = null)
 	{
 		if (isMyTurn)
 		{
@@ -61,7 +63,7 @@ public partial class Game
 
 			if (CurrentGameMode == GameMode.Free)
 			{
-				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs(new WordCondition("")));
+				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs(WordCondition.Empty));
 				return;
 			}
 
@@ -110,30 +112,29 @@ public partial class Game
 			MyPathIsUnsupported?.Invoke(this, new UnsupportedWordEventArgs(word, errorCode != TurnErrorCode.NotFound, errorCode is TurnErrorCode.NoEndWordOnBegin or TurnErrorCode.EndWord));
 	}
 
-	public void NotifyWordHistories(string[] newHistories)
+	public void NotifyWordHistories(IList<string> newHistories)
 	{
 		if (CurrentGameMode.IsFreeMode())
 			return;
 
-		for (var index = 0; index < 6; index++)
+		foreach (var historyElement in newHistories)
 		{
-			var word = newHistories[index];
-			if (!string.IsNullOrWhiteSpace(word) && !wordHistoryCache.Contains(word))
+			if (!string.IsNullOrWhiteSpace(historyElement) && historyElement != wordHistoryCache /*WebSocket에 의한 단어 수신이 DOM 업데이트보다 더 먼저 일어나기에 이러한 코드가 작동 가능하다.*/ && (wordHistoriesCache == null || !wordHistoriesCache.Contains(historyElement)))
 			{
-				Log.Information("Found new used word in history : {word}", word);
-				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(word));
+				Log.Information("DOM: Found new used word in history : {word}", historyElement);
+				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(historyElement));
 			}
 		}
 
-		Array.Copy(newHistories, wordHistoryCache, 6);
+		wordHistoriesCache = newHistories;
 	}
 
+	// TODO: Optimize
 	public void NotifyWordHistory(string newHistoryElement)
 	{
-		// Ugly solution :(
-		var newHistories = new string[6];
-		Array.Copy(wordHistoryCache, 0, newHistories, 1, 5);
-		newHistories[0] = newHistoryElement;
-		NotifyWordHistories(newHistories);
+		if (wordHistoryCache != null && wordHistoryCache.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase))
+			return;
+		Log.Information("WS: Found new used word in history : {word}", newHistoryElement);
+		DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(newHistoryElement));
 	}
 }

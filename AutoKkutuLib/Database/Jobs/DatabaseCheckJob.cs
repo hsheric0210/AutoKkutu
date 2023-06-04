@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Browser.Extension;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Node;
 using Dapper;
@@ -125,7 +124,7 @@ public class DatabaseCheckJob
 		var correctFlagsInt = (int)correctFlags;
 		if (correctFlagsInt != currentFlags)
 		{
-			Log.Information("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, correctFlags);
+			Log.Debug("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, correctFlags);
 			correction.Add(word, correctFlagsInt);
 		}
 	}
@@ -135,7 +134,7 @@ public class DatabaseCheckJob
 		var correctWordIndex = wordIndexSupplier(word);
 		if (correctWordIndex != currentWordIndex)
 		{
-			Log.Information("Invaild {wordIndexName} column {currentWordIndex}, will be fixed to {correctWordIndex}.", wordIndexName, currentWordIndex, correctWordIndex);
+			Log.Debug("Invaild {wordIndexName} column {currentWordIndex}, will be fixed to {correctWordIndex}.", wordIndexName, currentWordIndex, correctWordIndex);
 			correction.Add(word, correctWordIndex);
 		}
 	}
@@ -177,7 +176,7 @@ public class DatabaseCheckJob
 
 			if (affected > 0)
 			{
-				Log.Information("Reset flags of {word} to {to}.", pair.Key, (WordFlags)pair.Value);
+				Log.Debug("Reset flags of {word} to {to}.", pair.Key, (WordFlags)pair.Value);
 				Counter += affected;
 			}
 		}
@@ -196,7 +195,7 @@ public class DatabaseCheckJob
 			});
 			if (affected > 0)
 			{
-				Log.Information("Reset {column} of {word} to {to}.", indexColumnName, pair.Key, pair.Value);
+				Log.Debug("Reset {column} of {word} to {to}.", indexColumnName, pair.Key, pair.Value);
 				counter += affected;
 			}
 		}
@@ -214,7 +213,7 @@ public class DatabaseCheckJob
 			});
 			if (affected > 0)
 			{
-				Log.Information("Removed {word} from database.", word);
+				Log.Debug("Removed {word} from database.", word);
 				counter += affected;
 			}
 		}

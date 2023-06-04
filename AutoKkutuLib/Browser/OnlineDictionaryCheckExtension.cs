@@ -1,7 +1,6 @@
-﻿using AutoKkutuLib.Browser;
-using Serilog;
+﻿using Serilog;
 
-namespace AutoKkutuLib.Browser.Extension;
+namespace AutoKkutuLib.Browser;
 
 public static class OnlineDictionaryCheckExtension
 {

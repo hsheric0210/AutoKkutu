@@ -40,7 +40,7 @@ public partial class Game : IGame
 	#region Game events
 	public event EventHandler? GameStarted;
 	public event EventHandler? GameEnded;
-	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded; // TODO
+	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded;
 	public event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	public event EventHandler? MyTurnEnded;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
@@ -101,14 +101,16 @@ public partial class Game : IGame
 
 	public bool CheckPathExpired(PathFinderParameter path)
 	{
-		if (path.Options.HasFlag(PathFinderFlags.ManualSearch))
+		if (path.HasFlag(PathFinderFlags.ManualSearch))
 			return true;
 
-		var isConditionChanged = CurrentPresentedWord != null && !path.Condition.Equals(CurrentPresentedWord, path.Options.HasFlag(PathFinderFlags.MissionWordExists));
-		if (IsMyTurn && isConditionChanged)
+		if (CurrentPresentedWord != null && !path.Condition.Equals(CurrentPresentedWord))
 		{
-			Log.Warning(I18n.PathFinder_InvalidatedUpdate, isConditionChanged, false); // FIXME: Change text format
-			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentPresentedWord!)); // Re-trigger search
+			if (!path.HasFlag(PathFinderFlags.NoRescan))
+			{
+				Log.Warning(I18n.PathFinder_InvalidatedUpdate, true, false); // FIXME: Change text format
+				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentPresentedWord!)); // Re-trigger search
+			}
 			return false;
 		}
 		return true;

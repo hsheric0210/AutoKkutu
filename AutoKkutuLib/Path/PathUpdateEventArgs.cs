@@ -1,38 +1,24 @@
-﻿namespace AutoKkutuLib.Path;
+﻿using System.Collections.Immutable;
+
+namespace AutoKkutuLib.Path;
 
 public class PathUpdateEventArgs : EventArgs
 {
-	public int CalcWordCount
+	public PathFindResultType Result { get; }
+	public PathFinderParameter Info { get; }
+	public int TimeMillis { get; }
+	public IImmutableList<PathObject> FoundWordList { get; }
+	public int TotalWordCount => FoundWordList.Count;
+	public IImmutableList<PathObject> FilteredWordList { get; }
+	public int FilteredWordCount => FilteredWordList.Count;
+	public PathUpdateEventArgs(PathFinderParameter info, PathFindResultType result, IImmutableList<PathObject> found, IImmutableList<PathObject> filtered, int timeElapsed = 0)
 	{
-		get;
-	}
-
-	public PathFindResultType ResultType
-	{
-		get;
-	}
-
-	public PathFinderParameter Result
-	{
-		get;
-	}
-
-	public int TimeMillis
-	{
-		get;
-	}
-
-	public int TotalWordCount
-	{
-		get;
-	}
-
-	public PathUpdateEventArgs(PathFinderParameter result, PathFindResultType type, int totalWordCount = 0, int calcWordCount = 0, int time = 0)
-	{
+		Info = info;
 		Result = result;
-		ResultType = type;
-		TotalWordCount = totalWordCount;
-		CalcWordCount = calcWordCount;
-		TimeMillis = time;
+		FoundWordList = found;
+		FilteredWordList = filtered;
+		TimeMillis = timeElapsed;
 	}
+
+	public bool HasFlag(PathFinderFlags flag) => Info.HasFlag(flag);
 }

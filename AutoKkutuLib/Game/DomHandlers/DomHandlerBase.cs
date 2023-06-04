@@ -11,15 +11,15 @@ public abstract class DomHandlerBase
 	public abstract ValueTask<GameMode> GetGameMode();
 	public abstract ValueTask<bool> GetIsGameInProgress();
 	public abstract ValueTask<bool> GetIsMyTurn();
-	public abstract ValueTask<string> GetPresentedWord();
-	public abstract ValueTask<string> GetMissionChar();
-	public abstract ValueTask<string> GetExampleWord();
+	public abstract ValueTask<string?> GetPresentedWord();
+	public abstract ValueTask<string?> GetMissionChar();
+	public abstract ValueTask<string?> GetExampleWord();
 	public abstract ValueTask<int> GetRoundIndex();
-	public abstract ValueTask<string> GetRoundText();
+	public abstract ValueTask<string?> GetRoundText();
 	public abstract ValueTask<float> GetRoundTime();
 	public abstract ValueTask<float> GetTurnTime();
-	public abstract ValueTask<string> GetUnsupportedWord();
-	public abstract ValueTask<string> GetWordInHistory(int index);
+	public abstract ValueTask<string?> GetUnsupportedWord();
+	public abstract ValueTask<IList<string>?> GetWordInHistories();
 
 	public abstract void UpdateChat(string input);
 	public abstract void ClickSubmit();

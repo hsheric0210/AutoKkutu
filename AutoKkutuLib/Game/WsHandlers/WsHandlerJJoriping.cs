@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib.Browser;
 using Serilog;
+using System.Collections.Immutable;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Nodes;
 
@@ -51,30 +52,16 @@ public class WsHandlerJJoriping : WsHandlerBase
 
 	public override WsRoom ParseRoom(JsonNode json)
 	{
-		var roomObject = json["room"]?.AsObject();
-		if (roomObject == null)
-		{
-			Log.Warning("WS: Received room message without room data.");
-			return new WsRoom(GameMode.None, Array.Empty<string>(), false, Array.Empty<string>());
-		}
+		JsonObject room = (json["room"] ?? throw InvalidWsMessage("room", "room")).AsObject();
+		var players = (room["players"] ?? throw InvalidWsMessage("room", "room.players")).AsArray().Select(ParsePlayer).ToImmutableList();
+		var gaming = (room["gaming"] ?? throw InvalidWsMessage("room", "room.gaming")).GetValue<bool>();
+		var modeId = (room["mode"] ?? throw InvalidWsMessage("room", "room.mode")).GetValue<int>();
 
-		if (!roomObject.TryGetPropertyValue("players", out JsonNode? playerListNode))
-			return new WsRoom(GameMode.None, Array.Empty<string>(), false, Array.Empty<string>());
-		var players = playerListNode!.AsArray().Select(ParsePlayer).ToList();
+		JsonObject game = (room["game"] ?? throw InvalidWsMessage("room", "room.game")).AsObject();
+		var gameSeq = (game["seq"] ?? throw InvalidWsMessage("room", "room.game.seq")).AsArray().Select(ParsePlayer).ToImmutableList();
 
-		var gameSeq = new List<string>();
-		var gaming = roomObject["gaming"]?.GetValue<bool>() ?? false;
-		if (roomObject.TryGetPropertyValue("game", out JsonNode? gameNode))
-		{
-			gameSeq = gameNode!["seq"]?.AsArray().Select(ParsePlayer).ToList() ?? gameSeq;
-		}
-
-		if (!roomObject.TryGetPropertyValue("mode", out JsonNode? modeNode))
-			return new WsRoom(GameMode.None, players, gaming, gameSeq);
-
-		var roomModeId = modeNode!.GetValue<int>();
-		var modeStr = Browser.EvaluateJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({roomModeId})", errorPrefix: "ParseRoom");
-		Log.Debug("Room update message received. Room game-mode: {gm}.", modeStr);
+		var modeStr = Browser.EvaluateJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({modeId})", errorPrefix: "ParseRoom");
+		Log.Debug("Room game-mode updated to {gm}.", modeStr);
 		return new WsRoom(modeStr switch
 		{
 			"ESH" or "KSH" => GameMode.LastAndFirst,
@@ -93,10 +80,13 @@ public class WsHandlerJJoriping : WsHandlerBase
 	public override WsClassicTurnStart ParseClassicTurnStart(JsonNode json)
 	{
 		return new WsClassicTurnStart(
-			json["turn"]?.GetValue<int>() ?? -1,
-			json["roundTime"]?.GetValue<int>() ?? -1,
-			json["turnTime"]?.GetValue<int>() ?? -1,
-			new WordCondition(json["char"]?.GetValue<string>() ?? "", json["subChar"]?.GetValue<string>(), json["mission"]?.GetValue<string>()));
+			json["turn"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turn"),
+			json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"),
+			json["turnTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turnTime"),
+			new WordCondition(
+				json["char"]?.GetValue<string>() ?? "",
+				json["subChar"]?.GetValue<string>(),
+				json["mission"]?.GetValue<string>()));
 	}
 
 	// TODO: 내 바로 이전 사람 턴이 끝남을 감지하고, 그 사람이 입력한 단어에서 내가 입력해야 할 단어의 조건 노드 파싱하기 (두음법칙 적용해서)
@@ -104,11 +94,19 @@ public class WsHandlerJJoriping : WsHandlerBase
 	public override WsClassicTurnEnd ParseClassicTurnEnd(JsonNode json)
 	{
 		return new(
-			json["ok"]?.GetValue<bool>() ?? false,
-			json["value"]?.GetValue<string>() ?? "",
-			 ParseIntOrString(json["target"]) ?? "",
+			json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"),
+			ParseIntOrString(json["target"]) ?? throw InvalidWsMessage("turnEnd", "target"),
+			json["value"]?.GetValue<string>(),
 			json["hint"]?["_id"]?.GetValue<string>());
 	}
 
-	public override WsTurnError ParseClassicTurnError(JsonNode json) => new(json["code"]?.GetValue<int>() ?? -1, json["value"]?.GetValue<string>());
+	public override WsTurnError ParseClassicTurnError(JsonNode json)
+	{
+		return new(
+			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("TurnError", "code"),
+			json["value"]?.GetValue<string>());
+	}
+
+	private static Exception InvalidWsMessage(string messageType, string expectedAttribute)
+		=> new FormatException($"'{messageType}' message without '{expectedAttribute}' attribute");
 }

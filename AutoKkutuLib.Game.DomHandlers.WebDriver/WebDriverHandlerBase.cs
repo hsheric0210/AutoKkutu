@@ -42,7 +42,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return false; }
 	}
 
-	public override async ValueTask<string> GetPresentedWord()
+	public override async ValueTask<string?> GetPresentedWord()
 	{
 		try
 		{
@@ -51,7 +51,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override async ValueTask<string> GetRoundText()
+	public override async ValueTask<string?> GetRoundText()
 	{
 		try
 		{
@@ -74,7 +74,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException or StaleElementReferenceException) { return -1; }
 	}
 
-	public override async ValueTask<string> GetUnsupportedWord()
+	public override async ValueTask<string?> GetUnsupportedWord()
 	{
 		try
 		{
@@ -145,7 +145,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return 150; }
 	}
 
-	public override async ValueTask<string> GetExampleWord()
+	public override async ValueTask<string?> GetExampleWord()
 	{
 		try
 		{
@@ -161,7 +161,7 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override async ValueTask<string> GetMissionChar()
+	public override async ValueTask<string?> GetMissionChar()
 	{
 		try
 		{
@@ -174,16 +174,13 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
 	}
 
-	public override async ValueTask<string> GetWordInHistory(int index)
+	public override async ValueTask<IList<string>?> GetWordInHistories()
 	{
 		try
 		{
-			if (index is < 0 or >= 6)
-				throw new ArgumentOutOfRangeException($"index: {index}");
-			var list = Browser.FindElementsQuery("[class='ellipse history-item expl-mother']");
-			return list == null || list.Count <= index ? "" : list[index].GetAttribute("innerHTML") ?? "";
+			return await Browser.EvaluateJavaScriptArrayAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.WordHistories)}", "", errorPrefix: nameof(GetWordInHistories));
 		}
-		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return ""; }
+		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return null; }
 	}
 
 	public override void UpdateChat(string input)
@@ -205,5 +202,9 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 	}
 	#endregion
 
-	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered) => await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "document.getElementById('Talk').value=input");
+	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
+	{
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "document.getElementById('Talk').value=input");
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.WordHistories, "", "return Array.prototype.map.call(document.getElementsByClassName('ellipse history-item expl-mother'),v=>v.childNodes[0].textContent)");
+	}
 }

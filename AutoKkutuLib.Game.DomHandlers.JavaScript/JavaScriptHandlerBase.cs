@@ -17,13 +17,13 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 
 	public override async ValueTask<bool> GetIsMyTurn() => await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.IsMyTurn), errorMessage: nameof(GetIsMyTurn));
 
-	public override async ValueTask<string> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
+	public override async ValueTask<string?> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
 
-	public override async ValueTask<string> GetRoundText() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundText), errorPrefix: nameof(GetRoundText));
+	public override async ValueTask<string?> GetRoundText() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundText), errorPrefix: nameof(GetRoundText));
 
 	public override async ValueTask<int> GetRoundIndex() => await Browser.EvaluateJavaScriptIntAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundIndex), errorPrefix: nameof(GetRoundIndex));
 
-	public override async ValueTask<string> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.UnsupportedWord), errorPrefix: nameof(GetUnsupportedWord));
+	public override async ValueTask<string?> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.UnsupportedWord), errorPrefix: nameof(GetUnsupportedWord));
 
 	public override async ValueTask<GameMode> GetGameMode()
 	{
@@ -71,16 +71,11 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 
 	public override async ValueTask<float> GetRoundTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundTime), errorPrefix: nameof(GetRoundTime)), out var time) && time > 0 ? time : 150;
 
-	public override async ValueTask<string> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.ExampleWord), errorPrefix: nameof(GetExampleWord))).Trim();
+	public override async ValueTask<string?> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.ExampleWord), errorPrefix: nameof(GetExampleWord))).Trim();
 
-	public override async ValueTask<string> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar))).Trim();
+	public override async ValueTask<string?> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar))).Trim();
 
-	public override async ValueTask<string> GetWordInHistory(int index)
-	{
-		if (index is < 0 or >= 6)
-			throw new ArgumentOutOfRangeException($"index: {index}");
-		return await Browser.EvaluateJavaScriptAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.WordHistory, false)}({index})", errorPrefix: nameof(GetWordInHistory));
-	}
+	public override async ValueTask<IList<string>?> GetWordInHistories() => await Browser.EvaluateJavaScriptArrayAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.WordHistories)}", "", errorPrefix: nameof(GetWordInHistories));
 
 	public override void UpdateChat(string input) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.UpdateChat, false)}('{input}')", errorMessage: nameof(UpdateChat));
 
@@ -100,7 +95,7 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.RoundIndex, "", "return Array.from(document.querySelectorAll('#Middle>div.GameBox.Product>div>div.game-head>div.rounds>label')).indexOf(document.querySelector('.rounds-current'))");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ExampleWord, "", "let s=document.getElementsByClassName('jjo-display ellipse')[0];return (s&&s.innerHTML.includes('label')&&s.innerHTML.includes('color')&&s.innerHTML.includes('170,')) ? s.textContent : ''");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.MissionChar, "", "let s=document.getElementsByClassName('items')[0];return s&&s.style.opacity>=1 ? s.textContent : ''");
-		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.WordHistory, "i", "return document.getElementsByClassName('ellipse history-item expl-mother')[i]?.innerHTML||''");
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.WordHistories, "", "return Array.prototype.map.call(document.getElementsByClassName('ellipse history-item expl-mother'),v=>v.childNodes[0].textContent)");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "document.querySelector('[id=\"Talk\"]').value=input");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ClickSubmit, "", "document.getElementById('ChatBtn').click()");
 	}

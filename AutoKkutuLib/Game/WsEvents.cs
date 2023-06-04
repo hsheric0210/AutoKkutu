@@ -1,18 +1,20 @@
-﻿namespace AutoKkutuLib.Game;
+﻿using System.Collections.Immutable;
+
+namespace AutoKkutuLib.Game;
 
 public class WsWelcome
 {
-	public string? UserId { get; }
-	public WsWelcome(string? userId) => UserId = userId;
+	public string UserId { get; }
+	public WsWelcome(string userId) => UserId = userId;
 }
 
 public class WsRoom
 {
 	public GameMode Mode { get; }
-	public ICollection<string> Players { get; }
+	public IImmutableList<string> Players { get; }
 	public bool Gaming { get; }
-	public IList<string> GameSequence { get; }
-	public WsRoom(GameMode mode, ICollection<string> players, bool gaming, IList<string> gameSeq)
+	public IImmutableList<string> GameSequence { get; }
+	public WsRoom(GameMode mode, IImmutableList<string> players, bool gaming, IImmutableList<string> gameSeq)
 	{
 		Mode = mode;
 		Players = players;
@@ -40,13 +42,13 @@ public class WsClassicTurnEnd
 {
 	public string? Hint { get; }
 	public string Target { get; }
-	public string Value { get; }
+	public string? Value { get; }
 	public bool Ok { get; }
-	public WsClassicTurnEnd(bool ok, string value, string target, string? hint)
+	public WsClassicTurnEnd(bool ok, string target, string? value, string? hint)
 	{
 		Ok = ok;
-		Value = value;
 		Target = target;
+		Value = value;
 		Hint = hint;
 	}
 }
@@ -58,9 +60,9 @@ public class WsTurnError
 	/// </summary>
 	public TurnErrorCode ErrorCode { get; }
 	public string? Value { get; }
-	public WsTurnError(int errCode, string? value)
+	public WsTurnError(TurnErrorCode errorCode, string? value)
 	{
-		ErrorCode = (TurnErrorCode)errCode;
+		ErrorCode = errorCode;
 		Value = value;
 	}
 }

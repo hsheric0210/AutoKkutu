@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Browser.Extension;
 using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Node;
 using Serilog;
