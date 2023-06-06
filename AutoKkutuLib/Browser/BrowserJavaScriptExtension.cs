@@ -1,6 +1,5 @@
 ﻿using Serilog;
 using System.Globalization;
-using System.Text.Json.Nodes;
 
 namespace AutoKkutuLib.Browser;
 public static class BrowserJavaScriptExtension

@@ -1,8 +1,8 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Game.WebSocketListener;
+using AutoKkutuLib.Hangul;
 using Serilog;
-using System.Globalization;
 
 namespace AutoKkutuLib.Game;
 
@@ -19,7 +19,7 @@ public partial class Game : IGame
 
 	public bool IsGameInProgress { get; private set; }
 
-	public bool IsMyTurn { get; private set; }
+	public bool IsMyTurn { get => isMyTurn == 1; private set => isMyTurn = value ? 1 : 0; }
 
 	public bool ReturnMode { get; set; }
 	#endregion
@@ -35,12 +35,17 @@ public partial class Game : IGame
 	private const int primaryInterval = 100;
 	private bool active;
 	private string lastChat = "";
+
+	/// <summary>
+	/// Workaround for Interlocked.CompareAndExchange
+	/// </summary>
+	private int isMyTurn;
 	#endregion
 
 	#region Game events
 	public event EventHandler? GameStarted;
 	public event EventHandler? GameEnded;
-	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded;
+	public event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
 	public event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	public event EventHandler? MyTurnEnded;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
@@ -123,12 +128,15 @@ public partial class Game : IGame
 		ChatUpdated?.Invoke(this, EventArgs.Empty);
 	}
 
-	public void AppendChat(Func<string, string> appender)
+	public void AppendChat(Func<string, (bool, char, string)> appender, int keyUpDelay, int shiftUpDelay)
 	{
 		if (appender is null)
 			throw new ArgumentNullException(nameof(appender));
 
-		UpdateChat(appender(lastChat));
+		(var isHangul, var appendChar, var appendedString) = appender(lastChat);
+		(var ch, var shift) = KeyboardLayout.QWERTY.HangulToAlphabet(appendChar);
+		domHandler.CallKeyEvent(ch, shift, isHangul, keyUpDelay, shiftUpDelay);
+		UpdateChat(appendedString);
 	}
 
 	public void ClickSubmitButton()

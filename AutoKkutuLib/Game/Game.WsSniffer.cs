@@ -2,7 +2,8 @@
 using AutoKkutuLib.Extension;
 using Serilog;
 using System.Collections.Immutable;
-using System.Collections.Specialized;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace AutoKkutuLib.Game;
@@ -10,6 +11,10 @@ public partial class Game
 {
 	private IDictionary<string, Action<JsonNode>>? specializedSniffers;
 	private WsSessionInfo? wsSession;
+	private readonly JsonSerializerOptions unescapeUnicodeJso = new()
+	{
+		Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+	};
 
 	private void BeginWebSocketSniffing()
 	{
@@ -44,7 +49,10 @@ public partial class Game
 	{
 		if (specializedSniffers?.TryGetValue(args.Type, out Action<JsonNode>? mySniffer) ?? false)
 		{
-			Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToString());
+			if (args.Type != wsSniffHandler.MessageType_Room)
+			{
+				Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
+			}
 			mySniffer(args.Json);
 		}
 	}
@@ -62,6 +70,9 @@ public partial class Game
 
 		if (!data.Players.Contains(session.MyUserId)) // It's other room
 			return;
+
+		if (data.Mode == GameMode.None)
+			Log.Warning("Unknown or unsupported game mode: {mode}", data.ModeString);
 
 		if (data.Gaming && data.GameSequence.Count > 0)
 			wsSession = session with { MyGameTurns = data.GameSequence.ToImmutableList() };
@@ -91,18 +102,22 @@ public partial class Game
 		if (data.Ok && wsSession is WsSessionInfo session && session.IsGaming && !string.IsNullOrWhiteSpace(data.Value))
 		{
 			var turn = session.GetTurnOf(data.Target);
-			if (turn >= 0 && session.GetRelativeTurn(turn) == session.GetMyPreviousUserTurn())
+			var prvUsrTurn = session.GetMyPreviousUserTurn();
+			Log.Information("turn: {turn}, prev_user_turn: {puturn}", turn, prvUsrTurn);
+			if (turn >= 0 && turn == prvUsrTurn)
 			{
-				Log.Debug("WS: The previous user submit: {txt}!", data.Value);
+				Log.Debug("WS: The previous user {target} submit: {txt}!", data.Target, data.Value);
 				var missionChar = session.MyGamePreviousUserMission;
+				var canPresearch = true;
 				if (missionChar != null && data.Value.Contains(missionChar))
-					return; // The mission char will be changed. Thus, our effort to pre-search word database will become useless. Use standard search method instead. (Search on my turn started)
+					canPresearch = false; // The mission char will be changed. Thus, our effort to pre-search word database will become useless. Use standard search method instead. (Search on my turn started)
 
 				WordCondition? condition = CurrentGameMode.ConvertWordToCondition(data.Value, session.MyGamePreviousUserMission);
 				if (condition == null)
 					return; // Conversion unavailable
 
-				PreviousUserTurnEnded?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)condition));
+				CurrentPresentedWord = condition; // Required to bypass initial 'CheckPathExpired' check
+				PreviousUserTurnEnded?.Invoke(this, new PreviousUserTurnEndedEventArgs(canPresearch, condition));
 			}
 
 			if (session.IsMyTurn(turn))

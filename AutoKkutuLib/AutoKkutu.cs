@@ -32,7 +32,7 @@ public class AutoKkutu : IDisposable
 	public event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 	public event EventHandler? GameStarted;
 	public event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
-	public event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded;
+	public event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
 	public event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	public event EventHandler? MyTurnEnded;
 	public event EventHandler? RoundChanged;

@@ -58,6 +58,17 @@ public class WordConditionPresentEventArgs : EventArgs
 	public WordConditionPresentEventArgs(WordCondition condition) => Condition = condition;
 }
 
+public class PreviousUserTurnEndedEventArgs : EventArgs
+{
+	public bool CanPresearch { get; }
+	public WordCondition? Condition { get; }
+	public PreviousUserTurnEndedEventArgs(bool canPresearch, WordCondition? condition)
+	{
+		CanPresearch = canPresearch;
+		Condition = condition;
+	}
+}
+
 // TODO: Add more arguments such as word group, description, etc.
 public class WordHistoryEventArgs : EventArgs
 {

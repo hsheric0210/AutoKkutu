@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Selenium;
-using OpenQA.Selenium;
 
 namespace AutoKkutuLib.Handlers.WebDriver;
 

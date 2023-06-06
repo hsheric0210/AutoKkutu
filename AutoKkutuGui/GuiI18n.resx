@@ -197,7 +197,7 @@
     <comment>0: Handler ID</comment>
   </data>
   <data name="Main_AutoEnter" xml:space="preserve">
-    <value>Auto mode enabled. automatically use {attr:l} path: {word}</value>
+    <value>Auto-enter enabled. automatically use {attr} path: {word}</value>
     <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
   <data name="Main_CEFFrameLoadEnd" xml:space="preserve">

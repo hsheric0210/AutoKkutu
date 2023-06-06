@@ -90,6 +90,7 @@ public static class Main
 			AutoKkutu.TypingWordPresented += OnTypingWordPresented;
 			AutoKkutu.ChatUpdated += OnChatUpdated;
 			AutoKkutu.PreviousUserTurnEnded += OnPreviousUserTurnEnded;
+			AutoKkutu.RoundChanged += OnRoundChanged;
 			InitializationFinished?.Invoke(null, EventArgs.Empty);
 
 			Browser.LoadFrontPage();
@@ -251,9 +252,10 @@ public static class Main
 		if (!AutoKkutu.HasGameSet)
 			return;
 
-		if (Prefs.DelayEnabled && Prefs.DelayPerCharEnabled && Prefs.InputSimulate)
+		var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterCharEnterEnabled, Prefs.DelayInMillis, Prefs.DelayPerCharEnabled, Prefs.InputSimulate);
+		if (opt.SimulateInput)
 		{
-			Task.Run(async () => await AutoKkutu.Game.AutoEnter.PerformInputSimulation(message, Prefs.DelayInMillis));
+			Task.Run(async () => await AutoKkutu.Game.AutoEnter.PerformInputSimulation(message, opt));
 		}
 		else
 		{
@@ -273,6 +275,8 @@ public static class Main
 
 	private static PathUpdateEventArgs? preSearch;
 	private static PathUpdateEventArgs? autoPathFindCache;
+
+	private static void OnRoundChanged(object? sender, EventArgs e) => preSearch = null; // Invalidate pre-search result on round changed
 
 	private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 	{
@@ -313,9 +317,9 @@ public static class Main
 		}
 		else
 		{
-			var delayParam = new AutoEnterDelayParameter(Prefs.DelayEnabled, Prefs.DelayStartAfterCharEnterEnabled, Prefs.DelayInMillis, Prefs.DelayPerCharEnabled);
+			var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterCharEnterEnabled, Prefs.DelayInMillis, Prefs.DelayPerCharEnabled, Prefs.InputSimulate);
 			var time = AutoKkutu.Game.GetTurnTimeMillis();
-			(var wordToEnter, var timeover) = args.FilteredWordList.ChooseBestWord(delayParam, time);
+			(var wordToEnter, var timeover) = args.FilteredWordList.ChooseBestWord(opt, time);
 			if (string.IsNullOrEmpty(wordToEnter))
 			{
 				if (timeover)
@@ -331,7 +335,7 @@ public static class Main
 			}
 			else
 			{
-				AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterParameter(delayParam, Prefs.InputSimulate, args.Info, wordToEnter));
+				AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(opt, args.Info, wordToEnter));
 			}
 		}
 	}
@@ -385,12 +389,12 @@ public static class Main
 		Log.Warning(I18n.Main_MyPathIsUnsupported, word);
 
 		if (Prefs.AutoEnterEnabled && Prefs.AutoFixEnabled)
-			AutoKkutu.Game.AutoEnter.PerformAutoFix(autoPathFindCache.FilteredWordList, new AutoEnterParameter(
-						new AutoEnterDelayParameter(Prefs.DelayEnabled,
+			AutoKkutu.Game.AutoEnter.PerformAutoFix(autoPathFindCache.FilteredWordList, new AutoEnterInfo(
+						new AutoEnterOptions(Prefs.DelayEnabled,
 							Prefs.DelayStartAfterCharEnterEnabled,
 							Prefs.DelayInMillis,
-							Prefs.DelayPerCharEnabled),
-						Prefs.InputSimulate,
+							Prefs.DelayPerCharEnabled,
+							Prefs.InputSimulate),
 						autoPathFindCache.Info, wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
 	}
 
@@ -405,25 +409,34 @@ public static class Main
 	{
 		if (preSearch != null && AutoKkutu.Game.CheckPathExpired(preSearch.Info.WithFlags(PathFinderFlags.NoRescan)))
 		{
-			Log.Information("Using the pre-search result.");
+			Log.Information("Using the pre-search result for: {condition}", preSearch.Info.Condition);
 			TryAutoEnter(preSearch);
+			return;
 		}
+
+		if (preSearch == null)
+			Log.Warning("Pre-search data not available. Starting the search.");
 		else
-		{
-			Log.Warning("Pre-search invalidated! Presearch: {pre}, Search: {now}", preSearch?.Info.Condition, args.Condition);
-			AutoKkutu.PathFinder.FindPath(
-				AutoKkutu.Game.CurrentGameMode,
-				new PathFinderParameter(args.Condition, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount),
-				Prefs.ActiveWordPreference);
-		}
+			Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Info.Condition, args.Condition);
+
+		AutoKkutu.PathFinder.FindPath(
+			AutoKkutu.Game.CurrentGameMode,
+			new PathFinderParameter(args.Condition, SetupPathFinderFlags(), Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount),
+			Prefs.ActiveWordPreference);
 	}
 
-	private static void OnPreviousUserTurnEnded(object? sender, WordConditionPresentEventArgs args)
+	private static void OnPreviousUserTurnEnded(object? sender, PreviousUserTurnEndedEventArgs args)
 	{
+		if (!args.CanPresearch || args.Condition is null)
+		{
+			preSearch = null;
+			return;
+		}
+
 		Log.Debug("Performing pre-search on: {condition}", args.Condition);
 		AutoKkutu.PathFinder.FindPath(
 			AutoKkutu.Game.CurrentGameMode,
-			new PathFinderParameter(args.Condition, SetupPathFinderFlags() | PathFinderFlags.PreSearch, Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount),
+			new PathFinderParameter((WordCondition)args.Condition, SetupPathFinderFlags() | PathFinderFlags.PreSearch, Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount),
 			Prefs.ActiveWordPreference);
 	}
 
@@ -463,12 +476,12 @@ public static class Main
 		if (!Prefs.AutoEnterEnabled)
 			return;
 
-		AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterParameter(
-			new AutoEnterDelayParameter(Prefs.DelayEnabled,
+		AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(
+			new AutoEnterOptions(Prefs.DelayEnabled,
 				Prefs.DelayStartAfterCharEnterEnabled,
 				Prefs.DelayInMillis,
-				Prefs.DelayPerCharEnabled),
-			Prefs.InputSimulate,
+				Prefs.DelayPerCharEnabled,
+				Prefs.InputSimulate),
 			PathFinderParameter.Empty,
 			word));
 	}

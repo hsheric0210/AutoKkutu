@@ -1,11 +1,7 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Selenium;
 using OpenQA.Selenium;
-using OpenQA.Selenium.DevTools.V111.CSS;
-using OpenQA.Selenium.Internal;
-using Serilog;
 
 namespace AutoKkutuLib.Handlers.WebDriver;
 
@@ -183,6 +179,8 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 		catch (Exception ex) when (ex is UnhandledAlertException or NullReferenceException or StaleElementReferenceException) { return null; }
 	}
 
+	public override void CallKeyEvent(char key, bool shift, bool hangul, int upDelay, int shiftUpDelay) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.CallKeyEvent, false)}('{key}',{shift},{hangul},{upDelay},{shiftUpDelay})", errorMessage: nameof(CallKeyEvent));
+
 	public override void UpdateChat(string input)
 	{
 		try
@@ -206,5 +204,6 @@ public abstract class WebDriverHandlerBase : DomHandlerBase
 	{
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "document.getElementById('Talk').value=input");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.WordHistories, "", "return Array.prototype.map.call(document.getElementsByClassName('ellipse history-item expl-mother'),v=>v.childNodes[0].textContent)");
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.CallKeyEvent, "key,shift,hangul,upDelay,shiftUpDelay", "function evt(type, param){document.dispatchEvent(new KeyboardEvent('key'+type,param));}let kc=key.toUpperCase().charCodeAt(0);if(shift){evt('down',{'key':'Shift','code':'ShiftRight','shiftKey':true,'keyCode':16});}if(hangul){evt('down',{'key':'Process','shiftKey':shift,'keyCode':229});}else{evt('down',{'key':key,'shiftKey':shift,'keyCode':kc});}window.setTimeout(function(){if(hangul){evt('up',{'key':'Process','shiftKey':shift,'keyCode':229});}evt('up',{'key':key,'shiftKey':shift,'keyCode':kc});},upDelay);if(shift){window.setTimeout(function(){if(hangul) evt('up',{'key':'Process','keyCode':229});evt('up',{'key':'Shift','code':'ShiftRight','shiftKey':true,'keyCode':16});},shiftUpDelay);}");
 	}
 }

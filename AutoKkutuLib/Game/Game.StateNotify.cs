@@ -56,10 +56,8 @@ public partial class Game
 	{
 		if (isMyTurn)
 		{
-			if (IsMyTurn)
+			if (Interlocked.CompareExchange(ref this.isMyTurn, 1, 0) == 1)
 				return;
-
-			IsMyTurn = true;
 
 			if (CurrentGameMode == GameMode.Free)
 			{
@@ -77,9 +75,8 @@ public partial class Game
 			return;
 		}
 
-		if (!IsMyTurn)
+		if (Interlocked.CompareExchange(ref this.isMyTurn, 0, 1) == 0)
 			return;
-		IsMyTurn = false;
 
 		Log.Debug("My turn ended.");
 		MyTurnEnded?.Invoke(this, EventArgs.Empty);

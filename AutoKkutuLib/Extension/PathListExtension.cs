@@ -14,7 +14,7 @@ public static class PathListExtension
 	/// <param name="remainingTurnTime">남은 턴 시간</param>
 	/// <param name="wordIndex">만약 주어진다면, N번째 최적의 단어를 선택합니다.</param>
 	/// <returns>(<c>최적의 단어</c>, <c>턴 시간 초과 여부</c>)</returns>
-	public static (string?, bool) ChooseBestWord(this IImmutableList<PathObject> availableWordList, AutoEnterDelayParameter delay, int remainingTurnTime, int wordIndex = 0)
+	public static (string?, bool) ChooseBestWord(this IImmutableList<PathObject> availableWordList, AutoEnterOptions delay, int remainingTurnTime, int wordIndex = 0)
 	{
 		if (availableWordList is null)
 			throw new ArgumentNullException(nameof(availableWordList));

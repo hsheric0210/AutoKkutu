@@ -178,7 +178,7 @@
     <comment>0: 핸들러 ID</comment>
   </data>
   <data name="Main_AutoEnter" xml:space="preserve">
-    <value>자동 입력이 활성화되었습니다. {attr:l} 단어 {word}를 사용합니다.</value>
+    <value>자동 입력이 활성화되었습니다. {attr} 단어 {word}를 사용합니다.</value>
     <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
   </data>
   <data name="Main_CEFFrameLoadEnd" xml:space="preserve">

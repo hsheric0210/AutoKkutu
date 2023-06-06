@@ -23,7 +23,7 @@ public class AutoEnter
 
 	public AutoEnter(IGame game) => this.game = game;
 
-	public bool CanPerformAutoEnterNow(PathFinderParameter? param) => game.IsGameInProgress && game.IsMyTurn && (param is not PathFinderParameter _param || game.CheckPathExpired(_param.WithFlags(PathFinderFlags.DryRun | PathFinderFlags.NoRescan)));
+	public bool CanPerformAutoEnterNow(PathFinderParameter? param) => game.IsGameInProgress && game.IsMyTurn && (param is not PathFinderParameter _param || game.CheckPathExpired(_param.WithFlags(PathFinderFlags.DryRun)));
 
 	#region AutoEnter starter
 	/// <summary>
@@ -32,12 +32,12 @@ public class AutoEnter
 	/// <param name="param">자동 입력 옵션; <c>param.Content</c>는 반드시 설정되어 있어야 합니다</param>
 	/// <exception cref="ArgumentException"><c>param.Content</c>가 설정되어 있지 않을 때 발생</exception>
 	/// TODO: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)
-	public void PerformAutoEnter(AutoEnterParameter param)
+	public void PerformAutoEnter(AutoEnterInfo param)
 	{
 		if (string.IsNullOrWhiteSpace(param.Content))
 			throw new ArgumentException("Content to auto-enter is not provided", nameof(param));
 
-		if (param.DelayParameter.DelayEnabled && !param.HasFlag(PathFinderFlags.DryRun))
+		if (param.Options.DelayEnabled && !param.HasFlag(PathFinderFlags.DryRun))
 		{
 			var delay = param.RealDelay;
 			InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, param.WordIndex));
@@ -45,7 +45,7 @@ public class AutoEnter
 
 			Task.Run(async () =>
 			{
-				if (param.DelayParameter.DelayStartAfterCharEnterEnabled)
+				if (param.Options.DelayStartAfterCharEnterEnabled)
 					await AutoEnterDynamicDelayTask(param);
 				else
 					await AutoEnterDelayTask(param);
@@ -64,11 +64,11 @@ public class AutoEnter
 	/// <param name="availablePaths">사용 가능한 단어들의 목록</param>
 	/// <param name="parameter">자동 입력 옵션; <c>parameter.Content</c>는 설정되어 있지 않아도 됩니다.</param>
 	/// <param name="remainingTurnTime">남은 턴 시간</param>
-	public void PerformAutoFix(IImmutableList<PathObject> availablePaths, AutoEnterParameter parameter, int remainingTurnTime)
+	public void PerformAutoFix(IImmutableList<PathObject> availablePaths, AutoEnterInfo parameter, int remainingTurnTime)
 	{
 		try
 		{
-			(var content, var timeover) = availablePaths.ChooseBestWord(parameter.DelayParameter, remainingTurnTime, parameter.WordIndex);
+			(var content, var timeover) = availablePaths.ChooseBestWord(parameter.Options, remainingTurnTime, parameter.WordIndex);
 			if (string.IsNullOrEmpty(content))
 			{
 				Log.Warning(I18n.Main_NoMorePathAvailable);
@@ -76,8 +76,8 @@ public class AutoEnter
 				return;
 			}
 
-			AutoEnterParameter contentParameter = parameter with { Content = content };
-			if (parameter.DelayParameter.DelayEnabled)
+			AutoEnterInfo contentParameter = parameter with { Content = content };
+			if (parameter.Options.DelayEnabled)
 			{
 				// Run asynchronously
 				var delay = contentParameter.RealDelay;
@@ -99,26 +99,29 @@ public class AutoEnter
 	#endregion
 
 	#region AutoEnter delay task proc.
-	private async Task AutoEnterDelayTask(AutoEnterParameter parameter)
+	private async Task AutoEnterDelayTask(AutoEnterInfo info)
 	{
-		var delay = parameter.RealDelay;
+		if (string.IsNullOrWhiteSpace(info.Content))
+			return;
+
+		var delay = info.RealDelay;
 		var delayBetweenInput = (int)(delay - InputStopwatch.ElapsedMilliseconds);
 		delay = Math.Max(delay, delayBetweenInput); // Failsafe to prevent way-too-fast input
-		Log.Information("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", parameter.RealDelay, delayBetweenInput, delay);
+		Log.Information("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", info.RealDelay, delayBetweenInput, delay);
 		await Task.Delay(delay);
 
-		if (parameter.CanSimulateInput)
+		if (info.Options.SimulateInput)
 		{
-			await PerformInputSimulationAutoEnter(parameter);
-			AutoEntered?.Invoke(this, new AutoEnterEventArgs(parameter.Content));
+			await PerformInputSimulationAutoEnter(info);
+			AutoEntered?.Invoke(this, new AutoEnterEventArgs(info.Content));
 		}
 		else
 		{
-			PerformAutoEnterNow(parameter.Content, parameter.PathInfo, parameter.WordIndex);
+			PerformAutoEnterNow(info.Content, info.PathInfo, info.WordIndex);
 		}
 	}
 
-	private async Task AutoEnterDynamicDelayTask(AutoEnterParameter parameter)
+	private async Task AutoEnterDynamicDelayTask(AutoEnterInfo parameter)
 	{
 		var delay = parameter.RealDelay;
 		var _delay = 0;
@@ -128,7 +131,7 @@ public class AutoEnter
 			await Task.Delay(_delay);
 		}
 
-		if (parameter.CanSimulateInput)
+		if (parameter.Options.SimulateInput)
 		{
 			await PerformInputSimulationAutoEnter(parameter);
 			AutoEntered?.Invoke(this, new AutoEnterEventArgs(parameter.Content));
@@ -146,7 +149,8 @@ public class AutoEnter
 		if (!CanPerformAutoEnterNow(path))
 			return;
 
-		Log.Information(I18n.Main_AutoEnter, pathIndex, content);
+		Log.Warning("Immediately Auto-entered: {word}", content);
+		//Log.Information(I18n.Main_AutoEnter, pathIndex, content);
 
 		game.UpdateChat(content);
 		game.ClickSubmitButton();
@@ -157,7 +161,8 @@ public class AutoEnter
 
 	#region Input simulation
 
-	public async Task PerformInputSimulationAutoEnter(AutoEnterParameter parameter)
+	//TODO: Remove duplicate codes between 'PerformInputSimulation'
+	public async Task PerformInputSimulationAutoEnter(AutoEnterInfo parameter)
 	{
 		var content = parameter.Content;
 		var wordIndex = parameter.WordIndex;
@@ -175,8 +180,9 @@ public class AutoEnter
 				aborted = true; // Abort
 				break;
 			}
-			game.AppendChat(s => s.SimulateAppend(type, ch));
-			await Task.Delay(parameter.DelayParameter.DelayInMillis);
+			var delay = parameter.Options.DelayInMillis;
+			game.AppendChat(s => s.SimulateAppend(type, ch), parameter.Options.DelayBeforeKeyUp, parameter.Options.DelayBeforeShiftKeyUp);
+			await Task.Delay(delay);
 		}
 
 		if (aborted)
@@ -189,7 +195,7 @@ public class AutoEnter
 		game.UpdateChat("");
 	}
 
-	public async Task PerformInputSimulation(string message, int delay)
+	public async Task PerformInputSimulation(string message, AutoEnterOptions opt)
 	{
 		if (message is null)
 			return;
@@ -202,8 +208,8 @@ public class AutoEnter
 		game.UpdateChat("");
 		foreach ((JamoType type, var ch) in list)
 		{
-			game.AppendChat(s => s.SimulateAppend(type, ch));
-			await Task.Delay(delay);
+			game.AppendChat(s => s.SimulateAppend(type, ch), opt.DelayBeforeKeyUp, opt.DelayBeforeShiftKeyUp);
+			await Task.Delay(opt.DelayInMillis);
 		}
 		game.ClickSubmitButton();
 		game.UpdateChat("");

@@ -1,7 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
-using Serilog;
 using System.Collections.Immutable;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Nodes;
 
 namespace AutoKkutuLib.Game.WebSocketListener;
@@ -60,9 +58,8 @@ public class WsHandlerJJoriping : WsHandlerBase
 		JsonObject game = (room["game"] ?? throw InvalidWsMessage("room", "room.game")).AsObject();
 		var gameSeq = (game["seq"] ?? throw InvalidWsMessage("room", "room.game.seq")).AsArray().Select(ParsePlayer).ToImmutableList();
 
-		var modeStr = Browser.EvaluateJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({modeId})", errorPrefix: "ParseRoom");
-		Log.Debug("Room game-mode updated to {gm}.", modeStr);
-		return new WsRoom(modeStr switch
+		var modeString = Browser.EvaluateJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({modeId})", errorPrefix: "ParseRoom");
+		var mode = modeString switch
 		{
 			"ESH" or "KSH" => GameMode.LastAndFirst,
 			"KGT" => GameMode.MiddleAndFirst,
@@ -74,7 +71,8 @@ public class WsHandlerJJoriping : WsHandlerBase
 			"ETY" or "KTY" => GameMode.TypingBattle,
 			"KAD" or "EAD" => GameMode.All,
 			_ => GameMode.None
-		}, players, gaming, gameSeq);
+		};
+		return new WsRoom(modeString, mode, players, gaming, gameSeq);
 	}
 
 	public override WsClassicTurnStart ParseClassicTurnStart(JsonNode json)

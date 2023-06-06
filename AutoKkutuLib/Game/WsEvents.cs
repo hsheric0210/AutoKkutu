@@ -10,12 +10,14 @@ public class WsWelcome
 
 public class WsRoom
 {
+	public string ModeString { get; }
 	public GameMode Mode { get; }
 	public IImmutableList<string> Players { get; }
 	public bool Gaming { get; }
 	public IImmutableList<string> GameSequence { get; }
-	public WsRoom(GameMode mode, IImmutableList<string> players, bool gaming, IImmutableList<string> gameSeq)
+	public WsRoom(string modeString, GameMode mode, IImmutableList<string> players, bool gaming, IImmutableList<string> gameSeq)
 	{
+		ModeString = modeString;
 		Mode = mode;
 		Players = players;
 		Gaming = gaming;

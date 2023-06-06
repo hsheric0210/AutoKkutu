@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AutoKkutuLib.Hangul;
+﻿namespace AutoKkutuLib.Hangul;
 /// <summary>
 /// JJoriping의 원 구현: https://github.com/JJoriping/KKuTu/blob/a2c240bc31fe2dea31d26fb1cf7625b4645556a6/Server/lib/Game/games/classic.js#L531
 /// </summary>
@@ -26,19 +20,19 @@ public static class InitialLaw
 
 		var applied = true;
 		HangulSplitted split = condition.Char[0].Split();
-		if (!split.IsHangul || split.Medial == null)
+		if (!split.IsHangul || !split.HasMedial)
 			return condition;
 
 		if (split.InitialConsonant == 'ㄹ')
 		{
-			if (rieul2Nieun.Contains((char)split.Medial))
+			if (rieul2Nieun.Contains(split.Medial))
 				split = split with { InitialConsonant = 'ㄴ' };
-			else if (rieul2Ieung.Contains((char)split.Medial))
+			else if (rieul2Ieung.Contains(split.Medial))
 				split = split with { InitialConsonant = 'ㅇ' };
 			else
 				applied = false;
 		}
-		else if (split.InitialConsonant == 'ㄴ' && nieun2Ieung.Contains((char)split.Medial))
+		else if (split.InitialConsonant == 'ㄴ' && nieun2Ieung.Contains(split.Medial))
 		{
 			split = split with { InitialConsonant = 'ㅇ' };
 		}

@@ -18,5 +18,6 @@ public enum CommonNameRegistry
 	ExampleWord,
 	MissionChar,
 	WordHistories,
-	RoomModeToGameMode
+	RoomModeToGameMode,
+	CallKeyEvent
 }

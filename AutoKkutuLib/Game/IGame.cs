@@ -22,14 +22,14 @@ public interface IGame : IDisposable
 	event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 	event EventHandler? GameStarted;
 	event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
-	event EventHandler<WordConditionPresentEventArgs>? PreviousUserTurnEnded;
+	event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
 	event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	event EventHandler? MyTurnEnded;
 	event EventHandler? RoundChanged;
 	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 
-	void AppendChat(Func<string, string> appender);
+	void AppendChat(Func<string, (bool, char, string)> appender, int keyUpDelay, int shiftUpDelay);
 	void ClickSubmitButton();
 	bool HasSameDomHandler(DomHandlerBase otherHandler);
 	bool HasSameWsSniffingHandler(WsHandlerBase otherHandler);

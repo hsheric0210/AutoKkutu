@@ -21,6 +21,7 @@ public abstract class DomHandlerBase
 	public abstract ValueTask<string?> GetUnsupportedWord();
 	public abstract ValueTask<IList<string>?> GetWordInHistories();
 
+	public abstract void CallKeyEvent(char key, bool shift, bool hangul, int upDelay, int shiftUpDelay);
 	public abstract void UpdateChat(string input);
 	public abstract void ClickSubmit();
 

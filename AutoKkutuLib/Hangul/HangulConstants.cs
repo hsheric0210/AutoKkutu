@@ -1,5 +1,8 @@
 ﻿// Original source available at https://plog2012.blogspot.com/2012/11/c.html
 
+using AutoKkutuLib.Hangul;
+using System.Collections.Immutable;
+
 namespace AutoKkutuLib.Hangul;
 
 // TODO: 중세 자음, 모음 지원
@@ -81,75 +84,99 @@ internal static class HangulConstants
 	internal const ushort HangulSyllablesBound = 0xD79F;
 
 	/// <summary>
-	/// 자음군 조합 변환 테이블
+	/// 자음군 조합 조합 테이블
 	/// </summary>
-	internal static IDictionary<char, IDictionary<char, char>> ConsonantClusterCompositionTable
-	{
-		get;
-	} = new Dictionary<char, IDictionary<char, char>>()
-	{
-		{ 'ㄱ', new Dictionary<char, char>()
-		{
-			{ 'ㄱ', 'ㄲ' },
-			{ 'ㅅ', 'ㄳ' }
-		}
-		},
-		{ 'ㄴ', new Dictionary<char, char>()
-		{
-			{ 'ㅈ', 'ㄵ' },
-			{ 'ㅎ', 'ㄶ' }
-		}
-		},
-		{ 'ㄷ', new Dictionary<char, char>()
-		{
-			{ 'ㄷ', 'ㄸ' }
-		} },
-		{ 'ㄹ', new Dictionary<char, char>()
-		{
-			{ 'ㄱ', 'ㄺ' },
-			{ 'ㅁ', 'ㄻ' },
-			{ 'ㅂ', 'ㄼ' },
-			{ 'ㅅ', 'ㄽ' },
-			{ 'ㅌ', 'ㄾ' },
-			{ 'ㅍ', 'ㄿ' },
-			{ 'ㅎ', 'ㅀ' }
-		} },
-		{ 'ㅂ', new Dictionary<char, char>()
-		{
-			{ 'ㅂ', 'ㅃ' },
-			{ 'ㅅ', 'ㅄ' }
-		}
-		},
-		{ 'ㅅ', new Dictionary<char, char>()
-		{
-			{ 'ㅅ', 'ㅆ' }
-		}
-		},
-		{ 'ㅈ', new Dictionary<char, char>()
-		{
-			{ 'ㅈ', 'ㅉ' }
-		}
-		}
-	};
+	internal static IImmutableDictionary<char, IImmutableDictionary<char, char>> ConsonantClusterCompositionTable { get; }
 
 	/// <summary>
-	/// 자음군 조합 역변환 테이블
+	/// 자음군 조합 분해 테이블
 	/// </summary>
-	internal static IDictionary<char, IList<char>> ConsonantClusterDecompositionTable
+	internal static IImmutableDictionary<char, IImmutableList<char>> ConsonantClusterDecompositionTable { get; }
+
+	/// <summary>
+	/// 합성 모음 조합 테이블
+	/// </summary>
+	internal static IImmutableDictionary<char, IImmutableDictionary<char, char>> VowelClusterCompositionTable { get; }
+
+	/// <summary>
+	/// 자음군 조합 분해 테이블
+	/// </summary>
+	internal static IImmutableDictionary<char, IImmutableList<char>> VowelClusterDecompositionTable { get; }
+
+	/// <summary>
+	/// Creates a new <see cref="ImmutableDictionary"/> with the given key/value pairs.
+	/// https://stackoverflow.com/a/66274927
+	/// </summary>
+	private static ImmutableDictionary<K, V> CreateImmDict<K, V>(params (K key, V value)[] items) where K : notnull
 	{
-		get;
-	} = new Dictionary<char, IList<char>>()
+		var builder = ImmutableDictionary.CreateBuilder<K, V>();
+		foreach (var (key, value) in items)
+			builder.Add(key, value);
+		return builder.ToImmutable();
+	}
+
+	static HangulConstants()
 	{
-		{ 'ㄳ', new List<char>() { 'ㄱ', 'ㅅ' } },
-		{ 'ㄵ', new List<char>() { 'ㄴ', 'ㅈ' } },
-		{ 'ㄶ', new List<char>() { 'ㄴ', 'ㅎ' } },
-		{ 'ㄺ', new List<char>() { 'ㄹ', 'ㄱ' } },
-		{ 'ㄻ', new List<char>() { 'ㄹ', 'ㅁ' } },
-		{ 'ㄼ', new List<char>() { 'ㄹ', 'ㅂ' } },
-		{ 'ㄽ', new List<char>() { 'ㄹ', 'ㅅ' } },
-		{ 'ㄾ', new List<char>() { 'ㄹ', 'ㅌ' } },
-		{ 'ㄿ', new List<char>() { 'ㄹ', 'ㅍ' } },
-		{ 'ㅀ', new List<char>() { 'ㄹ', 'ㅎ' } },
-		{ 'ㅄ', new List<char>() { 'ㅂ', 'ㅅ' } }
-	};
+		var ccC = ImmutableDictionary.CreateBuilder<char, IImmutableDictionary<char, char>>();
+		ccC['ㅂ'] = CreateImmDict(('ㅅ', 'ㅄ'));
+		ccC['ㅅ'] = CreateImmDict(('ㅅ', 'ㅆ'));
+		ccC['ㅈ'] = CreateImmDict(('ㅈ', 'ㅉ'));
+		ccC['ㄱ'] = CreateImmDict(
+			('ㄱ', 'ㄲ'),
+			('ㅅ', 'ㄳ')
+		);
+		ccC['ㄴ'] = CreateImmDict(
+			('ㅈ', 'ㄵ'),
+			('ㅎ', 'ㄶ')
+		);
+		ccC['ㄷ'] = CreateImmDict(('ㄷ', 'ㄸ'));
+		ccC['ㄹ'] = CreateImmDict(
+			('ㄱ', 'ㄺ'),
+			('ㅁ', 'ㄻ'),
+			('ㅂ', 'ㄼ'),
+			('ㅅ', 'ㄽ'),
+			('ㅌ', 'ㄾ'),
+			('ㅍ', 'ㄿ'),
+			('ㅎ', 'ㅀ')
+		);
+		ConsonantClusterCompositionTable = ccC.ToImmutable();
+
+		var ccDec = ImmutableDictionary.CreateBuilder<char, IImmutableList<char>>();
+		ccDec['ㄳ'] = ImmutableList.Create('ㄱ', 'ㅅ');
+		ccDec['ㄵ'] = ImmutableList.Create('ㄴ', 'ㅈ');
+		ccDec['ㄶ'] = ImmutableList.Create('ㄴ', 'ㅎ');
+		ccDec['ㄺ'] = ImmutableList.Create('ㄹ', 'ㄱ');
+		ccDec['ㄻ'] = ImmutableList.Create('ㄹ', 'ㅁ');
+		ccDec['ㄼ'] = ImmutableList.Create('ㄹ', 'ㅂ');
+		ccDec['ㄽ'] = ImmutableList.Create('ㄹ', 'ㅅ');
+		ccDec['ㄾ'] = ImmutableList.Create('ㄹ', 'ㅌ');
+		ccDec['ㄿ'] = ImmutableList.Create('ㄹ', 'ㅍ');
+		ccDec['ㅀ'] = ImmutableList.Create('ㄹ', 'ㅎ');
+		ccDec['ㅄ'] = ImmutableList.Create('ㅂ', 'ㅅ');
+		ConsonantClusterDecompositionTable = ccDec.ToImmutable();
+
+		var vcC = ImmutableDictionary.CreateBuilder<char, IImmutableDictionary<char, char>>();
+		ccC['ㅗ'] = CreateImmDict(
+			('ㅏ', 'ㅘ'),
+			('ㅐ', 'ㅙ'),
+			('ㅣ', 'ㅚ')
+		);
+		ccC['ㅜ'] = CreateImmDict(
+			('ㅓ', 'ㅝ'),
+			('ㅔ', 'ㅞ'),
+			('ㅣ', 'ㅟ')
+		);
+		ccC['ㅡ'] = CreateImmDict(('ㅣ', 'ㅢ'));
+		VowelClusterCompositionTable = ccC.ToImmutable();
+
+		var vcDec = ImmutableDictionary.CreateBuilder<char, IImmutableList<char>>();
+		ccDec['ㅘ'] = ImmutableList.Create('ㅗ', 'ㅏ');
+		ccDec['ㅙ'] = ImmutableList.Create('ㅗ', 'ㅐ');
+		ccDec['ㅚ'] = ImmutableList.Create('ㅗ', 'ㅣ');
+		ccDec['ㅝ'] = ImmutableList.Create('ㅜ', 'ㅓ');
+		ccDec['ㅞ'] = ImmutableList.Create('ㅜ', 'ㅔ');
+		ccDec['ㅟ'] = ImmutableList.Create('ㅜ', 'ㅣ');
+		ccDec['ㅢ'] = ImmutableList.Create('ㅡ', 'ㅣ');
+		VowelClusterDecompositionTable = ccDec.ToImmutable();
+	}
 }

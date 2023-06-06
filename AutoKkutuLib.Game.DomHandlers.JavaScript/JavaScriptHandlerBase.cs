@@ -71,11 +71,13 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 
 	public override async ValueTask<float> GetRoundTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundTime), errorPrefix: nameof(GetRoundTime)), out var time) && time > 0 ? time : 150;
 
-	public override async ValueTask<string?> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.ExampleWord), errorPrefix: nameof(GetExampleWord))).Trim();
+	public override async ValueTask<string?> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.ExampleWord), errorPrefix: nameof(GetExampleWord)))?.Trim();
 
-	public override async ValueTask<string?> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar))).Trim();
+	public override async ValueTask<string?> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar)))?.Trim();
 
 	public override async ValueTask<IList<string>?> GetWordInHistories() => await Browser.EvaluateJavaScriptArrayAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.WordHistories)}", "", errorPrefix: nameof(GetWordInHistories));
+
+	public override void CallKeyEvent(char key, bool shift, bool hangul, int upDelay, int shiftUpDelay) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.CallKeyEvent, false)}('{key}',{(shift ? "1" : "0")},{(hangul ? "1" : "0")},{upDelay},{shiftUpDelay})", errorMessage: nameof(CallKeyEvent));
 
 	public override void UpdateChat(string input) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.UpdateChat, false)}('{input}')", errorMessage: nameof(UpdateChat));
 
@@ -96,6 +98,10 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ExampleWord, "", "let s=document.getElementsByClassName('jjo-display ellipse')[0];return (s&&s.innerHTML.includes('label')&&s.innerHTML.includes('color')&&s.innerHTML.includes('170,')) ? s.textContent : ''");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.MissionChar, "", "let s=document.getElementsByClassName('items')[0];return s&&s.style.opacity>=1 ? s.textContent : ''");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.WordHistories, "", "return Array.prototype.map.call(document.getElementsByClassName('ellipse history-item expl-mother'),v=>v.childNodes[0].textContent)");
+		//영어->down(orig) -> up(orig)
+		//한글->down(229) -> up(229) -> up(orig)
+		//한글(쌍자음)->down(shift,16) -> down(229) -> up(229) -> up(orig) -> up(229) -> up(shift,16) 
+		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.CallKeyEvent, "key,shift,hangul,upDelay,shiftUpDelay", "function evt(type, param){document.dispatchEvent(new KeyboardEvent('key'+type,param));}let kc=key.toUpperCase().charCodeAt(0);if(shift){evt('down',{'key':'Shift','shiftKey':true,'keyCode':16});}if(hangul){evt('down',{'key':'Process','shiftKey':shift,'keyCode':229});}else{evt('down',{'key':key,'shiftKey':shift,'keyCode':kc});}window.setTimeout(function(){if(hangul){evt('up',{'key':'Process','shiftKey':shift,'keyCode':229});}evt('up',{'key':key,'shiftKey':shift,'keyCode':kc});},upDelay);if(shift){window.setTimeout(function(){if(hangul) evt('up',{'key':'Process','keyCode':229});evt('up',{'key':'Shift','shiftKey':true,'keyCode':16});},shiftUpDelay);}");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", "document.querySelector('[id=\"Talk\"]').value=input");
 		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ClickSubmit, "", "document.getElementById('ChatBtn').click()");
 	}
