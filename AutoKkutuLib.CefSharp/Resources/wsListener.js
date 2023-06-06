@@ -7,6 +7,7 @@
  * onSend
  * onReceive
  * bindObjectAsync
+ * BindObjectAsync
  */
 window['___wsHook___'].before = (function (d, modJson, ws) {
     (async function (data, json) {
