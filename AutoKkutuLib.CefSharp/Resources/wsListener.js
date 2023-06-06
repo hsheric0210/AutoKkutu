@@ -6,20 +6,20 @@
  * ___jsbObj___
  * onSend
  * onReceive
- * BindObjectAsync
+ * bindObjectAsync
  */
-___wsHook___.before = (function (data, url, ws) {
+window['___wsHook___'].before = (function (data, url, ws) {
     (async function (data) {
-        await ___jsbGlobal___.BindObjectAsync('___jsbObj___');
-        ___jsbObj___.onSend(data)
+        await window['___jsbGlobal___']['bindObjectAsync']('___jsbObj___');
+        window['___jsbObj___'].onSend(data)
     })(data);
     return data;
 });
 
-___wsHook___.after = (function (data, url, ws) {
+window['___wsHook___'].after = (function (data, url, ws) {
     (async function (data) {
-        await ___jsbGlobal___.BindObjectAsync('___jsbObj___');
-        ___jsbObj___.onReceive(data)
+        await window['___jsbGlobal___']['bindObjectAsync']('___jsbObj___');
+        window['___jsbObj___'].onReceive(data)
     })(data.data);
     return data
 });

@@ -205,7 +205,7 @@ public class CefSharpBrowser : BrowserBase
 	public void OnFrameLoadStart(object? sender, FrameLoadStartEventArgs args)
 	{
 		Log.Verbose("Injecting wsHook and wsListener: {url}", args.Url);
-		browser.ExecuteScriptAsync((LibResources.wsHook + ';' + CefSharpResources.wsListener)
+		browser.ExecuteScriptAsync((LibResources.wsHookObf + ';' + CefSharpResources.wsListenerObf)
 			.Replace("___wsHook___", WsHookName)
 			.Replace("___wsFilter___", WsFilter)
 			.Replace("___jsbGlobal___", JavascriptBindingGlobalObjectName)

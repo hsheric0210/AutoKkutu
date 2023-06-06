@@ -9,6 +9,7 @@
  * Reserved Names:
  * ___wsHook___
  * ___originalWS___
+ * ___wsFilter___
  * 
  * Force transform:
  * _addEventListener
