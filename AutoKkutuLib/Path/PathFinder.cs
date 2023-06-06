@@ -118,9 +118,9 @@ public class PathFinder
 		var random = new Random();
 		var len = random.Next(64, 256);
 		if (!string.IsNullOrWhiteSpace(param.Condition.MissionChar))
-			generatedWordList.Add(new PathObject(firstChar + random.GenerateRandomString(random.Next(16, 64), false) + new string(param.Condition.MissionChar[0], len) + random.GenerateRandomString(random.Next(16, 64), false), WordCategories.None, len));
+			generatedWordList.Add(new PathObject(firstChar + random.NextString(random.Next(16, 64), false) + new string(param.Condition.MissionChar[0], len) + random.NextString(random.Next(16, 64), false), WordCategories.None, len));
 		for (var i = 0; i < 10; i++)
-			generatedWordList.Add(new PathObject(firstChar + random.GenerateRandomString(len, false), WordCategories.None, 0));
+			generatedWordList.Add(new PathObject(firstChar + random.NextString(len, false), WordCategories.None, 0));
 		stopwatch.Stop();
 
 		var list = generatedWordList.ToImmutableList();

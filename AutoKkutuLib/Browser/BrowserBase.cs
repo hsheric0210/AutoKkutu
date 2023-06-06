@@ -5,8 +5,6 @@ namespace AutoKkutuLib.Browser;
 
 public abstract class BrowserBase
 {
-	private static string functionPrefix = Random.Shared.GenerateRandomString(Random.Shared.Next(5, 16), true);
-
 	private readonly ConcurrentDictionary<int, string> RegisteredFunctions = new();
 
 	/// <summary>
@@ -28,7 +26,7 @@ public abstract class BrowserBase
 	{
 		if (!RegisteredFunctions.TryGetValue(id, out var randomString))
 		{
-			randomString = $"{functionPrefix}{Math.Abs(id)}{Random.Shared.NextInt64()}";
+			randomString = $"{Random.Shared.NextTypeName(Random.Shared.Next(10, 32))}";
 			RegisteredFunctions[id] = randomString;
 		}
 		return (noNamespace ? "" : $"{GenerateScriptTypeName(CommonNameRegistry.Namespace, true)}.") + randomString;
