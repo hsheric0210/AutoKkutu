@@ -186,7 +186,7 @@ public class CefSharpBrowser : BrowserBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Handling WebSocket send event error.");
+			Log.Error(ex, "Handling WebSocket send event error. Message: {msg}", args.Json);
 		}
 	}
 
@@ -198,14 +198,14 @@ public class CefSharpBrowser : BrowserBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Handling WebSocket receive event error.");
+			Log.Error(ex, "Handling WebSocket receive event error. Message: {msg}", args.Json);
 		}
 	}
 
 	public void OnFrameLoadStart(object? sender, FrameLoadStartEventArgs args)
 	{
 		Log.Verbose("Injecting wsHook and wsListener: {url}", args.Url);
-		browser.ExecuteScriptAsync((LibResources.wsHookObf + ';' + CefSharpResources.wsListenerObf)
+		browser.ExecuteScriptAsync((LibResources.wsHook + ';' + CefSharpResources.wsListener)
 			.Replace("___wsHook___", WsHookName)
 			.Replace("___wsFilter___", WsFilter)
 			.Replace("___jsbGlobal___", JavascriptBindingGlobalObjectName)

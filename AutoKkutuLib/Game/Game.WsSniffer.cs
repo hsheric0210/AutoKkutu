@@ -70,10 +70,7 @@ public partial class Game
 	{
 		if (specializedSniffers?.TryGetValue(args.Type, out Action<JsonNode>? mySniffer) ?? false)
 		{
-			if (args.Type != wsSniffHandler.MessageType_Room)
-			{
-				Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
-			}
+			Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
 			mySniffer(args.Json);
 		}
 	}
@@ -85,7 +82,24 @@ public partial class Game
 
 		// Register events to wsFilter
 		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
-		Browser.ExecuteJavaScript($"{wsFilter}['{wsSniffHandler.MessageType_Room}']=function(d){{return d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{data.UserId}');}};", "WsFilter register");
+		// REDUCE IPC OVERHEAD: only copy room.players, room.gaming, room.mode, room.game.seq
+		Browser.ExecuteJavaScript(@$"{wsFilter}['{wsSniffHandler.MessageType_Room}']=function(d){{
+if (d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{data.UserId}'))
+{{
+	return {{
+		'type': 'room',
+		'room':{{
+			'players': d.room.players,
+			'gaming': d.room.gaming,
+			'mode': d.room.mode,
+			'game':{{
+				'seq': d.room.game?.seq ?? []
+			}}
+		}}
+	}}
+}}
+return null;
+}};", "WsFilter register");
 	}
 
 	private void OnWsRoom(WsRoom data)
