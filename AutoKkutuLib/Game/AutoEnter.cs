@@ -181,7 +181,10 @@ public class AutoEnter
 				break;
 			}
 			var delay = parameter.Options.DelayInMillis;
-			game.AppendChat(s => s.SimulateAppend(type, ch), parameter.Options.DelayBeforeKeyUp, parameter.Options.DelayBeforeShiftKeyUp);
+			game.AppendChat(
+				prevChat => { (var isHangul, var composed) = prevChat.SimulateAppend(type, ch); return (isHangul, ch, composed); },
+				parameter.Options.DelayBeforeKeyUp,
+				parameter.Options.DelayBeforeShiftKeyUp);
 			await Task.Delay(delay);
 		}
 
@@ -208,7 +211,10 @@ public class AutoEnter
 		game.UpdateChat("");
 		foreach ((JamoType type, var ch) in list)
 		{
-			game.AppendChat(s => s.SimulateAppend(type, ch), opt.DelayBeforeKeyUp, opt.DelayBeforeShiftKeyUp);
+			game.AppendChat(
+				prevChat => { (var isHangul, var composed) = prevChat.SimulateAppend(type, ch); return (isHangul, ch, composed); },
+				opt.DelayBeforeKeyUp,
+				opt.DelayBeforeShiftKeyUp);
 			await Task.Delay(opt.DelayInMillis);
 		}
 		game.ClickSubmitButton();

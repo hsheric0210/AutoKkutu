@@ -4,7 +4,6 @@ using Serilog;
 using System.Collections.ObjectModel;
 using SeleniumUndetectedChromeDriver;
 using System.Xml.Serialization;
-using System.Diagnostics.Contracts;
 using AutoKkutuLib.Properties;
 using AutoKkutuLib.Selenium.Properties;
 using System.Net;
@@ -70,10 +69,11 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
-		var wsHook = "Vue" + Random.Shared.NextInt64();
-		var wsOriginal = "Vue" + Random.Shared.NextInt64();
-		var wsGlobal = "Vue" + Random.Shared.NextInt64();
-		var wsBuffer = "Vue" + Random.Shared.NextInt64();
+		var wsHook = GenerateScriptTypeName(CommonNameRegistry.WsHook, true);
+		var wsOriginal = GenerateScriptTypeName(CommonNameRegistry.WsOriginal, true);
+		var wsGlobal = GenerateScriptTypeName(CommonNameRegistry.WsGlobal, true);
+		var wsFilter = GenerateScriptTypeName(CommonNameRegistry.WsFilter, true);
+		var wsBuffer = GenerateScriptTypeName(CommonNameRegistry.WsBuffer, true);
 
 		var wsPort = FindFreePort();
 		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
@@ -93,6 +93,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 				.Replace("___wsHook___", wsHook)
 				.Replace("___originalWS___", wsOriginal)
 				.Replace("___wsGlobal___", wsGlobal)
+				.Replace("___wsFilter___", wsFilter)
 				.Replace("___wsBuffer___", wsBuffer)
 				.Replace("___wsAddr___", wsAddrClient)
 		});

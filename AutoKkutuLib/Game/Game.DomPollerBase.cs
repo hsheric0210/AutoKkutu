@@ -23,15 +23,14 @@ public partial class Game
 		int idleInterval,
 		CancellationToken cancelToken)
 	{
-		try
+		cancelToken.ThrowIfCancellationRequested();
+
+		while (true)
 		{
-			cancelToken.ThrowIfCancellationRequested();
-
-			while (true)
+			if (cancelToken.IsCancellationRequested)
+				cancelToken.ThrowIfCancellationRequested();
+			try
 			{
-				if (cancelToken.IsCancellationRequested)
-					cancelToken.ThrowIfCancellationRequested();
-
 				if (activateCondition())
 				{
 					await mainJob();
@@ -44,10 +43,10 @@ public partial class Game
 					await Task.Delay(idleInterval, cancelToken);
 				}
 			}
-		}
-		catch (Exception ex) when (ex is not OperationCanceledException and not TaskCanceledException)
-		{
-			onException(ex);
+			catch (Exception ex) when (ex is not OperationCanceledException and not TaskCanceledException)
+			{
+				onException(ex);
+			}
 		}
 	}
 

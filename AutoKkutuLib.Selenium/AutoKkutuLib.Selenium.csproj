@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fleck" Version="1.2.0" />
     <PackageReference Include="NetCoreServer" Version="6.7.0" />
     <PackageReference Include="Selenium.UndetectedChromeDriver" Version="1.1.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.9.1" />

@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Text.Json.Nodes;
-
-namespace AutoKkutuLib.CefSharp;
+﻿namespace AutoKkutuLib.CefSharp;
 public class JavaScriptBindingObject
 {
 	public event EventHandler<WebSocketJsonMessageEventArgs> WebSocketReceive;

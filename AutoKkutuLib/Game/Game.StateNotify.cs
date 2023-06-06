@@ -4,13 +4,13 @@ using Serilog;
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
-	private int roundIndexCache;
-	private string turnErrorWordCache = "";
-	private string exampleWordCache = "";
-	private string currentPresentedWordCache = "";
+	private int roundIndexCache = -1;
 	private long currentPresentedWordCacheTime = -1;
-	private IList<string>? wordHistoriesCache;
+	private string? turnErrorWordCache;
+	private string? turnHintWordCache;
+	private string? typingWordCache;
 	private string? wordHistoryCache;
+	private IList<string>? wordHistoriesCache;
 
 	public void NotifyGameProgress(bool isGameInProgress)
 	{
@@ -29,6 +29,17 @@ public partial class Game
 				return;
 
 			Log.Debug("Game ended.");
+
+			// Clear game-specific caches
+			roundIndexCache = -1;
+			currentPresentedWordCacheTime = -1;
+			turnErrorWordCache = null;
+			turnHintWordCache = null;
+			typingWordCache = null;
+			wordHistoryCache = null;
+			wordHistoriesCache = null;
+			Interlocked.Exchange(ref isMyTurn, 0);
+
 			GameEnded?.Invoke(this, EventArgs.Empty);
 			IsGameInProgress = false;
 		}
@@ -45,18 +56,19 @@ public partial class Game
 
 	public void NotifyWordHint(string hint)
 	{
-		if (string.Equals(hint, exampleWordCache, StringComparison.OrdinalIgnoreCase))
+		if (string.Equals(hint, turnHintWordCache, StringComparison.OrdinalIgnoreCase))
 			return;
-		exampleWordCache = hint;
+
+		turnHintWordCache = hint;
 		Log.Information("Path example detected : {word}", hint);
 		ExampleWordPresented?.Invoke(this, new WordPresentEventArgs(hint));
 	}
 
-	public void NotifyMyTurn(bool isMyTurn, WordCondition? wordCondition = null)
+	public void NotifyMyTurn(bool myTurn, WordCondition? wordCondition = null, bool byDOM = false, bool bypassCache = false)
 	{
-		if (isMyTurn)
+		if (myTurn)
 		{
-			if (Interlocked.CompareExchange(ref this.isMyTurn, 1, 0) == 1)
+			if (Interlocked.Exchange(ref isMyTurn, 1) == 1 && !bypassCache)
 				return;
 
 			if (CurrentGameMode == GameMode.Free)
@@ -68,17 +80,21 @@ public partial class Game
 			if (wordCondition == null)
 				return;
 
-			Log.Information("My turn arrived, presented word is {word}.", wordCondition);
+			Log.Information("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
 			CurrentPresentedWord = wordCondition;
 			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition));
 
 			return;
 		}
 
-		if (Interlocked.CompareExchange(ref this.isMyTurn, 0, 1) == 0)
+		if (Interlocked.Exchange(ref isMyTurn, 0) == 0 && !bypassCache)
 			return;
 
-		Log.Debug("My turn ended.");
+		Log.Debug("My turn ended. (byDOM:{dom})", byDOM);
+
+		// Clear turn-specific caches
+		turnErrorWordCache = null;
+
 		MyTurnEnded?.Invoke(this, EventArgs.Empty);
 	}
 
@@ -91,13 +107,19 @@ public partial class Game
 		if (roundIndex <= 0)
 			return;
 
+		// Clear round-specific caches
+		turnErrorWordCache = null;
+		turnHintWordCache = null;
+		typingWordCache = null;
+		wordHistoryCache = null;
+		wordHistoriesCache = null;
+
 		Log.Information("Round Changed : {0}", roundIndex);
 		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));
 	}
 
 	public void NotifyTurnError(string word, TurnErrorCode errorCode)
 	{
-
 		if (string.Equals(word, turnErrorWordCache, StringComparison.OrdinalIgnoreCase) || word.Contains("T.T", StringComparison.OrdinalIgnoreCase))
 			return;
 
@@ -129,8 +151,9 @@ public partial class Game
 	// TODO: Optimize
 	public void NotifyWordHistory(string newHistoryElement)
 	{
-		if (wordHistoryCache != null && wordHistoryCache.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase))
+		if (wordHistoryCache?.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase) == true)
 			return;
+
 		Log.Information("WS: Found new used word in history : {word}", newHistoryElement);
 		DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(newHistoryElement));
 	}

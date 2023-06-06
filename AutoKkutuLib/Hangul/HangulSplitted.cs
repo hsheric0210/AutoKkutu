@@ -43,4 +43,9 @@ public struct HangulSplitted
 
 		return enumerable;
 	}
+
+	public override bool Equals(object? obj) => obj is HangulSplitted splitted && IsHangul == splitted.IsHangul && InitialConsonant == splitted.InitialConsonant && Medial == splitted.Medial && FinalConsonant == splitted.FinalConsonant;
+	public override int GetHashCode() => HashCode.Combine(IsHangul, InitialConsonant, Medial, FinalConsonant);
+	public static bool operator ==(HangulSplitted left, HangulSplitted right) => left.Equals(right);
+	public static bool operator !=(HangulSplitted left, HangulSplitted right) => !(left == right);
 }

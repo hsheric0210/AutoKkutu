@@ -1,18 +1,18 @@
-﻿using Serilog;
+﻿using AutoKkutuLib.Extension;
+using Serilog;
 
 namespace AutoKkutuLib.Browser;
 public static class BrowserJavaScriptNameRegistryExtension
 {
+	public static async Task RegisterScriptFunction(this BrowserBase browser, ISet<int> alreadyRegistered, CommonNameRegistry id, string funcArgs, string funcBody) => await browser.RegisterScriptFunction(alreadyRegistered, (int)id, funcArgs, funcBody);
 
-	public static async Task GenerateScriptTypeName(this BrowserBase browser, ISet<int> alreadyRegistered, CommonNameRegistry id, string funcArgs, string funcBody) => await browser.GenerateScriptTypeName(alreadyRegistered, (int)id, funcArgs, funcBody);
+	public static async Task RegisterScriptFunction(this BrowserBase browser, CommonNameRegistry id, string funcArgs, string funcBody) => await browser.RegisterScriptFunction((int)id, funcArgs, funcBody);
 
-	public static async Task GenerateScriptTypeName(this BrowserBase browser, CommonNameRegistry id, string funcArgs, string funcBody) => await browser.GenerateScriptTypeName((int)id, funcArgs, funcBody);
-
-	public static async Task GenerateScriptTypeName(this BrowserBase browser, ISet<int> alreadyRegistered, int id, string funcArgs, string funcBody)
+	public static async Task RegisterScriptFunction(this BrowserBase browser, ISet<int> alreadyRegistered, int id, string funcArgs, string funcBody)
 	{
 		if (!alreadyRegistered.Contains(id))
 		{
-			await browser.GenerateScriptTypeName(id, funcArgs, funcBody);
+			await browser.RegisterScriptFunction(id, funcArgs, funcBody);
 			alreadyRegistered.Add(id);
 		}
 		else
@@ -21,7 +21,7 @@ public static class BrowserJavaScriptNameRegistryExtension
 		}
 	}
 
-	public static async Task GenerateScriptTypeName(this BrowserBase browser, int id, string funcArgs, string funcBody)
+	public static async Task RegisterScriptFunction(this BrowserBase browser, int id, string funcArgs, string funcBody)
 	{
 		var nsName = browser.GenerateScriptTypeName((int)CommonNameRegistry.Namespace, true);
 		var realFuncName = browser.GenerateScriptTypeName(id);
@@ -36,9 +36,10 @@ public static class BrowserJavaScriptNameRegistryExtension
 
 			if (await browser.EvaluateJavaScriptBoolAsync($"typeof({realFuncName})!='function'")) // check if already registered
 			{
-				(var err, var errMessage) = await browser.EvaluateScriptAndGetErrorAsync($"{realFuncName}=function({funcArgs}){{{funcBody}}}");
+				var scr = $"{realFuncName}=function({funcArgs}){{{funcBody}}}";
+				(var err, var errMessage) = await browser.EvaluateScriptAndGetErrorAsync(scr);
 				if (err)
-					Log.Error("Failed to register JavaScript function {funcName} : {error}", (CommonNameRegistry)id, errMessage);
+					Log.Error("Failed to register JavaScript function {funcName} : {error} {scr}", (CommonNameRegistry)id, errMessage, scr);
 				else
 					Log.Debug("Generated JavaScript type name - {funcName} : {realFuncName}", (CommonNameRegistry)id, realFuncName);
 			}
@@ -49,5 +50,5 @@ public static class BrowserJavaScriptNameRegistryExtension
 		}
 	}
 
-	public static string GetScriptTypeName(this BrowserBase browser, CommonNameRegistry funcId, bool appendParentheses = true) => browser.GetScriptTypeName((int)funcId, appendParentheses);
+	public static string GetScriptTypeName(this BrowserBase browser, CommonNameRegistry funcId, bool appendParentheses = true, bool noNamespace = false) => browser.GetScriptTypeName((int)funcId, appendParentheses, noNamespace);
 }

@@ -1,10 +1,8 @@
 ﻿using AutoKkutuLib.Browser;
 using NetCoreServer;
-using OpenQA.Selenium.Internal;
 using Serilog;
 using System.Net;
 using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Text;
 
 namespace AutoKkutuLib.Selenium;

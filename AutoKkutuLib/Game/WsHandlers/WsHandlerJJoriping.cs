@@ -30,7 +30,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 	public WsHandlerJJoriping(BrowserBase browser) : base(browser) { }
 
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
-		=> await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.RoomModeToGameMode, "id", "return Object.keys(JSON.parse(document.getElementById('RULE').textContent))[id]");
+		=> await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.RoomModeToGameMode, "id", "return Object.keys(JSON.parse(document.getElementById('RULE').textContent))[id]");
 
 	public override WsWelcome ParseWelcome(JsonNode json) => new(json["id"]?.GetValue<string>());
 

@@ -167,7 +167,7 @@ internal static class HangulConstants
 			('ㅣ', 'ㅟ')
 		);
 		ccC['ㅡ'] = CreateImmDict(('ㅣ', 'ㅢ'));
-		VowelClusterCompositionTable = ccC.ToImmutable();
+		VowelClusterCompositionTable = vcC.ToImmutable();
 
 		var vcDec = ImmutableDictionary.CreateBuilder<char, IImmutableList<char>>();
 		ccDec['ㅘ'] = ImmutableList.Create('ㅗ', 'ㅏ');
@@ -177,6 +177,24 @@ internal static class HangulConstants
 		ccDec['ㅞ'] = ImmutableList.Create('ㅜ', 'ㅔ');
 		ccDec['ㅟ'] = ImmutableList.Create('ㅜ', 'ㅣ');
 		ccDec['ㅢ'] = ImmutableList.Create('ㅡ', 'ㅣ');
-		VowelClusterDecompositionTable = ccDec.ToImmutable();
+		VowelClusterDecompositionTable = vcDec.ToImmutable();
 	}
+}
+
+public enum JamoType
+{
+	/// <summary>
+	/// 초성 또는 영어 알파벳
+	/// </summary>
+	Initial,
+
+	/// <summary>
+	/// 중성
+	/// </summary>
+	Medial,
+
+	/// <summary>
+	/// 종성
+	/// </summary>
+	Final
 }

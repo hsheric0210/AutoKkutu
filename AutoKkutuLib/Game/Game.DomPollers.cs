@@ -36,7 +36,7 @@ public partial class Game
 		Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
 		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller"));
 		Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
-		Task.Run(async () => await GameDomPoller(PollTurn, token, "My turn poller"));
+		//Task.Run(async () => await GameDomPoller(PollTurn, token, "My turn poller"));//temporary disabled due to race-condition with wssniffer
 		Log.Debug("DOM pollers are now active.");
 	}
 
@@ -50,10 +50,11 @@ public partial class Game
 	private async Task PollGameProgress()
 	{
 		await RegisterInGameFunctions(new HashSet<int>());
+		await RegisterWebSocketFilters();
 		NotifyGameProgress(await domHandler.GetIsGameInProgress());
 	}
 
-	private async Task PollTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition());
+	private async Task PollTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition(), true);
 
 	private async Task PollWordHistory()
 	{
@@ -106,9 +107,9 @@ public partial class Game
 		if (word.Contains(' ', StringComparison.Ordinal))
 			word = word[..word.IndexOf(' ', StringComparison.Ordinal)];
 		var tDelta = Environment.TickCount64 - currentPresentedWordCacheTime;
-		if (string.Equals(word, currentPresentedWordCache, StringComparison.OrdinalIgnoreCase) && tDelta <= 1000)
+		if (string.Equals(word, typingWordCache, StringComparison.OrdinalIgnoreCase) && tDelta <= 1000)
 			return;
-		currentPresentedWordCache = word;
+		typingWordCache = word;
 		currentPresentedWordCacheTime = Environment.TickCount64;
 		Log.Information("Word detected : {word} (delay: {delta})", word, tDelta);
 		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));

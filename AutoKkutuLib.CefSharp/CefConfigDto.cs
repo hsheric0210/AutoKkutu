@@ -1,5 +1,4 @@
-﻿using CefSharp.Internals;
-using CefSharp;
+﻿using CefSharp;
 using System.Xml.Serialization;
 
 namespace AutoKkutuLib.CefSharp;

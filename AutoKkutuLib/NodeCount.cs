@@ -81,4 +81,7 @@ public struct NodeCount
 				KKTEndCount,
 				KKTAttackCount));
 	}
+
+	public static bool operator ==(NodeCount left, NodeCount right) => left.Equals(right);
+	public static bool operator !=(NodeCount left, NodeCount right) => !(left == right);
 }

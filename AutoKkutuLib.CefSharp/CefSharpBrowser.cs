@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.CefSharp.Properties;
-using AutoKkutuLib.Extension;
 using AutoKkutuLib.Properties;
 using CefSharp;
 using CefSharp.Wpf;
@@ -20,6 +19,7 @@ public class CefSharpBrowser : BrowserBase
 	private string JavascriptBindingObjectName = "jsbObj";
 	private string WsHookName = "wsHook";
 	private string OriginalWsName = "wsHook";
+	private string WsFilter = "wsFilter";
 
 	public override object? BrowserControl => browser;
 
@@ -27,10 +27,11 @@ public class CefSharpBrowser : BrowserBase
 	{
 		var serializer = new XmlSerializer(typeof(CefConfigDto));
 
-		JavascriptBindingGlobalObjectName = "Vue" + Random.Shared.NextInt64();
-		JavascriptBindingObjectName = "Vue" + Random.Shared.NextInt64();
-		WsHookName = "Vue" + Random.Shared.NextInt64();
-		OriginalWsName = "Vue" + Random.Shared.NextInt64();
+		JavascriptBindingGlobalObjectName = GenerateScriptTypeName(CommonNameRegistry.JsbGlobal, true);
+		JavascriptBindingObjectName = GenerateScriptTypeName(CommonNameRegistry.JsbObject, true);
+		WsHookName = GenerateScriptTypeName(CommonNameRegistry.WsHook, true);
+		OriginalWsName = GenerateScriptTypeName(CommonNameRegistry.WsOriginal, true);
+		WsFilter = GenerateScriptTypeName(CommonNameRegistry.WsFilter, true);
 
 		var dflt = new CefSettings();
 		config = new CefConfigDto()
@@ -168,7 +169,7 @@ public class CefSharpBrowser : BrowserBase
 		bindingObject.WebSocketSend += OnWebSocketSend;
 		bindingObject.WebSocketReceive += OnWebSocketReceive;
 		browser.JavascriptObjectRepository.Register(JavascriptBindingObjectName, bindingObject);
-		Log.Debug("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}", JavascriptBindingGlobalObjectName, JavascriptBindingObjectName, WsHookName);
+		Log.Debug("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}, wsFilter: {wsFilter}", JavascriptBindingGlobalObjectName, JavascriptBindingObjectName, WsHookName, WsFilter);
 
 		Log.Information("ChromiumWebBrowser instance created.");
 
@@ -204,8 +205,9 @@ public class CefSharpBrowser : BrowserBase
 	public void OnFrameLoadStart(object? sender, FrameLoadStartEventArgs args)
 	{
 		Log.Verbose("Injecting wsHook and wsListener: {url}", args.Url);
-		browser.ExecuteScriptAsync((LibResources.wsHookObf + ';' + CefSharpResources.wsListenerObf)
+		browser.ExecuteScriptAsync((LibResources.wsHook + ';' + CefSharpResources.wsListener)
 			.Replace("___wsHook___", WsHookName)
+			.Replace("___wsFilter___", WsFilter)
 			.Replace("___jsbGlobal___", JavascriptBindingGlobalObjectName)
 			.Replace("___jsbObj___", JavascriptBindingObjectName)
 			.Replace("___originalWS___", OriginalWsName), false);
@@ -221,7 +223,10 @@ public class CefSharpBrowser : BrowserBase
 
 	public override void Load(string url) => browser.LoadUrl(url);
 
-	public override void ShowDevTools() => browser.ShowDevTools();
+	public override void ShowDevTools()
+	{
+		browser.ShowDevTools();
+	}
 
 	public override void ExecuteJavaScript(string script, string? errorMessage = null)
 	{
@@ -243,8 +248,11 @@ public class CefSharpBrowser : BrowserBase
 		IFrame frame = browser.GetMainFrame();
 		if (frame is null)
 			return new JavaScriptCallback("MainFrame is null", false, null);
-
-		JavascriptResponse response = await frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(3));
+		Task<JavascriptResponse> task = frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(1));
+		await task.WaitAsync(TimeSpan.FromSeconds(1));
+		if (task.IsCanceled)
+			throw new TaskCanceledException("CefSharp EvaluateScriptAsync returned task is cancelled.");
+		JavascriptResponse response = await task; // Will be finished immediately because the task had already finished @ L248
 		return new JavaScriptCallback(response.Message, response.Success, response.Result);
 	}
 }

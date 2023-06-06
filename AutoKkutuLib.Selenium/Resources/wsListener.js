@@ -8,6 +8,7 @@
  * ___wsBuffer___
  */
 
+// Workaround for constructor renaming bug
 window.___wsGlobal___ = new window['___originalWS___']('___wsAddr___');
 window.___wsBuffer___ = []
 let open = false

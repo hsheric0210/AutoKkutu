@@ -23,7 +23,7 @@ internal class OptimizedBypassHandler : JavaScriptHandlerBase
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		//ParseExtraVisibilityStyleTagsFunc
-		await Browser.GenerateScriptTypeName(alreadyRegistered, 99, "", @"
+		await Browser.RegisterScriptFunction(alreadyRegistered, 99, "", @"
 let styles = document.querySelectorAll('style');
 let maxIndex = styles.length, index = 0;
 let visibleStyles = [];
@@ -47,7 +47,7 @@ while (index < maxIndex) {
 return visibleStyles;
 ");
 
-		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", $@"
+		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.UpdateChat, "input", $@"
 let talks = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > input'), maxTalks=talks.length;
 let visible = {Browser.GetScriptTypeName(99)}, nVisible = visible.length;
 for (let index=0;index<maxTalks;index++) {{
@@ -60,7 +60,7 @@ for (let index=0;index<maxTalks;index++) {{
 }}
 ");
 
-		await Browser.GenerateScriptTypeName(alreadyRegistered, CommonNameRegistry.ClickSubmit, "", $@"
+		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.ClickSubmit, "", $@"
 let buttons = document.querySelectorAll('#Middle > div.ChatBox.Product > div.product-body > button'), maxButtons=buttons.length;
 let visible = {Browser.GetScriptTypeName(99)}, nVisible = visible.length;
 for (let index=0;index<maxButtons;index++) {{

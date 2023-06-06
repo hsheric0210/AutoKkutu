@@ -1,9 +1,12 @@
-﻿using System.Collections.Concurrent;
+﻿using AutoKkutuLib.Extension;
+using System.Collections.Concurrent;
 
 namespace AutoKkutuLib.Browser;
 
 public abstract class BrowserBase
 {
+	private static string functionPrefix = Random.Shared.GenerateRandomString(Random.Shared.Next(5, 16), true);
+
 	private readonly ConcurrentDictionary<int, string> RegisteredFunctions = new();
 
 	/// <summary>
@@ -25,11 +28,13 @@ public abstract class BrowserBase
 	{
 		if (!RegisteredFunctions.TryGetValue(id, out var randomString))
 		{
-			randomString = $"v{Math.Abs(id)}{Random.Shared.NextInt64()}";
+			randomString = $"{functionPrefix}{Math.Abs(id)}{Random.Shared.NextInt64()}";
 			RegisteredFunctions[id] = randomString;
 		}
-		return (noNamespace ? "" : $"{GenerateScriptTypeName((int)CommonNameRegistry.Namespace, true)}.") + randomString;
+		return (noNamespace ? "" : $"{GenerateScriptTypeName(CommonNameRegistry.Namespace, true)}.") + randomString;
 	}
 
-	public string GetScriptTypeName(int funcId, bool appendParentheses = true) => RegisteredFunctions[(int)CommonNameRegistry.Namespace] + '.' + RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
+	public string GenerateScriptTypeName(CommonNameRegistry id, bool noNamespace = false) => GenerateScriptTypeName((int)id, noNamespace);
+
+	public string GetScriptTypeName(int funcId, bool appendParentheses = true, bool noNamespace = false) => (noNamespace ? "" : (RegisteredFunctions[(int)CommonNameRegistry.Namespace] + '.')) + RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
 }

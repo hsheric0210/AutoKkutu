@@ -53,6 +53,13 @@ var ___wsHook___ = {};
         ___wsHook___.modifyUrl = modifyUrl
     }
 
+    window['___wsFilter___'] = {
+        'undefined': function (d) { return false; },
+        'null': function (d) { return false; },
+        'active': false
+    };
+    //example: ___wsFilter___['welcome'] = function(data){return true;}
+
     var _WS = window.WebSocket
     window['___originalWS___'] = _WS;
     window.WebSocket = function (url, protocols) {
@@ -64,7 +71,11 @@ var ___wsHook___ = {};
 
         var _send = WSObject.send
         WSObject.send = function (data) {
-            arguments[0] = ___wsHook___.before(data, WSObject.url, WSObject)
+            let filterActive = window['___wsFilter___'].active;
+            let json = filterActive ? JSON.parse(data) : null;
+            let filter = filterActive ? window['___wsFilter___'][json.type.toString()] : null;
+            if (!filterActive || filter && typeof (filter) === 'function' && filter(json))
+                arguments[0] = ___wsHook___.before(data, WSObject.url, WSObject)
             _send.apply(this, arguments)
         }
 
@@ -76,7 +87,11 @@ var ___wsHook___ = {};
             if (arguments[0] === 'message') {
                 arguments[1] = (function (userFunc) {
                     return function instrumentAddEventListener() {
-                        arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), WSObject.url, WSObject)
+                        let filterActive = window['___wsFilter___'].active;
+                        let json = filterActive ? JSON.parse(arguments[0].data) : null;
+                        let filter = filterActive ? window['___wsFilter___'][json.type.toString()] : null;
+                        if (!filterActive || filter && typeof (filter) === 'function' && filter(json))
+                            arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), WSObject.url, WSObject)
                         if (arguments[0] === null) return
                         userFunc.apply(eventThis, arguments)
                     }
@@ -90,7 +105,12 @@ var ___wsHook___ = {};
                 var eventThis = this
                 var userFunc = arguments[0]
                 var onMessageHandler = function () {
-                    arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), WSObject.url, WSObject)
+                    let filterActive = window['___wsFilter___'].active;
+                    let json = filterActive ? JSON.parse(arguments[0].data) : null;
+                    let filter = filterActive ? window['___wsFilter___'][json.type] : null;
+                    if (!filterActive || filter && typeof (filter) === 'function' && filter(json)) {
+                        arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), WSObject.url, WSObject)
+                    }
                     if (arguments[0] === null) return
                     userFunc.apply(eventThis, arguments)
                 }

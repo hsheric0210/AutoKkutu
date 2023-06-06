@@ -43,8 +43,9 @@ internal static class HangulClusterExtension
 		};
 
 	/// <summary>
-	/// 분리되어 있던 자음군 조합
-	/// (예시: ['ㄱ', 'ㅅ']->'ㄳ')
+	/// 분리되어 있던 자음군/합성 모음 조합
+	/// (자음군 조합 예시: ['ㄱ', 'ㅅ']->'ㄳ')
+	/// (합성 모음 조합 예시: ['ㅜ', 'ㅔ']->'ㅞ')
 	/// </summary>
 	internal static char MergeCluster(this HangulCluster clusterType, params char?[] splitted)
 	{
@@ -72,8 +73,9 @@ internal static class HangulClusterExtension
 	}
 
 	/// <summary>
-	/// 자음군을 분리
-	/// (예시: 'ㄺ'->['ㄹ', 'ㄱ'])
+	/// 자음군/합성 모음 분해
+	/// (자음군 분해 예시: 'ㄺ'->['ㄹ', 'ㄱ'])
+	/// (합성 모음 분해 예시: 'ㅟ'->['ㅜ', 'ㅣ'])
 	/// </summary>
 	internal static IImmutableList<char> SplitCluster(this HangulCluster clusterType, char combined)
 	{
