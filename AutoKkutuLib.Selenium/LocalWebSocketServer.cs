@@ -7,7 +7,7 @@ using System.Text;
 
 namespace AutoKkutuLib.Selenium;
 
-internal class LocalWebSocketServer
+internal static class LocalWebSocketServer
 {
 	public static event EventHandler<WebSocketMessageEventArgs>? MessageReceived;
 

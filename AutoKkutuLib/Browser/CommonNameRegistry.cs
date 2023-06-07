@@ -40,12 +40,6 @@ public enum CommonNameRegistry
 	PresentedWord,
 
 	/// <summary>
-	/// 현재 라운드의 글자 또는 단어를 반환하는 JavaScript 함수 이름
-	/// </summary>
-	[Obsolete("RoundText는 AutoKkutu 내 그 어느 곳에서도 사용되지 않음. 따라서 DomHandler에서도 제거되는 것이 적절.")]
-	RoundText,
-
-	/// <summary>
 	/// 현재 라운드에서 입력된 단어가 틀렸는지, 그리고 그 단어를 반환하는 JavaScript 함수 이름
 	/// </summary>
 	TurnError,

@@ -113,7 +113,7 @@ public partial class Game : IGame
 		{
 			if (!path.HasFlag(PathFinderFlags.NoRescan))
 			{
-				Log.Warning(I18n.PathFinder_InvalidatedUpdate, true, false); // FIXME: Change text format
+				Log.Warning(I18n.PathFinder_InvalidatedUpdate);
 				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentPresentedWord!)); // Re-trigger search
 			}
 			return false;
@@ -148,7 +148,7 @@ public partial class Game : IGame
 	}
 	#endregion
 
-	public override string ToString() => $"Game[DOM-Poller={domHandler.HandlerName}, WS-Sniffer={wsSniffHandler.HandlerName}, MainPoller={mainPoller?.Id}]";
+	public override string ToString() => $"Game[DOM-Poller={domHandler.HandlerName}, WS-Sniffer={wsSniffHandler?.HandlerName}, MainPoller={mainPoller?.Id}]";
 
 	#region Disposal
 	protected virtual void Dispose(bool disposing)

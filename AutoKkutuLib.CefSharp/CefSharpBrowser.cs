@@ -11,30 +11,22 @@ namespace AutoKkutuLib.CefSharp;
 public class CefSharpBrowser : BrowserBase
 {
 	private const string ConfigFile = "CefSharp.xml";
-	private CefConfigDto config;
+	private readonly CefConfigDto config;
 	private ChromiumWebBrowser browser;
 
 	// Will be randomized
-	private string JavascriptBindingGlobalObjectName = "jsbGlobal";
-	private string JavascriptBindingObjectName = "jsbObj";
-	private string WsHookName = "wsHook";
-	private string OriginalWsName = "wsHook";
-	private string WsFilter = "wsFilter";
+	private readonly string jsbGlobalObjectName;
+	private readonly string jsbObjectName;
+	private readonly string wsHookName;
+	private readonly string wsOriginalName;
+	private readonly string wsFilterName;
 
 	public override object? BrowserControl => browser;
 
-	public CefSharpBrowser()
+	private static CefConfigDto GetDefaultCefConfig()
 	{
-		var serializer = new XmlSerializer(typeof(CefConfigDto));
-
-		JavascriptBindingGlobalObjectName = GenerateScriptTypeName(CommonNameRegistry.JsbGlobal, true);
-		JavascriptBindingObjectName = GenerateScriptTypeName(CommonNameRegistry.JsbObject, true);
-		WsHookName = GenerateScriptTypeName(CommonNameRegistry.WsHook, true);
-		OriginalWsName = GenerateScriptTypeName(CommonNameRegistry.WsOriginal, true);
-		WsFilter = GenerateScriptTypeName(CommonNameRegistry.WsFilter, true);
-
 		var dflt = new CefSettings();
-		config = new CefConfigDto()
+		return new CefConfigDto()
 		{
 			MainPage = "https://kkutu.pink/",
 			ResourcesDirPath = dflt.ResourcesDirPath,
@@ -64,84 +56,92 @@ public class CefSharpBrowser : BrowserBase
 			ExternalMessagePump = dflt.ExternalMessagePump,
 			CookieableSchemesExcludeDefaults = dflt.CookieableSchemesExcludeDefaults,
 		};
+	}
 
-		if (File.Exists(ConfigFile))
-		{
-			try
-			{
-				using FileStream stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-				config = (CefConfigDto?)serializer.Deserialize(stream)!;
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "Failed to read CefSharp config.");
-			}
-		}
-		else
-		{
-			try
-			{
-				using FileStream stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-				serializer.Serialize(stream, config);
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "Failed to write default CefSharp config.");
-			}
-		}
+	private static void SetIfAvail(string? value, Action<string> setter)
+	{
+		if (!string.IsNullOrWhiteSpace(value))
+			setter(value!);
+	}
 
+	private static CefSettings CefConfigToCefSettings(CefConfigDto config)
+	{
 		var settings = new CefSettings();
-		if (!string.IsNullOrWhiteSpace(config.ResourcesDirPath))
-			settings.ResourcesDirPath = config.ResourcesDirPath;
-		if (!string.IsNullOrWhiteSpace(config.LogFile))
-			settings.LogFile = config.LogFile;
+		SetIfAvail(config.ResourcesDirPath, s => settings.ResourcesDirPath = s);
+		SetIfAvail(config.LogFile, s => settings.LogFile = s);
+		SetIfAvail(config.LogFile, s => settings.LogFile = s);
+		SetIfAvail(config.JavascriptFlags, s => settings.JavascriptFlags = s);
+		SetIfAvail(config.UserAgentProduct, s => settings.UserAgentProduct = s);
+		SetIfAvail(config.LocalesDirPath, s => settings.LocalesDirPath = s);
+		SetIfAvail(config.UserAgent, s => settings.UserAgent = s);
+		SetIfAvail(config.AcceptLanguageList, s => settings.AcceptLanguageList = s);
+		SetIfAvail(config.Locale, s => settings.Locale = s);
+		SetIfAvail(config.UserDataPath, s => settings.UserDataPath = s);
+		SetIfAvail(config.CookieableSchemesList, s => settings.CookieableSchemesList = s);
+		SetIfAvail(config.BrowserSubprocessPath, s => settings.BrowserSubprocessPath = s);
+		SetIfAvail(config.CachePath, s => settings.CachePath = s);
+		SetIfAvail(config.RootCachePath, s => settings.RootCachePath = s);
 		settings.LogSeverity = config.LogSeverity;
-		if (!string.IsNullOrWhiteSpace(config.JavascriptFlags))
-			settings.JavascriptFlags = config.JavascriptFlags;
 		settings.PackLoadingDisabled = config.PackLoadingDisabled;
-		if (!string.IsNullOrWhiteSpace(config.UserAgentProduct))
-			settings.UserAgentProduct = config.UserAgentProduct;
-		if (!string.IsNullOrWhiteSpace(config.LocalesDirPath))
-			settings.LocalesDirPath = config.LocalesDirPath;
 		settings.RemoteDebuggingPort = config.RemoteDebuggingPort;
-		if (!string.IsNullOrWhiteSpace(config.UserAgent))
-			settings.UserAgent = config.UserAgent;
 		settings.WindowlessRenderingEnabled = config.WindowlessRenderingEnabled;
 		settings.PersistSessionCookies = config.PersistSessionCookies;
 		settings.PersistUserPreferences = config.PersistUserPreferences;
-		if (!string.IsNullOrWhiteSpace(config.AcceptLanguageList))
-			settings.AcceptLanguageList = config.AcceptLanguageList;
 		settings.BackgroundColor = config.BackgroundColor;
 		settings.UncaughtExceptionStackSize = config.UncaughtExceptionStackSize;
-		if (!string.IsNullOrWhiteSpace(config.Locale))
-			settings.Locale = config.Locale;
 		settings.IgnoreCertificateErrors = config.IgnoreCertificateErrors;
-		if (!string.IsNullOrWhiteSpace(config.UserDataPath))
-			settings.UserDataPath = config.UserDataPath;
-		if (!string.IsNullOrWhiteSpace(config.CookieableSchemesList))
-			settings.CookieableSchemesList = config.CookieableSchemesList;
 		settings.ChromeRuntime = config.ChromeRuntime;
 		settings.MultiThreadedMessageLoop = config.MultiThreadedMessageLoop;
-		if (!string.IsNullOrWhiteSpace(config.BrowserSubprocessPath))
-			settings.BrowserSubprocessPath = config.BrowserSubprocessPath;
-		if (!string.IsNullOrWhiteSpace(config.CachePath))
-			settings.CachePath = config.CachePath;
-		if (!string.IsNullOrWhiteSpace(config.RootCachePath))
-			settings.RootCachePath = config.RootCachePath;
 		settings.ExternalMessagePump = config.ExternalMessagePump;
 		settings.CookieableSchemesExcludeDefaults = config.CookieableSchemesExcludeDefaults;
 		if (config.CefCommandLineArgs != null)
+		{
 			foreach (var arg in config.CefCommandLineArgs)
 			{
-				if (arg.Contains('='))
+				if (arg.Contains('=')) // key-value type
 				{
 					var pieces = arg.Split('=', 2);
 					settings?.CefCommandLineArgs.Add(pieces[0], pieces[1]);
 				}
 				else
+				{
 					settings?.CefCommandLineArgs?.Add(arg);
+				}
 			}
+		}
+		return settings;
+	}
 
+	public CefSharpBrowser()
+	{
+		var serializer = new XmlSerializer(typeof(CefConfigDto));
+
+		jsbGlobalObjectName = GenerateScriptTypeName(CommonNameRegistry.JsbGlobal, true);
+		jsbObjectName = GenerateScriptTypeName(CommonNameRegistry.JsbObject, true);
+		wsHookName = GenerateScriptTypeName(CommonNameRegistry.WsHook, true);
+		wsOriginalName = GenerateScriptTypeName(CommonNameRegistry.WsOriginal, true);
+		wsFilterName = GenerateScriptTypeName(CommonNameRegistry.WsFilter, true);
+
+		config = GetDefaultCefConfig();
+		try
+		{
+			if (File.Exists(ConfigFile))
+			{
+				using FileStream stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+				config = (CefConfigDto?)serializer.Deserialize(stream)!;
+			}
+			else
+			{
+				using FileStream stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+				serializer.Serialize(stream, config);
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, "Failed to reading/writiting default CefSharp config.");
+		}
+
+		var settings = CefConfigToCefSettings(config);
 		try
 		{
 			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
@@ -164,12 +164,12 @@ public class CefSharpBrowser : BrowserBase
 			Address = config?.MainPage ?? "https://www.whatsmyip.org/",
 		};
 		// Prevent getting detected by 'window.CefSharp' property existence checks
-		browser.JavascriptObjectRepository.Settings.JavascriptBindingApiGlobalObjectName = JavascriptBindingGlobalObjectName;
+		browser.JavascriptObjectRepository.Settings.JavascriptBindingApiGlobalObjectName = jsbGlobalObjectName;
 		var bindingObject = new JavaScriptBindingObject();
 		bindingObject.WebSocketSend += OnWebSocketSend;
 		bindingObject.WebSocketReceive += OnWebSocketReceive;
-		browser.JavascriptObjectRepository.Register(JavascriptBindingObjectName, bindingObject);
-		Log.Debug("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}, wsFilter: {wsFilter}", JavascriptBindingGlobalObjectName, JavascriptBindingObjectName, WsHookName, WsFilter);
+		browser.JavascriptObjectRepository.Register(jsbObjectName, bindingObject);
+		Log.Debug("JSB Global Object: {jsbGlobal}, My JSB Object: {jsbObj}, wsHook func: {wsHook}, wsFilter: {wsFilter}", jsbGlobalObjectName, jsbObjectName, wsHookName, wsFilterName);
 
 		Log.Information("ChromiumWebBrowser instance created.");
 
@@ -206,11 +206,11 @@ public class CefSharpBrowser : BrowserBase
 	{
 		Log.Verbose("Injecting wsHook and wsListener: {url}", args.Url);
 		browser.ExecuteScriptAsync((LibResources.wsHook + ';' + CefSharpResources.wsListener)
-			.Replace("___wsHook___", WsHookName)
-			.Replace("___wsFilter___", WsFilter)
-			.Replace("___jsbGlobal___", JavascriptBindingGlobalObjectName)
-			.Replace("___jsbObj___", JavascriptBindingObjectName)
-			.Replace("___originalWS___", OriginalWsName), false);
+			.Replace("___wsHook___", wsHookName)
+			.Replace("___wsFilter___", wsFilterName)
+			.Replace("___jsbGlobal___", jsbGlobalObjectName)
+			.Replace("___jsbObj___", jsbObjectName)
+			.Replace("___originalWS___", wsOriginalName), false);
 	}
 
 	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)

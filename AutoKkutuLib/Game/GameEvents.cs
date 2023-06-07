@@ -60,11 +60,31 @@ public class WordConditionPresentEventArgs : EventArgs
 
 public class PreviousUserTurnEndedEventArgs : EventArgs
 {
-	public bool CanPresearch { get; }
-	public WordCondition? Condition { get; }
-	public PreviousUserTurnEndedEventArgs(bool canPresearch, WordCondition? condition)
+	public enum PresearchAvailability
 	{
-		CanPresearch = canPresearch;
+		/// <summary>
+		/// Pre-search를 사용할 수 있는 경우
+		/// </summary>
+		Available,
+
+		/// <summary>
+		/// 이전 유저가 입력한 단어에 미션 글자가 끼어 있는 경우;
+		/// 이 경우, 다음 턴에 미션 글자가 확정적으로 갱신되기에 Pre-search를 해 놓는다고 하더라도 어차피 미션 글자가 바뀌어서 다시 검색해야 함
+		/// </summary>
+		ContainsMissionChar,
+
+		/// <summary>
+		/// 이전 유저의 입력 단어에서 Tail 노드를 추출할 수 없는 경우 (또는, Tail 노드가 한 가지로 정해지지 않는 경우);
+		/// 예시로, 가운뎃말잇기에서 길이가 짝수인 단어를 입력할 시 단어 정 중앙의 두 글자 중 '랜덤으로' 다음 글자가 정해지기에 추출에 실패함
+		/// </summary>
+		UnableToParse
+	}
+
+	public PresearchAvailability Presearch { get; }
+	public WordCondition? Condition { get; }
+	public PreviousUserTurnEndedEventArgs(PresearchAvailability presearch, WordCondition? condition)
+	{
+		Presearch = presearch;
 		Condition = condition;
 	}
 }
@@ -73,6 +93,8 @@ public class PreviousUserTurnEndedEventArgs : EventArgs
 public class WordHistoryEventArgs : EventArgs
 {
 	public string Word { get; }
+	public int Category { get; }
+	public int Theme { get; }
 	public WordHistoryEventArgs(string word) => Word = word;
 }
 

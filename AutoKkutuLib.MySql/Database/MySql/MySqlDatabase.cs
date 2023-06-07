@@ -6,14 +6,10 @@ namespace AutoKkutuLib.Database.MySql;
 
 public partial class MySqlDatabase : AbstractDatabase
 {
-	private readonly string ConnectionString;
-
 	private readonly string DatabaseName = "";
 
 	public MySqlDatabase(string connectionString)
 	{
-		ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-
 		try
 		{
 			var databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;

@@ -49,6 +49,9 @@ public partial class Game
 	/// <returns></returns>
 	private async Task RegisterWebSocketFilters()
 	{
+		if (wsSniffHandler == null)
+			return;
+
 		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
 		if (await Browser.EvaluateJavaScriptBoolAsync($"{wsFilter}.registered"))
 			return;
@@ -77,12 +80,16 @@ public partial class Game
 
 	private void OnWsWelcome(WsWelcome data)
 	{
+		if (wsSniffHandler == null)
+			return;
+
 		wsSession = new WsSessionInfo(data.UserId);
 		Log.Debug("Caught user id: {id}", data.UserId);
 
 		// Register events to wsFilter
 		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
-		// REDUCE IPC OVERHEAD: only copy room.players, room.gaming, room.mode, room.game.seq
+
+		// OPTIMIZE IPC QUOTA: only copy room.players, room.gaming, room.mode, room.game.seq
 		Browser.ExecuteJavaScript(@$"{wsFilter}['{wsSniffHandler.MessageType_Room}']=function(d){{
 if (d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{data.UserId}'))
 {{
@@ -156,16 +163,16 @@ return null;
 			{
 				Log.Debug("WS: The previous user {target} submit: {txt}!", data.Target, data.Value);
 				var missionChar = session.MyGamePreviousUserMission;
-				var canPresearch = true;
+				var presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.Available;
 				if (missionChar != null && data.Value.Contains(missionChar))
-					canPresearch = false; // The mission char will be changed. Thus, our effort to pre-search word database will become useless. Use standard search method instead. (Search on my turn started)
+					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.ContainsMissionChar;
 
 				WordCondition? condition = CurrentGameMode.ConvertWordToCondition(data.Value, session.MyGamePreviousUserMission);
 				if (condition == null)
-					return; // Conversion unavailable
+					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.UnableToParse;
 
 				CurrentPresentedWord = condition; // Required to bypass initial 'CheckPathExpired' check
-				PreviousUserTurnEnded?.Invoke(this, new PreviousUserTurnEndedEventArgs(canPresearch, condition));
+				PreviousUserTurnEnded?.Invoke(this, new PreviousUserTurnEndedEventArgs(presearch, condition));
 			}
 
 			if (!session.IsMyTurn(turn))

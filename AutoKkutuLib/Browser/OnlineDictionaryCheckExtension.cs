@@ -2,6 +2,7 @@
 
 namespace AutoKkutuLib.Browser;
 
+// TODO: 사전 검색 기능 싹 다갈아엎고 DomHandler.cs, Game.cs에 직접적으로 추가하여 엄연한 하나의 공식 기능으로 만들기.
 public static class OnlineDictionaryCheckExtension
 {
 	public static bool IsDictionaryAvailable(this BrowserBase browser)

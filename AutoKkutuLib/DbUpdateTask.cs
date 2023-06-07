@@ -24,7 +24,7 @@ public class DbUpdateTask
 	{
 	}
 
-	public string Execute()
+	public string? Execute()
 	{
 		Log.Debug(I18n.PathFinder_AutoDBUpdate);
 		var AddQueueCount = specialPathList.NewPaths.Count;

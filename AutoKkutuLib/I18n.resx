@@ -416,8 +416,7 @@
     <value>Failed to update node lists.</value>
   </data>
   <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
-    <value>Invalidated potential incorrect path update result. (Word: {0}, MissionChar: {1})</value>
-    <comment>0: Is caused by word, 1: Is caused by mission char</comment>
+    <value>Invalidated potential incorrect path update result.</value>
   </data>
   <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
     <value>Can't delete {word} from database.</value>

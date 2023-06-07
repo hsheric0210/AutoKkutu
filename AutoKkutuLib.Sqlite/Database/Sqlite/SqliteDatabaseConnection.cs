@@ -12,9 +12,4 @@ public class SqliteDatabaseConnection : AbstractDatabaseConnection
 	public override string GetMissionWordPriorityFuncName() => "MissionWordPriority";
 
 	public override string GetWordListColumnOptions() => "seq INTEGER PRIMARY KEY AUTOINCREMENT, word VARCHAR(256) UNIQUE NOT NULL, word_index CHAR(1) NOT NULL, reverse_word_index CHAR(1) NOT NULL, kkutu_index VARCHAR(2) NOT NULL, flags SMALLINT NOT NULL";
-
-	private void RebuildWordList()
-	{
-		
-	}
 }

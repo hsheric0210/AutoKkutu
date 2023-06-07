@@ -709,7 +709,7 @@ namespace AutoKkutuLib {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalidated potential incorrect path update result. (Word: {0}, MissionChar: {1}).
+        ///   Looks up a localized string similar to Invalidated potential incorrect path update result..
         /// </summary>
         public static string PathFinder_InvalidatedUpdate {
             get {

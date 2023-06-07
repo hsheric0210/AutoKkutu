@@ -44,17 +44,10 @@ public static class Main
 
 	/* EVENTS */
 	public static event EventHandler? BrowserFrameLoad;
-
-	public static event EventHandler? HandlerRegistered;
-
 	public static event EventHandler<PathListUpdateEventArgs>? PathListUpdated;
-
 	public static event EventHandler? InitializationFinished;
-
 	public static event EventHandler<SearchStateChangedEventArgs>? SearchStateChanged;
-
 	public static event EventHandler<StatusMessageChangedEventArgs>? StatusMessageChanged;
-
 	public static event EventHandler? ChatUpdated;
 
 	/* Misc. variables */
@@ -427,8 +420,9 @@ public static class Main
 
 	private static void OnPreviousUserTurnEnded(object? sender, PreviousUserTurnEndedEventArgs args)
 	{
-		if (!args.CanPresearch || args.Condition is null)
+		if (args.Presearch != PreviousUserTurnEndedEventArgs.PresearchAvailability.Available || args.Condition is null)
 		{
+			Log.Debug("Pre-search result flushed. Reason: {availability}", args.Presearch);
 			preSearch = null;
 			return;
 		}

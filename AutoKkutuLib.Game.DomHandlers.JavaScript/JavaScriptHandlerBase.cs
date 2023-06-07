@@ -19,8 +19,6 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 
 	public override async ValueTask<string?> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
 
-	public override async ValueTask<string?> GetRoundText() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundText), errorPrefix: nameof(GetRoundText));
-
 	public override async ValueTask<int> GetRoundIndex() => await Browser.EvaluateJavaScriptIntAsync(Browser.GetScriptTypeName(CommonNameRegistry.RoundIndex), errorPrefix: nameof(GetRoundIndex));
 
 	public override async ValueTask<string?> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(Browser.GetScriptTypeName(CommonNameRegistry.TurnError), errorPrefix: nameof(GetUnsupportedWord));
@@ -89,7 +87,6 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.GameInProgress, "", "var s=document.getElementsByClassName('GameBox Product')[0]?.style;return s!=undefined&&(s?.display ? s.display!='none' : s.height!='');");
 		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.GameMode, "", "let s=document.getElementsByClassName('room-head-mode')[0]?.textContent?.split('/')[0]?.trim();return s?.substring(s.indexOf(' ')+1)||''");
 		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.PresentedWord, "", "return document.getElementsByClassName('jjo-display ellipse')[0]?.textContent||''");
-		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.RoundText, "", "return document.getElementsByClassName('rounds-current')[0]?.textContent||''");
 		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.IsMyTurn, "", "let s=document.getElementsByClassName('game-input')[0];return s!=undefined&&s.style.display!='none'");
 		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.TurnError, "", "return document.getElementsByClassName('game-fail-text')[0]?.textContent||''");
 		await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.TurnTime, "", "let s=document.querySelector(\"[class='graph jjo-turn-time']>[class='graph-bar']\")?.textContent;return s?.substring(0,s.length-1)||''");

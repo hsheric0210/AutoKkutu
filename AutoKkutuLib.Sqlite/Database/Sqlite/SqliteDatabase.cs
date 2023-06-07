@@ -48,22 +48,32 @@ public partial class SqliteDatabase : AbstractDatabase
 			var missionOccurrence = (from char c in word.ToUpperInvariant() where c == missionChar select c).Count();
 			var hasMission = missionOccurrence > 0;
 
+			// End-word
 			if ((flags & endWordFlag) != 0)
 				return (hasMission ? endMissionWordOrdinal : endWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
-			return (flags & attackWordFlag) != 0
-				? (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256
-				: (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
+
+			// Attack-word
+			if ((flags & attackWordFlag) != 0)
+				return (hasMission ? attackMissionWordOrdinal : attackWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
+
+			// Normal word
+			return (hasMission ? missionWordOrdinal : normalWordOrdinal) * DatabaseConstants.MaxWordPriorityLength + missionOccurrence * 256;
 		});
 
 	// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
 	private void RegisterWordPriorityFunc(SqliteConnection connection) =>
 		connection.CreateFunction(Connection.GetWordPriorityFuncName(), (int flags, int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal) =>
 		{
+			// End-word
 			if ((flags & endWordFlag) != 0)
 				return endWordOrdinal * DatabaseConstants.MaxWordLength;
-			return (flags & attackWordFlag) != 0
-				? attackWordOrdinal * DatabaseConstants.MaxWordLength
-				: normalWordOrdinal * DatabaseConstants.MaxWordLength;
+
+			// Attack-word
+			if ((flags & attackWordFlag) != 0)
+				return attackWordOrdinal * DatabaseConstants.MaxWordLength;
+
+			// Normal word
+			return normalWordOrdinal * DatabaseConstants.MaxWordLength;
 		});
 
 	public override string GetDBType() => "SQLite";

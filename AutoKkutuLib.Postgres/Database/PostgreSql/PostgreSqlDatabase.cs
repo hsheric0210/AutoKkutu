@@ -6,12 +6,8 @@ namespace AutoKkutuLib.Database.PostgreSql;
 
 public partial class PostgreSqlDatabase : AbstractDatabase
 {
-	private readonly string ConnectionString;
-
 	public PostgreSqlDatabase(string connectionString) : base()
 	{
-		ConnectionString = connectionString;
-
 		try
 		{
 			// Open the connection
@@ -19,7 +15,7 @@ public partial class PostgreSqlDatabase : AbstractDatabase
 			var connection = new NpgsqlConnection(connectionString);
 			connection.Open();
 			Initialize(new PostgreSqlDatabaseConnection(connection));
-			Connection.TryExecute($"SET Application_Name TO 'AutoKkutu';");
+			Connection.TryExecute("SET Application_Name TO 'AutoKkutu';");
 
 			// Rearrange(int endWordFlag, int attackWordFlag, int endWordOrdinal, int attackWordOrdinal, int normalWordOrdinal)
 			Connection.TryExecute($@"CREATE OR REPLACE FUNCTION {Connection.GetWordPriorityFuncName()}(flags INT, endWordFlag INT, attackWordFlag INT, endWordOrdinal INT, attackWordOrdinal INT, normalWordOrdinal INT)

@@ -13,8 +13,10 @@ using AutoKkutuLib.Browser;
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable
 {
+	private readonly static ReadOnlyCollection<IWebElement> emptyWebElements = new(new List<IWebElement>());
 	private const string ConfigFile = "Selenium.xml";
-	private UndetectedChromeDriver? driver;
+
+	private UndetectedChromeDriver driver = null!;
 	private IDisposable? WsServer;
 	private bool disposedValue;
 
@@ -77,7 +79,6 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 		var wsPort = FindFreePort();
 		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
-		var wsAddrServer = "ws://" + new IPEndPoint(IPAddress.Any, wsPort).ToString();
 		LocalWebSocketServer.MessageReceived += OnWebSocketMessage;
 		WsServer = LocalWebSocketServer.Start(wsPort);
 
@@ -174,12 +175,12 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (Exception ex) when (ex is NoSuchElementException or StaleElementReferenceException)
 		{
-			return null;
+			return emptyWebElements;
 		}
 		catch (UnhandledAlertException)
 		{
 			Log.Warning("Alert window detected");
-			return null;
+			return emptyWebElements;
 		}
 	}
 
@@ -208,12 +209,12 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (Exception ex) when (ex is NoSuchElementException or StaleElementReferenceException)
 		{
-			return null;
+			return emptyWebElements;
 		}
 		catch (UnhandledAlertException)
 		{
 			Log.Warning("Alert window detected");
-			return null;
+			return emptyWebElements;
 		}
 	}
 

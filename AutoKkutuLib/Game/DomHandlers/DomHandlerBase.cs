@@ -15,7 +15,6 @@ public abstract class DomHandlerBase
 	public abstract ValueTask<string?> GetMissionChar();
 	public abstract ValueTask<string?> GetExampleWord();
 	public abstract ValueTask<int> GetRoundIndex();
-	public abstract ValueTask<string?> GetRoundText();
 	public abstract ValueTask<float> GetRoundTime();
 	public abstract ValueTask<float> GetTurnTime();
 	public abstract ValueTask<string?> GetUnsupportedWord();

@@ -397,8 +397,7 @@
     <value>노드 목록을 초기화하지 못했습니다.</value>
   </data>
   <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
-    <value>이전 검색 결과를 무효화했습니다. (단어 문제: {0}, 미션 단어 문제: {1})</value>
-    <comment>0: 발생 원인이 단어 문제인지 여부, 1: 발생 원인이 미션 단어 문제인지 여부</comment>
+    <value>만료된 이전 검색 결과를 무효화했습니다.</value>
   </data>
   <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에서 삭제하지 못했습니다.</value>
