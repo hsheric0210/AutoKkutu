@@ -351,7 +351,7 @@ public static class Main
 			if (Prefs.AutoDBAddEndEnabled)
 				opts |= DbUpdateTask.DbUpdateCategories.AddEnd;
 			var result = updateTask.Execute(opts);
-				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);
+			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);
 		}
 		else
 		{

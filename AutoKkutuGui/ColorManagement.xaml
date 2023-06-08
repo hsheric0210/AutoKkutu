@@ -8,9 +8,31 @@
     Title="Color Preference"
     Width="Auto"
     Height="Auto"
+    FontFamily="{StaticResource NanumBarunGothic}"
     ResizeMode="CanResizeWithGrip"
     SizeToContent="WidthAndHeight"
     mc:Ignorable="d">
+    <Window.Resources>
+        <Style x:Key="CPGridStyle" TargetType="Grid">
+            <Setter Property="Margin" Value="5,5,5,5" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="#FF333337" />
+        </Style>
+        <Style x:Key="CPTextLabelStyle" TargetType="Label">
+            <Setter Property="Margin" Value="5,5,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style x:Key="CPPickerStyle" TargetType="xctk:ColorPicker">
+            <Setter Property="MinWidth" Value="160" />
+            <Setter Property="Margin" Value="10,40,10,10" />
+            <Setter Property="ColorMode" Value="ColorPalette" />
+            <Setter Property="SelectedColor" Value="White" />
+        </Style>
+    </Window.Resources>
     <Grid Background="#252526" UseLayoutRounding="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -29,136 +51,85 @@
             <Grid
                 Grid.Row="0"
                 Grid.Column="0"
-                Margin="0,0,5,5"
-                Background="#FF333337">
+                Style="{StaticResource CPGridStyle}">
                 <Label
                     Grid.Row="1"
-                    Margin="5,5,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Content="한방 단어"
-                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                    FontSize="20"
-                    Foreground="#FFFFFFFF" />
-                <xctk:ColorPicker
-                    Name="EndWordColor"
-                    MinWidth="160"
-                    Margin="10,40,10,10"
-                    ColorMode="ColorPalette"
-                    SelectedColor="White" />
+                    Style="{StaticResource CPTextLabelStyle}" />
+                <xctk:ColorPicker Name="EndWordColor" Style="{StaticResource CPPickerStyle}" />
             </Grid>
             <Grid
                 Grid.Row="0"
                 Grid.Column="1"
-                Margin="5,0,5,5"
-                Background="#FF333337">
+                Style="{StaticResource CPGridStyle}">
                 <Label
                     Grid.Row="1"
-                    Margin="5,5,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Content="공격 단어"
-                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                    FontSize="20"
-                    Foreground="#FFFFFFFF" />
-                <xctk:ColorPicker
-                    Name="AttackWordColor"
-                    MinWidth="160"
-                    Margin="10,40,10,10"
-                    ColorMode="ColorPalette"
-                    SelectedColor="White" />
+                    Style="{StaticResource CPTextLabelStyle}" />
+                <xctk:ColorPicker Name="AttackWordColor" Style="{StaticResource CPPickerStyle}" />
             </Grid>
             <Grid
                 Grid.Row="1"
                 Grid.Column="0"
-                Margin="0,5,5,0"
-                Background="#FF333337">
+                Style="{StaticResource CPGridStyle}">
                 <Label
                     Grid.Row="1"
-                    Margin="5,5,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Content="한방 미션 단어"
-                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                    FontSize="20"
-                    Foreground="#FFFFFFFF" />
-                <xctk:ColorPicker
-                    Name="EndMissionWordColor"
-                    MinWidth="160"
-                    Margin="10,40,10,10"
-                    ColorMode="ColorPalette"
-                    SelectedColor="White" />
+                    Style="{StaticResource CPTextLabelStyle}" />
+                <xctk:ColorPicker Name="EndMissionWordColor" Style="{StaticResource CPPickerStyle}" />
             </Grid>
             <Grid
                 Grid.Row="1"
                 Grid.Column="1"
-                Margin="5,5,5,0"
-                Background="#FF333337">
+                Style="{StaticResource CPGridStyle}">
                 <Label
                     Grid.Row="1"
-                    Margin="5,5,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Content="공격 미션 단어"
-                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                    FontSize="20"
-                    Foreground="#FFFFFFFF" />
-                <xctk:ColorPicker
-                    Name="AttackMissionWordColor"
-                    MinWidth="160"
-                    Margin="10,40,10,10"
-                    ColorMode="ColorPalette"
-                    SelectedColor="White" />
+                    Style="{StaticResource CPTextLabelStyle}" />
+                <xctk:ColorPicker Name="AttackMissionWordColor" Style="{StaticResource CPPickerStyle}" />
             </Grid>
             <Grid
                 Grid.Row="0"
                 Grid.Column="2"
-                Margin="5,0,0,5"
-                Background="#FF333337">
+                Style="{StaticResource CPGridStyle}">
                 <Label
                     Grid.Row="1"
-                    Margin="5,5,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Content="미션 단어"
-                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                    FontSize="20"
-                    Foreground="#FFFFFFFF" />
-                <xctk:ColorPicker
-                    Name="MissionWordColor"
-                    MinWidth="160"
-                    Margin="10,40,10,10"
-                    ColorMode="ColorPalette"
-                    SelectedColor="White" />
+                    Style="{StaticResource CPTextLabelStyle}" />
+                <xctk:ColorPicker Name="MissionWordColor" Style="{StaticResource CPPickerStyle}" />
             </Grid>
         </Grid>
-        <Button
-            Name="Cancel"
+        <StackPanel
             Grid.Row="1"
             Grid.Column="0"
-            MinWidth="100"
-            MinHeight="20"
-            Margin="20,0,135,20"
+            Margin="0,0,15,15"
             HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Click="OnCancel"
-            Content="취소"
-            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-            FontSize="14"
-            IsCancel="True" />
-        <Button
-            Name="Submit"
-            Grid.Row="1"
-            Grid.Column="0"
-            MinWidth="100"
-            MinHeight="20"
-            Margin="20,0,20,20"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Click="OnSubmit"
-            Content="적용"
-            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-            FontSize="14"
-            IsDefault="True" />
+            Orientation="Horizontal">
+            <Button
+                Name="Cancel"
+                MinWidth="100"
+                MinHeight="20"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Click="OnCancel"
+                Content="취소"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="14"
+                IsCancel="True" />
+            <Button
+                Name="Submit"
+                MinWidth="100"
+                MinHeight="20"
+                Margin="20,0,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Click="OnSubmit"
+                Content="적용"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="14"
+                IsDefault="True" />
+        </StackPanel>
+
     </Grid>
 </Window>

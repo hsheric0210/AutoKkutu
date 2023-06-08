@@ -7,6 +7,7 @@
     Width="Auto"
     Height="Auto"
     Closing="OnWindowClose"
+    FontFamily="NanumbARUNGothic"
     ResizeMode="CanResizeWithGrip"
     SizeToContent="WidthAndHeight">
     <Window.InputBindings>
@@ -19,6 +20,44 @@
         <CommandBinding Command="{x:Static ak:GuiCommands.ToggleDelay}" Executed="OnToggleDelay" />
         <CommandBinding Command="{x:Static ak:GuiCommands.ToggleAllDelay}" Executed="OnToggleAllDelay" />
     </Window.CommandBindings>
+    <Window.Resources>
+        <Style x:Key="BaseLabelStyle" TargetType="Label">
+            <Setter Property="Margin" Value="5,0,0,0" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="BaseButtonStyle" TargetType="Button">
+            <Setter Property="Margin" Value="5,5,5,5" />
+            <Setter Property="Padding" Value="10,0,10,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+        <Style x:Key="BaseSearchBox" TargetType="TextBox">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="#333337" />
+            <Setter Property="BorderBrush" Value="#434346" />
+            <Setter Property="Padding" Value="5,5,5,5" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="MinHeight" Value="25" />
+        </Style>
+        <Style x:Key="BaseSearchBoxPlaceholder" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Padding" Value="10,0,10,0" />
+            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style x:Key="GroupHightlightGridStyle" TargetType="Grid">
+            <Setter Property="Margin" Value="5,5,5,5" />
+            <Setter Property="Background" Value="#1F1F1F" />
+        </Style>
+        <Style x:Key="GridSplitterHightlightStyle" TargetType="GridSplitter">
+            <Setter Property="Margin" Value="2,2,2,2" />
+            <Setter Property="Background" Value="#1F1F1F" />
+        </Style>
+    </Window.Resources>
     <Grid UseLayoutRounding="True">
         <Grid
             Name="LoadOverlay"
@@ -27,7 +66,7 @@
             ZIndex="1000" />
         <Grid UseLayoutRounding="True">
             <Grid.RowDefinitions>
-                <RowDefinition MinHeight="865" />
+                <RowDefinition Height="*" />
                 <RowDefinition
                     Height="35"
                     MinHeight="35"
@@ -35,23 +74,27 @@
             </Grid.RowDefinitions>
             <Grid
                 Name="ContentGrid"
+                Background="#252525"
                 Row="0"
                 UseLayoutRounding="True">
                 <Grid.RowDefinitions>
-                    <RowDefinition MinHeight="810" />
-                    <RowDefinition Height="80" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="80" MinHeight="40" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition MinWidth="1350" />
-                    <ColumnDefinition MinWidth="250" MaxWidth="400" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" MinWidth="200" />
                 </Grid.ColumnDefinitions>
                 <Grid
-                    Height="20"
-                    MinWidth="1350"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    Height="30"
                     VerticalAlignment="Top"
                     Background="#FF333337"
-                    Column="0"
-                    Row="0"
                     ZIndex="100">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -61,8 +104,8 @@
                     <ComboBox
                         Name="CurrentURL"
                         Grid.Column="0"
-                        VerticalAlignment="Top"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                        Margin="5,5,5,5"
+                        VerticalAlignment="Stretch"
                         FontSize="16">
                         <ComboBoxItem Content="https://kkutu.org/" />
                         <ComboBoxItem Content="https://kkutu.pink/" />
@@ -80,52 +123,57 @@
                     <Button
                         Name="SubmitURL"
                         Grid.Column="1"
-                        MinWidth="50"
-                        Margin="2,0,5,0"
                         Click="OnSubmitURLClick"
-                        Content="접속" />
+                        Content="접속"
+                        Style="{StaticResource BaseButtonStyle}" />
                     <Button
                         Name="OpenDevConsole"
                         Grid.Column="2"
-                        MinWidth="100"
-                        Margin="0,0,5,0"
                         Click="OnOpenDevConsoleClicked"
-                        Content="개발자 도구 열기" />
+                        Content="개발자 도구 열기"
+                        Style="{StaticResource BaseButtonStyle}" />
                 </Grid>
                 <ContentControl
                     Name="BrowserContainer"
-                    Grid.Row="0"
+                    Grid.Row="1"
                     Grid.Column="0"
-                    Margin="0,19,0,0"
+                    Margin="5,5,5,5"
+                    Background="Black"
                     Content="browserContainer"
                     RenderOptions.BitmapScalingMode="NearestNeighbor"
                     UseLayoutRounding="True" />
+                <GridSplitter
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Width="5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    Style="{StaticResource GridSplitterHightlightStyle}" />
                 <Grid
                     Name="ControlPanel"
-                    Background="#252526"
-                    Column="1"
-                    Row="0">
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    RowSpan="2">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid
-                        MinHeight="20"
-                        Margin="0,0,0,810"
-                        VerticalAlignment="Top"
-                        Background="#FF333337" />
-                    <Label
                         Grid.Row="0"
-                        Margin="10,31,10,0"
-                        Content="추천 단어"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="20"
-                        Foreground="#FFFFFFFF" />
+                        Margin="5,0,5,0"
+                        Style="{StaticResource GroupHightlightGridStyle}">
+                        <Label
+                            Margin="10,10,0,0"
+                            Content="추천 단어"
+                            FontSize="20"
+                            Style="{StaticResource BaseLabelStyle}" />
+                    </Grid>
                     <ListBox
                         Name="PathList"
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Margin="5,70,5,275"
+                        Grid.Row="1"
+                        Margin="10,0,10,0"
                         Background="#FF333337"
                         BorderBrush="{x:Null}"
                         BorderThickness="1"
@@ -218,15 +266,15 @@
                     </ListBox>
                     <Grid
                         Name="SearchStatus"
-                        Grid.Row="1"
-                        Margin="0,365,4,230"
+                        Grid.Row="2"
+                        Margin="5,0,5,0"
                         VerticalAlignment="Bottom"
                         Background="#FF444444">
                         <Image
                             Name="SearchIcon"
                             Width="25"
                             Height="25"
-                            Margin="10,0,0,0"
+                            Margin="5,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             RenderOptions.BitmapScalingMode="HighQuality"
@@ -234,13 +282,12 @@
                         <Border
                             MinWidth="200"
                             MinHeight="80"
-                            Margin="43,0,0,-3"
+                            Margin="35,5,5,5"
                             HorizontalAlignment="Left"
                             BorderBrush="{x:Null}">
                             <TextBlock
                                 Name="SearchResult"
                                 VerticalAlignment="Center"
-                                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
                                 FontSize="11"
                                 Foreground="#FFFFFFFF"
                                 TextWrapping="Wrap">
@@ -248,230 +295,238 @@
                             </TextBlock>
                         </Border>
                     </Grid>
-                    <Label
-                        Grid.Row="1"
-                        Margin="12,0,38,190"
-                        VerticalAlignment="Bottom"
-                        Content="수동 검색"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="20"
-                        Foreground="#FFFFFFFF" />
-                    <Button
-                        Name="SubmitSearch"
-                        Grid.Row="1"
-                        MinWidth="40"
-                        Margin="15,0,0,170"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Click="SubmitSearch_Click"
-                        Content="검색"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14" />
-                    <TextBox
-                        x:Name="SearchField"
-                        Grid.Row="1"
-                        Margin="60,0,15,170"
-                        Padding="5,0,10,0"
-                        VerticalAlignment="Bottom"
-                        VerticalContentAlignment="Center"
-                        Background="#333337"
-                        BorderBrush="#434346"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14"
-                        Foreground="#FFFFFFFF"
-                        KeyDown="SearchField_KeyDown" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="65,0,15,170"
-                        Padding="5,0,10,0"
-                        VerticalAlignment="Bottom"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14"
-                        Foreground="Gray"
-                        IsHitTestVisible="False"
-                        Text="검색할 키워드를 입력해주세요">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Hidden" />
-                                <Setter Property="Foreground" Value="Gray" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Text, ElementName=SearchField}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <ComboBox
-                        x:Name="SearchGameMode"
-                        Grid.Row="1"
-                        Margin="15,0,80,140"
-                        VerticalAlignment="Bottom"
-                        SelectedIndex="0">
-                        <ComboBoxItem>현재 게임모드 따라가기</ComboBoxItem>
-                        <ComboBoxItem>끝말잇기</ComboBoxItem>
-                        <ComboBoxItem>앞말잇기</ComboBoxItem>
-                        <ComboBoxItem>가운뎃말잇기</ComboBoxItem>
-                        <ComboBoxItem>끄투</ComboBoxItem>
-                        <ComboBoxItem>쿵쿵따</ComboBoxItem>
-                        <ComboBoxItem>전체</ComboBoxItem>
-                        <ComboBoxItem>자유</ComboBoxItem>
-                        <ComboBoxItem>자유 끝말잇기</ComboBoxItem>
-                    </ComboBox>
-                    <TextBox
-                        x:Name="SearchMissionChar"
-                        Grid.Row="1"
-                        Height="22"
-                        MinWidth="55"
-                        Margin="0,0,15,140"
-                        Padding="5,0,10,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom"
-                        VerticalContentAlignment="Center"
-                        Background="#333337"
-                        BorderBrush="#434346"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14"
-                        Foreground="#FFFFFFFF"
-                        KeyDown="SearchField_KeyDown" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="0,0,18,145"
-                        Padding="0,0,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="12"
-                        Foreground="Gray"
-                        IsHitTestVisible="False"
-                        Text="미션 단어">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Hidden" />
-                                <Setter Property="Foreground" Value="Gray" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Text, ElementName=SearchMissionChar}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <Label
-                        Grid.Row="1"
-                        Margin="12,0,38,90"
-                        VerticalAlignment="Bottom"
-                        Content="기타 메뉴"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="20"
-                        Foreground="#FFFFFFFF" />
-                    <Grid
-                        Grid.Row="1"
-                        Margin="15,15,15,15"
-                        VerticalAlignment="Bottom"
-                        Background="#FF333337">
-                        <Button
-                            Name="DBManager"
-                            Grid.Column="0"
-                            MinWidth="200"
-                            MaxHeight="30"
-                            VerticalAlignment="Bottom"
-                            Click="OnDBManagementClicked"
-                            Content="데이터베이스 관리"
-                            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                            FontSize="14" />
-                        <Button
-                            x:Name="Settings"
-                            Grid.Column="0"
-                            MinWidth="200"
-                            MaxHeight="30"
-                            Margin="0,0,0,25"
-                            VerticalAlignment="Bottom"
-                            Click="OnSettingsClick"
-                            Content="설정"
-                            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                            FontSize="14" />
-                        <Button
-                            Name="ColorManager"
-                            Grid.Column="0"
-                            MinWidth="200"
-                            MaxHeight="30"
-                            Margin="0,0,0,50"
-                            VerticalAlignment="Bottom"
-                            Click="OnColorManagerClick"
-                            Content="단어 강조 색상 설정"
-                            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                            FontSize="14" />
-                    </Grid>
+                    <StackPanel Grid.Row="3" Margin="5,5,5,0">
+                        <Grid Style="{StaticResource GroupHightlightGridStyle}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Label
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Margin="10,10,0,0"
+                                VerticalAlignment="Bottom"
+                                Content="수동 검색"
+                                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                                FontSize="20"
+                                Foreground="#FFFFFFFF" />
+                            <Button
+                                Name="SubmitSearch"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                MinHeight="25"
+                                Margin="2,5,15,5"
+                                Click="SubmitSearch_Click"
+                                Content="검색"
+                                FontSize="14"
+                                Style="{StaticResource BaseButtonStyle}" />
+                            <TextBox
+                                x:Name="SearchField"
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="15,0,2,0"
+                                KeyDown="SearchField_KeyDown"
+                                Style="{StaticResource BaseSearchBox}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="15,0,15,0"
+                                Text="검색할 키워드를 입력해주세요">
+                                <TextBlock.Style>
+                                    <Style BasedOn="{StaticResource BaseSearchBoxPlaceholder}" TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchField}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ComboBox
+                                x:Name="SearchGameMode"
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                Margin="15,0,2,10"
+                                VerticalAlignment="Stretch"
+                                SelectedIndex="0">
+                                <ComboBoxItem>현재 게임모드 따라가기</ComboBoxItem>
+                                <ComboBoxItem>끝말잇기</ComboBoxItem>
+                                <ComboBoxItem>앞말잇기</ComboBoxItem>
+                                <ComboBoxItem>가운뎃말잇기</ComboBoxItem>
+                                <ComboBoxItem>끄투</ComboBoxItem>
+                                <ComboBoxItem>쿵쿵따</ComboBoxItem>
+                                <ComboBoxItem>전체</ComboBoxItem>
+                                <ComboBoxItem>자유</ComboBoxItem>
+                                <ComboBoxItem>자유 끝말잇기</ComboBoxItem>
+                            </ComboBox>
+                            <TextBox
+                                x:Name="SearchMissionChar"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Margin="2,0,15,10"
+                                KeyDown="SearchField_KeyDown"
+                                Style="{StaticResource BaseSearchBox}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Margin="0,0,10,0"
+                                Padding="10,0,10,10"
+                                Text="미션 단어">
+                                <TextBlock.Style>
+                                    <Style BasedOn="{StaticResource BaseSearchBoxPlaceholder}" TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchMissionChar}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <Grid Style="{StaticResource GroupHightlightGridStyle}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Label
+                                Grid.Row="0"
+                                Margin="15,10,0,0"
+                                Content="기타 메뉴"
+                                FontSize="20"
+                                Style="{StaticResource BaseLabelStyle}" />
+                            <StackPanel
+                                Grid.Row="1"
+                                Margin="15,0,15,10"
+                                VerticalAlignment="Bottom"
+                                Background="#FF333337">
+                                <Button
+                                    Name="DBManager"
+                                    Grid.Column="0"
+                                    MinWidth="200"
+                                    MaxHeight="30"
+                                    VerticalAlignment="Bottom"
+                                    Click="OnDBManagementClicked"
+                                    Content="데이터베이스 관리"
+                                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                                    FontSize="14" />
+                                <Button
+                                    x:Name="Settings"
+                                    Grid.Column="0"
+                                    MinWidth="200"
+                                    MaxHeight="30"
+                                    Margin="0,5,0,0"
+                                    VerticalAlignment="Bottom"
+                                    Click="OnSettingsClick"
+                                    Content="설정"
+                                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                                    FontSize="14" />
+                                <Button
+                                    Name="ColorManager"
+                                    Grid.Column="0"
+                                    MinWidth="200"
+                                    MaxHeight="30"
+                                    Margin="0,5,0,0"
+                                    VerticalAlignment="Bottom"
+                                    Click="OnColorManagerClick"
+                                    Content="단어 강조 색상 설정"
+                                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                                    FontSize="14" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
+                <GridSplitter
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Height="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource GridSplitterHightlightStyle}" />
                 <Grid
-                    MinHeight="20"
-                    Background="#252526"
-                    Column="0"
-                    Row="1">
-                    <Button
-                        x:Name="SubmitChat"
-                        Grid.Column="0"
-                        MinWidth="65"
-                        MinHeight="30"
-                        Margin="40,10,0,10"
-                        HorizontalAlignment="Left"
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    MinHeight="20">
+                    <Grid
+                        Margin="10,0,150,0"
                         VerticalAlignment="Center"
-                        Click="SubmitChat_Click"
-                        Content="전송"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14" />
-                    <Button
-                        x:Name="SubmitClipboard"
-                        Grid.Column="0"
-                        MinWidth="30"
-                        MinHeight="30"
-                        Margin="10,10,0,10"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Click="OnClipboardSubmitClick"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14"
-                        IsCancel="True" />
-                    <TextBox
-                        x:Name="ChatField"
-                        MinHeight="30"
-                        Margin="110,10,230,10"
-                        Padding="5,0,10,0"
-                        VerticalAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        Background="#333337"
-                        BorderBrush="#434346"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="16"
-                        Foreground="#FFFFFFFF"
-                        KeyDown="OnChatFieldKeyDown" />
-                    <TextBlock
-                        Margin="115,10,230,10"
-                        Padding="5,0,10,0"
-                        VerticalAlignment="Center"
-                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                        FontSize="14"
-                        Foreground="Gray"
-                        IsHitTestVisible="False"
-                        Text="여기에 채팅을 입력해주세요">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Hidden" />
-                                <Setter Property="Foreground" Value="Gray" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Text, ElementName=ChatField}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        Style="{StaticResource GroupHightlightGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            x:Name="SubmitClipboard"
+                            Grid.Column="0"
+                            MinWidth="30"
+                            MinHeight="30"
+                            Margin="5,5,0,5"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Click="OnClipboardSubmitClick"
+                            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                            FontSize="14"
+                            IsCancel="True" />
+                        <Button
+                            x:Name="SubmitChat"
+                            Grid.Column="1"
+                            MinWidth="65"
+                            MinHeight="30"
+                            Margin="0,5,2,5"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Click="SubmitChat_Click"
+                            Content="전송"
+                            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                            FontSize="14" />
+                        <Grid Grid.Column="2" Margin="0,5,5,5">
+                            <TextBox
+                                x:Name="ChatField"
+                                MinHeight="30"
+                                Padding="5,0,10,0"
+                                VerticalAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="#333337"
+                                BorderBrush="#434346"
+                                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                                FontSize="16"
+                                Foreground="#FFFFFFFF"
+                                KeyDown="OnChatFieldKeyDown" />
+                            <TextBlock
+                                Padding="5,0,10,0"
+                                VerticalAlignment="Center"
+                                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                                FontSize="14"
+                                Foreground="Gray"
+                                IsHitTestVisible="False"
+                                Text="여기에 채팅을 입력해주세요">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                        <Setter Property="Foreground" Value="Gray" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ChatField}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Grid>
+
                     <Label
                         x:Name="VersionLabel"
                         Width="235"
                         Height="24"
-                        Margin="0,0,5,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         HorizontalContentAlignment="Right"
@@ -485,16 +540,11 @@
                         x:Name="DBLogo"
                         MaxWidth="140"
                         MaxHeight="60"
-                        Margin="0,25,10,0"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
+                        VerticalAlignment="Bottom"
                         Source="Images\mysql.png"
                         Stretch="Uniform" />
                 </Grid>
-                <Grid
-                    Background="#252526"
-                    Column="1"
-                    Row="1" />
             </Grid>
             <Grid
                 Name="StatusGrid"
@@ -516,13 +566,9 @@
                 <Label
                     Name="StatusLabel"
                     Grid.Column="1"
-                    Margin="5,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
                     Content="CurrentStatusLabel"
-                    FontFamily="NanumGothic"
                     FontSize="12"
-                    Foreground="#FFFFFFFF" />
+                    Style="{StaticResource BaseLabelStyle}" />
             </Grid>
         </Grid>
     </Grid>
