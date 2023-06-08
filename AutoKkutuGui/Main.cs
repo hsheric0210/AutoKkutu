@@ -343,15 +343,15 @@ public static class Main
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
 			var updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
-			var result = updateTask.Execute();
-			if (string.IsNullOrEmpty(result))
-			{
-				UpdateStatusMessage(StatusMessage.Wait);
-			}
-			else
-			{
+			var opts = DbUpdateTask.DbUpdateCategories.None;
+			if (Prefs.AutoDBWordAddEnabled)
+				opts |= DbUpdateTask.DbUpdateCategories.Add;
+			if (Prefs.AutoDBWordRemoveEnabled)
+				opts |= DbUpdateTask.DbUpdateCategories.Remove;
+			if (Prefs.AutoDBAddEndEnabled)
+				opts |= DbUpdateTask.DbUpdateCategories.AddEnd;
+			var result = updateTask.Execute(opts);
 				UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);
-			}
 		}
 		else
 		{

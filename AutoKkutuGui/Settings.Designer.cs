@@ -12,7 +12,7 @@ namespace AutoKkutuGui {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.2.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.4.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -295,6 +295,42 @@ namespace AutoKkutuGui {
             }
             set {
                 this["InputSimulate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoDBWordAddEnabled {
+            get {
+                return ((bool)(this["AutoDBWordAddEnabled"]));
+            }
+            set {
+                this["AutoDBWordAddEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoDBWordRemoveEnabled {
+            get {
+                return ((bool)(this["AutoDBWordRemoveEnabled"]));
+            }
+            set {
+                this["AutoDBWordRemoveEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoDBAddEndEnabled {
+            get {
+                return ((bool)(this["AutoDBAddEndEnabled"]));
+            }
+            set {
+                this["AutoDBAddEndEnabled"] = value;
             }
         }
     }

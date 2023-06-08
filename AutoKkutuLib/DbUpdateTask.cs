@@ -13,6 +13,28 @@ public class DbUpdateTask
 	private readonly NodeManager nodeManager;
 	private readonly PathFilter specialPathList;
 
+	[Flags]
+	public enum DbUpdateCategories
+	{
+		None = 0,
+
+		/// <summary>
+		/// 새로운 단어 추가
+		/// </summary>
+		Add = 1 << 0,
+
+
+		/// <summary>
+		/// 지원되지 않는 단어 제거
+		/// </summary>
+		Remove = 1 << 1,
+
+		/// <summary>
+		/// 새로운 한방 노드 추가
+		/// </summary>
+		AddEnd = 1 << 2
+	}
+
 	public DbUpdateTask(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, PathFilter specialPathList)
 	{
 		this.dbConnection = dbConnection;
@@ -24,32 +46,38 @@ public class DbUpdateTask
 	{
 	}
 
-	public string? Execute()
+	public string Execute(DbUpdateCategories categories)
 	{
 		Log.Debug(I18n.PathFinder_AutoDBUpdate);
-		var AddQueueCount = specialPathList.NewPaths.Count;
-		var RemoveQueueCount = specialPathList.InexistentPaths.Count;
-		var EndNodeQueueCount = specialPathList.NewEndPaths.Count;
-		if (AddQueueCount + RemoveQueueCount == 0)
-			Log.Warning(I18n.PathFinder_AutoDBUpdate_Empty);
-		else
+		int AddQueueCount = 0,
+			RemoveQueueCount = 0,
+			EndNodeQueueCount = 0,
+			AddSuccessfulCount = 0,
+			RemoveSuccessfulCount = 0,
+			EndNodeSuccessfulCount = 0;
+		if (categories.HasFlag(DbUpdateCategories.Add))
 		{
+			AddQueueCount = specialPathList.NewPaths.Count;
 			Log.Debug(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);
-			var AddSuccessfulCount = AddNewPaths(CopyPathList(specialPathList.NewPaths));
-
-			Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
-
-			var RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
-
-			var EndNodeSuccessfulCount = AddEndNodes(CopyPathList(specialPathList.NewEndPaths));
-
-			var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount, EndNodeQueueCount, EndNodeSuccessfulCount);
-
-			Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
-			return result;
+			AddSuccessfulCount = AddNewPaths(CopyPathList(specialPathList.NewPaths));
 		}
 
-		return null;
+		if (categories.HasFlag(DbUpdateCategories.Remove))
+		{
+			RemoveQueueCount = specialPathList.InexistentPaths.Count;
+			Log.Information(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
+			RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
+		}
+
+		if (categories.HasFlag(DbUpdateCategories.AddEnd))
+		{
+			EndNodeQueueCount = specialPathList.NewEndPaths.Count;
+			EndNodeSuccessfulCount = AddEndNodes(CopyPathList(specialPathList.NewEndPaths));
+		}
+
+		var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount, EndNodeQueueCount, EndNodeSuccessfulCount);
+		Log.Information(I18n.PathFinder_AutoDBUpdate_Finished, result);
+		return result;
 	}
 
 	private ICollection<T> CopyPathList<T>(ICollection<T> pathList)

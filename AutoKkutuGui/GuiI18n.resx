@@ -465,7 +465,7 @@
     <comment>0: The word</comment>
   </data>
   <data name="ProgramIntroduction" xml:space="preserve">
-    <value>AutoKkutu v{0} - Kkutu cheat</value>
+    <value>AutoKkutu {0} - Next-gen Kkutu-Helper V</value>
     <comment>0: Program version</comment>
   </data>
   <data name="Status_AutoUpdate" xml:space="preserve">

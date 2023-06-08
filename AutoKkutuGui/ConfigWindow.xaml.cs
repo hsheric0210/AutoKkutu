@@ -24,6 +24,9 @@ public partial class ConfigWindow : Window
 
 		AutoEnter.IsChecked = config.AutoEnterEnabled;
 		DBAutoUpdate.IsChecked = config.AutoDBUpdateEnabled;
+		DBAutoWordAdd.IsChecked = config.AutoDBWordAddEnabled;
+		DBAutoWordRemove.IsChecked = config.AutoDBWordRemoveEnabled;
+		DBAutoWordAddEnd.IsChecked = config.AutoDBAddEndEnabled;
 		AttackWord.IsChecked = config.AttackWordAllowed;
 		EndWord.IsChecked = config.EndWordEnabled;
 		ReturnMode.IsChecked = config.ReturnModeEnabled;
@@ -84,7 +87,10 @@ public partial class ConfigWindow : Window
 			InactiveWordPreference = new WordPreference(PreferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
 			DelayStartAfterCharEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
 			MissionAutoDetectionEnabled = MissionDetection.IsChecked ?? false,
+			AutoDBWordRemoveEnabled = DBAutoWordRemove.IsChecked ?? false,
 			FixDelayPerCharEnabled = FixDelayPerWord.IsChecked ?? false,
+			AutoDBAddEndEnabled = DBAutoWordAddEnd.IsChecked ?? false,
+			AutoDBWordAddEnabled = DBAutoWordAdd.IsChecked ?? false,
 			AutoDBUpdateEnabled = DBAutoUpdate.IsChecked ?? false,
 			DelayPerCharEnabled = DelayPerWord.IsChecked ?? false,
 			ReturnModeEnabled = ReturnMode.IsChecked ?? false,
@@ -115,13 +121,16 @@ public partial class ConfigWindow : Window
 			config.AttackWordEnabled = conf.AttackWordAllowed;
 			config.DelayPerCharEnabled = conf.DelayPerCharEnabled;
 			config.AutoDBUpdateEnabled = conf.AutoDBUpdateEnabled;
+			config.AutoDBAddEndEnabled = conf.AutoDBAddEndEnabled;
+			config.AutoDBWordAddEnabled = conf.AutoDBWordAddEnabled;
 			config.ActiveWordPreference = conf.ActiveWordPreference;
 			config.MaxDisplayedWordCount = conf.MaxDisplayedWordCount;
 			config.InactiveWordPreference = conf.InactiveWordPreference;
 			config.FixDelayPerCharEnabled = conf.FixDelayPerCharEnabled;
+			config.AutoDBWordRemoveEnabled = conf.AutoDBWordRemoveEnabled;
 			config.MissionAutoDetectionEnabled = conf.MissionAutoDetectionEnabled;
 			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterCharEnterEnabled;
-			Settings.Default.Save();
+			config.Save();
 		}
 		catch (Exception ex)
 		{

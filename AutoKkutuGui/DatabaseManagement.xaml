@@ -1,126 +1,477 @@
-﻿<Window x:Class="AutoKkutuGui.DatabaseManagement" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		Title="DatabaseManagement" Height="Auto" Width="Auto" ResizeMode="CanResizeWithGrip" SizeToContent="WidthAndHeight">
-	<Window.InputBindings>
-		<KeyBinding Command="ApplicationCommands.Close" Key="Esc" />
-	</Window.InputBindings>
+﻿<Window
+    x:Class="AutoKkutuGui.DatabaseManagement"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="DatabaseManagement"
+    Width="Auto"
+    Height="Auto"
+    ResizeMode="CanResizeWithGrip"
+    SizeToContent="WidthAndHeight">
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="ApplicationCommands.Close" />
+    </Window.InputBindings>
 
-	<Window.CommandBindings>
-		<CommandBinding Command="ApplicationCommands.Close" Executed="OnCloseRequested" />
-	</Window.CommandBindings>
-	<Grid Background="#252526">
-		<Grid.RowDefinitions>
-			<RowDefinition />
-			<RowDefinition />
-		</Grid.RowDefinitions>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition />
-			<ColumnDefinition />
-		</Grid.ColumnDefinitions>
-		<Label Content="데이터베이스 관리" HorizontalAlignment="Left" Height="31" Margin="10,13,0,0" VerticalAlignment="Top" Width="179" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="18" Foreground="#FFFFFFFF" />
-		<Grid Background="#2d2d30" Margin="5,70,15,5" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-			<Label Content="노드 일괄 추가/제거" HorizontalAlignment="Left" Margin="7,6,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
-			<Label Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Foreground="#FFFFFFFF" />
-			<Grid Margin="0,40,10,40">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="*" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<TextBox Name="Node_Input" Grid.Row="0" Grid.RowSpan="6" Grid.Column="0" Margin="5,0,5,0" TextWrapping="NoWrap" Text="" AcceptsReturn="True" MinHeight="50" MinWidth="250" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0" />
-				<TextBlock Text="노드 입력 (여러 개는 줄바꿈으로 구분)" IsHitTestVisible="False" Margin="10,2,0,0" Foreground="Gray" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0">
-					<TextBlock.Style>
-						<Style TargetType="TextBlock">
-							<Setter Property="Visibility" Value="Hidden" />
-							<Setter Property="Foreground" Value="Gray" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Text, ElementName=Node_Input}" Value="">
-									<Setter Property="Visibility" Value="Visible" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</TextBlock.Style>
-				</TextBlock>
-				<Button Name="Node_Submit" Grid.Row="1" Grid.Column="1" Content="추가" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Submit_Click" Margin="5,5,5,5" MinHeight="20" />
-				<Button x:Name="Node_Remove" Grid.Row="1" Grid.Column="2" Content="제거" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Node_Remove_Click" Margin="5,5,5,5" MinHeight="20" />
-				<CheckBox x:Name="Node_AttackWord" Grid.Row="2" Grid.Column="1" Content="끝말잇기 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,10,0,0" />
-				<CheckBox x:Name="Node_EndWord" Grid.Row="2" Grid.Column="2" Content="끝말잇기 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,10,0,0" />
-				<CheckBox x:Name="Node_Reverse_AttackWord" Grid.Row="3" Grid.Column="1" Content="앞말잇기 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Node_Reverse_EndWord" Grid.Row="3" Grid.Column="2" Content="앞말잇기 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Node_Kkutu_AttackWord" Grid.Row="4" Grid.Column="1" Content="끄투 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Node_Kkutu_EndWord" Grid.Row="4" Grid.Column="2" Content="끄투 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Node_KKT_AttackWord" Grid.Row="5" Grid.Column="1" Content="쿵쿵따 공격" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Node_KKT_EndWord" Grid.Row="5" Grid.Column="2" Content="쿵쿵따 한방" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-			</Grid>
-		</Grid>
-		<Grid Background="#2d2d30" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="15,70,5,15">
-			<Label Content="단어 일괄 추가/제거" HorizontalAlignment="Left" Margin="7,6,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
-			<Label Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="10" Foreground="#FFFFFFFF" />
-			<Grid Margin="0,50,0,60">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="*" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<TextBox Name="Batch_Input" Grid.Row="0" Grid.RowSpan="9" Grid.Column="0" TextWrapping="NoWrap" Text="" AcceptsReturn="True" MinWidth="300" MinHeight="65" Margin="5,0,5,0" Background="#333337" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" BorderBrush="#434346" Padding="5,0,10,0" />
-				<TextBlock Text="단어 입력 (여러 줄은 줄바꿈으로 구분)" IsHitTestVisible="False" Margin="10,2,0,0" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Padding="5,0,10,0" Foreground="Gray">
-					<TextBlock.Style>
-						<Style TargetType="TextBlock">
-							<Setter Property="Visibility" Value="Hidden" />
-							<Setter Property="Foreground" Value="Gray" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Text, ElementName=Batch_Input}" Value="">
-									<Setter Property="Visibility" Value="Visible" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</TextBlock.Style>
-				</TextBlock>
-				<CheckBox x:Name="Batch_Remove" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="제거" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" VerticalAlignment="Stretch" HorizontalAlignment="Left" Margin="10,0,0,0" />
-				<Button Name="Batch_Submit" Grid.Row="2" Grid.Column="1" Content="추가 / 제거" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_Click" MinWidth="100" MinHeight="20" Margin="0,5,5,5" />
-				<Button x:Name="Batch_Submit_File" Grid.Row="2" Grid.Column="2" Content="파일에서 읽어들이기" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_File_Click" MinWidth="140" MinHeight="20" Margin="5,5,0,5" />
-				<Button x:Name="Batch_Submit_Folder" Grid.Row="3" Grid.Column="1" Content="폴더의 파일에서 읽어들이기" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="OnWordFolderSubmit" MinWidth="170" MinHeight="20" Margin="0,5,5,5" />
-				<Button x:Name="Batch_Submit_DB" Grid.Row="3" Grid.Column="2" Content="데이터베이스 불러오기" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="Batch_Submit_DB_Click" MinWidth="180" MinHeight="20" Margin="5,5,0,5" />
-				<CheckBox x:Name="Batch_AttackWord" Grid.Row="4" Grid.Column="1" Content="끝말잇기 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,10,0,0" />
-				<CheckBox x:Name="Batch_EndWord" Grid.Row="4" Grid.Column="2" Content="끝말잇기 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,10,0,0" />
-				<CheckBox x:Name="Batch_Reverse_AttackWord" Grid.Row="5" Grid.Column="1" Content="앞말잇기 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_Reverse_EndWord" Grid.Row="5" Grid.Column="2" Content="앞말잇기 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_Middle_AttackWord" Grid.Row="6" Grid.Column="1" Content="가운뎃말잇기 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_Middle_EndWord" Grid.Row="6" Grid.Column="2" Content="가운뎃말잇기 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_Kkutu_AttackWord" Grid.Row="7" Grid.Column="1" Content="끄투 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_Kkutu_EndWord" Grid.Row="7" Grid.Column="2" Content="끄투 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_KKT_AttackWord" Grid.Row="8" Grid.Column="1" Content="쿵쿵따 공격 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-				<CheckBox x:Name="Batch_KKT_EndWord" Grid.Row="8" Grid.Column="2" Content="쿵쿵따 한방 단어" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="10,5,0,0" />
-			</Grid>
-			<CheckBox Name="Batch_Verify" Content="사전 검증" HorizontalAlignment="Left" Margin="10,0,0,35" VerticalAlignment="Bottom" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
-			<Label Content="데이터베이스는 기본적으로 path.sqlite에 저장됩니다.&#xD;&#xA;한글과 영어 데이터베이스를 따로 분리해 두는 것을 추천합니다." HorizontalAlignment="Right" Margin="250,135,0,0" VerticalAlignment="Bottom" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="8" Foreground="#FFFFFFFF" />
-		</Grid>
-		<Grid Background="#2d2d30" Grid.Row="1" Grid.Column="1" Margin="5,5,15,15">
-			<Label Content="데이터베이스 검증" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="14" Foreground="#FFFFFFFF" />
-			<Label Content="데이터베이스의 모든 단어를 다시 검증합니다." HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Foreground="#FFFFFFFF" />
-			<Button Name="CheckDB_Start" Content="검증" HorizontalAlignment="Center" Height="26" VerticalAlignment="Bottom" Width="98" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Click="CheckDB_Start_Click" Margin="0,0,0,10" />
-			<CheckBox Name="Use_OnlineDic" Content="온라인 검증" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="#FFFFFFFF" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Margin="25,0,0,-10" />
-			<Label Content="온라인 검증에는 상당히 많은 시간이 걸립니다." HorizontalAlignment="Left" Margin="30,0,0,-60" VerticalAlignment="Center" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="12" Foreground="#FFFFFFFF" />
-		</Grid>
-		<Label Content="데이터베이스 작업 중일때에는 다른 작업을 수행할 수 없습니다." HorizontalAlignment="Left" Height="26" Margin="10,38,0,0" VerticalAlignment="Top" Width="402" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" />
-	</Grid>
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="OnCloseRequested" />
+    </Window.CommandBindings>
+    <Grid Background="#252526">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Label
+            Width="179"
+            Height="31"
+            Margin="10,13,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Content="데이터베이스 관리"
+            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+            FontSize="18"
+            Foreground="#FFFFFFFF" />
+        <Grid
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="5,70,15,5"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="#2d2d30">
+            <Label
+                Margin="7,6,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Content="노드 일괄 추가/제거"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="14"
+                Foreground="#FFFFFFFF" />
+            <Label
+                Margin="10,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="12"
+                Foreground="#FFFFFFFF" />
+            <Grid Margin="0,40,10,40">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Name="Node_Input"
+                    Grid.Row="0"
+                    Grid.RowSpan="6"
+                    Grid.Column="0"
+                    MinWidth="250"
+                    MinHeight="50"
+                    Margin="5,0,5,0"
+                    Padding="5,0,10,0"
+                    AcceptsReturn="True"
+                    Background="#333337"
+                    BorderBrush="#434346"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    FontSize="14"
+                    Foreground="#FFFFFFFF"
+                    Text=""
+                    TextWrapping="NoWrap" />
+                <TextBlock
+                    Margin="10,2,0,0"
+                    Padding="5,0,10,0"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    FontSize="14"
+                    Foreground="Gray"
+                    IsHitTestVisible="False"
+                    Text="노드 입력 (여러 개는 줄바꿈으로 구분)">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Hidden" />
+                            <Setter Property="Foreground" Value="Gray" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=Node_Input}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <Button
+                    Name="Node_Submit"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    MinHeight="20"
+                    Margin="5,5,5,5"
+                    Click="Node_Submit_Click"
+                    Content="추가"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+                <Button
+                    x:Name="Node_Remove"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    MinHeight="20"
+                    Margin="5,5,5,5"
+                    Click="Node_Remove_Click"
+                    Content="제거"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+                <CheckBox
+                    x:Name="Node_AttackWord"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="10,10,0,0"
+                    Content="끝말잇기 공격"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_EndWord"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Margin="10,10,0,0"
+                    Content="끝말잇기 한방"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_Reverse_AttackWord"
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="앞말잇기 공격"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_Reverse_EndWord"
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="앞말잇기 한방"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_Kkutu_AttackWord"
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="끄투 공격"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_Kkutu_EndWord"
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="끄투 한방"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_KKT_AttackWord"
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="쿵쿵따 공격"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Node_KKT_EndWord"
+                    Grid.Row="5"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="쿵쿵따 한방"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+            </Grid>
+        </Grid>
+        <Grid
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Margin="15,70,5,15"
+            Background="#2d2d30">
+            <Label
+                Margin="7,6,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Content="단어 일괄 추가/제거"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="14"
+                Foreground="#FFFFFFFF" />
+            <Label
+                Margin="10,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="10"
+                Foreground="#FFFFFFFF" />
+            <Grid Margin="0,50,0,60">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Name="Batch_Input"
+                    Grid.Row="0"
+                    Grid.RowSpan="9"
+                    Grid.Column="0"
+                    MinWidth="300"
+                    MinHeight="65"
+                    Margin="5,0,5,0"
+                    Padding="5,0,10,0"
+                    AcceptsReturn="True"
+                    Background="#333337"
+                    BorderBrush="#434346"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    FontSize="14"
+                    Foreground="#FFFFFFFF"
+                    Text=""
+                    TextWrapping="NoWrap" />
+                <TextBlock
+                    Margin="10,2,0,0"
+                    Padding="5,0,10,0"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    FontSize="14"
+                    Foreground="Gray"
+                    IsHitTestVisible="False"
+                    Text="단어 입력 (여러 줄은 줄바꿈으로 구분)">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Hidden" />
+                            <Setter Property="Foreground" Value="Gray" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=Batch_Input}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <CheckBox
+                    x:Name="Batch_Remove"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Content="제거"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <Button
+                    Name="Batch_Submit"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    MinWidth="100"
+                    MinHeight="20"
+                    Margin="0,5,5,5"
+                    Click="Batch_Submit_Click"
+                    Content="추가 / 제거"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+                <Button
+                    x:Name="Batch_Submit_File"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    MinWidth="140"
+                    MinHeight="20"
+                    Margin="5,5,0,5"
+                    Click="Batch_Submit_File_Click"
+                    Content="파일에서 읽어들이기"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+                <Button
+                    x:Name="Batch_Submit_Folder"
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    MinWidth="170"
+                    MinHeight="20"
+                    Margin="0,5,5,5"
+                    Click="OnWordFolderSubmit"
+                    Content="폴더의 파일에서 읽어들이기"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+                <Button
+                    x:Name="Batch_Submit_DB"
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    MinWidth="180"
+                    MinHeight="20"
+                    Margin="5,5,0,5"
+                    Click="Batch_Submit_DB_Click"
+                    Content="데이터베이스 불러오기"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+                <CheckBox
+                    x:Name="Batch_AttackWord"
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Margin="10,10,0,0"
+                    Content="끝말잇기 공격 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_EndWord"
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Margin="10,10,0,0"
+                    Content="끝말잇기 한방 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_Reverse_AttackWord"
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="앞말잇기 공격 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_Reverse_EndWord"
+                    Grid.Row="5"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="앞말잇기 한방 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_Middle_AttackWord"
+                    Grid.Row="6"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="가운뎃말잇기 공격 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_Middle_EndWord"
+                    Grid.Row="6"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="가운뎃말잇기 한방 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_Kkutu_AttackWord"
+                    Grid.Row="7"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="끄투 공격 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_Kkutu_EndWord"
+                    Grid.Row="7"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="끄투 한방 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_KKT_AttackWord"
+                    Grid.Row="8"
+                    Grid.Column="1"
+                    Margin="10,5,0,0"
+                    Content="쿵쿵따 공격 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+                <CheckBox
+                    x:Name="Batch_KKT_EndWord"
+                    Grid.Row="8"
+                    Grid.Column="2"
+                    Margin="10,5,0,0"
+                    Content="쿵쿵따 한방 단어"
+                    FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                    Foreground="#FFFFFFFF" />
+            </Grid>
+            <CheckBox
+                Name="Batch_Verify"
+                Margin="10,0,0,35"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Content="사전 검증"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                Foreground="#FFFFFFFF" />
+            <Label
+                Margin="250,135,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Content="데이터베이스는 기본적으로 path.sqlite에 저장됩니다.&#xD;&#xA;한글과 영어 데이터베이스를 따로 분리해 두는 것을 추천합니다."
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="8"
+                Foreground="#FFFFFFFF" />
+        </Grid>
+        <Grid
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="5,5,15,15"
+            Background="#2d2d30">
+            <Label
+                Margin="5,5,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Content="데이터베이스 검증"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="14"
+                Foreground="#FFFFFFFF" />
+            <Label
+                Margin="10,30,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Content="데이터베이스의 모든 단어를 다시 검증합니다."
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="12"
+                Foreground="#FFFFFFFF" />
+            <Button
+                Name="CheckDB_Start"
+                Width="98"
+                Height="26"
+                Margin="0,0,0,10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Click="CheckDB_Start_Click"
+                Content="검증"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" />
+            <CheckBox
+                Name="Use_OnlineDic"
+                Margin="25,0,0,-10"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Content="온라인 검증"
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                Foreground="#FFFFFFFF" />
+            <Label
+                Margin="30,0,0,-60"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Content="온라인 검증에는 상당히 많은 시간이 걸립니다."
+                FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                FontSize="12"
+                Foreground="#FFFFFFFF" />
+        </Grid>
+        <Label
+            Width="402"
+            Height="26"
+            Margin="10,38,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Content="데이터베이스 작업 중일때에는 다른 작업을 수행할 수 없습니다."
+            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+            Foreground="#FFFFFFFF" />
+    </Grid>
 </Window>

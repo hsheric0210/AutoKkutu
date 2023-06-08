@@ -15,6 +15,21 @@ public class Preference
 		get; set;
 	} = true;
 
+	public bool AutoDBWordAddEnabled
+	{
+		get; set;
+	} = true;
+
+	public bool AutoDBWordRemoveEnabled
+	{
+		get; set;
+	} = true;
+
+	public bool AutoDBAddEndEnabled
+	{
+		get; set;
+	} = true;
+
 	public WordPreference ActiveWordPreference
 	{
 		get; set;

@@ -26,6 +26,14 @@
 
     <ItemGroup>
         <None Remove="database.config" />
+        <None Remove="Fonts\NanumBarunGothic.ttf" />
+        <None Remove="Fonts\NanumBarunGothicBold.ttf" />
+        <None Remove="Fonts\NanumBarunGothicLight.ttf" />
+        <None Remove="Fonts\NanumBarunGothicUltraLight.ttf" />
+        <None Remove="Fonts\NanumGothic.ttf" />
+        <None Remove="Fonts\NanumGothicBold.ttf" />
+        <None Remove="Fonts\NanumGothicExtraBold.ttf" />
+        <None Remove="Fonts\NanumGothicLight.ttf" />
         <None Remove="Images\attack.png" />
         <None Remove="Images\cleaning.png" />
         <None Remove="Images\error.png" />
@@ -51,6 +59,30 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Resource Include="Fonts\NanumBarunGothic.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumBarunGothicBold.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumBarunGothicLight.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumBarunGothicUltraLight.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumGothic.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumGothicBold.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumGothicExtraBold.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Fonts\NanumGothicLight.ttf">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
         <Resource Include="Images\attack.png">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Resource>
