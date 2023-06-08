@@ -72,388 +72,274 @@
     </Window.Resources>
     <Grid Margin="10,10,10,10">
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
-            <StackPanel Orientation="Vertical">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Label
+                Grid.Row="0"
+                Content="데이터베이스 관리"
+                FontSize="20"
+                Style="{StaticResource BaseLabelStyle}" />
+            <Label
+                Grid.Row="1"
+                Content="데이터베이스 작업 중에는 단어 검색과 같은 다른 작업을 수행할 수 없습니다."
+                Style="{StaticResource BaseLabelStyle}" />
+            <Grid
+                Grid.Row="2"
+                Margin="5,5,5,5"
+                Background="#2d2d30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Label
-                    Content="데이터베이스 관리"
-                    FontSize="20"
+                    Grid.Row="0"
+                    Content="단어 일괄 추가/제거"
+                    FontSize="18"
                     Style="{StaticResource BaseLabelStyle}" />
-                <Label Content="데이터베이스 작업 중에는 단어 검색과 같은 다른 작업을 수행할 수 없습니다." Style="{StaticResource BaseLabelStyle}" />
-                <Grid Margin="5,5,5,5" Background="#2d2d30">
+                <Grid Grid.Row="1" Margin="0,0,0,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Label
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        Name="Batch_Input"
                         Grid.Row="0"
-                        Content="단어 일괄 추가/제거"
-                        FontSize="18"
-                        Style="{StaticResource BaseLabelStyle}" />
-                    <Grid Grid.Row="1" Margin="0,0,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox
-                            Name="Batch_Input"
-                            Grid.Row="0"
-                            Grid.RowSpan="9"
-                            Grid.Column="0"
-                            MinWidth="230"
-                            MinHeight="60"
-                            Style="{StaticResource InputStyle}" />
-                        <TextBlock Text="단어 입력 (여러 줄은 줄바꿈으로 구분)">
-                            <TextBlock.Style>
-                                <Style BasedOn="{StaticResource InputPlaceholderStyle}" TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Hidden" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=Batch_Input}" Value="">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <Grid
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Batch_Remove"
-                                Grid.Column="0"
-                                Content="제거"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <Button
-                                Name="Batch_Submit"
-                                Grid.Column="1"
-                                Click="Batch_Submit_Click"
-                                Content="추가 / 제거"
-                                Style="{StaticResource BaseButtonStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="2"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Button
-                                x:Name="Batch_Submit_File"
-                                Grid.Column="0"
-                                Click="Batch_Submit_File_Click"
-                                Content="파일에서 읽어들이기"
-                                Style="{StaticResource BaseButtonStyle}" />
-                            <Button
-                                x:Name="Batch_Submit_Folder"
-                                Grid.Column="1"
-                                Click="OnWordFolderSubmit"
-                                Content="폴더의 파일에서 읽어들이기"
-                                Style="{StaticResource BaseButtonStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="3"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Batch_AttackWord"
-                                Grid.Column="0"
-                                Content="끝말잇기 공격 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Batch_EndWord"
-                                Grid.Column="1"
-                                Content="끝말잇기 한방 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="4"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Batch_Reverse_AttackWord"
-                                Grid.Column="0"
-                                Content="앞말잇기 공격 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Batch_Reverse_EndWord"
-                                Grid.Column="1"
-                                Content="앞말잇기 한방 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="5"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Batch_Middle_AttackWord"
-                                Grid.Column="0"
-                                Content="가운뎃말잇기 공격 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Batch_Middle_EndWord"
-                                Grid.Column="1"
-                                Content="가운뎃말잇기 한방 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="6"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Batch_Kkutu_AttackWord"
-                                Grid.Column="0"
-                                Content="끄투 공격 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Batch_Kkutu_EndWord"
-                                Grid.Column="1"
-                                Content="끄투 한방 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="7"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Batch_KKT_AttackWord"
-                                Grid.Column="0"
-                                Content="쿵쿵따 공격 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Batch_KKT_EndWord"
-                                Grid.Column="1"
-                                Content="쿵쿵따 한방 단어"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Button
-                            x:Name="Batch_Submit_DB"
-                            Grid.Row="8"
-                            Grid.Column="1"
-                            HorizontalAlignment="Right"
-                            Click="Batch_Submit_DB_Click"
-                            Content="다른 SQLite 데이터베이스 가져오기"
-                            Style="{StaticResource BaseButtonStyle}" />
-                    </Grid>
-                    <Grid Grid.Row="2" Style="{StaticResource GroupGridStyle}">
+                        Grid.RowSpan="9"
+                        Grid.Column="0"
+                        MinWidth="230"
+                        MinHeight="60"
+                        Style="{StaticResource InputStyle}" />
+                    <TextBlock Text="단어 입력 (여러 줄은 줄바꿈으로 구분)">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource InputPlaceholderStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Hidden" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=Batch_Input}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Grid
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <CheckBox
-                            Name="Batch_Verify"
+                            x:Name="Batch_Remove"
                             Grid.Column="0"
-                            Content="사전 검증"
+                            Content="제거"
                             Style="{StaticResource GroupCheckboxStyle}" />
-                        <Label
+                        <Button
+                            Name="Batch_Submit"
                             Grid.Column="1"
-                            Margin="10,0,0,0"
-                            Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다"
-                            Style="{StaticResource BaseLabelStyle}" />
+                            Click="Batch_Submit_Click"
+                            Content="추가 / 제거"
+                            Style="{StaticResource BaseButtonStyle}" />
                     </Grid>
-                </Grid>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Column="1">
-            <StackPanel Orientation="Vertical">
-                <StackPanel
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Margin="5,5,5,5"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Background="#2d2d30">
-                    <Label
-                        Content="노드 일괄 추가/제거"
-                        FontSize="18"
-                        Foreground="#FFFFFFFF"
-                        Style="{StaticResource BaseLabelStyle}" />
-                    <Label Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요" Style="{StaticResource BaseLabelStyle}" />
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                    <Grid
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBox
-                            Name="Node_Input"
-                            Grid.Row="0"
-                            Grid.RowSpan="6"
+                        <Button
+                            x:Name="Batch_Submit_File"
                             Grid.Column="0"
-                            MinWidth="250"
-                            MinHeight="50"
-                            Style="{StaticResource InputStyle}" />
-                        <TextBlock Text="노드 입력 (여러 개는 줄바꿈으로 구분)">
-                            <TextBlock.Style>
-                                <Style BasedOn="{StaticResource InputPlaceholderStyle}" TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Hidden" />
-                                    <Setter Property="Foreground" Value="Gray" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=Node_Input}" Value="">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <Grid
-                            Grid.Row="1"
+                            Click="Batch_Submit_File_Click"
+                            Content="파일에서 읽어들이기"
+                            Style="{StaticResource BaseButtonStyle}" />
+                        <Button
+                            x:Name="Batch_Submit_Folder"
                             Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Button
-                                Name="Node_Submit"
-                                Grid.Column="0"
-                                MinWidth="60"
-                                Click="Node_Submit_Click"
-                                Content="추가"
-                                Style="{StaticResource BaseButtonStyle}" />
-                            <Button
-                                x:Name="Node_Remove"
-                                Grid.Column="1"
-                                MinWidth="60"
-                                Click="Node_Remove_Click"
-                                Content="제거"
-                                Style="{StaticResource BaseButtonStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="2"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Node_AttackWord"
-                                Grid.Column="0"
-                                Content="끝말잇기 공격"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Node_EndWord"
-                                Grid.Column="1"
-                                Content="끝말잇기 한방"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="3"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Node_Reverse_AttackWord"
-                                Grid.Column="0"
-                                Content="앞말잇기 공격"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Node_Reverse_EndWord"
-                                Grid.Column="1"
-                                Content="앞말잇기 한방"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="4"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Node_Kkutu_AttackWord"
-                                Grid.Column="0"
-                                Content="끄투 공격"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Node_Kkutu_EndWord"
-                                Grid.Column="1"
-                                Content="끄투 한방"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
-                        <Grid
-                            Grid.Row="5"
-                            Grid.Column="1"
-                            Style="{StaticResource GroupGridStyle}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                x:Name="Node_KKT_AttackWord"
-                                Grid.Column="0"
-                                Content="쿵쿵따 공격"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                            <CheckBox
-                                x:Name="Node_KKT_EndWord"
-                                Grid.Column="1"
-                                Content="쿵쿵따 한방"
-                                Style="{StaticResource GroupCheckboxStyle}" />
-                        </Grid>
+                            Click="OnWordFolderSubmit"
+                            Content="폴더의 파일에서 읽어들이기"
+                            Style="{StaticResource BaseButtonStyle}" />
                     </Grid>
-                </StackPanel>
-                <Grid
+                    <Grid
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Batch_AttackWord"
+                            Grid.Column="0"
+                            Content="끝말잇기 공격 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Batch_EndWord"
+                            Grid.Column="1"
+                            Content="끝말잇기 한방 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Batch_Reverse_AttackWord"
+                            Grid.Column="0"
+                            Content="앞말잇기 공격 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Batch_Reverse_EndWord"
+                            Grid.Column="1"
+                            Content="앞말잇기 한방 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Batch_Middle_AttackWord"
+                            Grid.Column="0"
+                            Content="가운뎃말잇기 공격 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Batch_Middle_EndWord"
+                            Grid.Column="1"
+                            Content="가운뎃말잇기 한방 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="6"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Batch_Kkutu_AttackWord"
+                            Grid.Column="0"
+                            Content="끄투 공격 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Batch_Kkutu_EndWord"
+                            Grid.Column="1"
+                            Content="끄투 한방 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="7"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Batch_KKT_AttackWord"
+                            Grid.Column="0"
+                            Content="쿵쿵따 공격 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Batch_KKT_EndWord"
+                            Grid.Column="1"
+                            Content="쿵쿵따 한방 단어"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Button
+                        x:Name="Batch_Submit_DB"
+                        Grid.Row="8"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Click="Batch_Submit_DB_Click"
+                        Content="다른 SQLite 데이터베이스 가져오기"
+                        Style="{StaticResource BaseButtonStyle}" />
+                </Grid>
+                <Grid Grid.Row="2" Style="{StaticResource GroupGridStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox
+                        Name="Batch_Verify"
+                        Grid.Column="0"
+                        Content="사전 검증"
+                        Style="{StaticResource GroupCheckboxStyle}" />
+                    <Label
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다"
+                        Style="{StaticResource BaseLabelStyle}" />
+                </Grid>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="5,5,5,5"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#2d2d30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label
+                    Grid.Row="0"
+                    Content="노드 일괄 추가/제거"
+                    FontSize="18"
+                    Foreground="#FFFFFFFF"
+                    Style="{StaticResource BaseLabelStyle}" />
+                <Label
                     Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="5,5,5,5"
-                    Background="#2d2d30">
+                    Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요"
+                    Style="{StaticResource BaseLabelStyle}" />
+                <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -462,56 +348,191 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label
+                    <TextBox
+                        Name="Node_Input"
                         Grid.Row="0"
+                        Grid.RowSpan="6"
                         Grid.Column="0"
-                        Content="데이터베이스 검증"
-                        FontSize="18"
-                        Style="{StaticResource BaseLabelStyle}" />
-                    <Label
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Content="데이터베이스의 모든 단어를 다시 검증합니다."
-                        Style="{StaticResource BaseLabelStyle}" />
-                    <Button
-                        Name="CheckDB_Start"
+                        MinWidth="250"
+                        MinHeight="50"
+                        Style="{StaticResource InputStyle}" />
+                    <TextBlock Text="노드 입력 (여러 개는 줄바꿈으로 구분)">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource InputPlaceholderStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Hidden" />
+                                <Setter Property="Foreground" Value="Gray" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=Node_Input}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Grid
                         Grid.Row="1"
                         Grid.Column="1"
-                        Click="CheckDB_Start_Click"
-                        Content="검증"
-                        Style="{StaticResource BaseButtonStyle}" />
-                    <Grid
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
                         Style="{StaticResource GroupGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Label
+                        <Button
+                            Name="Node_Submit"
                             Grid.Column="0"
-                            Margin="0,0,20,0"
-                            Content="온라인 검증에는 매우 많은 시간이 걸리며,&#xD;&#xA;심지어 아직 제대로 다시 구현되지도 않았습니다."
-                            Style="{StaticResource BaseLabelStyle}" />
-                        <CheckBox
-                            Name="Use_OnlineDic"
+                            MinWidth="60"
+                            Click="Node_Submit_Click"
+                            Content="추가"
+                            Style="{StaticResource BaseButtonStyle}" />
+                        <Button
+                            x:Name="Node_Remove"
                             Grid.Column="1"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Content="온라인 검증"
-                            FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
-                            Foreground="#FFFFFFFF"
-                            IsEnabled="False"
+                            MinWidth="60"
+                            Click="Node_Remove_Click"
+                            Content="제거"
+                            Style="{StaticResource BaseButtonStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Node_AttackWord"
+                            Grid.Column="0"
+                            Content="끝말잇기 공격"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Node_EndWord"
+                            Grid.Column="1"
+                            Content="끝말잇기 한방"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Node_Reverse_AttackWord"
+                            Grid.Column="0"
+                            Content="앞말잇기 공격"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Node_Reverse_EndWord"
+                            Grid.Column="1"
+                            Content="앞말잇기 한방"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Node_Kkutu_AttackWord"
+                            Grid.Column="0"
+                            Content="끄투 공격"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Node_Kkutu_EndWord"
+                            Grid.Column="1"
+                            Content="끄투 한방"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Style="{StaticResource GroupGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            x:Name="Node_KKT_AttackWord"
+                            Grid.Column="0"
+                            Content="쿵쿵따 공격"
+                            Style="{StaticResource GroupCheckboxStyle}" />
+                        <CheckBox
+                            x:Name="Node_KKT_EndWord"
+                            Grid.Column="1"
+                            Content="쿵쿵따 한방"
                             Style="{StaticResource GroupCheckboxStyle}" />
                     </Grid>
                 </Grid>
+            </Grid>
+            <Grid
+                Grid.Row="1"
+                Margin="5,5,5,5"
+                Background="#2d2d30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Label
-                    Content="SQLite 데이터베이스 사용 시, 기본 데이터베이스 파일 이름은 'path.sqlite'로,&#xD;&#xA;프로그램 실행 파일과 동일한 폴더에 저장됩니다."
-                    FontSize="10"
-                    Foreground="#808080"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Content="데이터베이스 검증"
+                    FontSize="18"
                     Style="{StaticResource BaseLabelStyle}" />
-            </StackPanel>
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Content="데이터베이스의 모든 단어를 다시 검증합니다."
+                    Style="{StaticResource BaseLabelStyle}" />
+                <Button
+                    Name="CheckDB_Start"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Click="CheckDB_Start_Click"
+                    Content="검증"
+                    Style="{StaticResource BaseButtonStyle}" />
+                <Grid
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Style="{StaticResource GroupGridStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label
+                        Grid.Column="0"
+                        Margin="0,0,20,0"
+                        Content="온라인 검증에는 매우 많은 시간이 걸리며,&#xD;&#xA;심지어 아직 제대로 다시 구현되지도 않았습니다."
+                        Style="{StaticResource BaseLabelStyle}" />
+                    <CheckBox
+                        Name="Use_OnlineDic"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Content="온라인 검증"
+                        FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic"
+                        Foreground="#FFFFFFFF"
+                        IsEnabled="False"
+                        Style="{StaticResource GroupCheckboxStyle}" />
+                </Grid>
+            </Grid>
+            <Label
+                Grid.Row="2"
+                Content="SQLite 데이터베이스 사용 시, 기본 데이터베이스 파일 이름은 'path.sqlite'로,&#xD;&#xA;프로그램 실행 파일과 동일한 폴더에 저장됩니다."
+                FontSize="10"
+                Foreground="#808080"
+                Style="{StaticResource BaseLabelStyle}" />
         </Grid>
     </Grid>
 </Window>
