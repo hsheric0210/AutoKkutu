@@ -32,7 +32,48 @@ public class WsHandlerJJoriping : WsHandlerBase
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 		=> await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.RoomModeToGameMode, "id", "return Object.keys(JSON.parse(document.getElementById('RULE').textContent))[id]");
 
-	public override WsWelcome ParseWelcome(JsonNode json) => new(json["id"]?.GetValue<string>());
+	public override async Task RegisterWebSocketFilter()
+	{
+		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
+		if (await Browser.EvaluateJavaScriptBoolAsync($"{wsFilter}.registered"))
+			return;
+		Browser.ExecuteJavaScript(@$"
+		{wsFilter}['welcome']=function(d){{return {{'type':'welcome','id': d.id}};}};
+		{wsFilter}['turnStart']=function(d){{return true;}};
+		{wsFilter}['turnEnd']=function(d){{return true;}};
+		{wsFilter}['turnError']=function(d){{return true;}};
+		{wsFilter}.registered=true;
+		{wsFilter}.active=true;
+		", "WsFilter register");
+	}
+
+	public override async Task<WsWelcome> ParseWelcome(JsonNode json)
+	{
+		var userId = json["id"]?.GetValue<string>() ?? throw InvalidWsMessage("welcome", "id");
+
+		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
+
+		// OPTIMIZE IPC QUOTA: only copy room.players, room.gaming, room.mode, room.game.seq
+		Browser.ExecuteJavaScript(@$"{wsFilter}['room']=function(d){{
+if (d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{userId}'))
+{{
+	function onlyPlayerId(plist){{ if(!plist){{return [];}} return Array.prototype.map.call(plist, p=>typeof p === 'string' ? p : p.id.toString()); }}
+	return {{
+		'type': 'room',
+		'room':{{
+			'players': onlyPlayerId(d.room.players),
+			'gaming': d.room.gaming,
+			'mode': d.room.mode,
+			'game':{{
+				'seq': onlyPlayerId(d.room.game?.seq)
+			}}
+		}}
+	}}
+}}
+return null;
+}};", "WsFilter-room register");
+		return new(userId);
+	}
 
 	private static string? ParseIntOrString(JsonNode? node)
 	{
@@ -48,7 +89,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 
 	private string ParsePlayer(JsonNode? node) => (node is JsonValue ? node?.GetValue<string>() : ParseIntOrString(node?["id"])) ?? "";
 
-	public override WsRoom ParseRoom(JsonNode json)
+	public override async Task<WsRoom> ParseRoom(JsonNode json)
 	{
 		JsonObject room = (json["room"] ?? throw InvalidWsMessage("room", "room")).AsObject();
 		var players = (room["players"] ?? throw InvalidWsMessage("room", "room.players")).AsArray().Select(ParsePlayer).ToImmutableList();
@@ -58,7 +99,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 		JsonObject game = (room["game"] ?? throw InvalidWsMessage("room", "room.game")).AsObject();
 		var gameSeq = (game["seq"] ?? throw InvalidWsMessage("room", "room.game.seq")).AsArray().Select(ParsePlayer).ToImmutableList();
 
-		var modeString = Browser.EvaluateJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({modeId})", errorPrefix: "ParseRoom");
+		var modeString = await Browser.EvaluateJavaScriptAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({modeId})", errorPrefix: "ParseRoom");
 		var mode = modeString switch
 		{
 			"ESH" or "KSH" => GameMode.LastAndFirst,
@@ -75,7 +116,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 		return new WsRoom(modeString, mode, players, gaming, gameSeq);
 	}
 
-	public override WsClassicTurnStart ParseClassicTurnStart(JsonNode json)
+	public override async Task<WsClassicTurnStart> ParseClassicTurnStart(JsonNode json)
 	{
 		return new WsClassicTurnStart(
 			json["turn"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turn"),
@@ -89,7 +130,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 
 	// TODO: 내 바로 이전 사람 턴이 끝남을 감지하고, 그 사람이 입력한 단어에서 내가 입력해야 할 단어의 조건 노드 파싱하기 (두음법칙 적용해서)
 	// TODO: 'BFKKUTU'의 '두음법칙 무시' 조건 감지 - RoomHead에 '두음법칙 무시' 단어가 있는지 DOM 파싱해서 확인
-	public override WsClassicTurnEnd ParseClassicTurnEnd(JsonNode json)
+	public override async Task<WsClassicTurnEnd> ParseClassicTurnEnd(JsonNode json)
 	{
 		return new(
 			json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"),
@@ -98,7 +139,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 			json["hint"]?["_id"]?.GetValue<string>());
 	}
 
-	public override WsTurnError ParseClassicTurnError(JsonNode json)
+	public override async Task<WsTurnError> ParseClassicTurnError(JsonNode json)
 	{
 		return new(
 			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("TurnError", "code"),

@@ -23,14 +23,16 @@ public abstract class WsHandlerBase
 
 	protected WsHandlerBase(BrowserBase browser) => Browser = browser;
 
-	public abstract WsWelcome ParseWelcome(JsonNode json);
-	public abstract WsRoom ParseRoom(JsonNode json);
-	public abstract WsClassicTurnStart ParseClassicTurnStart(JsonNode json);
+	public abstract Task RegisterWebSocketFilter();
+	public virtual Task RegisterInGameFunctions(ISet<int> alreadyRegistered) => Task.CompletedTask;
+	public virtual bool OnWebSocketMessage(JsonNode json) => false;
+
+	public abstract Task<WsWelcome> ParseWelcome(JsonNode json);
+	public abstract Task<WsRoom> ParseRoom(JsonNode json);
+	public abstract Task<WsClassicTurnStart> ParseClassicTurnStart(JsonNode json);
 
 	// TODO: 내 바로 이전 사람 턴이 끝남을 감지하고, 그 사람이 입력한 단어에서 내가 입력해야 할 단어의 조건 노드 파싱하기 (두음법칙 적용해서)
 	// TODO: 'BFKKUTU'의 '두음법칙 무시' 조건 감지 - RoomHead에 '두음법칙 무시' 단어가 있는지 DOM 파싱해서 확인
-	public abstract WsClassicTurnEnd ParseClassicTurnEnd(JsonNode json);
-	public abstract WsTurnError ParseClassicTurnError(JsonNode json);
-
-	public virtual async Task RegisterInGameFunctions(ISet<int> alreadyRegistered) { }
+	public abstract Task<WsClassicTurnEnd> ParseClassicTurnEnd(JsonNode json);
+	public abstract Task<WsTurnError> ParseClassicTurnError(JsonNode json);
 }

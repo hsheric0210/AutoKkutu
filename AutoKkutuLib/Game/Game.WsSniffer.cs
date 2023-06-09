@@ -23,11 +23,11 @@ public partial class Game
 
 		Log.Information("WebSocket Sniffer initialized.");
 		specializedSniffers = new Dictionary<string, Action<JsonNode>>();
-		specializedSniffers[wsSniffHandler.MessageType_Welcome] = json => OnWsWelcome(wsSniffHandler.ParseWelcome(json));
-		specializedSniffers[wsSniffHandler.MessageType_Room] = json => OnWsRoom(wsSniffHandler.ParseRoom(json));
-		specializedSniffers[wsSniffHandler.MessageType_TurnStart] = json => OnWsClassicTurnStart(wsSniffHandler.ParseClassicTurnStart(json));
-		specializedSniffers[wsSniffHandler.MessageType_TurnEnd] = json => OnWsClassicTurnEnd(wsSniffHandler.ParseClassicTurnEnd(json));
-		specializedSniffers[wsSniffHandler.MessageType_TurnError] = json => OnWsTurnError(wsSniffHandler.ParseClassicTurnError(json));
+		specializedSniffers[wsSniffHandler.MessageType_Welcome] = async json => OnWsWelcome(await wsSniffHandler.ParseWelcome(json));
+		specializedSniffers[wsSniffHandler.MessageType_Room] = async json => OnWsRoom(await wsSniffHandler.ParseRoom(json));
+		specializedSniffers[wsSniffHandler.MessageType_TurnStart] = async json => OnWsClassicTurnStart(await wsSniffHandler.ParseClassicTurnStart(json));
+		specializedSniffers[wsSniffHandler.MessageType_TurnEnd] = async json => OnWsClassicTurnEnd(await wsSniffHandler.ParseClassicTurnEnd(json));
+		specializedSniffers[wsSniffHandler.MessageType_TurnError] = async json => OnWsTurnError(await wsSniffHandler.ParseClassicTurnError(json));
 		Browser.WebSocketMessage += OnWebSocketMessage;
 	}
 
@@ -49,20 +49,8 @@ public partial class Game
 	/// <returns></returns>
 	private async Task RegisterWebSocketFilters()
 	{
-		if (wsSniffHandler == null)
-			return;
-
-		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
-		if (await Browser.EvaluateJavaScriptBoolAsync($"{wsFilter}.registered"))
-			return;
-		Browser.ExecuteJavaScript(@$"
-		{wsFilter}['{wsSniffHandler.MessageType_Welcome}']=function(d){{return {{'type': '{wsSniffHandler.MessageType_Welcome}', 'id': d.id}};}};
-		{wsFilter}['{wsSniffHandler.MessageType_TurnStart}']=function(d){{return true;}};
-		{wsFilter}['{wsSniffHandler.MessageType_TurnEnd}']=function(d){{return true;}};
-		{wsFilter}['{wsSniffHandler.MessageType_TurnError}']=function(d){{return true;}};
-		{wsFilter}.registered=true;
-		{wsFilter}.active=true;
-		", "WsFilter register");
+		if (wsSniffHandler != null)
+			await wsSniffHandler.RegisterWebSocketFilter();
 	}
 
 	/// <summary>
@@ -71,10 +59,11 @@ public partial class Game
 	/// </summary>
 	private void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
 	{
+		wsSniffHandler?.OnWebSocketMessage(args.Json);
 		if (specializedSniffers?.TryGetValue(args.Type, out Action<JsonNode>? mySniffer) ?? false)
 		{
 			Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
-			mySniffer(args.Json);
+			Task.Run(() => mySniffer(args.Json));
 		}
 	}
 
@@ -85,29 +74,6 @@ public partial class Game
 
 		wsSession = new WsSessionInfo(data.UserId);
 		Log.Debug("Caught user id: {id}", data.UserId);
-
-		// Register events to wsFilter
-		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
-
-		// OPTIMIZE IPC QUOTA: only copy room.players, room.gaming, room.mode, room.game.seq
-		Browser.ExecuteJavaScript(@$"{wsFilter}['{wsSniffHandler.MessageType_Room}']=function(d){{
-if (d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{data.UserId}'))
-{{
-	function onlyPlayerId(plist){{ if(!plist){{return [];}} return Array.prototype.map.call(plist, p=>typeof p === 'string' ? p : p.id.toString()); }}
-	return {{
-		'type': '{wsSniffHandler.MessageType_Room}',
-		'room':{{
-			'players': onlyPlayerId(d.room.players),
-			'gaming': d.room.gaming,
-			'mode': d.room.mode,
-			'game':{{
-				'seq': onlyPlayerId(d.room.game?.seq)
-			}}
-		}}
-	}}
-}}
-return null;
-}};", "WsFilter register");
 	}
 
 	private void OnWsRoom(WsRoom data)
