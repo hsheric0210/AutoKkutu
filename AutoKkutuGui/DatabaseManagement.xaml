@@ -76,6 +76,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
@@ -302,12 +303,19 @@
                     <Label
                         Grid.Column="1"
                         Margin="10,0,0,0"
-                        Content="존재하는 단어인지 사전 검증하기 위해서는&#xD;&#xA;반드시 끄투 사전이 열려 있는 상태이어야 합니다"
+                        HorizontalAlignment="Right"
+                        Content="존재하는 단어인지 사전 검증하기 위해서는 반드시 끄투 사전이 열려 있는 상태이어야 합니다"
                         Style="{StaticResource BaseLabelStyle}" />
                 </Grid>
             </Grid>
         </Grid>
-        <Grid Grid.Column="1">
+        <GridSplitter
+            Grid.Column="1"
+            Width="5"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            Background="#242424" />
+        <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />

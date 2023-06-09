@@ -4,12 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ak="clr-namespace:AutoKkutuGui"
     Title="MainWindow"
-    Width="Auto"
-    Height="Auto"
+    Width="1200"
+    Height="800"
     Closing="OnWindowClose"
-    FontFamily="NanumbARUNGothic"
-    ResizeMode="CanResizeWithGrip"
-    SizeToContent="WidthAndHeight">
+    FontFamily="NanumBarunGothic"
+    ResizeMode="CanResizeWithGrip">
     <Window.InputBindings>
         <KeyBinding Command="{x:Static ak:GuiCommands.ToggleAutoEnter}" Gesture="ALT+A" />
         <KeyBinding Command="{x:Static ak:GuiCommands.ToggleDelay}" Gesture="ALT+D" />
@@ -453,9 +452,10 @@
                 <Grid
                     Grid.Row="3"
                     Grid.Column="0"
+                    Grid.ColumnSpan="3"
                     MinHeight="20">
                     <Grid
-                        Margin="10,0,150,0"
+                        Margin="10,0,130,0"
                         VerticalAlignment="Center"
                         Style="{StaticResource GroupHightlightGridStyle}">
                         <Grid.ColumnDefinitions>

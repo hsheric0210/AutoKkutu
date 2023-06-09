@@ -250,8 +250,6 @@ public class CefSharpBrowser : BrowserBase
 			return new JavaScriptCallback("MainFrame is null", false, null);
 		Task<JavascriptResponse> task = frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(1));
 		await task.WaitAsync(TimeSpan.FromSeconds(1));
-		if (task.IsCanceled)
-			throw new TaskCanceledException("CefSharp EvaluateScriptAsync returned task is cancelled.");
 		JavascriptResponse response = await task; // Will be finished immediately because the task had already finished @ L248
 		return new JavaScriptCallback(response.Message, response.Success, response.Result);
 	}

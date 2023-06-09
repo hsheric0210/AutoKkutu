@@ -56,7 +56,7 @@ public partial class Game
 		if (await Browser.EvaluateJavaScriptBoolAsync($"{wsFilter}.registered"))
 			return;
 		Browser.ExecuteJavaScript(@$"
-		{wsFilter}['{wsSniffHandler.MessageType_Welcome}']=function(d){{return true;}};
+		{wsFilter}['{wsSniffHandler.MessageType_Welcome}']=function(d){{return {{'type': '{wsSniffHandler.MessageType_Welcome}', 'id': d.id}};}};
 		{wsFilter}['{wsSniffHandler.MessageType_TurnStart}']=function(d){{return true;}};
 		{wsFilter}['{wsSniffHandler.MessageType_TurnEnd}']=function(d){{return true;}};
 		{wsFilter}['{wsSniffHandler.MessageType_TurnError}']=function(d){{return true;}};
@@ -93,14 +93,15 @@ public partial class Game
 		Browser.ExecuteJavaScript(@$"{wsFilter}['{wsSniffHandler.MessageType_Room}']=function(d){{
 if (d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{data.UserId}'))
 {{
+	function onlyPlayerId(plist){{ if(!plist){{return [];}} return Array.prototype.map.call(plist, p=>typeof p === 'string' ? p : p.id.toString()); }}
 	return {{
-		'type': 'room',
+		'type': '{wsSniffHandler.MessageType_Room}',
 		'room':{{
-			'players': d.room.players,
+			'players': onlyPlayerId(d.room.players),
 			'gaming': d.room.gaming,
 			'mode': d.room.mode,
 			'game':{{
-				'seq': d.room.game?.seq ?? []
+				'seq': onlyPlayerId(d.room.game?.seq)
 			}}
 		}}
 	}}
