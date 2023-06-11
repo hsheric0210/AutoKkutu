@@ -14,6 +14,11 @@
  * Force transform:
  * _addEventListener
  */
+
+
+// Learned a lot from https://stackoverflow.com/questions/6598945/detect-if-function-is-native-to-browser
+
+
 var ___wsHook___ = {};
 (function () {
     // Mutable MessageEvent.
@@ -45,13 +50,9 @@ var ___wsHook___ = {};
     var after = ___wsHook___.after = function (e, modJson, wsObject) {
         return e
     }
-    var modifyUrl = ___wsHook___.modifyUrl = function (url) {
-        return url
-    }
     ___wsHook___.resetHooks = function () {
         ___wsHook___.before = before
         ___wsHook___.after = after
-        ___wsHook___.modifyUrl = modifyUrl
     }
 
     window['___wsFilter___'] = {
@@ -72,19 +73,33 @@ var ___wsHook___ = {};
             return undefined
     }
 
+    let _CONSLOG = window.console.log
     let _WS = window.WebSocket
     window['___originalWS___'] = _WS;
-    let newSend = function (self, _send) {
-        return function (data) {
-            let filtered = checkFilter(data);
-            if (filtered !== undefined)
-                arguments[0] = ___wsHook___.before(data, filtered, self)
-            _send.apply(this, arguments)
-        }
+
+    // https://stackoverflow.com/a/73156265
+    let nativeFunctionPatcher = function (func, funcName, typeName) {
+        return new Proxy(func, {
+            get(target, prop, receiver) {
+                if (prop === "name") {
+                    return funcName;
+                } else if (prop === Symbol.toPrimitive || prop == 'toString') {
+                    if (typeName)
+                        return function () { return typeName + "() { [native code] }"; };
+                    else if (prop == 'toString')
+                        return function () { return "function " + funcName + "() { [native code] }"; };
+                    else
+                        return function () { return "function () { [native code] }"; };
+                }
+                return Reflect.get(...arguments);
+            }
+        });
     }
+
     let newAddEventListener = function (self, _addEventListener) {
-        return function () {
+        return function addEventListener() {
             let eventThis = this
+            // if eventName is 'message'
             if (arguments[0] === 'message') {
                 arguments[1] = (function (userFunc) {
                     return function instrumentAddEventListener() {
@@ -92,6 +107,7 @@ var ___wsHook___ = {};
                         if (filtered !== undefined)
                             arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), filtered, self)
                         if (arguments[0] === null) return
+                        _CONSLOG("WebSocket receive", arguments[0].data)
                         userFunc.apply(eventThis, arguments)
                     }
                 })(arguments[1])
@@ -99,19 +115,22 @@ var ___wsHook___ = {};
             return _addEventListener.apply(this, arguments)
         }
     }
-    window.WebSocket = function (url, protocols) {
+
+    let newSend = function (self, _send) {
+        return function send(data) {
+            let filtered = checkFilter(data);
+            if (filtered !== undefined)
+                arguments[0] = ___wsHook___.before(data, filtered, self)
+            _CONSLOG("WebSocket send", data)
+            _send.apply(this, arguments)
+        }
+    }
+
+    window.WebSocket = nativeFunctionPatcher(function (url, protocols) {
         let WSObject
-        url = ___wsHook___.modifyUrl(url) || url
         this.url = url
         this.protocols = protocols
         if (!this.protocols) { WSObject = new _WS(url) } else { WSObject = new _WS(url, protocols) }
-
-        let _send = WSObject.send
-        WSObject.send = newSend(WSObject, _send)
-
-        // Events needs to be proxied and bubbled down.
-        let _addEventListener = WSObject._addEventListener = WSObject.addEventListener
-        WSObject.addEventListener = newAddEventListener(WSObject, _addEventListener)
 
         Object.defineProperty(WSObject, 'onmessage', {
             configurable: true,
@@ -125,6 +144,7 @@ var ___wsHook___ = {};
                         arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), filtered, WSObject)
                     }
                     if (arguments[0] === null) return
+                    _CONSLOG("WebSocket receive2", arguments[0].data)
                     userFunc.apply(eventThis, arguments)
                 }
                 WSObject._addEventListener.apply(this, ['message', onMessageHandler, false])
@@ -132,15 +152,19 @@ var ___wsHook___ = {};
         })
 
         return WSObject
-    }
-
-    // Overwrite default prototype
-    window.WebSocket.prototype = _WS.prototype
-
-    // Overwrite default prototype functions
-    let _send = window.WebSocket.prototype.send;
-    window.WebSocket.prototype.send = newSend(window.WebSocket.prototype, _send);
-
-    let _addEventListener = window.WebSocket.prototype.__proto__.addEventListener
-    window.WebSocket.prototype.addEventListener = newAddEventListener(window.WebSocket.prototype, _addEventListener);
+    }, 'WebSocket', 'WebSocket')
+    window.WebSocket.prototype = _WS.prototype; // Overwrite prototype
+    window.WebSocket.prototype._send = window.WebSocket.prototype.send;
+    window.WebSocket.prototype.send = nativeFunctionPatcher(newSend(window.WebSocket.prototype, window.WebSocket.prototype._send), 'send');
+    window.WebSocket.prototype.__proto__._addEventListener = window.WebSocket.prototype.__proto__.addEventListener
+    window.WebSocket.prototype.addEventListener = nativeFunctionPatcher(newAddEventListener(window.WebSocket.prototype, window.WebSocket.prototype.__proto__._addEventListener), 'addEventListener');
 })();
+
+// Perfectly bypassing KKUTU.IO WebSocket manipulation check.
+// All WebSocket calls are perfectly intercepted, even 'WebSocket.prototype.send.*', 'WebSocket.prototype.addEventListener.*' calls. :)
+
+// TODO: Reverse-implement this back to wsHook.js
+
+// StackOverflow's
+// https://stackoverflow.com/questions/6598945/detect-if-function-is-native-to-browser/73156265#73156265
+// https://stackoverflow.com/questions/36372611/how-to-test-if-an-object-is-a-proxy

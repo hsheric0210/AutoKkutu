@@ -85,10 +85,8 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		Log.Information("wsHook objecct: {wsHook}, Original WebSocket object: {wsObj}, WebSocket global variable: {wsGlobal}, WebSocket buffer variable: {wsBuffer}", wsHook, wsOriginal, wsGlobal, wsBuffer);
 
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
-		driver.Url = config.MainPage;
-
 		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
-		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
+		var scriptIdent = driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
 			["source"] = (LibResources.wsHookObf + ';' + SeleniumResources.wsListenerObf)
 				.Replace("___wsHook___", wsHook)
@@ -98,6 +96,8 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 				.Replace("___wsBuffer___", wsBuffer)
 				.Replace("___wsAddr___", wsAddrClient)
 		});
+		Log.Information("Injected pre-load scripts. Identifier: {ident}", scriptIdent);
+		driver.Url = config.MainPage;
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}
 
