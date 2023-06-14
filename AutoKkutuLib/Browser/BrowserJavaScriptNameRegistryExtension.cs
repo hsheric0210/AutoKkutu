@@ -17,7 +17,7 @@ public static class BrowserJavaScriptNameRegistryExtension
 		}
 		else
 		{
-			Log.Information("Function {func} is already registered.", (CommonNameRegistry)id);
+			//Log.Warning("Function {func} is already registered.", (CommonNameRegistry)id);
 		}
 	}
 

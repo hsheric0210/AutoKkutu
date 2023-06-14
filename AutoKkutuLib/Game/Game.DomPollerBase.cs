@@ -25,28 +25,35 @@ public partial class Game
 	{
 		cancelToken.ThrowIfCancellationRequested();
 
-		while (true)
+		try
 		{
-			if (cancelToken.IsCancellationRequested)
-				cancelToken.ThrowIfCancellationRequested();
-			try
+			while (true)
 			{
-				if (activateCondition())
+				if (cancelToken.IsCancellationRequested)
+					cancelToken.ThrowIfCancellationRequested();
+				try
 				{
-					await mainJob();
-					await Task.Delay(intenseInterval, cancelToken);
+					if (activateCondition())
+					{
+						await mainJob();
+						await Task.Delay(intenseInterval, cancelToken);
+					}
+					else
+					{
+						if (idleJob != null)
+							await idleJob();
+						await Task.Delay(idleInterval, cancelToken);
+					}
 				}
-				else
+				catch (Exception ex) when (ex is not OperationCanceledException and not TaskCanceledException)
 				{
-					if (idleJob != null)
-						await idleJob();
-					await Task.Delay(idleInterval, cancelToken);
+					onException(ex);
 				}
 			}
-			catch (Exception ex) when (ex is not OperationCanceledException and not TaskCanceledException)
-			{
-				onException(ex);
-			}
+		}
+		catch (Exception ex)
+		{
+			// Mostly OperationCanceledException or TaskCanceledException
 		}
 	}
 

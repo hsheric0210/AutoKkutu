@@ -9,7 +9,7 @@ using System.Text.Json.Nodes;
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
-	private IDictionary<string, Action<JsonNode>>? specializedSniffers;
+	private IDictionary<string, Func<JsonNode, Task>>? specializedSniffers;
 	private WsSessionInfo? wsSession;
 	private readonly JsonSerializerOptions unescapeUnicodeJso = new()
 	{
@@ -21,13 +21,30 @@ public partial class Game
 		if (wsSniffHandler == null)
 			return;
 
+		Func<JsonNode, Task> SimpleHandler<T>(string messageType, Action<T> handler, Func<JsonNode, Task<T>> parser)
+		{
+			return async json =>
+			{
+				try
+				{
+					handler(await parser(json));
+				}
+				catch (Exception ex)
+				{
+					Log.Error(ex, "Error processing {messageType} message.", messageType);
+				}
+			};
+		}
+
 		Log.Information("WebSocket Sniffer initialized.");
-		specializedSniffers = new Dictionary<string, Action<JsonNode>>();
-		specializedSniffers[wsSniffHandler.MessageType_Welcome] = async json => OnWsWelcome(await wsSniffHandler.ParseWelcome(json));
-		specializedSniffers[wsSniffHandler.MessageType_Room] = async json => OnWsRoom(await wsSniffHandler.ParseRoom(json));
-		specializedSniffers[wsSniffHandler.MessageType_TurnStart] = async json => OnWsClassicTurnStart(await wsSniffHandler.ParseClassicTurnStart(json));
-		specializedSniffers[wsSniffHandler.MessageType_TurnEnd] = async json => OnWsClassicTurnEnd(await wsSniffHandler.ParseClassicTurnEnd(json));
-		specializedSniffers[wsSniffHandler.MessageType_TurnError] = async json => OnWsTurnError(await wsSniffHandler.ParseClassicTurnError(json));
+		specializedSniffers = new Dictionary<string, Func<JsonNode, Task>>
+		{
+			[wsSniffHandler.MessageType_Welcome] = SimpleHandler("welcome", OnWsWelcome, wsSniffHandler.ParseWelcome),
+			[wsSniffHandler.MessageType_Room] = SimpleHandler("room", OnWsRoom, wsSniffHandler.ParseRoom),
+			[wsSniffHandler.MessageType_TurnStart] = SimpleHandler("turnStart", OnWsClassicTurnStart, wsSniffHandler.ParseClassicTurnStart),
+			[wsSniffHandler.MessageType_TurnEnd] = SimpleHandler("turnEnd", OnWsClassicTurnEnd, wsSniffHandler.ParseClassicTurnEnd),
+			[wsSniffHandler.MessageType_TurnError] = SimpleHandler("turnError", OnWsTurnError, wsSniffHandler.ParseClassicTurnError)
+		};
 		Browser.WebSocketMessage += OnWebSocketMessage;
 	}
 
@@ -60,10 +77,10 @@ public partial class Game
 	private void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
 	{
 		wsSniffHandler?.OnWebSocketMessage(args.Json);
-		if (specializedSniffers?.TryGetValue(args.Type, out Action<JsonNode>? mySniffer) ?? false)
+		if (specializedSniffers?.TryGetValue(args.Type, out var mySniffer) ?? false)
 		{
 			Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
-			Task.Run(() => mySniffer(args.Json));
+			Task.Run(async () => await mySniffer(args.Json));
 		}
 	}
 

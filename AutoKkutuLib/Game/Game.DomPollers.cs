@@ -12,30 +12,34 @@ public partial class Game
 		pollerCancel = new CancellationTokenSource();
 		CancellationToken token = pollerCancel.Token;
 
-		mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", primaryInterval), token);
-		mainPoller.Start();
+		try
+		{
+			mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", primaryInterval), token);
+			mainPoller.Start();
 
-		Task.Run(async () => await BaseDomPoller(
-			PollWordHistory,
-			null,
-			(ex) => Log.Error(ex, "'Word Histories' poller exception"),
-			() => IsGameInProgress && !CurrentGameMode.IsFreeMode(),
-			intenseInterval,
-			idleInterval,
-			token));
-		Task.Run(async () => await BaseDomPoller(
-			PollTypingWord,
-			null,
-			(ex) => Log.Error(ex, "'Typing-word' poller exception"),
-			() => IsGameInProgress && CurrentGameMode == GameMode.TypingBattle,
-			intenseInterval,
-			idleInterval,
-			token));
+			Task.Run(async () => await BaseDomPoller(
+				PollWordHistory,
+				null,
+				(ex) => Log.Error(ex, "'Word Histories' poller exception"),
+				() => IsGameInProgress && !CurrentGameMode.IsFreeMode(),
+				intenseInterval,
+				idleInterval,
+				token));
+			Task.Run(async () => await BaseDomPoller(
+				PollTypingWord,
+				null,
+				(ex) => Log.Error(ex, "'Typing-word' poller exception"),
+				() => IsGameInProgress && CurrentGameMode == GameMode.TypingBattle,
+				intenseInterval,
+				idleInterval,
+				token));
 
-		Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller"));
-		Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
-		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller"));
-		Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
+			Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller"));
+			Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
+			Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller"));
+			Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
+		}
+		catch { }
 		//Task.Run(async () => await GameDomPoller(PollTurn, token, "My turn poller"));//temporary disabled due to race-condition with wssniffer
 		Log.Debug("DOM pollers are now active.");
 	}

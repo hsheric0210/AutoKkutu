@@ -73,6 +73,30 @@ var ___wsHook___ = {};
             return undefined
     }
 
+    // Decrypt turnEnd packet
+    function decodeTE(data) {
+        if (data.sum) {
+            let keyProp = String.fromCharCode(data.sum - data.score)
+            _CONSLOG('Key prop name is', keyProp)
+            let xorKey = unescape(atob(data[keyProp]))
+            _CONSLOG('Key is', xorKey)
+            let value = ''
+            for (
+                var i = 1;
+                i < data.value.length;
+                i++
+            ) {
+                value += String.fromCharCode(
+                    data.value.charCodeAt(i) ^
+                    xorKey.charCodeAt(i - 1)
+                )
+            }
+            _CONSLOG('Decrypted turnEnd value', value)
+        }
+        else
+            _CONSLOG('TurnEnd found but sum field not available')
+    }
+
     let _CONSLOG = window.console.log
     let _WS = window.WebSocket
     window['___originalWS___'] = _WS;
@@ -107,7 +131,14 @@ var ___wsHook___ = {};
                         if (filtered !== undefined)
                             arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), filtered, self)
                         if (arguments[0] === null) return
-                        _CONSLOG("WebSocket receive", arguments[0].data)
+                        if (arguments[0]?.data)
+                        {
+                            let parsed = JSON.parse(arguments[0].data)
+                            if (parsed.type != 'room')
+                                _CONSLOG("WebSocket receive AddEvtLstn", arguments[0].data)
+                            if (parsed.type == 'turnEnd')
+                                decodeTE(parsed)
+                        }
                         userFunc.apply(eventThis, arguments)
                     }
                 })(arguments[1])
@@ -144,7 +175,14 @@ var ___wsHook___ = {};
                         arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), filtered, WSObject)
                     }
                     if (arguments[0] === null) return
-                    _CONSLOG("WebSocket receive2", arguments[0].data)
+                    if (arguments[0]?.data)
+                    {
+                        let parsed = JSON.parse(arguments[0].data)
+                        if (parsed.type != 'room')
+                            _CONSLOG("WebSocket receive OnMsg", arguments[0].data)
+                        if (parsed.type == 'turnEnd')
+                            decodeTE(parsed)
+                    }
                     userFunc.apply(eventThis, arguments)
                 }
                 WSObject._addEventListener.apply(this, ['message', onMessageHandler, false])

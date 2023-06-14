@@ -10,9 +10,9 @@
  * ___wsHook___
  * ___originalWS___
  * ___wsFilter___
- * 
- * Force transform:
- * _addEventListener
+ * ___nativeSend___
+ * ___nativeAddEventListener___
+ * ___passthru___
  */
 var ___wsHook___ = {};
 (function () {
@@ -59,7 +59,6 @@ var ___wsHook___ = {};
         'null': function (d) { return false; },
         'active': false
     };
-    //example: ___wsFilter___['welcome'] = function(data){return true;}
 
     function checkFilter(data) {
         let filterActive = window['___wsFilter___'].active;
@@ -72,20 +71,45 @@ var ___wsHook___ = {};
             return undefined
     }
 
+    if (!window.WebSocket) {
+        console.log("WebSocket unavailable @", location)
+    }
     let _WS = window.WebSocket
-    window['___originalWS___'] = _WS;
-    let newSend = function (self, _send) {
+    window['___WSProtoBackup___'] = _WS?.prototype
+
+    // https://stackoverflow.com/a/73156265
+    let fakeAsNative = function (func, name, customType) {
+        return new Proxy(func, {
+            get(target, prop, receiver) {
+                if (prop === "name") {
+                    return name;
+                } else if (prop === Symbol.toPrimitive || prop == 'toString') {
+                    if (customType)
+                        return function () { return customType + "() { [native code] }"; };
+                    else if (prop == 'toString')
+                        return function () { return "function " + name + "() { [native code] }"; };
+                    else
+                        return function () { return "function () { [native code] }"; };
+                }
+                return Reflect.get(...arguments); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+            }
+        });
+    }
+
+    let newSend = function (self, nativeSend) {
         return function (data) {
-            let filtered = checkFilter(data);
-            if (filtered !== undefined)
-                arguments[0] = ___wsHook___.before(data, filtered, self)
-            _send.apply(this, arguments)
+            if (!this['___passthru___']) {
+                let filtered = checkFilter(data);
+                if (filtered !== undefined)
+                    arguments[0] = ___wsHook___.before(data, filtered, self)
+            }
+            nativeSend.apply(this, arguments)
         }
     }
-    let newAddEventListener = function (self, _addEventListener) {
+    let newAddEventListener = function (self, nativeAddEventListener) {
         return function () {
             let eventThis = this
-            if (arguments[0] === 'message') {
+            if (!this['___passthru___'] && arguments[0] === 'message') {
                 arguments[1] = (function (userFunc) {
                     return function instrumentAddEventListener() {
                         let filtered = checkFilter(arguments[0].data);
@@ -96,23 +120,21 @@ var ___wsHook___ = {};
                     }
                 })(arguments[1])
             }
-            return _addEventListener.apply(this, arguments)
+            return nativeAddEventListener.apply(this, arguments)
         }
     }
-    window.WebSocket = function (url, protocols) {
+    window.WebSocket = fakeAsNative(function (url, protocols) {
         let WSObject
         url = ___wsHook___.modifyUrl(url) || url
         this.url = url
         this.protocols = protocols
         if (!this.protocols) { WSObject = new _WS(url) } else { WSObject = new _WS(url, protocols) }
 
-        let _send = WSObject.send
-        WSObject.send = newSend(WSObject, _send)
+        WSObject.send = fakeAsNative(newSend(WSObject, _WS.prototype['___nativeSend___']), 'send')
+
+        WSObject.addEventListener = fakeAsNative(newAddEventListener(WSObject, _WS.prototype.__proto__['___nativeAddEventListener___']), 'addEventListener')
 
         // Events needs to be proxied and bubbled down.
-        let _addEventListener = WSObject._addEventListener = WSObject.addEventListener
-        WSObject.addEventListener = newAddEventListener(WSObject, _addEventListener)
-
         Object.defineProperty(WSObject, 'onmessage', {
             configurable: true,
             enumerable: true,
@@ -127,20 +149,30 @@ var ___wsHook___ = {};
                     if (arguments[0] === null) return
                     userFunc.apply(eventThis, arguments)
                 }
-                WSObject._addEventListener.apply(this, ['message', onMessageHandler, false])
+                WSObject['___nativeAddEventListener___'].apply(this, ['message', onMessageHandler, false])
             }
         })
 
         return WSObject
+    }, 'WebSocket', 'WebSocket')
+
+    // Create plain WebSocket which is not hooked
+    window['___originalWS___'] = fakeAsNative(function (url, protocols) {
+        let WSObject
+        if (!protocols) { WSObject = new _WS(url) } else { WSObject = new _WS(url, protocols) }
+        WSObject['___passthru___'] = true
+        return WSObject
+    }, '___originalWS___', '___originalWS___')
+
+    if (window['___WSProtoBackup___']) {
+        // Overwrite default prototype
+        window.WebSocket.prototype = window['___WSProtoBackup___']
+
+        // Overwrite default prototype functions -> there is no way to bypass hook without correct '___passthru___' key, which is randomized every launch
+        window.WebSocket.prototype['___nativeSend___'] = window['___WSProtoBackup___'].send;
+        window.WebSocket.prototype.send = fakeAsNative(newSend(window.WebSocket.prototype, window['___WSProtoBackup___']['___nativeSend___']), 'send');
+
+        window.WebSocket.prototype.__proto__['___nativeAddEventListener___'] = window['___WSProtoBackup___'].__proto__.addEventListener
+        window.WebSocket.prototype.addEventListener = fakeAsNative(newAddEventListener(window.WebSocket.prototype, window['___WSProtoBackup___'].__proto__['___nativeAddEventListener___']), 'addEventListener');
     }
-
-    // Overwrite default prototype
-    window.WebSocket.prototype = _WS.prototype
-
-    // Overwrite default prototype functions
-    let _send = window.WebSocket.prototype.send;
-    window.WebSocket.prototype.send = newSend(window.WebSocket.prototype, _send);
-
-    let _addEventListener = window.WebSocket.prototype.__proto__.addEventListener
-    window.WebSocket.prototype.addEventListener = newAddEventListener(window.WebSocket.prototype, _addEventListener);
 })();

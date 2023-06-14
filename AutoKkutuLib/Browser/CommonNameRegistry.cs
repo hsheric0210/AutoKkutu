@@ -119,14 +119,9 @@ public enum CommonNameRegistry
 	/// </summary>
 	WsBuffer,
 
-	/// <summary>
-	/// CefSharp JavascriptBinding 전역 객체 이름
-	/// </summary>
-	JsbGlobal,
+	WsNativeSend,
 
-	/// <summary>
-	/// CefSharp JavascriptBinding 객체 이름
-	/// </summary>
-	JsbObject,
+	WsNativeAddEventListener,
 
+	WsPassThru
 }

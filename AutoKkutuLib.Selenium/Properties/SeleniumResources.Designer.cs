@@ -61,7 +61,27 @@ namespace AutoKkutuLib.Selenium.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to /* ws_listener.js
+        /// * 
+        /// * Reserved names:
+        /// * ___wsHook___
+        /// * ___wsAddr___
+        /// * ___originalWS___
+        /// * ___wsGlobal___
+        /// * ___wsBuffer___
+        /// */
+        ///
+        ///// Workaround for constructor renaming bug
+        ///window.___wsGlobal___ = new window[&apos;___originalWS___&apos;](&apos;___wsAddr___&apos;);
+        ///window.___wsBuffer___ = []
+        ///let open = false
+        ///___wsGlobal___.onopen = function () {
+        ///    console.log(&apos;WebSocket connected.&apos;);
+        ///    ___wsBuffer___.forEach(msg =&gt; ___wsGlobal___.send(msg));
+        ///    ___wsBuffer___.length = 0;
+        ///    open = true;
+        ///};
+        ///___wsHoo [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string wsListener {
             get {
@@ -70,7 +90,10 @@ namespace AutoKkutuLib.Selenium.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to /* ws_listener.
+        /// * Obfuscated by obfuscator.io
+        /// */
+        ///const _0x2ff4a7 = _0x24fd, _0x3e5f30 = _0x24fd; function _0x24fd(_0x3bf241, _0x2167ae) { const _0xe37b19 = _0x3bbc(); return _0x24fd = function (_0x36a8a5, _0x35bba9) { _0x36a8a5 = _0x36a8a5 - (-0x2 * 0x1173 + 0x13e8 * 0x1 + -0x6 * -0x29c); let _0x14d972 = _0xe37b19[_0x36a8a5]; return _0x14d972; }, _0x24fd(_0x3bf241, _0x2167ae); } function _0x3bbc() { const _0x7274cc = [&apos;424179ryDqgh&apos;, &apos;log&apos;, &apos;send&apos;, &apos;data&apos;, &apos;push&apos;, &apos;288657JPNyVs&apos;, &apos;onopen&apos;, &apos;395043rHiXK [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string wsListenerObf {
             get {
