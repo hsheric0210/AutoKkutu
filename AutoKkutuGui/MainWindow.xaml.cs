@@ -87,7 +87,7 @@ public partial class MainWindow : Window
 			// Update database icon
 			var img = new BitmapImage();
 			img.BeginInit();
-			img.UriSource = new Uri($@"Images\{Main.AutoKkutu.Database.GetDBType()}.png", UriKind.Relative);
+			img.UriSource = new Uri($@"Images\{Main.AutoKkutu.Database.DbType}.png", UriKind.Relative);
 			img.EndInit();
 			DBLogo.Source = img;
 		});
@@ -195,7 +195,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
-		Main.AutoKkutu.Database.Connection.MakeAttack(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
+		Main.AutoKkutu.Database.MakeAttack(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -203,7 +203,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
-		Main.AutoKkutu.Database.Connection.MakeEnd(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
+		Main.AutoKkutu.Database.MakeEnd(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -211,7 +211,7 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
-		Main.AutoKkutu.Database.Connection.MakeNormal(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
+		Main.AutoKkutu.Database.MakeNormal(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	// TODO: Move these duplicate path list writes to Lib.SpecialPathList

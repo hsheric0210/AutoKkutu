@@ -7,14 +7,14 @@ namespace AutoKkutuLib.Word;
 public sealed class BatchWordAdditionJob : BatchWordJob
 {
 	private readonly NodeManager nodeManager;
-	private readonly BrowserBase jsEvaluator;
+	private readonly BrowserBase? browser;
 	private readonly WordFlags wordFlags;
 	private readonly bool verifyOnline;
 
-	public BatchWordAdditionJob(NodeManager nodeManager, BrowserBase jsEvaluator, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
+	public BatchWordAdditionJob(NodeManager nodeManager, BrowserBase? browser, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
 	{
 		this.nodeManager = nodeManager;
-		this.jsEvaluator = jsEvaluator;
+		this.browser = browser;
 		this.wordFlags = wordFlags;
 		this.verifyOnline = verifyOnline;
 	}
@@ -39,7 +39,7 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 				continue;
 			}
 
-			if (!verifyOnline || jsEvaluator.VerifyWordOnline(word))
+			if (!verifyOnline || browser?.VerifyWordOnline(word) != false)
 				AddSingleWord(query, word, wordFlags, ref count);
 		}
 
@@ -53,7 +53,7 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 			nodeManager.UpdateNodeListsByWord(word, ref flags);
 
 			Log.Information("Adding {word} into database... (flags: {flags})", word, flags);
-			if (query.Execute(word,flags))
+			if (query.Execute(word, flags))
 				wordCount.Increment(flags, 1);
 		}
 		catch (Exception ex)

@@ -1,16 +1,18 @@
-﻿using AutoKkutuLib.Database.Sql.Query;
+﻿using AutoKkutuLib.Database.Sql;
+using AutoKkutuLib.Database.Sql.Query;
 using System.Data;
 
 namespace AutoKkutuLib.Database;
 
 public abstract class AbstractDatabaseConnection : IDbConnection
 {
-	private IDbConnection? underlyingConnection;
-	private QueryFactory? queryFactory;
+	static AbstractDatabaseConnection() => typeof(WordModel).RegisterMapping();
 
-	protected IDbConnection Connection => underlyingConnection ?? throw new NullReferenceException("Database connection accessed before initialized");
+	private IDbConnection Connection { get; }
 
-	public QueryFactory Query => queryFactory ?? throw new NullReferenceException("Database query factory accessed before initialized");
+	public abstract QueryFactory Query { get; }
+
+	public abstract string DbType { get; }
 
 	public string ConnectionString
 	{
@@ -24,20 +26,7 @@ public abstract class AbstractDatabaseConnection : IDbConnection
 
 	public ConnectionState State => Connection.State;
 
-	protected AbstractDatabaseConnection()
-	{
-	}
-
-	/// <summary>
-	/// This method must called on initialization phase.
-	/// </summary>
-	protected void Initialize(IDbConnection connection, QueryFactory queryFactory)
-	{
-		if (underlyingConnection != null)
-			throw new InvalidOperationException($"{nameof(Connection)} is already initialized");
-		underlyingConnection = connection;
-		this.queryFactory = queryFactory;
-	}
+	protected AbstractDatabaseConnection(IDbConnection connection) => Connection = connection;
 
 	protected virtual void Dispose(bool disposing)
 	{

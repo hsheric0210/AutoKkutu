@@ -34,7 +34,7 @@ public partial class DatabaseManagement : Window
 
 		var wordList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.DbConnection) : new BatchWordAdditionJob(autoKkutu.NodeManager, autoKkutu.GameJsEvaluator, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
+		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.Database) : new BatchWordAdditionJob(autoKkutu.NodeManager, autoKkutu.Browser, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
 	}
 
 	private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
@@ -49,7 +49,7 @@ public partial class DatabaseManagement : Window
 			CheckFileExists = true
 		};
 		if (dialog.ShowDialog() ?? false)
-			SqliteDatabaseHelper.LoadFromExternalSQLite(autoKkutu.DbConnection, dialog.FileName);
+			SqliteDatabaseHelper.LoadFromExternalSQLite(autoKkutu.Database, dialog.FileName);
 	}
 
 	private void Batch_Submit_File_Click(object sender, RoutedEventArgs e)
@@ -108,7 +108,7 @@ public partial class DatabaseManagement : Window
 		return type;
 	}
 
-	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DatabaseCheckJob(Main.AutoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, Main.AutoKkutu.GameJsEvaluator);
+	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DatabaseCheckJob(Main.AutoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, Main.AutoKkutu.Browser);
 
 	private WordFlags GetBatchAddWordDatabaseAttributes()
 	{
@@ -171,9 +171,9 @@ public partial class DatabaseManagement : Window
 
 		return mode;
 	}
-	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
+	private void Node_Remove_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.Database.BatchRemoveNode(Node_Input.Text, GetSelectedNodeTypes());
 
-	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.DbConnection.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
+	private void Node_Submit_Click(object sender, RoutedEventArgs e) => Main.AutoKkutu.Database.BatchAddNode(Node_Input.Text, GetSelectedNodeTypes());
 
 	private void OnWordFolderSubmit(object sender, RoutedEventArgs e)
 	{

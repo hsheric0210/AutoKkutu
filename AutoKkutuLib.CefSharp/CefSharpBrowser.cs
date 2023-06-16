@@ -18,7 +18,7 @@ public class CefSharpBrowser : BrowserBase
 	private readonly string jsbObjectName;
 
 	// Will be randomized
-	private readonly NameRandomizer nameRandom;
+	private readonly NameMapping nameRandom;
 
 	public override object? BrowserControl => browser;
 
@@ -118,7 +118,7 @@ public class CefSharpBrowser : BrowserBase
 		jsbGlobalObjectName = GenerateScriptTypeName(1677243, true);
 		jsbObjectName = GenerateScriptTypeName(1677244, true);
 
-		nameRandom = NameRandomizer.CreateForWsHook(this);
+		nameRandom = BrowserRandomNameMapping.CreateForWsHook(this);
 		nameRandom.Add("___jsbGlobal___", jsbGlobalObjectName);
 		nameRandom.Add("___jsbObj___", jsbObjectName);
 

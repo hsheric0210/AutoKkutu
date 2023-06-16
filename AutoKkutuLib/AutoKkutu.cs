@@ -15,14 +15,13 @@ public class AutoKkutu : IDisposable
 	#endregion
 
 	#region Module exposures
-	public NodeManager NodeManager { get; }
-	public PathFilter PathFilter { get; }
-	public PathFinder PathFinder { get; }
-	public AbstractDatabase Database { get; }
-	public AbstractDatabaseConnection DbConnection => Database.Connection;
+	public NodeManager NodeManager { get; private set; }
+	public PathFilter PathFilter { get; private set; }
+	public PathFinder PathFinder { get; private set; }
+	public AbstractDatabaseConnection Database { get; }
 
 	public IGame Game => game ?? throw new InvalidOperationException("Game is not registered yet!");
-	public BrowserBase GameJsEvaluator => Game.Browser;
+	public BrowserBase? Browser => game?.Browser;
 	public bool HasGameSet => game is not null;
 	#endregion
 
@@ -46,11 +45,11 @@ public class AutoKkutu : IDisposable
 	public event EventHandler<NoPathAvailableEventArgs>? NoPathAvailable;
 	#endregion
 
-	public AutoKkutu(AbstractDatabase db)
+	public AutoKkutu(AbstractDatabaseConnection dbConnection)
 	{
-		Database = db;
+		Database = dbConnection;
 		PathFilter = new PathFilter();
-		NodeManager = new NodeManager(db.Connection);
+		NodeManager = new NodeManager(dbConnection);
 		PathFinder = new PathFinder(NodeManager, PathFilter);
 
 		InterconnectModules();
@@ -158,10 +157,18 @@ public class AutoKkutu : IDisposable
 	{
 		if (!disposedValue)
 		{
+			// Dispose sub-components
 			if (disposing)
 			{
 				game?.Dispose();
 			}
+
+			// Set fields to null to encourage GC
+			game = null;
+			NodeManager = null!;
+			PathFilter = null!;
+			PathFinder = null!;
+
 			disposedValue = true;
 		}
 	}

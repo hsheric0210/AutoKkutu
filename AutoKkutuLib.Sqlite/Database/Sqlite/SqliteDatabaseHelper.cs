@@ -21,12 +21,11 @@ public static class SqliteDatabaseHelper
 		{
 			try
 			{
-				Log.Information("Loading external SQLite database: {path}", externalSQLiteFilePath);
-				var sourceConnection = new SqliteConnection("Data Source=" + externalSQLiteFilePath);
-				sourceConnection.Open();
-				var sourceConnectionAbstr = new SqliteDatabaseConnection(sourceConnection);
+				var connection = SqliteDatabaseConnection.Create("Data Source=" + externalSQLiteFilePath);
+				if (connection == null)
+					Log.Error("Failed to open SQLite connection");
 
-				var args = new SQLiteImportArgs { destination = targetDatabase, source = sourceConnectionAbstr };
+				var args = new SQLiteImportArgs { destination = targetDatabase, source = connection };
 				var WordCount = ImportWordsFromExternalSQLite(args);
 				var AttackWordCount = ImportNode(args, DatabaseConstants.AttackNodeIndexTableName);
 				var EndWordCount = ImportNode(args, DatabaseConstants.EndNodeIndexTableName);

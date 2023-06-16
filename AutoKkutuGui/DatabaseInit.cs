@@ -10,7 +10,7 @@ namespace AutoKkutuGui;
 
 public static class DatabaseInit
 {
-	public static AbstractDatabase CreateDatabase(System.Configuration.Configuration config)
+	public static AbstractDatabaseConnection? Connect(System.Configuration.Configuration config)
 	{
 		if (config == null)
 			throw new ArgumentNullException(nameof(config));
@@ -21,7 +21,7 @@ public static class DatabaseInit
 			case "MYSQL":
 				var mysqlConnectionString = ((MySqlSection)config.GetSection("mysql")).ConnectionString;
 				Log.Information("MySQL selected: {connString}", mysqlConnectionString);
-				return new MySqlDatabase(mysqlConnectionString);
+				return MySqlDatabaseConnection.Create(mysqlConnectionString);
 
 			case "POSTGRESQL":
 			case "POSTGRES":
@@ -29,11 +29,11 @@ public static class DatabaseInit
 			case "PGSQL":
 				var pgsqlConnectionString = ((PostgreSqlSection)config.GetSection("postgresql")).ConnectionString;
 				Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
-				return new PostgreSqlDatabase(pgsqlConnectionString);
+				return PostgreSqlDatabaseConnection.Create(pgsqlConnectionString);
 		}
 
 		var file = ((SqliteSection)config.GetSection("sqlite")).File;
 		Log.Information("SQLite selected: File={file}", file);
-		return new SqliteDatabase(file);
+		return SqliteDatabaseConnection.Create(file);
 	}
 }

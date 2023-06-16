@@ -17,6 +17,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace AutoKkutuGui;
 
@@ -65,12 +66,16 @@ public static class Main
 			SetupBrowser();
 
 			// Initialize database
-			AbstractDatabase? database = InitializeDatabase();
+			var db = InitializeDatabase();
 
-			if (database is null) // Not triggered; because InitializeDatabase calls Application.Exit()
-				return;
+			if (db is null)
+			{
+				Log.Error("Failed to initialize database!");
+				MessageBox.Show("Failed to initialize database!", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				Environment.Exit(0);
+			}
 
-			AutoKkutu = new AutoKkutu(database);
+			AutoKkutu = new AutoKkutu(db);
 
 			AutoKkutu.PathFinder.OnPathUpdated += OnPathUpdated;
 			AutoKkutu.GameEnded += OnGameEnded;
@@ -171,16 +176,15 @@ public static class Main
 
 	}
 
-	private static AbstractDatabase? InitializeDatabase()
+	private static AbstractDatabaseConnection? InitializeDatabase()
 	{
-		AbstractDatabase database;
 		try
 		{
 			var watch = new Stopwatch();
 			watch.Start();
 
 			System.Configuration.Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
-			database = DatabaseInit.CreateDatabase(databaseConfig);
+			var database = DatabaseInit.Connect(databaseConfig);
 			Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
 
 			watch.Restart();
@@ -192,7 +196,6 @@ public static class Main
 		catch (Exception ex)
 		{
 			Log.Error(ex, I18n.Main_DBConfigException);
-			Environment.Exit(1);
 			return null;
 		}
 	}
