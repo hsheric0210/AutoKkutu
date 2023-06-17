@@ -4,14 +4,14 @@ CREATE OR REPLACE FUNCTION __AutoKkutu_Rearrange__(flags INT, endWordFlag INT, a
 RETURNS INTEGER AS $$
 BEGIN
 	IF ((flags & endWordFlag) != 0) THEN
-		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
+		RETURN endWordOrdinal * __MaxWordLength__;
 	END IF;
 	IF ((flags & attackWordFlag) != 0) THEN
-		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
+		RETURN attackWordOrdinal * __MaxWordLength__;
 	END IF;
-	RETURN normalWordOrdinal * {DatabaseConstants.MaxWordLength};
+	RETURN normalWordOrdinal * __MaxWordLength__;
 END;
-$$ LANGUAGE plpgsql
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION __AutoKkutu_RearrangeMission__(word VARCHAR, flags INT, missionword VARCHAR, endWordFlag INT, attackWordFlag INT, endMissionWordOrdinal INT, endWordOrdinal INT, attackMissionWordOrdinal INT, attackWordOrdinal INT, missionWordOrdinal INT, normalWordOrdinal INT)
 RETURNS INTEGER AS $$
@@ -41,4 +41,4 @@ BEGIN
 		RETURN normalWordOrdinal * __MaxWordLength__;
 	END IF;
 END;
-$$ LANGUAGE plpgsql
+$$ LANGUAGE plpgsql;

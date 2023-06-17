@@ -41,7 +41,7 @@ public sealed class MySqlDatabaseConnection : AbstractDatabaseConnection
 			var nameMap = new NameMapping();
 			nameMap.Add("__MaxWordLength__", DatabaseConstants.MaxWordLength.ToString());
 			nameMap.Add("__AutoKkutu_Rearrange__", connection.GetWordPriorityFuncName());
-			nameMap.Add("__AutoKkutu_RearrangeMission__", connection.GetWordPriorityFuncName());
+			nameMap.Add("__AutoKkutu_RearrangeMission__", connection.GetMissionWordPriorityFuncName());
 
 			connection.TryExecute(nameMap.ApplyTo(Resources.Initialization));
 

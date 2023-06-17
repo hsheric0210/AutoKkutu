@@ -20,7 +20,6 @@ public static class DatabaseInit
 			case "MARIADB":
 			case "MYSQL":
 				var mysqlConnectionString = ((MySqlSection)config.GetSection("mysql")).ConnectionString;
-				Log.Information("MySQL selected: {connString}", mysqlConnectionString);
 				return MySqlDatabaseConnection.Create(mysqlConnectionString);
 
 			case "POSTGRESQL":
@@ -28,12 +27,10 @@ public static class DatabaseInit
 			case "POSTGRE":
 			case "PGSQL":
 				var pgsqlConnectionString = ((PostgreSqlSection)config.GetSection("postgresql")).ConnectionString;
-				Log.Information("PostgreSQL selected: {connString}", pgsqlConnectionString);
 				return PostgreSqlDatabaseConnection.Create(pgsqlConnectionString);
 		}
 
 		var file = ((SqliteSection)config.GetSection("sqlite")).File;
-		Log.Information("SQLite selected: File={file}", file);
 		return SqliteDatabaseConnection.Create(file);
 	}
 }
