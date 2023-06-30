@@ -6,9 +6,19 @@ public struct WsSessionInfo
 	public string MyUserId { get; }
 
 	public bool IsGaming => MyGameTurns != null;
-	public IImmutableList<string>? MyGameTurns { get; set; }
+	public IImmutableList<string>? MyGameTurns
+	{
+		get => myGameTurns;
+		set
+		{
+			myTurnOrdinalCache = -1; // flush cache
+			myGameTurns = value;
+		}
+	}
 
 	private int myTurnOrdinalCache = -1;
+	private IImmutableList<string>? myGameTurns;
+
 	public int MyTurnOrdinal
 	{
 		get
@@ -27,14 +37,14 @@ public struct WsSessionInfo
 	public WsSessionInfo(string myUserId)
 	{
 		MyUserId = myUserId;
-		MyGameTurns = null;
+		myGameTurns = null;
 		MyGamePreviousUserMission = null;
 	}
 
 	public WsSessionInfo(string myUserId, IList<string> myGameTurns)
 	{
 		MyUserId = myUserId;
-		MyGameTurns = myGameTurns.IndexOf(myUserId) >= 0 ? myGameTurns.ToImmutableList() : (IImmutableList<string>?)null;
+		this.myGameTurns = myGameTurns.IndexOf(myUserId) >= 0 ? myGameTurns.ToImmutableList() : (IImmutableList<string>?)null;
 	}
 
 	/// <summary>

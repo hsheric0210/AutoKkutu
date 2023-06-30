@@ -149,7 +149,17 @@ var ___wsHook___ = {};
                     if (arguments[0] === null) return
                     userFunc.apply(eventThis, arguments)
                 }
+
+                // Clear previous onMessage sniffers to prevent duplicate listener addition
+                if (WSObject['___injectedOnMessageListeners___']) {
+                    for (let prevInj in WSObject['___injectedOnMessageListeners___']) {
+                        WSObject.removeEventListener('message', WSObject['___injectedOnMessageListeners___'][prevInj], false)
+                    }
+                }
+                WSObject['___injectedOnMessageListeners___'] = []
+
                 WSObject['___nativeAddEventListener___'].apply(this, ['message', onMessageHandler, false])
+                WSObject['___injectedOnMessageListeners___'].push(onMessageHandler) // Save injected sniffer
             }
         })
 

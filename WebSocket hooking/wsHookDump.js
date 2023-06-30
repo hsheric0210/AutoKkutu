@@ -121,6 +121,7 @@ var ___wsHook___ = {};
     }
 
     let newAddEventListener = function (self, _addEventListener) {
+        _CONSLOG("newAddEventListener called")
         return function addEventListener() {
             let eventThis = this
             // if eventName is 'message'
@@ -134,8 +135,7 @@ var ___wsHook___ = {};
                         if (arguments[0]?.data)
                         {
                             let parsed = JSON.parse(arguments[0].data)
-                            if (parsed.type != 'room')
-                                _CONSLOG("WebSocket receive AddEvtLstn", arguments[0].data)
+                            _CONSLOG("WebSocket receive AddEvtLstn", arguments[0].data)
                             if (parsed.type == 'turnEnd')
                                 decodeTE(parsed)
                         }
@@ -148,6 +148,7 @@ var ___wsHook___ = {};
     }
 
     let newSend = function (self, _send) {
+        _CONSLOG("newSend called")
         return function send(data) {
             let filtered = checkFilter(data);
             if (filtered !== undefined)
@@ -161,12 +162,16 @@ var ___wsHook___ = {};
         let WSObject
         this.url = url
         this.protocols = protocols
+        _CONSLOG("WebSocket creation for: ", url, protocols)
         if (!this.protocols) { WSObject = new _WS(url) } else { WSObject = new _WS(url, protocols) }
 
         Object.defineProperty(WSObject, 'onmessage', {
             configurable: true,
             enumerable: true,
             'set': function () {
+                // Kkutu updates onmessage every turn starts...
+                // https://github.com/JJoriping/KKuTu/blob/a2c240bc31fe2dea31d26fb1cf7625b4645556a6/Server/lib/Web/lib/kkutu/rule_classic.js#L55C17-L55C27
+                _CONSLOG("onmessage.set called on ws", this.url)
                 let eventThis = this
                 let userFunc = arguments[0]
                 let onMessageHandler = function () {
@@ -178,14 +183,24 @@ var ___wsHook___ = {};
                     if (arguments[0]?.data)
                     {
                         let parsed = JSON.parse(arguments[0].data)
-                        if (parsed.type != 'room')
-                            _CONSLOG("WebSocket receive OnMsg", arguments[0].data)
+                        _CONSLOG("WebSocket receive OnMsg", arguments[0].data)
                         if (parsed.type == 'turnEnd')
                             decodeTE(parsed)
                     }
                     userFunc.apply(eventThis, arguments)
                 }
+
+                if (!WSObject._injEventListeners)
+                    WSObject._injEventListeners = []
+
+                for (let prevInj in WSObject._injEventListeners) {
+                    _CONSLOG("dropped prev handler", WSObject._injEventListeners[prevInj])
+                    WSObject.removeEventListener('message', WSObject._injEventListeners[prevInj], false)
+                }
+                WSObject._injEventListeners = []
+                
                 WSObject._addEventListener.apply(this, ['message', onMessageHandler, false])
+                WSObject._injEventListeners.push(onMessageHandler)
             }
         })
 

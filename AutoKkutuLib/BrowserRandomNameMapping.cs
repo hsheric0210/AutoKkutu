@@ -21,6 +21,7 @@ public sealed class BrowserRandomNameMapping : NameMapping
 		instance.Generate("___nativeAddEventListener___", CommonNameRegistry.WsNativeAddEventListener);
 		instance.Generate("___passthru___", CommonNameRegistry.WsPassThru);
 		instance.Generate("___WSProtoBackup___", 1923); // TODO: Assign registry
+		instance.Generate("___injectedOnMessageListeners___", 1924); // TODO: Assign registry
 		return instance;
 	}
 }

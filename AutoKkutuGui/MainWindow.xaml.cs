@@ -62,8 +62,8 @@ public partial class MainWindow : Window
 
 		notifier = new Notifier(cfg =>
 		{
-			cfg.PositionProvider = new WindowPositionProvider(this, Corner.BottomRight, -210, 30);
-			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(5), MaximumNotificationCount.FromCount(4));
+			cfg.PositionProvider = new ControlPositionProvider(this, ContentGrid, Corner.BottomRight, 10, 10);
+			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(5), MaximumNotificationCount.FromCount(5));
 			cfg.Dispatcher = Dispatcher;
 			cfg.DisplayOptions.Width = 200;
 			cfg.DisplayOptions.TopMost = true;
@@ -145,12 +145,6 @@ public partial class MainWindow : Window
 	{
 		try
 		{
-			//dbg 
-			var opt = new MessageOptions();
-			opt.FontSize = 16;
-			notifier.ShowInformation(new string('*', Random.Shared.Next(10, 50)), opt);
-			//dbg
-
 			var clipboard = Clipboard.GetText();
 			if (!string.IsNullOrWhiteSpace(clipboard))
 				Main.SendMessage(clipboard);

@@ -53,7 +53,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 
 		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
 
-		// OPTIMIZE IPC QUOTA: only copy room.players, room.gaming, room.mode, room.game.seq
+		// IPC QUOTA OPTIMIZATION: only copy room.players, room.gaming, room.mode, room.game.seq
 		Browser.ExecuteJavaScript(@$"{wsFilter}['room']=function(d){{
 if (d&&d.room&&d.room.players&&Array.prototype.includes.call(d.room.players,'{userId}'))
 {{
