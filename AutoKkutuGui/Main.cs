@@ -403,17 +403,20 @@ public static class Main
 	// TODO: Move to Lib
 	private static void OnMyTurnStarted(object? sender, WordConditionPresentEventArgs args)
 	{
-		if (preSearch != null && AutoKkutu.Game.CheckPathExpired(preSearch.Info.WithFlags(PathFinderFlags.NoRescan)))
+		if (Prefs.AutoEnterEnabled)
 		{
-			Log.Information("Using the pre-search result for: {condition}", preSearch.Info.Condition);
-			TryAutoEnter(preSearch);
-			return;
-		}
+			if (preSearch != null && AutoKkutu.Game.CheckPathExpired(preSearch.Info.WithFlags(PathFinderFlags.NoRescan)))
+			{
+				Log.Information("Using the pre-search result for: {condition}", preSearch.Info.Condition);
+				TryAutoEnter(preSearch);
+				return;
+			}
 
-		if (preSearch == null)
-			Log.Warning("Pre-search data not available. Starting the search.");
-		else
-			Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Info.Condition, args.Condition);
+			if (preSearch == null)
+				Log.Warning("Pre-search data not available. Starting the search.");
+			else
+				Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Info.Condition, args.Condition);
+		}
 
 		AutoKkutu.PathFinder.FindPath(
 			AutoKkutu.Game.CurrentGameMode,

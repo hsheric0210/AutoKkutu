@@ -6,7 +6,12 @@
     ShutdownMode="OnMainWindowClose"
     StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <FontFamily x:Key="NanumGothic">pack://application:,,,/Fonts/#NanumGothic</FontFamily>
-        <FontFamily x:Key="NanumBarunGothic">pack://application:,,,/Fonts/#NanumBarunGothic</FontFamily>
+        <ResourceDictionary>
+            <FontFamily x:Key="NanumGothic">pack://application:,,,/Fonts/#NanumGothic</FontFamily>
+            <FontFamily x:Key="NanumBarunGothic">pack://application:,,,/Fonts/#NanumBarunGothic</FontFamily>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/ToastNotifications.Messages;component/Themes/Default.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

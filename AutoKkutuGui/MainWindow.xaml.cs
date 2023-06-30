@@ -15,6 +15,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using ToastNotifications;
+using ToastNotifications.Core;
+using ToastNotifications.Lifetime;
+using ToastNotifications.Messages;
+using ToastNotifications.Position;
 
 namespace AutoKkutuGui;
 
@@ -24,6 +29,8 @@ public partial class MainWindow : Window
 
 	// Succeed KKutu-Helper Release v5.6.8500
 	private const string TITLE = "AutoKkutu - Next-gen KKutu-Helper V";
+
+	private readonly Notifier notifier;
 
 	public MainWindow()
 	{
@@ -52,6 +59,15 @@ public partial class MainWindow : Window
 		Main.AutoKkutu.InputDelayApply += OnEnterDelaying;
 		Main.AutoKkutu.NoPathAvailable += OnPathNotFound;
 		Main.AutoKkutu.AutoEntered += OnAutoEntered;
+
+		notifier = new Notifier(cfg =>
+		{
+			cfg.PositionProvider = new WindowPositionProvider(this, Corner.BottomRight, -210, 30);
+			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(5), MaximumNotificationCount.FromCount(4));
+			cfg.Dispatcher = Dispatcher;
+			cfg.DisplayOptions.Width = 200;
+			cfg.DisplayOptions.TopMost = true;
+		});
 	}
 
 	/* EVENTS: AutoEnter */
@@ -129,6 +145,12 @@ public partial class MainWindow : Window
 	{
 		try
 		{
+			//dbg 
+			var opt = new MessageOptions();
+			opt.FontSize = 16;
+			notifier.ShowInformation(new string('*', Random.Shared.Next(10, 50)), opt);
+			//dbg
+
 			var clipboard = Clipboard.GetText();
 			if (!string.IsNullOrWhiteSpace(clipboard))
 				Main.SendMessage(clipboard);

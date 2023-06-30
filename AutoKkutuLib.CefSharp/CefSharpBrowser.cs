@@ -100,11 +100,13 @@ public class CefSharpBrowser : BrowserBase
 				if (arg.Contains('=')) // key-value type
 				{
 					var pieces = arg.Split('=', 2);
-					settings?.CefCommandLineArgs.Add(pieces[0], pieces[1]);
+					settings.CefCommandLineArgs?.Add(pieces[0], pieces[1]);
+					Log.Information("Cef command-line argument added: {switch} = {value}", pieces[0], pieces[1]);
 				}
 				else
 				{
-					settings?.CefCommandLineArgs?.Add(arg);
+					Log.Information("Cef command-line switch added: {switch}", arg);
+					settings.CefCommandLineArgs?.Add(arg);
 				}
 			}
 		}
