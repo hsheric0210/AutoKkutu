@@ -9,6 +9,9 @@ using AutoKkutuLib.Selenium.Properties;
 using System.Net;
 using System.Net.Sockets;
 using AutoKkutuLib.Browser;
+using OpenQA.Selenium.DevTools.V113;
+using OpenQA.Selenium.DevTools.V113.Page;
+using AutoKkutuLib.Game;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable
@@ -16,9 +19,25 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 	private readonly static ReadOnlyCollection<IWebElement> emptyWebElements = new(new List<IWebElement>());
 	private const string ConfigFile = "Selenium.xml";
 
+	private readonly BrowserRandomNameMapping nameRandom;
+
 	private UndetectedChromeDriver driver = null!;
 	private IDisposable? WsServer;
 	private bool disposedValue;
+
+	public SeleniumBrowser()
+	{
+		var wsPort = FindFreePort();
+		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
+		LocalWebSocketServer.MessageReceived += OnWebSocketMessage;
+		WsServer = LocalWebSocketServer.Start(wsPort);
+		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
+
+		nameRandom = BrowserRandomNameMapping.CreateForWsHook(this);
+		nameRandom.Generate("___wsGlobal___", 16383);
+		nameRandom.Generate("___wsBuffer___", 16384);
+		nameRandom.Add("___wsAddr___", wsAddrClient);
+	}
 
 	public override async void LoadFrontPage()
 	{
@@ -71,32 +90,14 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
-		var wsHook = GenerateScriptTypeName(CommonNameRegistry.WsHook, true);
-		var wsOriginal = GenerateScriptTypeName(CommonNameRegistry.WsOriginal, true);
-		var wsGlobal = GenerateScriptTypeName(CommonNameRegistry.WsGlobal, true);
-		var wsFilter = GenerateScriptTypeName(CommonNameRegistry.WsFilter, true);
-		var wsBuffer = GenerateScriptTypeName(CommonNameRegistry.WsBuffer, true);
-
-		var wsPort = FindFreePort();
-		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
-		LocalWebSocketServer.MessageReceived += OnWebSocketMessage;
-		WsServer = LocalWebSocketServer.Start(wsPort);
-
-		Log.Information("wsHook objecct: {wsHook}, Original WebSocket object: {wsObj}, WebSocket global variable: {wsGlobal}, WebSocket buffer variable: {wsBuffer}", wsHook, wsOriginal, wsGlobal, wsBuffer);
+		Log.Verbose("Name randomization: {nameRandom}", nameRandom);
 
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
-		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
-		var scriptIdent = driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
+		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
-			["source"] = (LibResources.wsHookObf + ';' + SeleniumResources.wsListenerObf)
-				.Replace("___wsHook___", wsHook)
-				.Replace("___originalWS___", wsOriginal)
-				.Replace("___wsGlobal___", wsGlobal)
-				.Replace("___wsFilter___", wsFilter)
-				.Replace("___wsBuffer___", wsBuffer)
-				.Replace("___wsAddr___", wsAddrClient)
+			["source"] = nameRandom.ApplyTo(LibResources.wsHook + ';' + SeleniumResources.wsListener)
 		});
-		Log.Information("Injected pre-load scripts. Identifier: {ident}", scriptIdent);
+		Log.Information("Injected pre-load scripts.");
 		driver.Url = config.MainPage;
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}
@@ -123,7 +124,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 	{
 		var result = driver.ExecuteScript("return " + script); // EVERTHING is IIFE(Immediately Invoked Function Expressions) in WebDriver >:(
 		if (result == null)
-			Log.Error("Result is null of {js}", script);
+			Log.Warning("Result of {js} is null. Possible undefined or null property.", script);
 		return Task.FromResult(new JavaScriptCallback(result?.ToString() ?? "null", true, result));
 	}
 

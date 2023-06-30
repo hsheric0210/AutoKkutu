@@ -62,10 +62,10 @@ public partial class MainWindow : Window
 
 		notifier = new Notifier(cfg =>
 		{
-			cfg.PositionProvider = new ControlPositionProvider(this, ContentGrid, Corner.BottomRight, 10, 10);
-			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(5), MaximumNotificationCount.FromCount(5));
+			cfg.PositionProvider = new ControlPositionProvider(this, BrowserContainer, Corner.BottomRight, 15, 15);
+			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(3), MaximumNotificationCount.FromCount(6));
 			cfg.Dispatcher = Dispatcher;
-			cfg.DisplayOptions.Width = 200;
+			cfg.DisplayOptions.Width = 250;
 			cfg.DisplayOptions.TopMost = true;
 		});
 	}
@@ -74,9 +74,17 @@ public partial class MainWindow : Window
 
 	private void OnEnterDelaying(object? sender, InputDelayEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
 
-	private void OnPathNotFound(object? sender, NoPathAvailableEventArgs args) => this.UpdateStatusMessage(args.TimeOver ? StatusMessage.AllWordTimeOver : StatusMessage.NotFound, args.RemainingTurnTime);
+	private void OnPathNotFound(object? sender, NoPathAvailableEventArgs args)
+	{
+		notifier.ShowWarning("No path available!");
+		this.UpdateStatusMessage(args.TimeOver ? StatusMessage.AllWordTimeOver : StatusMessage.NotFound, args.RemainingTurnTime);
+	}
 
-	private void OnAutoEntered(object? sender, AutoEnterEventArgs args) => this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
+	private void OnAutoEntered(object? sender, AutoEnterEventArgs args)
+	{
+		notifier.ShowSuccess("Path entered: " + args.Content);
+		this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
+	}
 
 	/* EVENTS: AutoKkutu */
 
