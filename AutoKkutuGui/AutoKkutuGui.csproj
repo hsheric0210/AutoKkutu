@@ -60,28 +60,28 @@
 
     <ItemGroup>
         <Resource Include="Fonts\NanumBarunGothic.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumBarunGothicBold.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumBarunGothicLight.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumBarunGothicUltraLight.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumGothic.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumGothicBold.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumGothicExtraBold.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Fonts\NanumGothicLight.ttf">
-          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Images\attack.png">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -125,14 +125,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CefSharp.Common.NETCore" Version="113.1.40" />
-        <PackageReference Include="CefSharp.Wpf.NETCore" Version="113.1.40" />
+        <PackageReference Include="CefSharp.Common.NETCore" Version="114.2.100" />
+        <PackageReference Include="CefSharp.Wpf.NETCore" Version="114.2.100" />
         <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
             <NoWarn>NU1701</NoWarn>
         </PackageReference>
-        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="114.0.5735.9000" />
-        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Serilog" Version="3.0.1" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
@@ -192,15 +192,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="108.4.13" />
+        <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="114.2.10" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="108.4.13" />
+        <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="114.2.10" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="108.4.13" />
+        <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="114.2.10" />
     </ItemGroup>
 
 </Project>
