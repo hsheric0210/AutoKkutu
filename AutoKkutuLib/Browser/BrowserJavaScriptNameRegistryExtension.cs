@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Extension;
-using Serilog;
+﻿using Serilog;
 
 namespace AutoKkutuLib.Browser;
 public static class BrowserJavaScriptNameRegistryExtension
@@ -29,9 +28,9 @@ public static class BrowserJavaScriptNameRegistryExtension
 		try
 		{
 			// Define namespace. Workaround for WebDriver IIFEs'. https://stackoverflow.com/a/14245853
-			if (await browser.EvaluateJavaScriptBoolAsync($"typeof(window.{nsName})!='function'")) // check if already registered
+			if (await browser.EvaluateJavaScriptBoolAsync($"typeof({browser.JavaScriptBaseNamespace}.{nsName})!='function'")) // check if already registered
 			{
-				await browser.EvaluateJavaScriptAsync($"window.{nsName}=function(){{}}");
+				await browser.EvaluateJavaScriptAsync($"{browser.JavaScriptBaseNamespace}.{nsName}=function(){{}}");
 			}
 
 			if (await browser.EvaluateJavaScriptBoolAsync($"typeof({realFuncName})!='function'")) // check if already registered

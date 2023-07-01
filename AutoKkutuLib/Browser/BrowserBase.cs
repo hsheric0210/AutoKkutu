@@ -12,6 +12,7 @@ public abstract class BrowserBase
 	/// May be null if the WPF frame is not available
 	/// </summary>
 	public abstract object? BrowserControl { get; }
+	public abstract string JavaScriptBaseNamespace { get; }
 	public EventHandler<PageLoadedEventArgs>? PageLoaded;
 	public EventHandler<PageErrorEventArgs>? PageError;
 	public EventHandler<WebSocketMessageEventArgs>? WebSocketMessage;
@@ -29,10 +30,10 @@ public abstract class BrowserBase
 			randomString = $"{Random.Shared.NextTypeName(Random.Shared.Next(10, 32))}";
 			RegisteredFunctions[id] = randomString;
 		}
-		return (noNamespace ? "" : $"{GenerateScriptTypeName(CommonNameRegistry.Namespace, true)}.") + randomString;
+		return (noNamespace ? "" : $"{JavaScriptBaseNamespace}.{GenerateScriptTypeName(CommonNameRegistry.Namespace, true)}.") + randomString;
 	}
 
 	public string GenerateScriptTypeName(CommonNameRegistry id, bool noNamespace = false) => GenerateScriptTypeName((int)id, noNamespace);
 
-	public string GetScriptTypeName(int funcId, bool appendParentheses = true, bool noNamespace = false) => (noNamespace ? "" : (RegisteredFunctions[(int)CommonNameRegistry.Namespace] + '.')) + RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
+	public string GetScriptTypeName(int funcId, bool appendParentheses = true, bool noNamespace = false) => (noNamespace ? "" : (JavaScriptBaseNamespace + '.' + RegisteredFunctions[(int)CommonNameRegistry.Namespace] + '.')) + RegisteredFunctions[funcId] + (appendParentheses ? "()" : "");
 }

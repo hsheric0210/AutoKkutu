@@ -6,6 +6,9 @@ namespace AutoKkutuLib.CefSharp;
 public class CefConfigDto
 {
 	[XmlElement]
+	public string JavaScriptInjectionBaseNamespace { get; set; } = "window";
+
+	[XmlElement]
 	public string MainPage { get; set; }
 
 	[XmlElement]

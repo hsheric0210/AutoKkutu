@@ -23,7 +23,12 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 	private UndetectedChromeDriver driver = null!;
 	private IDisposable? WsServer;
+	private SeleniumConfigDto config;
 	private bool disposedValue;
+
+	public override object? BrowserControl => null;
+
+	public override string JavaScriptBaseNamespace { get; }
 
 	public SeleniumBrowser()
 	{
@@ -37,14 +42,12 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		nameRandom.Generate("___wsGlobal___", 16383);
 		nameRandom.Generate("___wsBuffer___", 16384);
 		nameRandom.Add("___wsAddr___", wsAddrClient);
-	}
 
-	public override async void LoadFrontPage()
-	{
+
 		var serializer = new XmlSerializer(typeof(SeleniumConfigDto));
 
 		// Default config
-		var config = new SeleniumConfigDto()
+		config = new SeleniumConfigDto()
 		{
 			MainPage = "https://kkutu.pink/",
 			DriverExecutable = "chromedriver.exe"
@@ -75,6 +78,11 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 			}
 		}
 
+		JavaScriptBaseNamespace = config.JavaScriptInjectionBaseNamespace;
+	}
+
+	public override async void LoadFrontPage()
+	{
 		var opt = new ChromeOptions()
 		{
 			BinaryLocation = config.BinaryLocation,
@@ -117,8 +125,6 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		localEP = (IPEndPoint)socket.LocalEndPoint!;
 		return localEP.Port;
 	}
-
-	public override object? BrowserControl => null;
 
 	public override Task<JavaScriptCallback> EvaluateJavaScriptRawAsync(string script)
 	{

@@ -22,6 +22,8 @@ public class CefSharpBrowser : BrowserBase
 
 	public override object? BrowserControl => browser;
 
+	public override string JavaScriptBaseNamespace { get; }
+
 	private static CefConfigDto GetDefaultCefConfig()
 	{
 		var dflt = new CefSettings();
@@ -93,6 +95,7 @@ public class CefSharpBrowser : BrowserBase
 		settings.MultiThreadedMessageLoop = config.MultiThreadedMessageLoop;
 		settings.ExternalMessagePump = config.ExternalMessagePump;
 		settings.CookieableSchemesExcludeDefaults = config.CookieableSchemesExcludeDefaults;
+
 		if (config.CefCommandLineArgs != null)
 		{
 			foreach (var arg in config.CefCommandLineArgs)
@@ -142,6 +145,9 @@ public class CefSharpBrowser : BrowserBase
 		{
 			Log.Error(ex, "Failed to reading/writiting default CefSharp config.");
 		}
+		JavaScriptBaseNamespace = config.JavaScriptInjectionBaseNamespace;
+		if (string.IsNullOrWhiteSpace(JavaScriptBaseNamespace))
+			JavaScriptBaseNamespace = "window";
 
 		var settings = CefConfigToCefSettings(config);
 		try

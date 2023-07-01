@@ -5,6 +5,9 @@ namespace AutoKkutuLib.Selenium;
 public class SeleniumConfigDto
 {
 	[XmlElement]
+	public string JavaScriptInjectionBaseNamespace { get; set; } = "window";
+
+	[XmlElement]
 	public string MainPage { get; set; }
 
 	[XmlElement]
