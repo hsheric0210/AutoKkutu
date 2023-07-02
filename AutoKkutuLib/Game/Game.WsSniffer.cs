@@ -155,7 +155,7 @@ public partial class Game
 				if (condition == null)
 					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.UnableToParse;
 
-				CurrentPresentedWord = condition; // Required to bypass initial 'CheckPathExpired' check
+				CurrentWordCondition = condition; // Required to bypass initial 'CheckPathExpired' check
 				PreviousUserTurnEnded?.Invoke(this, new PreviousUserTurnEndedEventArgs(presearch, condition));
 			}
 

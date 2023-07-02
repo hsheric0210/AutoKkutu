@@ -61,7 +61,19 @@ namespace AutoKkutuLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /* eslint-disable no-proto */
+        ///   Looks up a localized string similar to /* injectedJs : AutoKkutu JavaScript injection
+        /// * Reserved Names:
+        /// * ___wsHook___
+        /// * ___originalWS___
+        /// * ___wsFilter___
+        /// * ___nativeSend___
+        /// * ___nativeAddEventListener___
+        /// * ___passthru___
+        /// * ___commSend___
+        /// * ___commRecv___
+        /// */
+        ///
+        ////* eslint-disable no-proto */
         ////* eslint-disable accessor-pairs */
         ////* eslint-disable no-global-assign */
         ///
@@ -69,31 +81,12 @@ namespace AutoKkutuLib.Properties {
         /// * https://github.com/skepticfx/wshook
         /// * Reference: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
         /// */
-        ///var ___wsHook___ = {};
         ///(function () {
-        ///    // Mutable MessageEvent.
-        ///    // Subclasses MessageEvent and makes data, origin and other MessageEvent properites mutatble.
-        ///    function MutableMessageEvent(o) {
-        ///        this.bubbles = o.bubbles || false
-        ///        this.cance [rest of string was truncated]&quot;;.
+        ///    // Mut [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string wsHook {
+        public static string injectedJs {
             get {
-                return ResourceManager.GetString("wsHook", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to /* wsHook.js
-        /// * https://github.com/skepticfx/wsHook
-        /// * Reference: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
-        /// * Obfuscated by obfuscator.io
-        /// */
-        ///(function (_0x4f93f3, _0x107792) { var _0x5eeb8a = { _0x4fa5a7: 0x2b4, _0x8369d3: 0x2be, _0x2ae1e2: 0x2b8, _0x4d01d5: 0x28, _0x327d27: 0x33, _0xc4e193: 0x18, _0x4414ab: 0x15, _0x2d554b: 0x2b9, _0x54ecb6: 0x2af, _0x103c17: 0x291, _0x5538ae: 0x29, _0x2bec22: 0x22, _0x4d2f9e: 0xc, _0x1fbf94: 0x10, _0x3fb203: 0x2bd, _0xca338: 0x2b7, _0x17ad40: 0x2a [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string wsHookObf {
-            get {
-                return ResourceManager.GetString("wsHookObf", resourceCulture);
+                return ResourceManager.GetString("injectedJs", resourceCulture);
             }
         }
     }

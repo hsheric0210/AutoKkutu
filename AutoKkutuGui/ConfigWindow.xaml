@@ -760,24 +760,44 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <CheckBox
                             Name="SendKeyEvents"
                             Grid.Row="0"
+                            Grid.RowSpan="3"
                             Grid.Column="0"
                             Content="키 입력 이벤트 전송"
                             IsChecked="True"
                             Style="{StaticResource SettingCheckBoxStyle}"
-                            ToolTip="단어 입력 시 키보드 입력 이벤트를 전송합니다. 단, 입력 속도가 느려질 수 있습니다." />
+                            ToolTip="단어 입력 시 키보드 입력 이벤트를 전송합니다." />
                         <Separator
                             Grid.Row="0"
+                            Grid.RowSpan="3"
                             Grid.Column="1"
-                            Margin="5,15,5,0"
-                            VerticalAlignment="Top"
+                            Margin="5,0,5,0"
                             Style="{StaticResource SettingSeparatorStyle}" />
                         <Label
                             Grid.Row="0"
-                            Grid.Column="2"
+                            Grid.Column="3"
                             Content="{Binding ElementName=SendKeyEvents, Path=ToolTip}"
+                            Style="{StaticResource SettingLabelStyle}" />
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Margin="0,0,0,0"
+                            Content="입력 로그 자동/수동 분석을 통한 자동 입력 감지를 우회 가능합니다."
+                            FontSize="10"
+                            Style="{StaticResource SettingLabelStyle}" />
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Margin="0,0,0,0"
+                            Content="'단어 입력 시뮬레이트' 기능과 함께 사용하는 것을 추천하며, 활성화 시 입력 속도가 느려질 수 있습니다."
+                            FontSize="9"
                             Style="{StaticResource SettingLabelStyle}" />
                     </Grid>
                     <Grid Grid.Row="1">
@@ -787,13 +807,13 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <CheckBox
-                            Name="BlockAntiCheat"
+                            Name="HijackACPackets"
                             Grid.Row="0"
                             Grid.Column="0"
-                            Content="안티 치트 관련 패킷 차단"
+                            Content="안티 치트 관련 패킷 가로채기"
                             IsChecked="False"
                             Style="{StaticResource SettingCheckBoxStyle}"
-                            ToolTip="안티 치트와 관련된 패킷들을 차단합니다. 가장 확실하지만, 언제든지 막힐 수 있습니다." />
+                            ToolTip="알려진 모든 안티 치트와 관련된 패킷들을 차단하고 속입니다. 이는 'AC.json' 파일에서 설정 가능합니다." />
                         <Separator
                             Grid.Row="0"
                             Grid.Column="1"
@@ -801,31 +821,10 @@
                         <Label
                             Grid.Row="0"
                             Grid.Column="2"
-                            Content="{Binding ElementName=BlockAntiCheat, Path=ToolTip}"
+                            Content="{Binding ElementName=HijackACPackets, Path=ToolTip}"
                             Style="{StaticResource SettingLabelStyle}" />
                     </Grid>
                     <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox
-                            Name="BaseInjectionNamespace"
-                            Grid.Column="0"
-                            MinWidth="80"
-                            MinHeight="25"
-                            Margin="0,0,0,0"
-                            Style="{StaticResource SettingTextBoxStyle}"
-                            Text="window.external"
-                            ToolTip="JavaScript 요소들을 인젝트할 기본 네임스페이스를 지정합니다." />
-                        <Separator Grid.Column="1" Style="{StaticResource SettingSeparatorStyle}" />
-                        <Label
-                            Grid.Column="2"
-                            Content="{Binding ElementName=BaseInjectionNamespace, Path=ToolTip}"
-                            Style="{StaticResource SettingLabelStyle}" />
-                    </Grid>
-                    <Grid Grid.Row="3">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -871,7 +870,7 @@
                                 Content="입력 기록 여부 알림"
                                 IsChecked="False"
                                 Style="{StaticResource SettingCheckBoxStyle}"
-                                ToolTip="현재 채팅 및 키보드 입력이 실시간 기록 중인지 상태를 표시합니다." />
+                                ToolTip="관리자가 현재 채팅 입력 로깅을 활성화하였는지 여부를 표시합니다." />
                             <Separator
                                 Grid.Row="0"
                                 Grid.Column="1"
@@ -889,13 +888,13 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <CheckBox
-                                Name="InputDelaySupervisor"
+                                Name="LogChatting"
                                 Grid.Row="0"
                                 Grid.Column="0"
-                                Content="입력 일관성 감시"
+                                Content="채팅 입력 로그 작성"
                                 IsChecked="False"
                                 Style="{StaticResource SettingCheckBoxStyle}"
-                                ToolTip="입력 딜레이나 키 이벤트 일관성 등의 흔한 안티치트가 감시하는 내용들을 흉내냅니다." />
+                                ToolTip="채팅 입력 로그를 작성하여 ChatLog.log 파일에 저장합니다." />
                             <Separator
                                 Grid.Row="0"
                                 Grid.Column="1"
@@ -905,7 +904,7 @@
                             <Label
                                 Grid.Row="0"
                                 Grid.Column="2"
-                                Content="{Binding ElementName=InputDelaySupervisor, Path=ToolTip}"
+                                Content="{Binding ElementName=LogChatting, Path=ToolTip}"
                                 Style="{StaticResource SettingLabelStyle}" />
                         </Grid>
                         <Grid Grid.Row="3" Margin="20,0,0,0">
@@ -915,13 +914,13 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <CheckBox
-                                Name="SelfAntiBot"
+                                Name="SelfAntiCheat"
                                 Grid.Row="0"
                                 Grid.Column="0"
-                                Content="안티 봇 검사"
+                                Content="셀프 치트 검사 실행"
                                 IsChecked="False"
                                 Style="{StaticResource SettingCheckBoxStyle}"
-                                ToolTip="스스로 자기 자신에 대해 흔한 봇 방지 검사를 진행합니다." />
+                                ToolTip="알려진 모든 클라이언트측 안티 치트 검사들을 실행합니다. (주의: 개발자용 기능입니다)" />
                             <Separator
                                 Grid.Row="0"
                                 Grid.Column="1"
@@ -929,7 +928,7 @@
                             <Label
                                 Grid.Row="0"
                                 Grid.Column="2"
-                                Content="{Binding ElementName=SelfAntiBot, Path=ToolTip}"
+                                Content="{Binding ElementName=SelfAntiCheat, Path=ToolTip}"
                                 Style="{StaticResource SettingLabelStyle}" />
                         </Grid>
                     </Grid>

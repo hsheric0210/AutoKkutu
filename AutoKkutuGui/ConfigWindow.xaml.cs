@@ -27,7 +27,7 @@ public partial class ConfigWindow : Window
 		DBAutoWordAdd.IsChecked = config.AutoDBWordAddEnabled;
 		DBAutoWordRemove.IsChecked = config.AutoDBWordRemoveEnabled;
 		DBAutoWordAddEnd.IsChecked = config.AutoDBAddEndEnabled;
-		AttackWord.IsChecked = config.AttackWordAllowed;
+		AttackWord.IsChecked = config.AttackWordEnabled;
 		EndWord.IsChecked = config.EndWordEnabled;
 		ReturnMode.IsChecked = config.ReturnModeEnabled;
 		AutoFix.IsChecked = config.AutoFixEnabled;
@@ -35,12 +35,20 @@ public partial class ConfigWindow : Window
 		Delay.IsChecked = config.DelayEnabled;
 		DelayPerWord.IsChecked = config.DelayPerCharEnabled;
 		DelayNumber.Text = config.DelayInMillis.ToString(CultureInfo.InvariantCulture);
-		DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterCharEnterEnabled;
+		DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnterEnabled;
 		InputSimulate.IsChecked = config.InputSimulate;
 		MaxWordCount.Text = config.MaxDisplayedWordCount.ToString(CultureInfo.InvariantCulture);
 		FixDelay.IsChecked = config.FixDelayEnabled;
 		FixDelayPerWord.IsChecked = config.FixDelayPerCharEnabled;
 		FixDelayNumber.Text = config.FixDelayInMillis.ToString(CultureInfo.InvariantCulture);
+		RandomWordSelection.IsChecked = config.RandomWordSelection;
+		RandomWordSelectionCount.Text = config.RandomWordSelectionCount.ToString(CultureInfo.InvariantCulture);
+		SendKeyEvents.IsChecked = config.SendKeyEvents;
+		HijackACPackets.IsChecked = config.HijackACPackets;
+		SimulateAntiCheat.IsChecked = config.SimulateAntiCheat;
+		DetectInputLogging.IsChecked = config.DetectInputLogging;
+		LogChatting.IsChecked = config.LogChatting;
+		SelfAntiCheat.IsChecked = config.SelfAntiCheat;
 
 		PreferenceReorderList = new ChoosableReorderableList<PreferenceItem>(new ChoosableReorderableListUIElements(InactivePreferences, ActivePreferences, ActivatePreferenceButton, DeactivatePreferenceButton, MoveUpPreferenceButton, MoveDownPreferenceButton), "Name");
 
@@ -80,27 +88,42 @@ public partial class ConfigWindow : Window
 			Log.Warning("Can't parse fix delay number {string}; will be reset to {default:l}.", fixDelayNumber, _fixdelay);
 		}
 
+		var rwsNumber = FixDelayNumber.Text;
+		if (!int.TryParse(rwsNumber, out var _rwsCount))
+		{
+			_rwsCount = 5;
+			Log.Warning("Can't parse random word selection count number {string}; will be reset to {default:l}.", rwsNumber, _fixdelay);
+		}
+
 		// :)
 		var conf = new Preference
 		{
-			ActiveWordPreference = new WordPreference(PreferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
 			InactiveWordPreference = new WordPreference(PreferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
-			DelayStartAfterCharEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
+			ActiveWordPreference = new WordPreference(PreferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
+			DelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
 			MissionAutoDetectionEnabled = MissionDetection.IsChecked ?? false,
 			AutoDBWordRemoveEnabled = DBAutoWordRemove.IsChecked ?? false,
+			RandomWordSelection = RandomWordSelection.IsChecked ?? false,
 			FixDelayPerCharEnabled = FixDelayPerWord.IsChecked ?? false,
+			DetectInputLogging = DetectInputLogging.IsChecked ?? false,
 			AutoDBAddEndEnabled = DBAutoWordAddEnd.IsChecked ?? false,
+			SimulateAntiCheat = SimulateAntiCheat.IsChecked ?? false,
 			AutoDBWordAddEnabled = DBAutoWordAdd.IsChecked ?? false,
 			AutoDBUpdateEnabled = DBAutoUpdate.IsChecked ?? false,
 			DelayPerCharEnabled = DelayPerWord.IsChecked ?? false,
+			HijackACPackets = HijackACPackets.IsChecked ?? false,
 			ReturnModeEnabled = ReturnMode.IsChecked ?? false,
-			AttackWordAllowed = AttackWord.IsChecked ?? false,
+			AttackWordEnabled = AttackWord.IsChecked ?? false,
+			SelfAntiCheat = SelfAntiCheat.IsChecked ?? false,
+			SendKeyEvents = SendKeyEvents.IsChecked ?? false,
 			InputSimulate = InputSimulate.IsChecked ?? false,
 			AutoEnterEnabled = AutoEnter.IsChecked ?? false,
 			FixDelayEnabled = FixDelay.IsChecked ?? false,
+			LogChatting = LogChatting.IsChecked ?? false,
 			EndWordEnabled = EndWord.IsChecked ?? false,
 			AutoFixEnabled = AutoFix.IsChecked ?? false,
 			DelayEnabled = Delay.IsChecked ?? false,
+			RandomWordSelectionCount = _rwsCount,
 			MaxDisplayedWordCount = MaxWords,
 			FixDelayInMillis = _fixdelay,
 			DelayInMillis = _delay,
@@ -109,27 +132,35 @@ public partial class ConfigWindow : Window
 		try
 		{
 			Settings config = Settings.Default;
+			config.LogChatting = conf.LogChatting;
 			config.DelayEnabled = conf.DelayEnabled;
 			config.DelayInMillis = conf.DelayInMillis;
 			config.InputSimulate = conf.InputSimulate;
+			config.SendKeyEvents = conf.SendKeyEvents;
+			config.SelfAntiCheat = conf.SelfAntiCheat;
 			config.EndWordEnabled = conf.EndWordEnabled;
 			config.AutoFixEnabled = conf.AutoFixEnabled;
 			config.FixDelayEnabled = conf.FixDelayEnabled;
+			config.HijackACPackets = conf.HijackACPackets;
 			config.FixDelayInMillis = conf.FixDelayInMillis;
 			config.AutoEnterEnabled = conf.AutoEnterEnabled;
 			config.ReturnModeEnabled = conf.ReturnModeEnabled;
-			config.AttackWordEnabled = conf.AttackWordAllowed;
+			config.AttackWordEnabled = conf.AttackWordEnabled;
+			config.SimulateAntiCheat = conf.SimulateAntiCheat;
+			config.DetectInputLogging = conf.DetectInputLogging;
 			config.DelayPerCharEnabled = conf.DelayPerCharEnabled;
 			config.AutoDBUpdateEnabled = conf.AutoDBUpdateEnabled;
 			config.AutoDBAddEndEnabled = conf.AutoDBAddEndEnabled;
+			config.RandomWordSelection = conf.RandomWordSelection;
 			config.AutoDBWordAddEnabled = conf.AutoDBWordAddEnabled;
 			config.ActiveWordPreference = conf.ActiveWordPreference;
 			config.MaxDisplayedWordCount = conf.MaxDisplayedWordCount;
 			config.InactiveWordPreference = conf.InactiveWordPreference;
 			config.FixDelayPerCharEnabled = conf.FixDelayPerCharEnabled;
 			config.AutoDBWordRemoveEnabled = conf.AutoDBWordRemoveEnabled;
+			config.RandomWordSelectionCount = conf.RandomWordSelectionCount;
 			config.MissionAutoDetectionEnabled = conf.MissionAutoDetectionEnabled;
-			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterCharEnterEnabled;
+			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterWordEnterEnabled;
 			config.Save();
 		}
 		catch (Exception ex)

@@ -4,11 +4,11 @@ public struct AutoEnterInfo
 {
 	public string? Content { get; set; }
 	public AutoEnterOptions Options { get; }
-	public PathFinderParameter PathInfo { get; }
+	public PathDetails PathInfo { get; }
 	public int WordIndex { get; }
 	public int RealDelay => Options.CalcRealDelay(Content);
 
-	public AutoEnterInfo(AutoEnterOptions delayParam, PathFinderParameter param, string? content = null, int wordIndex = 0)
+	public AutoEnterInfo(AutoEnterOptions delayParam, PathDetails param, string? content = null, int wordIndex = 0)
 	{
 		Options = delayParam;
 		PathInfo = param;
@@ -16,10 +16,10 @@ public struct AutoEnterInfo
 		WordIndex = wordIndex;
 	}
 
-	public static implicit operator PathFinderParameter(AutoEnterInfo param) => param.PathInfo;
+	public static implicit operator PathDetails(AutoEnterInfo param) => param.PathInfo;
 	public static implicit operator AutoEnterOptions(AutoEnterInfo param) => param.Options;
 
-	public bool HasFlag(PathFinderFlags flag) => PathInfo.HasFlag(flag);
+	public bool HasFlag(PathFlags flag) => PathInfo.HasFlag(flag);
 }
 
 public readonly struct AutoEnterOptions

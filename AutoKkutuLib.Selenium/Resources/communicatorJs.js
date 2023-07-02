@@ -1,11 +1,12 @@
-/* ws_listener.js
+/* communicatorJs : AutoKkutu - Selenium communicator
  * 
  * Reserved names:
- * ___wsHook___
  * ___wsAddr___
  * ___originalWS___
  * ___wsGlobal___
  * ___wsBuffer___
+ * ___commSend___
+ * ___commRecv___
  */
 
 // Workaround for constructor renaming bug
@@ -18,16 +19,16 @@ ___wsGlobal___.onopen = function () {
     ___wsBuffer___.length = 0;
     open = true;
 };
-___wsHook___.before = function (data, url, ws) {
-    let msg = 's' + data;
+window['___commSend___'] = (async function (_msg) {
+    let msg = 's' + _msg;
     if (open) ___wsGlobal___.send(msg);
     else ___wsBuffer___.push(msg)
     return data;
-};
+});
 
-___wsHook___.after = function (data, url, ws) {
-    let msg = 'r' + data.data;
+window['___commRecv___'] = (async function (_msg) {
+    let msg = 'r' + _msg;
     if (open) ___wsGlobal___.send(msg)
     else ___wsBuffer___.push(msg)
     return data
-};
+});

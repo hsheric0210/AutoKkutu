@@ -61,37 +61,29 @@ namespace AutoKkutuLib.CefSharp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /* ws_listener.js
+        ///   Looks up a localized string similar to /* communicator.js
+        /// * 
+        /// * Reserved names:
+        /// * ___jsbGlobal___
+        /// * ___jsbObj___
+        /// * onSend
+        /// * onReceive
+        /// * bindObjectAsync
+        /// * BindObjectAsync
         /// */
-        ///___wsHook___.before = (function (data, url, ws) {
-        ///    (async function (data) {
-        ///        await ___jsbGlobal___.BindObjectAsync(&apos;___jsbObj___&apos;);
-        ///        ___jsbObj___.send(data)
-        ///    })(data);
-        ///    return data;
+        ///
+        ///window[&apos;___commSend___&apos;] = (async function (msg) {
+        ///    let fn = window[&apos;___jsbGlobal___&apos;][&apos;bindObjectAsync&apos;] ?? window[&apos;___jsbGlobal___&apos;][&apos;BindObjectAsync&apos;];
+        ///    await fn(&apos;___jsbObj___&apos;);
+        ///    window[&apos;___jsbObj___&apos;][&apos;onSend&apos;](msg)
         ///});
         ///
-        ///___wsHook___.after = (function (data, url, ws) {
-        ///    (async function (data) {
-        ///        await ___jsbGlobal___.BindObjectAsync(&apos;___jsbObj___&apos;);
-        ///        ___jsbObj___.recv(data)
-        ///    })(data.data);
-        ///    return data
-        ///});
-        ///.
+        ///window[&apos;___commRecv___&apos;] = (async function (msg) {
+        ///    let fn = window[&apos;___jsbGlobal___&apos;][&apos;bindObjectAsync&apos;] ?? wind [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string wsListener {
+        public static string communicatorJs {
             get {
-                return ResourceManager.GetString("wsListener", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        public static string wsListenerObf {
-            get {
-                return ResourceManager.GetString("wsListenerObf", resourceCulture);
+                return ResourceManager.GetString("communicatorJs", resourceCulture);
             }
         }
     }

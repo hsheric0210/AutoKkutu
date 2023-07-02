@@ -7,7 +7,7 @@ public interface IGame : IDisposable
 {
 	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
-	WordCondition? CurrentPresentedWord { get; }
+	WordCondition? CurrentWordCondition { get; }
 	bool IsGameInProgress { get; }
 	bool IsMyTurn { get; }
 	BrowserBase Browser { get; }
@@ -33,7 +33,8 @@ public interface IGame : IDisposable
 	void ClickSubmitButton();
 	bool HasSameDomHandler(DomHandlerBase otherHandler);
 	bool HasSameWsSniffingHandler(WsHandlerBase otherHandler);
-	bool CheckPathExpired(PathFinderParameter path);
+	bool IsPathExpired(PathDetails path);
+	bool RescanIfPathExpired(PathDetails path);
 	void Start();
 	void Stop();
 	void UpdateChat(string input);

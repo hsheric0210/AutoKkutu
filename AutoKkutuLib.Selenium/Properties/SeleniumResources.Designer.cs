@@ -83,21 +83,9 @@ namespace AutoKkutuLib.Selenium.Properties {
         ///};
         ///___wsHoo [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string wsListener {
+        internal static string communicatorJs {
             get {
-                return ResourceManager.GetString("wsListener", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to /* ws_listener.
-        /// * Obfuscated by obfuscator.io
-        /// */
-        ///const _0x2ff4a7 = _0x24fd, _0x3e5f30 = _0x24fd; function _0x24fd(_0x3bf241, _0x2167ae) { const _0xe37b19 = _0x3bbc(); return _0x24fd = function (_0x36a8a5, _0x35bba9) { _0x36a8a5 = _0x36a8a5 - (-0x2 * 0x1173 + 0x13e8 * 0x1 + -0x6 * -0x29c); let _0x14d972 = _0xe37b19[_0x36a8a5]; return _0x14d972; }, _0x24fd(_0x3bf241, _0x2167ae); } function _0x3bbc() { const _0x7274cc = [&apos;424179ryDqgh&apos;, &apos;log&apos;, &apos;send&apos;, &apos;data&apos;, &apos;push&apos;, &apos;288657JPNyVs&apos;, &apos;onopen&apos;, &apos;395043rHiXK [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string wsListenerObf {
-            get {
-                return ResourceManager.GetString("wsListenerObf", resourceCulture);
+                return ResourceManager.GetString("communicatorJs", resourceCulture);
             }
         }
     }

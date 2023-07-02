@@ -103,7 +103,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
-			["source"] = nameRandom.ApplyTo(LibResources.wsHook + ';' + SeleniumResources.wsListener)
+			["source"] = nameRandom.ApplyTo(SeleniumResources.communicatorJs + ';' + LibResources.injectedJs)
 		});
 		Log.Information("Injected pre-load scripts.");
 		driver.Url = config.MainPage;

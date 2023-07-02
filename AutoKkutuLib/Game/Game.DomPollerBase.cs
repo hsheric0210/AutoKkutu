@@ -76,26 +76,26 @@ public partial class Game
 	/// <param name="cancelToken">실행 중단 및 반복 종료를 위한 위한 취소 토큰</param>
 	/// <param name="watchdogName"></param>
 	/// <returns></returns>
-	private async Task GameDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int intenseInterval = intenseInterval)
+	private async Task GameDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int interval = intenseInterval)
 	{
 		await BaseDomPoller(
 			action,
 			null,
 			ex => Log.Error(ex, "Game DomPoller '{0}' exception", watchdogName),
 			() => IsGameInProgress,
-			intenseInterval,
+			interval,
 			idleInterval,
 			cancelToken);
 	}
 
-	private async Task ConditionlessDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int intenseInterval = intenseInterval)
+	private async Task ConditionlessDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int interval = intenseInterval)
 	{
 		await BaseDomPoller(
 			action,
 			action,
 			ex => Log.Error(ex, "Condition-less DomPoller '{0}' exception.", watchdogName),
 			() => IsGameInProgress,
-			intenseInterval,
+			interval,
 			idleInterval,
 			cancelToken);
 	}

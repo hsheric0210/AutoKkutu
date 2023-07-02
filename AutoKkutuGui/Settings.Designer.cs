@@ -333,5 +333,101 @@ namespace AutoKkutuGui {
                 this["AutoDBAddEndEnabled"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool RandomWordSelection {
+            get {
+                return ((bool)(this["RandomWordSelection"]));
+            }
+            set {
+                this["RandomWordSelection"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int RandomWordSelectionCount {
+            get {
+                return ((int)(this["RandomWordSelectionCount"]));
+            }
+            set {
+                this["RandomWordSelectionCount"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SendKeyEvents {
+            get {
+                return ((bool)(this["SendKeyEvents"]));
+            }
+            set {
+                this["SendKeyEvents"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HijackACPackets {
+            get {
+                return ((bool)(this["HijackACPackets"]));
+            }
+            set {
+                this["HijackACPackets"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SimulateAntiCheat {
+            get {
+                return ((bool)(this["SimulateAntiCheat"]));
+            }
+            set {
+                this["SimulateAntiCheat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DetectInputLogging {
+            get {
+                return ((bool)(this["DetectInputLogging"]));
+            }
+            set {
+                this["DetectInputLogging"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LogChatting {
+            get {
+                return ((bool)(this["LogChatting"]));
+            }
+            set {
+                this["LogChatting"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SelfAntiCheat {
+            get {
+                return ((bool)(this["SelfAntiCheat"]));
+            }
+            set {
+                this["SelfAntiCheat"] = value;
+            }
+        }
     }
 }

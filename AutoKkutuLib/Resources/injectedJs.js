@@ -1,11 +1,4 @@
-/* eslint-disable no-proto */
-/* eslint-disable accessor-pairs */
-/* eslint-disable no-global-assign */
-
-/* wsHook.js
- * https://github.com/skepticfx/wshook
- * Reference: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
- * 
+/* injectedJs : AutoKkutu JavaScript injection
  * Reserved Names:
  * ___wsHook___
  * ___originalWS___
@@ -13,8 +6,18 @@
  * ___nativeSend___
  * ___nativeAddEventListener___
  * ___passthru___
+ * ___commSend___
+ * ___commRecv___
  */
-var ___wsHook___ = {};
+
+/* eslint-disable no-proto */
+/* eslint-disable accessor-pairs */
+/* eslint-disable no-global-assign */
+
+/* wsHook.js
+ * https://github.com/skepticfx/wshook
+ * Reference: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
+ */
 (function () {
     // Mutable MessageEvent.
     // Subclasses MessageEvent and makes data, origin and other MessageEvent properites mutatble.
@@ -39,27 +42,14 @@ var ___wsHook___ = {};
         this.__proto__ = o.__proto__ || MessageEvent.__proto__
     }
 
-    var before = ___wsHook___.before = function (data, modJson, wsObject) {
-        return data
-    }
-    var after = ___wsHook___.after = function (e, modJson, wsObject) {
-        return e
-    }
-    var modifyUrl = ___wsHook___.modifyUrl = function (url) {
-        return url
-    }
-    ___wsHook___.resetHooks = function () {
-        ___wsHook___.before = before
-        ___wsHook___.after = after
-        ___wsHook___.modifyUrl = modifyUrl
-    }
-
+    // Default message filter
     window['___wsFilter___'] = {
         'undefined': function (d) { return false; },
         'null': function (d) { return false; },
         'active': false
     };
 
+    // Message filter impl
     function checkFilter(data) {
         let filterActive = window['___wsFilter___'].active;
         let json = filterActive ? JSON.parse(data) : null;
@@ -71,14 +61,33 @@ var ___wsHook___ = {};
             return undefined
     }
 
+    // Message send handler
+    function sniffSend(d, modJson) {
+        (async function (data, modJson) {
+            await window['___commSend___'](modJson == null ? data : JSON.stringify(modJson))
+        })(d, modJson);
+        return d;
+    };
+
+    // Message receive handler
+    function sniffReceive(d, modJson) {
+        (async function (data, modJson) {
+            await window['___commRecv___'](modJson == null ? data : JSON.stringify(modJson))
+        })(d.data, modJson);
+        return d;
+    };
+
+
+    // Check WebSocket object and backup it
     if (!window.WebSocket) {
         console.log("WebSocket unavailable @", location)
     }
     let _WS = window.WebSocket
     window['___WSProtoBackup___'] = _WS?.prototype
 
+    // Fake property as native function. Completely undetectable.
     // https://stackoverflow.com/a/73156265
-    let fakeAsNative = function (func, name, customType) {
+    function fakeAsNative(func, name, customType) {
         return new Proxy(func, {
             get(target, prop, receiver) {
                 if (prop === "name") {
@@ -96,17 +105,18 @@ var ___wsHook___ = {};
         });
     }
 
-    let newSend = function (self, nativeSend) {
+    function makeSendHook(self, nativeSend) {
         return function (data) {
             if (!this['___passthru___']) {
                 let filtered = checkFilter(data);
                 if (filtered !== undefined)
-                    arguments[0] = ___wsHook___.before(data, filtered, self)
+                    arguments[0] = sniffSend(data, filtered)
             }
             nativeSend.apply(this, arguments)
         }
     }
-    let newAddEventListener = function (self, nativeAddEventListener) {
+
+    function makeAddEventListenerHook(self, nativeAddEventListener) {
         return function () {
             let eventThis = this
             if (!this['___passthru___'] && arguments[0] === 'message') {
@@ -114,7 +124,7 @@ var ___wsHook___ = {};
                     return function instrumentAddEventListener() {
                         let filtered = checkFilter(arguments[0].data);
                         if (filtered !== undefined)
-                            arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), filtered, self)
+                            arguments[0] = sniffReceive(new MutableMessageEvent(arguments[0]), filtered)
                         if (arguments[0] === null) return
                         userFunc.apply(eventThis, arguments)
                     }
@@ -123,28 +133,29 @@ var ___wsHook___ = {};
             return nativeAddEventListener.apply(this, arguments)
         }
     }
+
+    // Overwrite WebSocket object
     window.WebSocket = fakeAsNative(function (url, protocols) {
         let WSObject
-        url = ___wsHook___.modifyUrl(url) || url
         this.url = url
         this.protocols = protocols
         if (!this.protocols) { WSObject = new _WS(url) } else { WSObject = new _WS(url, protocols) }
 
-        WSObject.send = fakeAsNative(newSend(WSObject, _WS.prototype['___nativeSend___']), 'send')
+        WSObject.send = fakeAsNative(makeSendHook(WSObject, _WS.prototype['___nativeSend___']), 'send')
 
-        WSObject.addEventListener = fakeAsNative(newAddEventListener(WSObject, _WS.prototype.__proto__['___nativeAddEventListener___']), 'addEventListener')
+        WSObject.addEventListener = fakeAsNative(makeAddEventListenerHook(WSObject, _WS.prototype.__proto__['___nativeAddEventListener___']), 'addEventListener')
 
         // Events needs to be proxied and bubbled down.
         Object.defineProperty(WSObject, 'onmessage', {
             configurable: true,
             enumerable: true,
-            'set': function () {
+            'set': function () { // Overwrite 'onmessage' property setter
                 let eventThis = this
                 let userFunc = arguments[0]
                 let onMessageHandler = function () {
                     let filtered = checkFilter(arguments[0].data);
                     if (filtered !== undefined) {
-                        arguments[0] = ___wsHook___.after(new MutableMessageEvent(arguments[0]), filtered, WSObject)
+                        arguments[0] = sniffReceive(new MutableMessageEvent(arguments[0]), filtered)
                     }
                     if (arguments[0] === null) return
                     userFunc.apply(eventThis, arguments)
@@ -163,10 +174,12 @@ var ___wsHook___ = {};
             }
         })
 
+        window["___commSend___"](JSON.stringify({ "type": "Injected", "target": "WebSocket", "url": url }));
+
         return WSObject
     }, 'WebSocket', 'WebSocket')
 
-    // Create plain WebSocket which is not hooked
+    // Create backup vanilla WebSocket object (which bypasses hooks)
     window['___originalWS___'] = fakeAsNative(function (url, protocols) {
         let WSObject
         if (!protocols) { WSObject = new _WS(url) } else { WSObject = new _WS(url, protocols) }
@@ -174,15 +187,36 @@ var ___wsHook___ = {};
         return WSObject
     }, '___originalWS___', '___originalWS___')
 
+    // Overwrite WebSocket prototypes (make them unrecoverable)
     if (window['___WSProtoBackup___']) {
         // Overwrite default prototype
         window.WebSocket.prototype = window['___WSProtoBackup___']
 
         // Overwrite default prototype functions -> there is no way to bypass hook without correct '___passthru___' key, which is randomized every launch
         window.WebSocket.prototype['___nativeSend___'] = window['___WSProtoBackup___'].send;
-        window.WebSocket.prototype.send = fakeAsNative(newSend(window.WebSocket.prototype, window['___WSProtoBackup___']['___nativeSend___']), 'send');
+        window.WebSocket.prototype.send = fakeAsNative(makeSendHook(window.WebSocket.prototype, window['___WSProtoBackup___']['___nativeSend___']), 'send');
 
         window.WebSocket.prototype.__proto__['___nativeAddEventListener___'] = window['___WSProtoBackup___'].__proto__.addEventListener
-        window.WebSocket.prototype.addEventListener = fakeAsNative(newAddEventListener(window.WebSocket.prototype, window['___WSProtoBackup___'].__proto__['___nativeAddEventListener___']), 'addEventListener');
+        window.WebSocket.prototype.addEventListener = fakeAsNative(makeAddEventListenerHook(window.WebSocket.prototype, window['___WSProtoBackup___'].__proto__['___nativeAddEventListener___']), 'addEventListener');
     }
 })();
+
+/* axiosInterceptor.js
+ * 
+ * Reserved names:
+ * ___commSend___
+ */
+(function () {
+    addEventListener("DOMContentLoaded", () => {
+        if (window.hasOwnProperty('axios')) {
+            window["___commSend___"](JSON.stringify({ "type": "Injected", "target": "axios" }));
+            axios.interceptors.request.use(req => {
+                if (req.url == '/o/c') { // k****.c*.k* anticheat packet
+                    window["___commSend___"](JSON.stringify({ "type": "AC", "data": req.data }));
+                    return false; // cancel
+                }
+                return req;
+            }, err => { return Promise.reject(err); }, { synchronous: true });
+        }
+    });
+})()

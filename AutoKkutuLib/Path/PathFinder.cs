@@ -26,10 +26,10 @@ public class PathFinder
 	/// <param name="gameMode">단어를 검색할 게임 모드</param>
 	/// <param name="parameter">단어 검색 옵션</param>
 	/// <param name="preference">단어 검색 우선 순위</param>
-	public void FindPath(GameMode gameMode, PathFinderParameter parameter, WordPreference preference)
+	public void FindPath(GameMode gameMode, PathDetails parameter, WordPreference preference)
 	{
 		// TODO: This check could be moved to caller site
-		if (gameMode == GameMode.TypingBattle && !parameter.HasFlag(PathFinderFlags.ManualSearch))
+		if (gameMode == GameMode.TypingBattle && !parameter.HasFlag(PathFlags.ManualSearch))
 			return;
 
 		// TODO: This implementation could be moved to caller site
@@ -70,7 +70,7 @@ public class PathFinder
 		}
 	}
 
-	private void FindPathInternal(GameMode mode, PathFinderParameter parameter, WordPreference preference)
+	private void FindPathInternal(GameMode mode, PathDetails parameter, WordPreference preference)
 	{
 		var stopWatch = new Stopwatch();
 		stopWatch.Start();
@@ -80,7 +80,7 @@ public class PathFinder
 		try
 		{
 			totalWordList = nodeManager.DbConnection.Query.FindWord(mode, preference).Execute(parameter);
-			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.HasFlag(PathFinderFlags.UseAttackWord), parameter.HasFlag(PathFinderFlags.UseEndWord));
+			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.HasFlag(PathFlags.UseAttackWord), parameter.HasFlag(PathFlags.UseEndWord));
 		}
 		catch (Exception e)
 		{
@@ -108,7 +108,7 @@ public class PathFinder
 
 	public void GenerateRandomPath(
 		GameMode mode,
-		PathFinderParameter param)
+		PathDetails param)
 	{
 		var firstChar = mode == GameMode.LastAndFirstFree ? param.Condition.Char : "";
 

@@ -362,9 +362,9 @@ public partial class MainWindow : Window
 				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
 				: I18n.PathFinderError;
 		}
-		if (parameter.HasFlag(PathFinderFlags.UseEndWord))
+		if (parameter.HasFlag(PathFlags.UseEndWord))
 			SpecialFilterText += ", " + I18n.PathFinderEndWord;
-		if (parameter.HasFlag(PathFinderFlags.UseAttackWord))
+		if (parameter.HasFlag(PathFlags.UseAttackWord))
 			SpecialFilterText += ", " + I18n.PathFinderAttackWord;
 
 		var newSpecialFilterText = string.IsNullOrWhiteSpace(SpecialFilterText) ? string.Empty : string.Format(CultureInfo.CurrentCulture, I18n.PathFinderIncludedWord, SpecialFilterText[2..]);
@@ -419,11 +419,11 @@ public partial class MainWindow : Window
 
 			var missionChar = SearchMissionChar.Text;
 			if (string.IsNullOrWhiteSpace(missionChar))
-				missionChar = Main.AutoKkutu.Game.CurrentPresentedWord?.MissionChar;
+				missionChar = Main.AutoKkutu.Game.CurrentWordCondition?.MissionChar;
 
-			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathFinderParameter(
+			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
 				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "")),
-				Main.SetupPathFinderFlags(PathFinderFlags.ManualSearch),
+				Main.SetupPathFinderFlags(PathFlags.ManualSearch),
 				Main.Prefs.ReturnModeEnabled,
 				Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
 			SearchField.Text = "";

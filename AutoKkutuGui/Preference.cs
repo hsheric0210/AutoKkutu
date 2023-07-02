@@ -1,5 +1,6 @@
 ﻿using AutoKkutuLib;
 using System;
+using System.Windows.Documents;
 
 namespace AutoKkutuGui;
 
@@ -45,7 +46,7 @@ public class Preference
 		get; set;
 	}
 
-	public bool AttackWordAllowed
+	public bool AttackWordEnabled
 	{
 		get; set;
 	} = true;
@@ -80,7 +81,7 @@ public class Preference
 		get; set;
 	} = 10;
 
-	public bool DelayStartAfterCharEnterEnabled
+	public bool DelayStartAfterWordEnterEnabled
 	{
 		get; set;
 	} = true;
@@ -110,8 +111,83 @@ public class Preference
 		get; set;
 	} = 10;
 
+	public bool RandomWordSelection
+	{
+		get; set;
+	} = true;
+
+	public int RandomWordSelectionCount
+	{
+		get; set;
+	} = 5;
+
+	public bool SendKeyEvents
+	{
+		get; set;
+	} = true;
+
+	public bool HijackACPackets
+	{
+		get; set;
+	}
+
+	public bool SimulateAntiCheat
+	{
+		get; set;
+	}
+
+	public bool DetectInputLogging
+	{
+		get; set;
+	}
+
+	public bool LogChatting
+	{
+		get; set;
+	}
+
+	public bool SelfAntiCheat
+	{
+		get; set;
+	}
+
 	public Preference()
 	{
+	}
+
+	internal Preference(Settings config)
+	{
+		// 1. Copy ConfigWindow.xaml.cs L135-163
+		// 2. Regex: /config\.([\w]+) = conf\.([\w]+)/     Replace: $1 = config.$2
+		LogChatting = config.LogChatting;
+		DelayEnabled = config.DelayEnabled;
+		DelayInMillis = config.DelayInMillis;
+		InputSimulate = config.InputSimulate;
+		SendKeyEvents = config.SendKeyEvents;
+		SelfAntiCheat = config.SelfAntiCheat;
+		EndWordEnabled = config.EndWordEnabled;
+		AutoFixEnabled = config.AutoFixEnabled;
+		FixDelayEnabled = config.FixDelayEnabled;
+		HijackACPackets = config.HijackACPackets;
+		FixDelayInMillis = config.FixDelayInMillis;
+		AutoEnterEnabled = config.AutoEnterEnabled;
+		ReturnModeEnabled = config.ReturnModeEnabled;
+		AttackWordEnabled = config.AttackWordEnabled;
+		SimulateAntiCheat = config.SimulateAntiCheat;
+		DetectInputLogging = config.DetectInputLogging;
+		DelayPerCharEnabled = config.DelayPerCharEnabled;
+		AutoDBUpdateEnabled = config.AutoDBUpdateEnabled;
+		AutoDBAddEndEnabled = config.AutoDBAddEndEnabled;
+		RandomWordSelection = config.RandomWordSelection;
+		AutoDBWordAddEnabled = config.AutoDBWordAddEnabled;
+		ActiveWordPreference = config.ActiveWordPreference;
+		MaxDisplayedWordCount = config.MaxDisplayedWordCount;
+		InactiveWordPreference = config.InactiveWordPreference;
+		FixDelayPerCharEnabled = config.FixDelayPerCharEnabled;
+		AutoDBWordRemoveEnabled = config.AutoDBWordRemoveEnabled;
+		RandomWordSelectionCount = config.RandomWordSelectionCount;
+		MissionAutoDetectionEnabled = config.MissionAutoDetectionEnabled;
+		DelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
 	}
 
 	public override int GetHashCode() => HashCode.Combine(HashCode.Combine(
@@ -125,33 +201,49 @@ public class Preference
 			DelayEnabled,
 			DelayPerCharEnabled,
 			DelayInMillis,
-			DelayStartAfterCharEnterEnabled,
+			DelayStartAfterWordEnterEnabled,
 			MaxDisplayedWordCount,
-			InputSimulate));
+			InputSimulate,
+			HashCode.Combine(RandomWordSelection,
+			RandomWordSelectionCount,
+			SendKeyEvents,
+			HijackACPackets,
+			SimulateAntiCheat,
+			DetectInputLogging,
+			LogChatting,
+			SelfAntiCheat)));
 
 	public override bool Equals(object? obj)
 	{
 		if (obj is not Preference other)
 			return false;
 
-		return DelayEnabled == other.DelayEnabled
+		return LogChatting == other.LogChatting
+			&& DelayEnabled == other.DelayEnabled
 			&& DelayInMillis == other.DelayInMillis
 			&& InputSimulate == other.InputSimulate
+			&& SendKeyEvents == other.SendKeyEvents
+			&& SelfAntiCheat == other.SelfAntiCheat
 			&& AutoFixEnabled == other.AutoFixEnabled
 			&& EndWordEnabled == other.EndWordEnabled
 			&& FixDelayEnabled == other.FixDelayEnabled
+			&& HijackACPackets == other.HijackACPackets
 			&& AutoEnterEnabled == other.AutoEnterEnabled
 			&& FixDelayInMillis == other.FixDelayInMillis
-			&& AttackWordAllowed == other.AttackWordAllowed
+			&& AttackWordEnabled == other.AttackWordEnabled
 			&& ReturnModeEnabled == other.ReturnModeEnabled
+			&& SimulateAntiCheat == other.SimulateAntiCheat
+			&& DetectInputLogging == other.DetectInputLogging
 			&& AutoDBUpdateEnabled == other.AutoDBUpdateEnabled
 			&& DelayPerCharEnabled == other.DelayPerCharEnabled
+			&& RandomWordSelection == other.RandomWordSelection
 			&& ActiveWordPreference == other.ActiveWordPreference
 			&& MaxDisplayedWordCount == other.MaxDisplayedWordCount
 			&& InactiveWordPreference == other.InactiveWordPreference
 			&& FixDelayPerCharEnabled == other.FixDelayPerCharEnabled
+			&& RandomWordSelectionCount == other.RandomWordSelectionCount
 			&& MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled
-			&& DelayStartAfterCharEnterEnabled == other.DelayStartAfterCharEnterEnabled;
+			&& DelayStartAfterWordEnterEnabled == other.DelayStartAfterWordEnterEnabled;
 	}
 }
 

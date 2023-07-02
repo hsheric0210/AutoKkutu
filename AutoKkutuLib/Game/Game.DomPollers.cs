@@ -14,7 +14,7 @@ public partial class Game
 
 		try
 		{
-			mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", primaryInterval), token);
+			mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", looseInterval), token);
 			mainPoller.Start();
 
 			Task.Run(async () => await BaseDomPoller(
@@ -34,9 +34,9 @@ public partial class Game
 				idleInterval,
 				token));
 
-			Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller"));
+			Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller", looseInterval));
 			Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
-			Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller"));
+			Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller", looseInterval));
 			Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
 		}
 		catch { }

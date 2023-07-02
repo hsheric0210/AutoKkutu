@@ -81,7 +81,7 @@ public partial class Game
 				return;
 
 			Log.Information("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
-			CurrentPresentedWord = wordCondition;
+			CurrentWordCondition = wordCondition;
 			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition));
 
 			return;

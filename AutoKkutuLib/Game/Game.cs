@@ -13,7 +13,7 @@ public partial class Game : IGame
 
 	#region Game status properties
 
-	public WordCondition? CurrentPresentedWord { get; private set; }
+	public WordCondition? CurrentWordCondition { get; private set; }
 
 	public GameMode CurrentGameMode { get; private set; } = GameMode.LastAndFirst;
 
@@ -31,8 +31,8 @@ public partial class Game : IGame
 
 	#region Internal states
 	private const int idleInterval = 3000;
+	private const int looseInterval = 100;
 	private const int intenseInterval = 10;
-	private const int primaryInterval = 100;
 	private bool active;
 	private string lastChat = "";
 
@@ -104,21 +104,17 @@ public partial class Game : IGame
 
 	public int GetTurnTimeMillis() => GetTurnTimeMillisAsync().Result;
 
-	public bool CheckPathExpired(PathFinderParameter path)
-	{
-		if (path.HasFlag(PathFinderFlags.ManualSearch))
-			return true;
+	public bool IsPathExpired(PathDetails path) => !path.HasFlag(PathFlags.ManualSearch) && CurrentWordCondition != null && !path.Condition.Equals(CurrentWordCondition);
 
-		if (CurrentPresentedWord != null && !path.Condition.Equals(CurrentPresentedWord))
+	public bool RescanIfPathExpired(PathDetails path)
+	{
+		if (IsPathExpired(path))
 		{
-			if (!path.HasFlag(PathFinderFlags.NoRescan))
-			{
-				Log.Warning(I18n.PathFinder_InvalidatedUpdate);
-				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentPresentedWord!)); // Re-trigger search
-			}
-			return false;
+			Log.Warning(I18n.PathFinder_InvalidatedUpdate);
+			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentWordCondition!)); // Re-trigger search
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	public void UpdateChat(string input)

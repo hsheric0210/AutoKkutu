@@ -13,7 +13,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 	private readonly WordFlags endWordFlag;
 	private readonly WordFlags attackWordFlag;
 
-	public PathFinderParameter? Parameter { get; set; }
+	public PathDetails? Parameter { get; set; }
 
 	internal FindWordQuery(AbstractDatabaseConnection connection, GameMode mode, WordPreference preference) : base(connection)
 	{
@@ -52,7 +52,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 		}
 	}
 
-	public IImmutableList<PathObject> Execute(PathFinderParameter parameter)
+	public IImmutableList<PathObject> Execute(PathDetails parameter)
 	{
 		Parameter = parameter;
 		return Execute();
@@ -60,7 +60,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 
 	public override IImmutableList<PathObject> Execute()
 	{
-		if (Parameter is not PathFinderParameter param)
+		if (Parameter is not PathDetails param)
 			throw new InvalidOperationException(nameof(Parameter) + " not set.");
 
 		Log.Debug(nameof(FindWordQuery) + ": Finding the optimal word list for {0}.", param);
@@ -134,7 +134,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 		return DatabaseConstants.WordIndexColumnName;
 	}
 
-	private FindQuery CreateQuery(PathFinderParameter parameter)
+	private FindQuery CreateQuery(PathDetails parameter)
 	{
 		var param = new Dictionary<string, object>();
 
@@ -156,11 +156,11 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 			}
 
 			// Use end-words?
-			if (!parameter.HasFlag(PathFinderFlags.UseEndWord))
+			if (!parameter.HasFlag(PathFlags.UseEndWord))
 				ApplyExclusionFilter(endWordFlag, ref filter);
 
 			// Use attack-words?
-			if (!parameter.HasFlag(PathFinderFlags.UseAttackWord))
+			if (!parameter.HasFlag(PathFlags.UseAttackWord))
 				ApplyExclusionFilter(attackWordFlag, ref filter);
 
 			// Only KungKungTta words if we're on KungKungTta mode
