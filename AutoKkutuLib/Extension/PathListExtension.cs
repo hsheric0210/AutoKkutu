@@ -22,7 +22,7 @@ public static class PathListExtension
 		if (delay.DelayPerCharEnabled)
 		{
 			var remain = Math.Max(300, remainingTurnTime);
-			Log.Debug("(TimeFilter) turnTime={time}, clamped={cTime}", remainingTurnTime, remain);
+			Log.Verbose("(TimeFilter) turnTime={time}, clamped={cTime}", remainingTurnTime, remain);
 			PathObject[] arr = availableWordList.Where(po => po!.Content.Length * delay.DelayInMillis <= remain).ToArray();
 			var word = arr.Length <= wordIndex ? null : arr[wordIndex].Content;
 			if (word == null)
@@ -31,7 +31,7 @@ public static class PathListExtension
 
 				PathObject? closest = availableWordList.MinBy(w => w!.Content.Length * delay.DelayInMillis);
 				if (closest != null)
-					Log.Warning("(TimeFilter) Closest word to the delay: {word} (time: {time})", closest.Content, closest.Content.Length * delay.DelayInMillis);
+					Log.Verbose("(TimeFilter) Closest word to the delay: {word} (time: {time})", closest.Content, closest.Content.Length * delay.DelayInMillis);
 
 				return (null, true);
 			}

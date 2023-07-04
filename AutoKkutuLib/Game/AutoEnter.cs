@@ -68,7 +68,7 @@ public class AutoEnter
 	/// <param name="detail">검색 조건 상세 내용</param>
 	/// <param name="checkTurn">현재 턴이 내 턴인지 검사 수행 여부</param>
 	/// <returns>자동 입력을 계속 이어나갈 수 있는지의 여부</returns>
-	private bool CanPerformAutoEnterNow(PathDetails? detail, bool checkTurn = true) => game.IsGameInProgress && (!checkTurn || game.IsMyTurn) && (detail is not PathDetails _detail || game.RescanIfPathExpired(_detail.WithFlags(PathFlags.DryRun)));
+	private bool CanPerformAutoEnterNow(PathDetails? detail, bool checkTurn = true) => game.IsGameInProgress && (!checkTurn || game.IsMyTurn) && (detail is not PathDetails _detail || !game.RescanIfPathExpired(_detail.WithFlags(PathFlags.DryRun)));
 
 	#region AutoEnter starter
 	/// <summary>
@@ -130,7 +130,7 @@ public class AutoEnter
 		else if (!pre)
 		{
 			// Enter immediately
-			PerformAutoEnterNow(param.Content, param.PathInfo, param.WordIndex);
+			PerformAutoEnterNow(param.Content, param.PathInfo);
 		}
 	}
 
@@ -164,7 +164,7 @@ public class AutoEnter
 			else
 			{
 				// Run synchronously
-				PerformAutoEnterNow(content, null, parameter.WordIndex);
+				PerformAutoEnterNow(content, null);
 			}
 		}
 		catch (Exception ex)
@@ -175,31 +175,32 @@ public class AutoEnter
 	#endregion
 
 	#region AutoEnter delay task proc.
-	private async Task AutoEnterDelayTask(AutoEnterInfo info)
+	private async Task AutoEnterDelayTask(AutoEnterInfo param)
 	{
-		if (string.IsNullOrWhiteSpace(info.Content))
+		if (string.IsNullOrWhiteSpace(param.Content))
 			return;
 
-
-		if (info.Options.SimulateInput)
+		if (param.Options.SimulateInput)
 		{
-			Log.Error("#!~# Begin input sim.");
-			await PerformInputSimulationAutoEnter(info);
-			AutoEntered?.Invoke(this, new AutoEnterEventArgs(info.Content));
+			await PerformInputSimulationAutoEnter(param);
+			AutoEntered?.Invoke(this, new AutoEnterEventArgs(param.Content));
 		}
-		else if (!info.HasFlag(PathFlags.PreSearch)) // Pre-search result should not be auto-entered immediately (mostly because my turn hadn't come yet)
+		else if (!param.HasFlag(PathFlags.PreSearch)) // Pre-search result should not be auto-entered immediately (mostly because my turn hadn't come yet)
 		{
-			var delay = info.RealDelay;
+			var delay = param.RealDelay;
 			var delayBetweenInput = (int)(delay - InputStopwatch.ElapsedMilliseconds);
 			delay = Math.Max(delay, delayBetweenInput); // Failsafe to prevent way-too-fast input
-			Log.Information("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", info.RealDelay, delayBetweenInput, delay);
+			Log.Debug("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", param.RealDelay, delayBetweenInput, delay);
 			await Task.Delay(delay);
-			PerformAutoEnterNow(info.Content, info.PathInfo, info.WordIndex);
+			PerformAutoEnterNow(param.Content, param.PathInfo);
 		}
 	}
 
 	private async Task AutoEnterDynamicDelayTask(AutoEnterInfo param)
 	{
+		if (string.IsNullOrWhiteSpace(param.Content))
+			return;
+
 		var delay = param.RealDelay;
 		var _delay = 0;
 		if (InputStopwatch.ElapsedMilliseconds <= delay)
@@ -215,19 +216,18 @@ public class AutoEnter
 		}
 		else if (!param.HasFlag(PathFlags.PreSearch)) // Pre-search result should not be auto-entered immediately (mostly because my turn hadn't come yet)
 		{
-			PerformAutoEnterNow(param.Content, param.PathInfo, param.WordIndex);
+			PerformAutoEnterNow(param.Content, param.PathInfo);
 		}
 	}
 	#endregion
 
 	#region AutoEnter performer
-	private void PerformAutoEnterNow(string content, PathDetails? path, int pathIndex)
+	private void PerformAutoEnterNow(string content, PathDetails? path)
 	{
 		if (!CanPerformAutoEnterNow(path))
 			return;
 
-		Log.Warning("Immediately Auto-entered: {word}", content);
-		//Log.Information(I18n.Main_AutoEnter, pathIndex, content);
+		Log.Information(I18n.Main_AutoEnter, content);
 
 		game.UpdateChat(content);
 		game.ClickSubmitButton();

@@ -50,7 +50,7 @@ public partial class Game
 		if (gameMode == CurrentGameMode)
 			return;
 		CurrentGameMode = gameMode;
-		Log.Information("Game mode change detected : {gameMode}", gameMode.GameModeName());
+		Log.Debug("Game mode change detected : {gameMode}", gameMode.GameModeName());
 		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 	}
 
@@ -60,7 +60,7 @@ public partial class Game
 			return;
 
 		turnHintWordCache = hint;
-		Log.Information("Path example detected : {word}", hint);
+		Log.Debug("Path example detected : {word}", hint);
 		ExampleWordPresented?.Invoke(this, new WordPresentEventArgs(hint));
 	}
 
@@ -80,7 +80,7 @@ public partial class Game
 			if (wordCondition == null)
 				return;
 
-			Log.Information("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
+			Log.Debug("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
 			CurrentWordCondition = wordCondition;
 			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition));
 
@@ -114,7 +114,7 @@ public partial class Game
 		wordHistoryCache = null;
 		wordHistoriesCache = null;
 
-		Log.Information("Round Changed : {0}", roundIndex);
+		Log.Debug("Round Changed : {0}", roundIndex);
 		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));
 	}
 
@@ -140,7 +140,7 @@ public partial class Game
 		{
 			if (!string.IsNullOrWhiteSpace(historyElement) && historyElement != wordHistoryCache /*WebSocket에 의한 단어 수신이 DOM 업데이트보다 더 먼저 일어나기에 이러한 코드가 작동 가능하다.*/ && (wordHistoriesCache == null || !wordHistoriesCache.Contains(historyElement)))
 			{
-				Log.Information("DOM: Found new used word in history : {word}", historyElement);
+				Log.Debug("DOM: Found new used word in history : {word}", historyElement);
 				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(historyElement));
 			}
 		}
@@ -154,7 +154,7 @@ public partial class Game
 		if (wordHistoryCache?.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase) == true)
 			return;
 
-		Log.Information("WS: Found new used word in history : {word}", newHistoryElement);
+		Log.Debug("WS: Found new used word in history : {word}", newHistoryElement);
 		DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(newHistoryElement));
 	}
 }

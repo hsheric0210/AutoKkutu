@@ -98,14 +98,14 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
-		Log.Verbose("Name randomization: {nameRandom}", nameRandom);
+		Log.Debug("Name randomization: {nameRandom}", nameRandom);
 
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
 			["source"] = nameRandom.ApplyTo(SeleniumResources.communicatorJs + ';' + LibResources.injectedJs)
 		});
-		Log.Information("Injected pre-load scripts.");
+		Log.Verbose("Injected pre-load scripts.");
 		driver.Url = config.MainPage;
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
+    <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,442 +59,442 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
             <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
             </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="AllocConsoleFailed" xml:space="preserve">
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="AllocConsoleFailed" xml:space="preserve">
     <value>Failed to AllocConsole() : Error code {0}</value>
     <comment>0: Error code</comment>
   </data>
-  <data name="AutoDBUpdate_OnGameEnd" xml:space="preserve">
+    <data name="AutoDBUpdate_OnGameEnd" xml:space="preserve">
     <value>When a game finished</value>
   </data>
-  <data name="AutoDBUpdate_OnRoundEnd" xml:space="preserve">
+    <data name="AutoDBUpdate_OnRoundEnd" xml:space="preserve">
     <value>When a round finished</value>
   </data>
-  <data name="Auto_NoMorePathAvailable" xml:space="preserve">
+    <data name="Auto_NoMorePathAvailable" xml:space="preserve">
     <value>Auto mode enabled, but can't find any path.</value>
   </data>
-  <data name="Auto_TimeOver" xml:space="preserve">
+    <data name="Auto_TimeOver" xml:space="preserve">
     <value>Auto mode enabled, found path, but there's no word submittable in time.</value>
   </data>
-  <data name="BatchJob_CheckOnline" xml:space="preserve">
+    <data name="BatchJob_CheckOnline" xml:space="preserve">
     <value>Finding {word} in kkutu dictionary...</value>
     <comment>word: The word</comment>
   </data>
-  <data name="BatchJob_CheckOnline_Found" xml:space="preserve">
+    <data name="BatchJob_CheckOnline_Found" xml:space="preserve">
     <value>Successfully Find {word} in kkutu dict.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="BatchJob_CheckOnline_InvalidResponse" xml:space="preserve">
+    <data name="BatchJob_CheckOnline_InvalidResponse" xml:space="preserve">
     <value>Invaild server response. Resend the request.</value>
   </data>
-  <data name="BatchJob_CheckOnline_NotFound" xml:space="preserve">
+    <data name="BatchJob_CheckOnline_NotFound" xml:space="preserve">
     <value>Can't find {word} in kkutu dict.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="BatchJob_CheckOnline_Response" xml:space="preserve">
+    <data name="BatchJob_CheckOnline_Response" xml:space="preserve">
     <value>Server Response : {response}</value>
     <comment>response: The server response</comment>
   </data>
-  <data name="ConsoleIntroduction" xml:space="preserve">
+    <data name="ConsoleIntroduction" xml:space="preserve">
     <value>Logging console enabled where debugging is not enabled</value>
   </data>
-  <data name="DeleteConsoleMenuFailed" xml:space="preserve">
+    <data name="DeleteConsoleMenuFailed" xml:space="preserve">
     <value>Failed to call console DeleteMenu() : Error code {0}</value>
     <comment>0: Error code</comment>
   </data>
-  <data name="Disabled" xml:space="preserve">
+    <data name="Disabled" xml:space="preserve">
     <value>Disabled</value>
   </data>
-  <data name="Enabled" xml:space="preserve">
+    <data name="Enabled" xml:space="preserve">
     <value>Enabled</value>
   </data>
-  <data name="GameMode_All" xml:space="preserve">
+    <data name="GameMode_All" xml:space="preserve">
     <value>All words</value>
   </data>
-  <data name="GameMode_FirstAndLast" xml:space="preserve">
+    <data name="GameMode_FirstAndLast" xml:space="preserve">
     <value>First and Last</value>
   </data>
-  <data name="GameMode_Free" xml:space="preserve">
+    <data name="GameMode_Free" xml:space="preserve">
     <value>Free</value>
   </data>
-  <data name="GameMode_Kkutu" xml:space="preserve">
+    <data name="GameMode_Kkutu" xml:space="preserve">
     <value>Kkutu</value>
   </data>
-  <data name="GameMode_KungKungTta" xml:space="preserve">
+    <data name="GameMode_KungKungTta" xml:space="preserve">
     <value>KungKungTta</value>
   </data>
-  <data name="GameMode_LastAndFirst" xml:space="preserve">
+    <data name="GameMode_LastAndFirst" xml:space="preserve">
     <value>Last and First</value>
   </data>
-  <data name="GameMode_LastAndFirstFree" xml:space="preserve">
+    <data name="GameMode_LastAndFirstFree" xml:space="preserve">
     <value>Free Last and First</value>
   </data>
-  <data name="GameMode_MiddleAndFirst" xml:space="preserve">
+    <data name="GameMode_MiddleAndFirst" xml:space="preserve">
     <value>Middle and First</value>
   </data>
-  <data name="GameMode_TypingBattle" xml:space="preserve">
+    <data name="GameMode_TypingBattle" xml:space="preserve">
     <value>Typing battle</value>
   </data>
-  <data name="HandlerRegistry_Unregistered" xml:space="preserve">
+    <data name="HandlerRegistry_Unregistered" xml:space="preserve">
     <value>Unregistered previous handler: {0}</value>
     <comment>0: Handler ID</comment>
   </data>
-  <data name="Main_AutoEnter" xml:space="preserve">
-    <value>Auto-enter enabled. automatically use {attr} path: {word}</value>
+    <data name="Main_AutoEnter" xml:space="preserve">
+    <value>Auto-entering path: {word}</value>
     <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
-  <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
+    <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
     <value>Browser frame-load end.</value>
   </data>
-  <data name="Main_ClipboardSubmitException" xml:space="preserve">
+    <data name="Main_ClipboardSubmitException" xml:space="preserve">
     <value>Can't submit clipboard text.</value>
   </data>
-  <data name="Main_ClosingDBConnection" xml:space="preserve">
+    <data name="Main_ClosingDBConnection" xml:space="preserve">
     <value>Closing database connection...</value>
   </data>
-  <data name="Main_ColorPrefsUpdated" xml:space="preserve">
+    <data name="Main_ColorPrefsUpdated" xml:space="preserve">
     <value>Updated color preferences.</value>
   </data>
-  <data name="Main_ConfigLoadException" xml:space="preserve">
+    <data name="Main_ConfigLoadException" xml:space="preserve">
     <value>Failed to load configurations.</value>
   </data>
-  <data name="Main_ConfigUpdated" xml:space="preserve">
+    <data name="Main_ConfigUpdated" xml:space="preserve">
     <value>Updated configurations.</value>
   </data>
-  <data name="Main_DBConfigException" xml:space="preserve">
+    <data name="Main_DBConfigException" xml:space="preserve">
     <value>Error loading database.config</value>
   </data>
-  <data name="Main_GameModeUpdated" xml:space="preserve">
+    <data name="Main_GameModeUpdated" xml:space="preserve">
     <value>Automatically updated game mode to {gameMode}</value>
     <comment>gameMode: The updated game mode</comment>
   </data>
-  <data name="Main_GameResultWriteException" xml:space="preserve">
+    <data name="Main_GameResultWriteException" xml:space="preserve">
     <value>Failed to write game result.</value>
   </data>
-  <data name="Main_Initialization" xml:space="preserve">
+    <data name="Main_Initialization" xml:space="preserve">
     <value>{0} initialization took {1}ms.</value>
     <comment>0: Module name, 1: Elapsed time in millis</comment>
   </data>
-  <data name="Main_InputSimulating" xml:space="preserve">
+    <data name="Main_InputSimulating" xml:space="preserve">
     <value>Simulating {attr:l} word input: {word}</value>
     <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
-  <data name="Main_InputSimulationAborted" xml:space="preserve">
+    <data name="Main_InputSimulationAborted" xml:space="preserve">
     <value>Input simulation of {attr:l} word aborted: {words}</value>
     <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
-  <data name="Main_InputSimulationFinished" xml:space="preserve">
+    <data name="Main_InputSimulationFinished" xml:space="preserve">
     <value>Input simulation of {attr:l} word finished: {word}</value>
     <comment>attr: Word explanation (Optimal, next), word: The word</comment>
   </data>
-  <data name="Main_MyPathIsUnsupported" xml:space="preserve">
+    <data name="Main_MyPathIsUnsupported" xml:space="preserve">
     <value>My path {word} was confirmed unsupported.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="Main_Next" xml:space="preserve">
+    <data name="Main_Next" xml:space="preserve">
     <value>next</value>
   </data>
-  <data name="Main_NoMorePathAvailable" xml:space="preserve">
+    <data name="Main_NoMorePathAvailable" xml:space="preserve">
     <value>There's no path available.</value>
   </data>
-  <data name="Main_Optimal" xml:space="preserve">
+    <data name="Main_Optimal" xml:space="preserve">
     <value>optimal</value>
   </data>
-  <data name="Main_PathSubmitException" xml:space="preserve">
+    <data name="Main_PathSubmitException" xml:space="preserve">
     <value>Can't submit path due exception.</value>
   </data>
-  <data name="Main_PathSubmitted" xml:space="preserve">
+    <data name="Main_PathSubmitted" xml:space="preserve">
     <value>Path submitted: {word}.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="Main_PathUpdateReceived" xml:space="preserve">
+    <data name="Main_PathUpdateReceived" xml:space="preserve">
     <value>Path update received.</value>
   </data>
-  <data name="Main_Presented" xml:space="preserve">
+    <data name="Main_Presented" xml:space="preserve">
     <value>presented</value>
   </data>
-  <data name="Main_ResetPathList" xml:space="preserve">
+    <data name="Main_ResetPathList" xml:space="preserve">
     <value>Reset path list... </value>
   </data>
-  <data name="Main_StartLoad" xml:space="preserve">
+    <data name="Main_StartLoad" xml:space="preserve">
     <value>Start loading page...</value>
   </data>
-  <data name="Main_UnsupportedURL" xml:space="preserve">
+    <data name="Main_UnsupportedURL" xml:space="preserve">
     <value>Unsupported site: {url}</value>
     <comment>url: The site url</comment>
   </data>
-  <data name="Main_UnsupportedWord_Existent" xml:space="preserve">
+    <data name="Main_UnsupportedWord_Existent" xml:space="preserve">
     <value>Entered word {word} is exists but not supported, added to unsupported list.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="Main_UnsupportedWord_Inexistent" xml:space="preserve">
+    <data name="Main_UnsupportedWord_Inexistent" xml:space="preserve">
     <value>Entered word {word} is inexistent, added to removal list.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="Main_UseHandler" xml:space="preserve">
+    <data name="Main_UseHandler" xml:space="preserve">
     <value>Using handler: {0}</value>
     <comment>0: Handler ID</comment>
   </data>
-  <data name="Main_WaitingSubmit" xml:space="preserve">
+    <data name="Main_WaitingSubmit" xml:space="preserve">
     <value>Waiting {0}ms before entering path.</value>
     <comment>0: Delay</comment>
   </data>
-  <data name="Main_WaitingSubmitNext" xml:space="preserve">
+    <data name="Main_WaitingSubmitNext" xml:space="preserve">
     <value>Waiting {0}ms before submitting next path.</value>
     <comment>0: Delay</comment>
   </data>
-  <data name="Main_WordIndexReset" xml:space="preserve">
+    <data name="Main_WordIndexReset" xml:space="preserve">
     <value>Reset WordIndex to zero.</value>
   </data>
-  <data name="PathFinderAttackWord" xml:space="preserve">
+    <data name="PathFinderAttackWord" xml:space="preserve">
     <value>Attack</value>
   </data>
-  <data name="PathFinderEndWord" xml:space="preserve">
+    <data name="PathFinderEndWord" xml:space="preserve">
     <value>End</value>
   </data>
-  <data name="PathFinderError" xml:space="preserve">
+    <data name="PathFinderError" xml:space="preserve">
     <value>Failed to find word due to exception.</value>
   </data>
-  <data name="PathFinderFailed_Endword" xml:space="preserve">
+    <data name="PathFinderFailed_Endword" xml:space="preserve">
     <value>Can't find any path : Presented word is end word.</value>
   </data>
-  <data name="PathFinderFailed_Exception" xml:space="preserve">
+    <data name="PathFinderFailed_Exception" xml:space="preserve">
     <value>Can't find path due exception.</value>
   </data>
-  <data name="PathFinderFound" xml:space="preserve">
+    <data name="PathFinderFound" xml:space="preserve">
     <value>Found {0} total, {1} feasible.</value>
     <comment>0: Total word count, 1: Feasible word count</comment>
   </data>
-  <data name="PathFinderFoundButEmpty" xml:space="preserve">
+    <data name="PathFinderFoundButEmpty" xml:space="preserve">
     <value>Found total {0}, but none of them are feasible.</value>
     <comment>0: Total word count</comment>
   </data>
-  <data name="PathFinderIncludedWord" xml:space="preserve">
+    <data name="PathFinderIncludedWord" xml:space="preserve">
     <value>{0} word(s) used.</value>
     <comment>0: Included word type(s)</comment>
   </data>
-  <data name="PathFinderSearchOverview" xml:space="preserve">
+    <data name="PathFinderSearchOverview" xml:space="preserve">
     <value>Search result for {0}</value>
     <comment>0: Search overview messages</comment>
   </data>
-  <data name="PathFinderSearchOverview_MissionChar" xml:space="preserve">
+    <data name="PathFinderSearchOverview_MissionChar" xml:space="preserve">
     <value>{0}, mission char '{1}'</value>
     <comment>0: Character filter, etc.</comment>
   </data>
-  <data name="PathFinderSearchOverview_Or" xml:space="preserve">
+    <data name="PathFinderSearchOverview_Or" xml:space="preserve">
     <value>{0} or {1}</value>
     <comment>0: Substituation word</comment>
   </data>
-  <data name="PathFinderTookTime" xml:space="preserve">
+    <data name="PathFinderTookTime" xml:space="preserve">
     <value>Took {0}ms.</value>
     <comment>0: Elapsed time in millis</comment>
   </data>
-  <data name="PathFinderUnavailable" xml:space="preserve">
+    <data name="PathFinderUnavailable" xml:space="preserve">
     <value>No available word found.</value>
   </data>
-  <data name="PathFinderWaiting" xml:space="preserve">
+    <data name="PathFinderWaiting" xml:space="preserve">
     <value>Waiting...</value>
   </data>
-  <data name="PathFinder_AddNode" xml:space="preserve">
+    <data name="PathFinder_AddNode" xml:space="preserve">
     <value>Added new {0} node '{1}'</value>
     <comment>0: Node type, 1: The node</comment>
   </data>
-  <data name="PathFinder_AddPath" xml:space="preserve">
+    <data name="PathFinder_AddPath" xml:space="preserve">
     <value>Check and add {word} into database. (flags: {flags})</value>
     <comment>word: The word, flags: Word flags</comment>
   </data>
-  <data name="PathFinder_AddPath_Failed" xml:space="preserve">
+    <data name="PathFinder_AddPath_Failed" xml:space="preserve">
     <value>Can't add {word} to database.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="PathFinder_AddPath_Success" xml:space="preserve">
+    <data name="PathFinder_AddPath_Success" xml:space="preserve">
     <value>Added {word} into database.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate" xml:space="preserve">
     <value>Automatically updating the database based on last game.</value>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Empty" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Empty" xml:space="preserve">
     <value>No such element in autoupdate list.</value>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Finished" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Finished" xml:space="preserve">
     <value>Automatic database update finished: {0}</value>
     <comment>0: The result</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate_New" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_New" xml:space="preserve">
     <value>Got {0} elements from NewPathList.</value>
     <comment>0: Element count</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Remove" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Remove" xml:space="preserve">
     <value>Got {0} elements from WrongPathList.</value>
     <comment>0: Element count</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
     <value>{0} of {1} word(s) added, {2} of {3} word(s) removed, {4} of {5} end-node(s) added.</value>
     <comment>0: Added path count, 1: New path count, 2: Removed path count, 3: Inexistent path count</comment>
   </data>
-  <data name="PathFinder_FindPath" xml:space="preserve">
+    <data name="PathFinder_FindPath" xml:space="preserve">
     <value>Finding path for {word}.</value>
     <comment>word: The word</comment>
   </data>
-  <data name="PathFinder_FindPath_Error" xml:space="preserve">
+    <data name="PathFinder_FindPath_Error" xml:space="preserve">
     <value>Failed to find path.</value>
   </data>
-  <data name="PathFinder_FindPath_NotFound" xml:space="preserve">
+    <data name="PathFinder_FindPath_NotFound" xml:space="preserve">
     <value>Can't find any path.</value>
   </data>
-  <data name="PathFinder_FindPath_Substituation" xml:space="preserve">
+    <data name="PathFinder_FindPath_Substituation" xml:space="preserve">
     <value>Finding path for {word} and {substituation}.</value>
     <comment>word: The word, substituation: Substituation word</comment>
   </data>
-  <data name="PathFinder_FoundPath" xml:space="preserve">
+    <data name="PathFinder_FoundPath" xml:space="preserve">
     <value>Found {0} words. (AttackWord: {1}, EndWord: {2})</value>
     <comment>0: Count of words, 1: Attack word capability, 2: End word capability</comment>
   </data>
-  <data name="PathFinder_FoundPath_Ready" xml:space="preserve">
+    <data name="PathFinder_FoundPath_Ready" xml:space="preserve">
     <value>Total {0} words are ready. (Took {1}ms)</value>
     <comment>0: Feasible word count, 1: Time elapsed</comment>
   </data>
-  <data name="PathFinder_Init_Error" xml:space="preserve">
+    <data name="PathFinder_Init_Error" xml:space="preserve">
     <value>Failed to update node lists.</value>
   </data>
-  <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
+    <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
     <value>Invalidated potential incorrect path update result. (Word: {0}, MissionChar: {1})</value>
     <comment>0: Is caused by word, 1: Is caused by mission char</comment>
   </data>
-  <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
+    <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
     <value>Can't delete {word} from database.</value>
     <comment>word: The inexistent word in database</comment>
   </data>
-  <data name="PathMark_AlreadyDone" xml:space="preserve">
+    <data name="PathMark_AlreadyDone" xml:space="preserve">
     <value>Node {node} is already marked as {type}. [Gamemode: {gameMode}]</value>
     <comment>node: The node, type: New type, gameMode: Current game mode</comment>
   </data>
-  <data name="PathMark_Attack" xml:space="preserve">
+    <data name="PathMark_Attack" xml:space="preserve">
     <value>attack word</value>
   </data>
-  <data name="PathMark_End" xml:space="preserve">
+    <data name="PathMark_End" xml:space="preserve">
     <value>end word</value>
   </data>
-  <data name="PathMark_Normal" xml:space="preserve">
+    <data name="PathMark_Normal" xml:space="preserve">
     <value>normal word</value>
   </data>
-  <data name="PathMark_Success" xml:space="preserve">
+    <data name="PathMark_Success" xml:space="preserve">
     <value>Successfully marked node {node} as {type}. [Gamemode: {gameMode}]</value>
     <comment>node: The node, type: New type, gameMode: Current game mode</comment>
   </data>
-  <data name="PathTooltip_Attack" xml:space="preserve">
+    <data name="PathTooltip_Attack" xml:space="preserve">
     <value>Attack word: {0}</value>
     <comment>0: The word</comment>
   </data>
-  <data name="PathTooltip_AttackMission" xml:space="preserve">
+    <data name="PathTooltip_AttackMission" xml:space="preserve">
     <value>Attack mission(x{1}) word: {0}</value>
     <comment>0: The word, 1: Mission char count</comment>
   </data>
-  <data name="PathTooltip_End" xml:space="preserve">
+    <data name="PathTooltip_End" xml:space="preserve">
     <value>End word: {0}</value>
     <comment>0: The word</comment>
   </data>
-  <data name="PathTooltip_EndMission" xml:space="preserve">
+    <data name="PathTooltip_EndMission" xml:space="preserve">
     <value>End mission(x{1}) word: {0}</value>
     <comment>0: The word, 1: Mission char count</comment>
   </data>
-  <data name="PathTooltip_Mission" xml:space="preserve">
+    <data name="PathTooltip_Mission" xml:space="preserve">
     <value>Mission(x{1}) word: {0}</value>
     <comment>0: The word, 1: Mission char count</comment>
   </data>
-  <data name="PathTooltip_Normal" xml:space="preserve">
+    <data name="PathTooltip_Normal" xml:space="preserve">
     <value>Word: {0}</value>
     <comment>0: The word</comment>
   </data>
-  <data name="ProgramIntroduction" xml:space="preserve">
+    <data name="ProgramIntroduction" xml:space="preserve">
     <value>AutoKkutu {0} - Next-gen Kkutu-Helper V</value>
     <comment>0: Program version</comment>
   </data>
-  <data name="Status_AutoUpdate" xml:space="preserve">
+    <data name="Status_AutoUpdate" xml:space="preserve">
     <value>Automatic database updating.</value>
   </data>
-  <data name="TimeFilter_Success" xml:space="preserve">
+    <data name="TimeFilter_Success" xml:space="preserve">
     <value>Turn Time {0}ms &gt;= Word Delay {1}ms</value>
     <comment>0: Remaining turn time, 1: Total word delay</comment>
   </data>
-  <data name="TimeFilter_TimeOver" xml:space="preserve">
+    <data name="TimeFilter_TimeOver" xml:space="preserve">
     <value>There's no word submittable in time! (Turn Time {0}ms)</value>
     <comment>0: Remaining turn time</comment>
   </data>
-  <data name="Validate_ColorPrefs" xml:space="preserve">
+    <data name="Validate_ColorPrefs" xml:space="preserve">
     <value>Color preference not set.</value>
   </data>
-  <data name="Validate_Config" xml:space="preserve">
+    <data name="Validate_Config" xml:space="preserve">
     <value>Config not set.</value>
   </data>
-  <data name="Validate_DatabaseCommand" xml:space="preserve">
+    <data name="Validate_DatabaseCommand" xml:space="preserve">
     <value>Database command not initialized.</value>
   </data>
-  <data name="Validate_DatabaseConnection" xml:space="preserve">
+    <data name="Validate_DatabaseConnection" xml:space="preserve">
     <value>Database connection not established.</value>
   </data>
-  <data name="Validate_DatabaseReader" xml:space="preserve">
+    <data name="Validate_DatabaseReader" xml:space="preserve">
     <value>Database reader not open.</value>
   </data>
-  <data name="Validate_Handler" xml:space="preserve">
+    <data name="Validate_Handler" xml:space="preserve">
     <value>Handler not registered.</value>
   </data>
 </root>

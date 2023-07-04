@@ -277,7 +277,7 @@ namespace AutoKkutuLib {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto mode enabled. automatically use {attr:l} path: {word}.
+        ///   Looks up a localized string similar to Auto-entering path: {word}.
         /// </summary>
         public static string Main_AutoEnter {
             get {

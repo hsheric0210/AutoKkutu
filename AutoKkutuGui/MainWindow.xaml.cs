@@ -342,7 +342,7 @@ public partial class MainWindow : Window
 
 	private static string CreatePathResultExplain(PathUpdateEventArgs arg)
 	{
-		var parameter = arg.Info;
+		var parameter = arg.Details;
 		var filter = $"'{parameter.Condition.Char}'";
 		if (parameter.Condition.SubAvailable)
 			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{parameter.Condition.SubChar}'");

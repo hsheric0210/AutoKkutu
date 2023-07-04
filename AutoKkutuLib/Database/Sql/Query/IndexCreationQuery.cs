@@ -15,7 +15,7 @@ public class IndexCreationQuery : SqlQuery<int>
 
 	public override int Execute()
 	{
-		Log.Debug(nameof(IndexCreationQuery) + ": Creating the index of table {0} column {1}.", tableName, columnName);
+		Log.Verbose(nameof(IndexCreationQuery) + ": Creating the index of table {0} column {1}.", tableName, columnName);
 		return Connection.Execute($"CREATE INDEX IF NOT EXISTS {columnName} ON {tableName} ({columnName});");
 	}
 }

@@ -277,7 +277,7 @@ namespace AutoKkutuGui {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto-enter enabled. automatically use {attr} path: {word}.
+        ///   Looks up a localized string similar to Auto-entering path: {word}.
         /// </summary>
         public static string Main_AutoEnter {
             get {

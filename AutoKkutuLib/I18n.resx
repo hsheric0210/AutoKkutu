@@ -197,8 +197,8 @@
     <comment>0: Handler ID</comment>
   </data>
   <data name="Main_AutoEnter" xml:space="preserve">
-    <value>Auto mode enabled. automatically use {attr:l} path: {word}</value>
-    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
+    <value>Auto-entering path: {word}</value>
+    <comment>word: The word</comment>
   </data>
   <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
     <value>Browser frame-load end.</value>

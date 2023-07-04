@@ -104,11 +104,11 @@ public class CefSharpBrowser : BrowserBase
 				{
 					var pieces = arg.Split('=', 2);
 					settings.CefCommandLineArgs?.Add(pieces[0], pieces[1]);
-					Log.Information("Cef command-line argument added: {switch} = {value}", pieces[0], pieces[1]);
+					Log.Debug("Cef command-line argument added: {switch} = {value}", pieces[0], pieces[1]);
 				}
 				else
 				{
-					Log.Information("Cef command-line switch added: {switch}", arg);
+					Log.Debug("Cef command-line switch added: {switch}", arg);
 					settings.CefCommandLineArgs?.Add(arg);
 				}
 			}
@@ -160,12 +160,12 @@ public class CefSharpBrowser : BrowserBase
 			Log.Error(ex, "CefSharp initialization exception.");
 		}
 
-		Log.Information("Cef settings applied.");
+		Log.Verbose("Cef settings applied.");
 	}
 
 	public override void LoadFrontPage()
 	{
-		Log.Information("Initializing CefSharp");
+		Log.Verbose("Initializing CefSharp");
 
 		browser = new ChromiumWebBrowser();
 		// Prevent getting detected by 'window.CefSharp' property existence checks
@@ -178,10 +178,10 @@ public class CefSharpBrowser : BrowserBase
 		browser.FrameLoadEnd += OnFrameLoadEnd;
 		browser.LoadError += OnLoadError;
 
-		Log.Verbose("Name randomization: {nameRandom}", nameRandom);
+		Log.Debug("JavaScript type name randomization: {nameRandom}", nameRandom);
 		browser.IsBrowserInitializedChanged += OnInitialized;
 
-		Log.Information("ChromiumWebBrowser instance created.");
+		Log.Verbose("ChromiumWebBrowser instance created.");
 	}
 
 	private void OnInitialized(object sender, System.Windows.DependencyPropertyChangedEventArgs e)

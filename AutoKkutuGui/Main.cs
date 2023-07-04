@@ -115,7 +115,7 @@ public static class Main
 
 	private static void InitializeConfiguration()
 	{
-		Log.Information("Initializing configuration");
+		Log.Verbose("Initializing configuration");
 
 		try
 		{
@@ -141,7 +141,7 @@ public static class Main
 
 	private static void SetupBrowser()
 	{
-		Log.Information("Initializing browser");
+		Log.Verbose("Initializing browser");
 
 		// Initialize Browser
 		Browser = new CefSharpBrowser();
@@ -256,7 +256,7 @@ public static class Main
 
 	private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 	{
-		Log.Information(I18n.Main_PathUpdateReceived);
+		Log.Verbose(I18n.Main_PathUpdateReceived);
 		if (!args.HasFlag(PathFlags.ManualSearch))
 			autoPathFindCache = args;
 		if (args.HasFlag(PathFlags.PreSearch))
@@ -271,9 +271,9 @@ public static class Main
 		else if (!autoEnter)
 			UpdateStatusMessage(StatusMessage.Normal);
 
-		if (AutoKkutu.Game.RescanIfPathExpired(args.Info.WithoutFlags(PathFlags.PreSearch)))
+		if (AutoKkutu.Game.RescanIfPathExpired(args.Details.WithoutFlags(PathFlags.PreSearch)))
 		{
-			Log.Warning("Expired word condition {path} rejected. Rescanning...", args.Info.Condition);
+			Log.Warning("Expired word condition {path} rejected. Rescanning...", args.Details.Condition);
 			return;
 		}
 
@@ -286,7 +286,6 @@ public static class Main
 
 	private static void TryAutoEnter(PathUpdateEventArgs args, bool usedPresearchResult = false)
 	{
-		Log.Error("#!~# Trying to autoenter: data", args);
 		if (args.Result == PathFindResultType.NotFound)
 		{
 			Log.Warning(I18n.Auto_NoMorePathAvailable);
@@ -312,10 +311,9 @@ public static class Main
 			}
 			else
 			{
-				Log.Error("#!~# Begin autoenter: data", args);
-				var param = args.Info;
+				var param = args.Details;
 				if (usedPresearchResult)
-					param = param.WithoutFlags(PathFlags.PreSearch);
+					param = param.WithoutFlags(PathFlags.PreSearch); // Fixme: 이런 번거로운 방법 대신 더 나은 방법 생각해보기
 				AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(opt, param, wordToEnter));
 			}
 		}
@@ -376,7 +374,7 @@ public static class Main
 							Prefs.DelayInMillis,
 							Prefs.DelayPerCharEnabled,
 							Prefs.InputSimulate),
-						autoPathFindCache.Info, wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
+						autoPathFindCache.Details, wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
 	}
 
 	private static void OnMyTurnEnded(object? sender, EventArgs e)
@@ -390,17 +388,17 @@ public static class Main
 	{
 		if (Prefs.AutoEnterEnabled)
 		{
-			if (preSearch != null && AutoKkutu.Game.IsPathExpired(preSearch.Info))
+			if (preSearch?.Details.Condition.Equals(args.Condition) == true)
 			{
-				Log.Information("Using the pre-search result for: {condition}", preSearch.Info.Condition);
+				Log.Debug("Using the pre-search result for: {condition}", preSearch.Details.Condition);
 				TryAutoEnter(preSearch, usedPresearchResult: true);
 				return;
 			}
 
 			if (preSearch == null)
-				Log.Warning("Pre-search data not available. Starting the search.");
+				Log.Debug("Pre-search data not available. Starting the search.");
 			else
-				Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Info.Condition, args.Condition);
+				Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Details.Condition, args.Condition);
 		}
 
 		AutoKkutu.PathFinder.FindPath(
@@ -413,12 +411,12 @@ public static class Main
 	{
 		if (args.Presearch != PreviousUserTurnEndedEventArgs.PresearchAvailability.Available || args.Condition is null)
 		{
-			Log.Debug("Pre-search result flushed. Reason: {availability}", args.Presearch);
+			Log.Verbose("Pre-search result flushed. Reason: {availability}", args.Presearch);
 			preSearch = null;
 			return;
 		}
 
-		Log.Debug("Performing pre-search on: {condition}", args.Condition);
+		Log.Verbose("Performing pre-search on: {condition}", args.Condition);
 		AutoKkutu.PathFinder.FindPath(
 			AutoKkutu.Game.CurrentGameMode,
 			new PathDetails((WordCondition)args.Condition, SetupPathFinderFlags() | PathFlags.PreSearch, Prefs.ReturnModeEnabled, Prefs.MaxDisplayedWordCount),

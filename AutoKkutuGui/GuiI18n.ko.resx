@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
+    <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,419 +59,419 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
             <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
             </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="AllocConsoleFailed" xml:space="preserve">
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="AllocConsoleFailed" xml:space="preserve">
     <value>AllocConsole() 호출에 실패하였습니다 : 오류 코드 {0}</value>
     <comment>0: 오류 코드</comment>
   </data>
-  <data name="AutoDBUpdate_OnGameEnd" xml:space="preserve">
+    <data name="AutoDBUpdate_OnGameEnd" xml:space="preserve">
     <value>게임이 끝났을 때</value>
   </data>
-  <data name="AutoDBUpdate_OnRoundEnd" xml:space="preserve">
+    <data name="AutoDBUpdate_OnRoundEnd" xml:space="preserve">
     <value>한 라운드가 끝났을 때</value>
   </data>
-  <data name="Auto_NoMorePathAvailable" xml:space="preserve">
+    <data name="Auto_NoMorePathAvailable" xml:space="preserve">
     <value>자동 입력이 활성화되었지만, 사용할 수 있는 단어가 없습니다.</value>
   </data>
-  <data name="Auto_TimeOver" xml:space="preserve">
+    <data name="Auto_TimeOver" xml:space="preserve">
     <value>자동 입력이 활성화되었고, 단어들을 찾았지만, 남은 턴 시간 안에 입력할 수 있는 단어가 없습니다.</value>
   </data>
-  <data name="ConsoleIntroduction" xml:space="preserve">
+    <data name="ConsoleIntroduction" xml:space="preserve">
     <value>디버깅이 활성화되지 않았기에 콘솔이 활성화되었습니다.</value>
   </data>
-  <data name="DeleteConsoleMenuFailed" xml:space="preserve">
+    <data name="DeleteConsoleMenuFailed" xml:space="preserve">
     <value>DeleteMenu() 호출에 실패하였습니다 : 오류 코드 {0}</value>
     <comment>0: 오류 코드</comment>
   </data>
-  <data name="Disabled" xml:space="preserve">
+    <data name="Disabled" xml:space="preserve">
     <value>비활성화</value>
   </data>
-  <data name="Enabled" xml:space="preserve">
+    <data name="Enabled" xml:space="preserve">
     <value>활성화</value>
   </data>
-  <data name="GameMode_All" xml:space="preserve">
+    <data name="GameMode_All" xml:space="preserve">
     <value>전체</value>
   </data>
-  <data name="GameMode_FirstAndLast" xml:space="preserve">
+    <data name="GameMode_FirstAndLast" xml:space="preserve">
     <value>앞말잇기</value>
   </data>
-  <data name="GameMode_Free" xml:space="preserve">
+    <data name="GameMode_Free" xml:space="preserve">
     <value>자유</value>
   </data>
-  <data name="GameMode_Kkutu" xml:space="preserve">
+    <data name="GameMode_Kkutu" xml:space="preserve">
     <value>끄투</value>
   </data>
-  <data name="GameMode_KungKungTta" xml:space="preserve">
+    <data name="GameMode_KungKungTta" xml:space="preserve">
     <value>쿵쿵따</value>
   </data>
-  <data name="GameMode_LastAndFirst" xml:space="preserve">
+    <data name="GameMode_LastAndFirst" xml:space="preserve">
     <value>끝말잇기</value>
   </data>
-  <data name="GameMode_LastAndFirstFree" xml:space="preserve">
+    <data name="GameMode_LastAndFirstFree" xml:space="preserve">
     <value>자유 끝말잇기</value>
   </data>
-  <data name="GameMode_MiddleAndFirst" xml:space="preserve">
+    <data name="GameMode_MiddleAndFirst" xml:space="preserve">
     <value>가운뎃말잇기</value>
   </data>
-  <data name="GameMode_TypingBattle" xml:space="preserve">
+    <data name="GameMode_TypingBattle" xml:space="preserve">
     <value>타자 대결</value>
   </data>
-  <data name="HandlerRegistry_Unregistered" xml:space="preserve">
+    <data name="HandlerRegistry_Unregistered" xml:space="preserve">
     <value>이전 핸들러 '{0}'를 비활성화했습니다.</value>
     <comment>0: 핸들러 ID</comment>
   </data>
-  <data name="Main_AutoEnter" xml:space="preserve">
-    <value>자동 입력이 활성화되었습니다. {attr} 단어 {word}를 사용합니다.</value>
-    <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
+    <data name="Main_AutoEnter" xml:space="preserve">
+    <value>단어 {word}를 자동 입력합니다.</value>
+    <comment>word: 단어</comment>
   </data>
-  <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
+    <data name="Main_CEFFrameLoadEnd" xml:space="preserve">
     <value>브라우저 프레임이 로드되었습니다.</value>
   </data>
-  <data name="Main_ClipboardSubmitException" xml:space="preserve">
+    <data name="Main_ClipboardSubmitException" xml:space="preserve">
     <value>클립보드에 저장된 텍스트를 보내는 것에 실패하였습니다.</value>
   </data>
-  <data name="Main_ClosingDBConnection" xml:space="preserve">
+    <data name="Main_ClosingDBConnection" xml:space="preserve">
     <value>데이터베이스와의 연결을 닫습니다...</value>
   </data>
-  <data name="Main_ColorPrefsUpdated" xml:space="preserve">
+    <data name="Main_ColorPrefsUpdated" xml:space="preserve">
     <value>색 설정이 업데이트되었습니다.</value>
   </data>
-  <data name="Main_ConfigLoadException" xml:space="preserve">
+    <data name="Main_ConfigLoadException" xml:space="preserve">
     <value>설정을 로드할 수 없습니다.</value>
   </data>
-  <data name="Main_ConfigUpdated" xml:space="preserve">
+    <data name="Main_ConfigUpdated" xml:space="preserve">
     <value>설정이 업데이트되었습니다.</value>
   </data>
-  <data name="Main_DBConfigException" xml:space="preserve">
+    <data name="Main_DBConfigException" xml:space="preserve">
     <value>데이터베이스 설정 파일 'database.config'에 문제가 있습니다.</value>
   </data>
-  <data name="Main_GameModeUpdated" xml:space="preserve">
+    <data name="Main_GameModeUpdated" xml:space="preserve">
     <value>게임 모드가 {gameMode}로 업데이트되었습니다.</value>
     <comment>gameMode: 업데이트된 게임 모드</comment>
   </data>
-  <data name="Main_GameResultWriteException" xml:space="preserve">
+    <data name="Main_GameResultWriteException" xml:space="preserve">
     <value>게임 결과를 작성하는 데 실패하였습니다.</value>
   </data>
-  <data name="Main_Initialization" xml:space="preserve">
+    <data name="Main_Initialization" xml:space="preserve">
     <value>모듈 '{0}'의 초기화가 {1}ms 소요되었습니다.</value>
     <comment>0: 모듈 이름, 1: 걸린 시간</comment>
   </data>
-  <data name="Main_InputSimulating" xml:space="preserve">
+    <data name="Main_InputSimulating" xml:space="preserve">
     <value>{attr:l} 단어 입력 시뮬레이션 시작: {word}</value>
     <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
   </data>
-  <data name="Main_InputSimulationAborted" xml:space="preserve">
+    <data name="Main_InputSimulationAborted" xml:space="preserve">
     <value>{attr:l} 단어 입력 시뮬레이션 중단됨: {word}</value>
     <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
   </data>
-  <data name="Main_InputSimulationFinished" xml:space="preserve">
+    <data name="Main_InputSimulationFinished" xml:space="preserve">
     <value>{attr:l} 단어 입력 시뮬레이션 완료: {word}</value>
     <comment>attr: 단어 속성 (최적, 다음), word: 단어</comment>
   </data>
-  <data name="Main_MyPathIsUnsupported" xml:space="preserve">
+    <data name="Main_MyPathIsUnsupported" xml:space="preserve">
     <value>제시한 단어 {word}가 지원되지 않음을 감지하였습니다.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="Main_Next" xml:space="preserve">
+    <data name="Main_Next" xml:space="preserve">
     <value>다음</value>
   </data>
-  <data name="Main_NoMorePathAvailable" xml:space="preserve">
+    <data name="Main_NoMorePathAvailable" xml:space="preserve">
     <value>더 이상 사용할 수 있는 단어가 없습니다.</value>
   </data>
-  <data name="Main_Optimal" xml:space="preserve">
+    <data name="Main_Optimal" xml:space="preserve">
     <value>최적의</value>
   </data>
-  <data name="Main_PathSubmitException" xml:space="preserve">
+    <data name="Main_PathSubmitException" xml:space="preserve">
     <value>단어 입력 중 예외가 발생하였습니다.</value>
   </data>
-  <data name="Main_PathSubmitted" xml:space="preserve">
+    <data name="Main_PathSubmitted" xml:space="preserve">
     <value>입력된 단어: {word}.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="Main_PathUpdateReceived" xml:space="preserve">
+    <data name="Main_PathUpdateReceived" xml:space="preserve">
     <value>단어 목록이 업데이트되었습니다.</value>
   </data>
-  <data name="Main_Presented" xml:space="preserve">
+    <data name="Main_Presented" xml:space="preserve">
     <value>나타난</value>
   </data>
-  <data name="Main_ResetPathList" xml:space="preserve">
+    <data name="Main_ResetPathList" xml:space="preserve">
     <value>단어 목록을 초기화하였습니다.</value>
   </data>
-  <data name="Main_StartLoad" xml:space="preserve">
+    <data name="Main_StartLoad" xml:space="preserve">
     <value>페이지 로딩이 시작되었습니다.</value>
   </data>
-  <data name="Main_UnsupportedURL" xml:space="preserve">
+    <data name="Main_UnsupportedURL" xml:space="preserve">
     <value>지원되지 않는 사이트: {url}</value>
     <comment>url: 사이트 URL</comment>
   </data>
-  <data name="Main_UnsupportedWord_Existent" xml:space="preserve">
+    <data name="Main_UnsupportedWord_Existent" xml:space="preserve">
     <value>현재 상황에서 지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 이번 게임에서 더 이상 사용되지 않습니다.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="Main_UnsupportedWord_Inexistent" xml:space="preserve">
+    <data name="Main_UnsupportedWord_Inexistent" xml:space="preserve">
     <value>지원되지 않는 단어 {word}를 감지했습니다. 이 단어는 자동 업데이트 때 데이터베이스에서 제거될 것입니다.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="Main_UseHandler" xml:space="preserve">
+    <data name="Main_UseHandler" xml:space="preserve">
     <value>사용할 핸들러: {0}</value>
     <comment>0: 핸들러 ID</comment>
   </data>
-  <data name="Main_WaitingSubmit" xml:space="preserve">
+    <data name="Main_WaitingSubmit" xml:space="preserve">
     <value>단어를 입력하기 전에 {0}ms를 기다립니다.</value>
     <comment>0: 지연 시간</comment>
   </data>
-  <data name="Main_WaitingSubmitNext" xml:space="preserve">
+    <data name="Main_WaitingSubmitNext" xml:space="preserve">
     <value>다음 단어를 입력하기 전에 {0}ms를 기다립니다.</value>
     <comment>0: 지연 시간</comment>
   </data>
-  <data name="Main_WordIndexReset" xml:space="preserve">
+    <data name="Main_WordIndexReset" xml:space="preserve">
     <value>사용 단어 인덱스를 0으로 초기화하였습니다.</value>
   </data>
-  <data name="PathFinderAttackWord" xml:space="preserve">
+    <data name="PathFinderAttackWord" xml:space="preserve">
     <value>공격</value>
   </data>
-  <data name="PathFinderEndWord" xml:space="preserve">
+    <data name="PathFinderEndWord" xml:space="preserve">
     <value>한방</value>
   </data>
-  <data name="PathFinderError" xml:space="preserve">
+    <data name="PathFinderError" xml:space="preserve">
     <value>예외가 발생하여 단어 검색에 실패했습니다!</value>
   </data>
-  <data name="PathFinderFailed_Endword" xml:space="preserve">
+    <data name="PathFinderFailed_Endword" xml:space="preserve">
     <value>단어를 찾을 수 없습니다. 제시된 단어가 한방 단어입니다!</value>
   </data>
-  <data name="PathFinderFailed_Exception" xml:space="preserve">
+    <data name="PathFinderFailed_Exception" xml:space="preserve">
     <value>단어를 찾던 도중 예외가 발생하였습니다!</value>
   </data>
-  <data name="PathFinderFound" xml:space="preserve">
+    <data name="PathFinderFound" xml:space="preserve">
     <value>총 {0}개의 단어 중, {1}개 가능!</value>
     <comment>0: 전체 단어 수, 1: 사용 가능 단어 수</comment>
   </data>
-  <data name="PathFinderFoundButEmpty" xml:space="preserve">
+    <data name="PathFinderFoundButEmpty" xml:space="preserve">
     <value>총 {0}개의 단어 중, 가능한 것 없음.</value>
     <comment>0: 전체 단어 수</comment>
   </data>
-  <data name="PathFinderIncludedWord" xml:space="preserve">
+    <data name="PathFinderIncludedWord" xml:space="preserve">
     <value>{0} 단어 사용.</value>
     <comment>0: 포함된 단어 타입(들)</comment>
   </data>
-  <data name="PathFinderSearchOverview" xml:space="preserve">
+    <data name="PathFinderSearchOverview" xml:space="preserve">
     <value>{0} 에 대한 검색 결과.</value>
     <comment>0: 검색 필터 메시지</comment>
   </data>
-  <data name="PathFinderSearchOverview_MissionChar" xml:space="preserve">
+    <data name="PathFinderSearchOverview_MissionChar" xml:space="preserve">
     <value>{0}, 미션 단어 '{1}'</value>
     <comment>0: 단어 필터 (원 단어 및 대체 단어)</comment>
   </data>
-  <data name="PathFinderSearchOverview_Or" xml:space="preserve">
+    <data name="PathFinderSearchOverview_Or" xml:space="preserve">
     <value>{0} 또는 {1}</value>
     <comment>0: 원 단어, 1: 대체 단어</comment>
   </data>
-  <data name="PathFinderTookTime" xml:space="preserve">
+    <data name="PathFinderTookTime" xml:space="preserve">
     <value>{0}ms 소요.</value>
     <comment>0: 소요된 시간 (ms)</comment>
   </data>
-  <data name="PathFinderUnavailable" xml:space="preserve">
+    <data name="PathFinderUnavailable" xml:space="preserve">
     <value>이 턴에 사용 가능한 단어를 찾을 수 없습니다.</value>
   </data>
-  <data name="PathFinderWaiting" xml:space="preserve">
+    <data name="PathFinderWaiting" xml:space="preserve">
     <value>대기 중...</value>
   </data>
-  <data name="PathFinder_AddNode" xml:space="preserve">
+    <data name="PathFinder_AddNode" xml:space="preserve">
     <value>새로운 {0} 노드 '{1}'가 추가되었습니다.</value>
     <comment>0: 노드 종류, 1: 노드</comment>
   </data>
-  <data name="PathFinder_AddPath" xml:space="preserve">
+    <data name="PathFinder_AddPath" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에 추가 시도합니다. (속성: {flags})</value>
     <comment>word: 단어, flags: 단어 속성</comment>
   </data>
-  <data name="PathFinder_AddPath_Failed" xml:space="preserve">
+    <data name="PathFinder_AddPath_Failed" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에 추가할 수 없습니다.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="PathFinder_AddPath_Success" xml:space="preserve">
+    <data name="PathFinder_AddPath_Success" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에 추가하였습니다.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate" xml:space="preserve">
     <value>이전 게임을 기반으로 데이터베이스를 자동으로 업데이트합니다.</value>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Empty" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Empty" xml:space="preserve">
     <value>데이터베이스 자동 업데이트 목록에서 단어를 찾을 수 없습니다.</value>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Finished" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Finished" xml:space="preserve">
     <value>데이터베이스 자동 업데이트 완료: {0}</value>
     <comment>0: 결과</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate_New" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_New" xml:space="preserve">
     <value>총 {0}개의 새로운 단어 발견.</value>
     <comment>0: 단어 갯수</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Remove" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Remove" xml:space="preserve">
     <value>총 {0}개의 제거할 단어 발견.</value>
     <comment>0: 단어 갯수</comment>
   </data>
-  <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
+    <data name="PathFinder_AutoDBUpdate_Result" xml:space="preserve">
     <value>{1}개 중에서 {0}개의 단어가 추가되었고, {3}개 중에서 {2}개의 단어가 삭제되었으며, 한방 단어 노드 {5}개 중에서 {4}가 추가되었습니다.</value>
     <comment>0: 실제로 추가된 단어 갯수, 1: 추가할 단어 갯수, 2: 실제로 제거된 단어 갯수, 3: 제거할 단어 갯수</comment>
   </data>
-  <data name="PathFinder_FindPath" xml:space="preserve">
+    <data name="PathFinder_FindPath" xml:space="preserve">
     <value>{word}에 대해서 검색 중.</value>
     <comment>word: 단어</comment>
   </data>
-  <data name="PathFinder_FindPath_Error" xml:space="preserve">
+    <data name="PathFinder_FindPath_Error" xml:space="preserve">
     <value>단어 검색에 실패하였습니다.</value>
   </data>
-  <data name="PathFinder_FindPath_NotFound" xml:space="preserve">
+    <data name="PathFinder_FindPath_NotFound" xml:space="preserve">
     <value>검색 결과를 찾을 수 없습니다.</value>
   </data>
-  <data name="PathFinder_FindPath_Substituation" xml:space="preserve">
+    <data name="PathFinder_FindPath_Substituation" xml:space="preserve">
     <value>{word}와 {substituation}에 대해서 검색 중.</value>
     <comment>word: 단어, substituation: 대체 단어 (두음법칙 등)</comment>
   </data>
-  <data name="PathFinder_FoundPath" xml:space="preserve">
+    <data name="PathFinder_FoundPath" xml:space="preserve">
     <value>총 {0}개의 단어를 찾았습니다. (공격 단어: {1}, 한방 단어: {2})</value>
     <comment>0: 단어 갯수, 1: 공격 단어 사용 여부, 2: 한방 단어 사용 여부</comment>
   </data>
-  <data name="PathFinder_FoundPath_Ready" xml:space="preserve">
+    <data name="PathFinder_FoundPath_Ready" xml:space="preserve">
     <value>총 {0} 개의 단어가 준비되었습니다. ({1}ms 소요)</value>
     <comment>0: 사용 가능 단어 갯수, 1: 걸린 시간</comment>
   </data>
-  <data name="PathFinder_Init_Error" xml:space="preserve">
+    <data name="PathFinder_Init_Error" xml:space="preserve">
     <value>노드 목록을 초기화하지 못했습니다.</value>
   </data>
-  <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
+    <data name="PathFinder_InvalidatedUpdate" xml:space="preserve">
     <value>이전 검색 결과를 무효화했습니다. (단어 문제: {0}, 미션 단어 문제: {1})</value>
     <comment>0: 발생 원인이 단어 문제인지 여부, 1: 발생 원인이 미션 단어 문제인지 여부</comment>
   </data>
-  <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
+    <data name="PathFinder_RemoveInexistent_Failed" xml:space="preserve">
     <value>단어 {word}를 데이터베이스에서 삭제하지 못했습니다.</value>
     <comment>word: (데이터베이스에 존재하지 않는) 단어</comment>
   </data>
-  <data name="PathMark_AlreadyDone" xml:space="preserve">
+    <data name="PathMark_AlreadyDone" xml:space="preserve">
     <value>노드 {node}는 이미 {type} 입니다. [현재 게임 모드: {gameMode}]</value>
     <comment>node: 노드, type: 새로운 노트 타입, gameMode: 현재 게임 모드</comment>
   </data>
-  <data name="PathMark_Attack" xml:space="preserve">
+    <data name="PathMark_Attack" xml:space="preserve">
     <value>공격 단어</value>
   </data>
-  <data name="PathMark_End" xml:space="preserve">
+    <data name="PathMark_End" xml:space="preserve">
     <value>한방 단어</value>
   </data>
-  <data name="PathMark_Normal" xml:space="preserve">
+    <data name="PathMark_Normal" xml:space="preserve">
     <value>일반 단어</value>
   </data>
-  <data name="PathMark_Success" xml:space="preserve">
+    <data name="PathMark_Success" xml:space="preserve">
     <value>노드 {node}를 성공적으로 {type}로 저장했습니다. [현재 게임 모드: {gameMode}]</value>
     <comment>node: 노드, type: 새로운 노드 타입, gameMode: 현재 게임 모드</comment>
   </data>
-  <data name="PathTooltip_Attack" xml:space="preserve">
+    <data name="PathTooltip_Attack" xml:space="preserve">
     <value>공격 단어: {0}</value>
     <comment>0: 단어</comment>
   </data>
-  <data name="PathTooltip_AttackMission" xml:space="preserve">
+    <data name="PathTooltip_AttackMission" xml:space="preserve">
     <value>공격 미션(x{1}) 단어: {0}</value>
     <comment>0: 단어, 1: 미션 단어 포함 갯수</comment>
   </data>
-  <data name="PathTooltip_End" xml:space="preserve">
+    <data name="PathTooltip_End" xml:space="preserve">
     <value>한방 단어: {0}</value>
     <comment>0: 단어</comment>
   </data>
-  <data name="PathTooltip_EndMission" xml:space="preserve">
+    <data name="PathTooltip_EndMission" xml:space="preserve">
     <value>한방 미션(x{1}) 단어: {0}</value>
     <comment>0: 단어, 1: 미션 단어 포함 갯수</comment>
   </data>
-  <data name="PathTooltip_Mission" xml:space="preserve">
+    <data name="PathTooltip_Mission" xml:space="preserve">
     <value>미션(x{1}) 단어: {0}</value>
     <comment>0: 단어, 1: 미션 단어 포함 갯수</comment>
   </data>
-  <data name="PathTooltip_Normal" xml:space="preserve">
+    <data name="PathTooltip_Normal" xml:space="preserve">
     <value>단어: {0}</value>
     <comment>0: 단어</comment>
   </data>
-  <data name="Status_AutoUpdate" xml:space="preserve">
+    <data name="Status_AutoUpdate" xml:space="preserve">
     <value>자동 데이터베이스 업데이트</value>
   </data>
-  <data name="TimeFilter_Success" xml:space="preserve">
+    <data name="TimeFilter_Success" xml:space="preserve">
     <value>턴 시간 {0}ms &gt;= 단어 입력 딜레이 {1}ms</value>
     <comment>0: 남은 턴 시간, 1: 단어 길이 기반 지연 시간</comment>
   </data>
-  <data name="TimeFilter_TimeOver" xml:space="preserve">
+    <data name="TimeFilter_TimeOver" xml:space="preserve">
     <value>남은 턴 시간 {0}ms 안에 입력할 수 있는 단어가 없습니다!</value>
     <comment>0: 남은 턴 시간</comment>
   </data>
-  <data name="Validate_ColorPrefs" xml:space="preserve">
+    <data name="Validate_ColorPrefs" xml:space="preserve">
     <value>색 설정이 설정되지 않았습니다.</value>
   </data>
-  <data name="Validate_Config" xml:space="preserve">
+    <data name="Validate_Config" xml:space="preserve">
     <value>환경 설정이 설정되지 않았습니다.</value>
   </data>
-  <data name="Validate_DatabaseCommand" xml:space="preserve">
+    <data name="Validate_DatabaseCommand" xml:space="preserve">
     <value>데이베이스 명령 초기화에 실패하였습니다.</value>
   </data>
-  <data name="Validate_DatabaseConnection" xml:space="preserve">
+    <data name="Validate_DatabaseConnection" xml:space="preserve">
     <value>데이터베이스 연결이 이루어지지 않았습니다.</value>
   </data>
-  <data name="Validate_DatabaseReader" xml:space="preserve">
+    <data name="Validate_DatabaseReader" xml:space="preserve">
     <value>데이터베이스 리더 초기화에 실패하였습니다.</value>
   </data>
-  <data name="Validate_Handler" xml:space="preserve">
+    <data name="Validate_Handler" xml:space="preserve">
     <value>핸들러가 설정되지 않았습니다.</value>
   </data>
 </root>

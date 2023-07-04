@@ -79,7 +79,7 @@ public partial class Game
 		wsSniffHandler?.OnWebSocketMessage(args.Json);
 		if (specializedSniffers?.TryGetValue(args.Type, out var mySniffer) ?? false)
 		{
-			Log.Debug("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
+			Log.Verbose("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
 			Task.Run(async () => await mySniffer(args.Json));
 		}
 	}
@@ -116,14 +116,14 @@ public partial class Game
 		{
 			if (session.IsMyTurn(data.Turn))
 			{
-				Log.Information("WS: My turn start! Condition is {cond}", data.Condition);
+				Log.Debug("WS: My turn start! Condition is {cond}", data.Condition);
 				NotifyMyTurn(true, data.Condition, bypassCache: true);
 				return;
 			}
 			else if (session.GetRelativeTurn(data.Turn) == session.GetMyPreviousUserTurn())
 			{
 				wsSession = session with { MyGamePreviousUserMission = data.Condition.MissionChar };
-				Log.Information("WS: Captured previous user mission char: {missionChar}", data.Condition.MissionChar);
+				Log.Debug("WS: Captured previous user mission char: {missionChar}", data.Condition.MissionChar);
 			}
 
 			NotifyMyTurn(false); // Other user turn start -> not my turn
@@ -142,7 +142,7 @@ public partial class Game
 
 			var turn = session.GetTurnOf(data.Target);
 			var prvUsrTurn = session.GetMyPreviousUserTurn();
-			Log.Information("turn: {turn}, prev_user_turn: {puturn}", turn, prvUsrTurn);
+			Log.Verbose("turn: {turn}, prev_user_turn: {puturn}", turn, prvUsrTurn);
 			if (turn >= 0 && turn == prvUsrTurn)
 			{
 				Log.Debug("WS: The previous user {target} submit: {txt}!", data.Target, data.Value);
