@@ -271,7 +271,7 @@ public static class Main
 		else if (!autoEnter)
 			UpdateStatusMessage(StatusMessage.Normal);
 
-		if (!AutoKkutu.Game.RescanIfPathExpired(args.Info.WithoutFlags(PathFlags.PreSearch)))
+		if (AutoKkutu.Game.RescanIfPathExpired(args.Info.WithoutFlags(PathFlags.PreSearch)))
 		{
 			Log.Warning("Expired word condition {path} rejected. Rescanning...", args.Info.Condition);
 			return;
