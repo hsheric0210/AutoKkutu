@@ -25,3 +25,9 @@
 (이 때, 분류 문서 이름만이 포함되어야 합니다. 위키 주소가 포함되면 안됩니다.)
 
 그 후, `py crawl_categories.py` 를 통해 프로그램을 실행시킵니다.
+
+
+## 미디어위키 API 제공자 주소
+
+* [끄코위키](https://kkukowiki.kr/): https://kkukowiki.kr/api.php
+* [분끄위키](https://kkutu.wiki/): https://kkutu.wiki/wiki/api.php

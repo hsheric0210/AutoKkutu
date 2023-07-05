@@ -1,31 +1,30 @@
 from time import sleep
-import mwparserfromhell
+import wikitextparser as wtp
 from dataclasses import field
 import requests
 import json
 import traceback
 import os
 
-titleWikiCode = mwparserfromhell.parse("제목")
 blacklisted_params = ['이미지', '원제']
+
+api = "https://kkukowiki.kr/api.php" # KkukoWiki
+#api = "https://kkutu.wiki/wiki/api.php" # PinkKkutu Wiki
 
 def crawl_word_template(title):
     try:
-        rsp = requests.get(f'https://kkukowiki.kr/api.php?action=parse&page={title}&prop=wikitext&format=json')
+        rsp = requests.get(f'{api}?action=parse&page={title}&prop=wikitext&format=json')
         code = rsp.status_code
         if code != 200:
             print(f"ERR: Response code is not OK - {code}")
             return {}
-        mw = mwparserfromhell.parse(rsp.json()['parse']['wikitext']['*'])
-        templates = mw.filter_templates()
-        for template in templates:
-            if not template.name.matches("단어"):
-                continue
-            if titleWikiCode not in template:
+        mw = wtp.parse(rsp.json()['parse']['wikitext']['*'])
+        for template in mw.templates:
+            if not template.name.rstrip('\n') == "단어":
                 continue
             # Matches the first word template
             wdata = {}
-            for param in template.params:
+            for param in template.arguments:
                 nm = str(param.name).rstrip('\n')
                 if nm not in blacklisted_params:
                     wdata[nm] = str(param.value).rstrip('\n')

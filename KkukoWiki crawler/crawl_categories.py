@@ -4,6 +4,9 @@ import requests
 import json
 import os
 
+api = "https://kkukowiki.kr/api.php" # KkukoWiki
+#api = "https://kkutu.wiki/wiki/api.php" # PinkKkutu Wiki
+
 # Originally from https://www.mediawiki.org/wiki/API:Continue
 
 def checkBlacklist(title):
@@ -30,7 +33,7 @@ def query(title):
         # Modify it with the values returned in the 'continue' section of the last result.
         req.update(prev_continue)
         # Call API
-        result = requests.get('https://kkukowiki.kr/api.php', params=req).json()
+        result = requests.get(api, params=req).json()
         if 'error' in result:
             raise Exception(result['error'])
         if 'warnings' in result:
