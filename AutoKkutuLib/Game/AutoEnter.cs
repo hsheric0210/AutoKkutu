@@ -24,7 +24,7 @@ public class AutoEnter
 	/// <summary>
 	/// 현재 자동 입력이 진행 중인지(딜레이를 기다리는 중인지, 또는 키보드 입력 시뮬레이션 중인지) 상태를 나타냅니다.
 	/// </summary>
-	private bool isInputInProgress;
+	private volatile bool isInputInProgress;
 
 	/// <summary>
 	/// 현재 진행 중인 입력 시뮬레이션이 Pre-search 기능에 의한 것인지에 대한 여부를 나타냅니다.
@@ -33,7 +33,7 @@ public class AutoEnter
 	/// Pre-search 기능에 의한 자동 입력에서 자동입력 완료 후 자동 전송을 막기 위해 존재합니다.
 	/// (Pre-search 기능에 의한 자동 입력이 진행되는 시점에서는 아직 내 턴이 오지 않았을 확률이 있기 때문입니다)
 	/// </remarks>
-	private bool isPreinputSimInProg;
+	private volatile bool isPreinputSimInProg;
 
 	/// <summary>
 	/// 마지막으로 완료된 입력 시뮬레이션이 Pre-search 기능에 의한 것인지에 대한 여부를 나타냅니다.
@@ -76,7 +76,7 @@ public class AutoEnter
 	/// </summary>
 	/// <param name="param">자동 입력 옵션; <c>param.Content</c>는 반드시 설정되어 있어야 합니다</param>
 	/// <exception cref="ArgumentException"><c>param.Content</c>가 설정되어 있지 않을 때 발생</exception>
-	/// TODO: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)
+	/// FIXME: 'PerformAutoEnter' and 'PerformAutoFix' has multiple duplicate codes, these two could be possibly merged. (+ If then, remove 'content' property from AutoEnterParameter)
 	public void PerformAutoEnter(AutoEnterInfo param)
 	{
 		if (string.IsNullOrWhiteSpace(param.Content))
@@ -104,7 +104,7 @@ public class AutoEnter
 						}
 						if (isInputInProgress && isPreinputSimInProg) // Pre-search 입력 시뮬레이션 진행 중일 시
 						{
-							isPreinputSimInProg = false; // 현재 진행 중인 입력 시뮬레이션을 정규 입력 시뮬레이션으로 승격. 이를 통해 해당 입력 시뮬레이션은 완료 시 자동 전송 기능 활성화됨.
+							isPreinputSimInProg = false; // 현재 진행 중인 이른 자동 입력을 정규 자동 입력으로 승격. 이를 통해 해당 이른 자동 입력 완료 시 자동 전송 기능 활성화됨.
 							return; // 현재 새로 요청된 입력 시뮬레이션은 취소시킴
 						}
 					}
@@ -112,9 +112,10 @@ public class AutoEnter
 				}
 			}
 
-			var delay = param.RealDelay;
-			InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, param.WordIndex));
-			Log.Debug(I18n.Main_WaitingSubmit, delay);
+			//고작 이벤트 하나, 로그 메세지 하나 남기려고 GetTotalDelay() 호출하는 게 말이냐 되냐...
+			//var delay = param.GetTotalDelay();
+			//InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, param.WordIndex));
+			//Log.Debug(I18n.Main_WaitingSubmit, delay);
 
 			isInputInProgress = true;
 			Task.Run(async () =>
@@ -156,9 +157,12 @@ public class AutoEnter
 			if (parameter.Options.DelayEnabled)
 			{
 				// Run asynchronously
-				var delay = contentParameter.RealDelay;
-				InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, parameter.WordIndex));
-				Log.Debug(I18n.Main_WaitingSubmitNext, delay);
+
+				//고작 이벤트 하나, 로그 메세지 하나 남기려고 GetTotalDelay() 호출하는 게 말이냐 되냐...
+				//var delay = contentParameter.GetTotalDelay();
+				//InputDelayApply?.Invoke(this, new InputDelayEventArgs(delay, parameter.WordIndex));
+				//Log.Debug(I18n.Main_WaitingSubmitNext, delay);
+
 				Task.Run(async () => await AutoEnterDelayTask(contentParameter));
 			}
 			else
@@ -187,10 +191,10 @@ public class AutoEnter
 		}
 		else if (!param.HasFlag(PathFlags.PreSearch)) // Pre-search result should not be auto-entered immediately (mostly because my turn hadn't come yet)
 		{
-			var delay = param.RealDelay;
+			var delay = param.GetTotalDelay();
 			var delayBetweenInput = (int)(delay - InputStopwatch.ElapsedMilliseconds);
 			delay = Math.Max(delay, delayBetweenInput); // Failsafe to prevent way-too-fast input
-			Log.Debug("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", param.RealDelay, delayBetweenInput, delay);
+			Log.Debug("Waiting: max(delay: {delay}, delayBetweenInput: {delayBetweenInput}) = {realDelay}ms", param.GetTotalDelay(), delayBetweenInput, delay);
 			await Task.Delay(delay);
 			PerformAutoEnterNow(param.Content, param.PathInfo);
 		}
@@ -201,7 +205,7 @@ public class AutoEnter
 		if (string.IsNullOrWhiteSpace(param.Content))
 			return;
 
-		var delay = param.RealDelay;
+		var delay = param.GetTotalDelay();
 		var _delay = 0;
 		if (InputStopwatch.ElapsedMilliseconds <= delay)
 		{
@@ -238,10 +242,11 @@ public class AutoEnter
 
 	#region Input simulation
 
-	//TODO: Remove duplicate codes between 'PerformInputSimulation'
+	//FIXME: Remove duplicate codes between 'PerformInputSimulation'
 	public async Task PerformInputSimulationAutoEnter(AutoEnterInfo param)
 	{
 		isPreinputSimInProg = param.HasFlag(PathFlags.PreSearch);
+		isPreinputFinished = false;
 
 		var content = param.Content;
 		var wordIndex = param.WordIndex;
@@ -249,6 +254,9 @@ public class AutoEnter
 		var list = new List<(JamoType, char)>();
 		foreach (var ch in content)
 			list.AddRange(ch.Split().Serialize());
+
+		var startDelay = param.Options.GetStartDelay();
+		await Task.Delay(startDelay);
 
 		Log.Information(I18n.Main_InputSimulating, wordIndex, content);
 		game.UpdateChat("");
@@ -259,7 +267,7 @@ public class AutoEnter
 				valid = false; // Abort
 				break;
 			}
-			var delay = param.Options.DelayInMillis;
+			var delay = param.Options.GetDelayPerChar();
 			game.AppendChat(
 				prevChat => { (var isHangul, var composed) = prevChat.SimulateAppend(type, ch); return (isHangul, ch, composed); },
 				param.Options.DelayBeforeKeyUp,
@@ -291,6 +299,7 @@ public class AutoEnter
 		game.UpdateChat("");
 	}
 
+	// Only called from SendMessage (Send message of user chat input)
 	public async Task PerformInputSimulation(string message, AutoEnterOptions opt)
 	{
 		if (message is null)
@@ -300,6 +309,8 @@ public class AutoEnter
 		foreach (var ch in message)
 			list.AddRange(ch.Split().Serialize());
 
+		// no start delay
+
 		Log.Information(I18n.Main_InputSimulating, "Input", message);
 		game.UpdateChat("");
 		foreach ((JamoType type, var ch) in list)
@@ -308,7 +319,7 @@ public class AutoEnter
 				prevChat => { (var isHangul, var composed) = prevChat.SimulateAppend(type, ch); return (isHangul, ch, composed); },
 				opt.DelayBeforeKeyUp,
 				opt.DelayBeforeShiftKeyUp);
-			await Task.Delay(opt.DelayInMillis);
+			await Task.Delay(opt.GetDelayPerChar());
 		}
 		game.ClickSubmitButton();
 		game.UpdateChat("");

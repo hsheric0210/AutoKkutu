@@ -429,5 +429,101 @@ namespace AutoKkutuGui {
                 this["SelfAntiCheat"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int StartDelay {
+            get {
+                return ((int)(this["StartDelay"]));
+            }
+            set {
+                this["StartDelay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int StartDelayRandom {
+            get {
+                return ((int)(this["StartDelayRandom"]));
+            }
+            set {
+                this["StartDelayRandom"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int DelayPerChar {
+            get {
+                return ((int)(this["DelayPerChar"]));
+            }
+            set {
+                this["DelayPerChar"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int DelayPerCharRandom {
+            get {
+                return ((int)(this["DelayPerCharRandom"]));
+            }
+            set {
+                this["DelayPerCharRandom"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int FixStartDelay {
+            get {
+                return ((int)(this["FixStartDelay"]));
+            }
+            set {
+                this["FixStartDelay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int FixStartDelayRandom {
+            get {
+                return ((int)(this["FixStartDelayRandom"]));
+            }
+            set {
+                this["FixStartDelayRandom"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int FixDelayPerChar {
+            get {
+                return ((int)(this["FixDelayPerChar"]));
+            }
+            set {
+                this["FixDelayPerChar"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int FixDelayPerCharRandom {
+            get {
+                return ((int)(this["FixDelayPerCharRandom"]));
+            }
+            set {
+                this["FixDelayPerCharRandom"] = value;
+            }
+        }
     }
 }

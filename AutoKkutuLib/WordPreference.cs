@@ -3,16 +3,33 @@
 namespace AutoKkutuLib;
 
 [TypeConverter(typeof(WordPreferenceTypeConverter))]
-public class WordPreference
+public sealed class WordPreference : IEquatable<WordPreference?>
 {
-	private readonly WordCategories[] Attributes;
+	private readonly WordCategories[] attributes;
 
 	public WordPreference() : this(Array.Empty<WordCategories>())
 	{
 	}
 
-	public WordPreference(WordCategories[] attributes) => Attributes = attributes;
-	public WordCategories[] GetAttributes() => Attributes;
+	public WordPreference(WordCategories[] attributes) => this.attributes = attributes;
+	public WordCategories[] GetAttributes() => attributes;
+
+	public override bool Equals(object? obj) => Equals(obj as WordPreference);
+
+	public bool Equals(WordPreference? other) => other is not null && attributes.SequenceEqual(other.attributes);
+
+	public override int GetHashCode()
+	{
+		var hash = new HashCode();
+		foreach (WordCategories category in attributes)
+			hash.Add(category);
+		return hash.ToHashCode();
+	}
+
+	public static bool operator ==(WordPreference? left, WordPreference? right) => EqualityComparer<WordPreference>.Default.Equals(left, right);
+	public static bool operator !=(WordPreference? left, WordPreference? right) => !(left == right);
+
+	// static utility methods
 
 	public static string GetName(WordCategories attr)
 	{

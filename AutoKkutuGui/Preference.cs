@@ -1,155 +1,85 @@
 ﻿using AutoKkutuLib;
 using System;
+using System.Collections.Generic;
 using System.Windows.Documents;
 
 namespace AutoKkutuGui;
 
-public class Preference
+public sealed class Preference : IEquatable<Preference?>
 {
-	public bool AutoEnterEnabled
-	{
-		get; set;
-	} = true;
+	// 단어 검색
 
-	public bool AutoDBUpdateEnabled
-	{
-		get; set;
-	} = true;
+	public bool EndWordEnabled { get; set; }
 
-	public bool AutoDBWordAddEnabled
-	{
-		get; set;
-	} = true;
+	public bool AttackWordEnabled { get; set; } = true;
 
-	public bool AutoDBWordRemoveEnabled
-	{
-		get; set;
-	} = true;
+	public bool ReturnModeEnabled { get; set; }
 
-	public bool AutoDBAddEndEnabled
-	{
-		get; set;
-	} = true;
+	public bool MissionAutoDetectionEnabled { get; set; } = true;
 
-	public WordPreference ActiveWordPreference
-	{
-		get; set;
-	} = new WordPreference(WordPreference.GetDefault());
+	public int MaxDisplayedWordCount { get; set; } = 20;
 
-	public WordPreference InactiveWordPreference
-	{
-		get; set;
-	} = new WordPreference();
+	// 자동 단어 입력
 
-	public bool EndWordEnabled
-	{
-		get; set;
-	}
+	public bool AutoEnterEnabled { get; set; } = true;
 
-	public bool AttackWordEnabled
-	{
-		get; set;
-	} = true;
+	public bool DelayEnabled { get; set; }
 
-	public bool ReturnModeEnabled
-	{
-		get; set;
-	}
+	public int StartDelay { get; set; } = 10;
 
-	public bool AutoFixEnabled
-	{
-		get; set;
-	} = true;
+	public int StartDelayRandom { get; set; } = 10;
 
-	public bool MissionAutoDetectionEnabled
-	{
-		get; set;
-	} = true;
+	public int DelayPerChar { get; set; } = 10;
 
-	public bool DelayEnabled
-	{
-		get; set;
-	}
+	public int DelayPerCharRandom { get; set; } = 10;
 
-	public bool DelayPerCharEnabled
-	{
-		get; set;
-	} = true;
+	public bool DelayStartAfterWordEnterEnabled { get; set; } = true;
 
-	public int DelayInMillis
-	{
-		get; set;
-	} = 10;
+	public bool InputSimulate { get; set; }
 
-	public bool DelayStartAfterWordEnterEnabled
-	{
-		get; set;
-	} = true;
+	public bool AutoFixEnabled { get; set; } = true;
 
-	public bool InputSimulate
-	{
-		get; set;
-	}
+	public bool FixDelayEnabled { get; set; }
 
-	public int MaxDisplayedWordCount
-	{
-		get; set;
-	} = 20;
+	public int FixStartDelay { get; set; } = 10;
 
-	public bool FixDelayEnabled
-	{
-		get; set;
-	}
+	public int FixStartDelayRandom { get; set; } = 10;
 
-	public bool FixDelayPerCharEnabled
-	{
-		get; set;
-	} = true;
+	public int FixDelayPerChar { get; set; } = 10;
 
-	public int FixDelayInMillis
-	{
-		get; set;
-	} = 10;
+	public int FixDelayPerCharRandom { get; set; } = 10;
 
-	public bool RandomWordSelection
-	{
-		get; set;
-	} = true;
+	public bool RandomWordSelection { get; set; } = true;
 
-	public int RandomWordSelectionCount
-	{
-		get; set;
-	} = 5;
+	public int RandomWordSelectionCount { get; set; } = 5;
 
-	public bool SendKeyEvents
-	{
-		get; set;
-	} = true;
+	// 데이터베이스 자동 업데이트
 
-	public bool HijackACPackets
-	{
-		get; set;
-	}
+	public bool AutoDBUpdateEnabled { get; set; } = true;
 
-	public bool SimulateAntiCheat
-	{
-		get; set;
-	}
+	public bool AutoDBWordAddEnabled { get; set; } = true;
 
-	public bool DetectInputLogging
-	{
-		get; set;
-	}
+	public bool AutoDBWordRemoveEnabled { get; set; } = true;
 
-	public bool LogChatting
-	{
-		get; set;
-	}
+	public bool AutoDBAddEndEnabled { get; set; } = true;
 
-	public bool SelfAntiCheat
-	{
-		get; set;
-	}
+	// 우회 관련
+
+	public bool SendKeyEvents { get; set; } = true;
+
+	public bool HijackACPackets { get; set; }
+
+	public bool SimulateAntiCheat { get; set; }
+
+	public bool DetectInputLogging { get; set; }
+
+	public bool LogChatting { get; set; }
+
+	public bool SelfAntiCheat { get; set; }
+
+	public WordPreference ActiveWordPreference { get; set; } = new WordPreference(WordPreference.GetDefault());
+
+	public WordPreference InactiveWordPreference { get; set; } = new WordPreference();
 
 	public Preference()
 	{
@@ -157,94 +87,101 @@ public class Preference
 
 	internal Preference(Settings config)
 	{
-		// 1. Copy ConfigWindow.xaml.cs L135-163
+		// 1. Copy ConfigWindow.xaml.cs OnApply try-catch block part
 		// 2. Regex: /config\.([\w]+) = conf\.([\w]+)/     Replace: $1 = config.$2
-		LogChatting = config.LogChatting;
-		DelayEnabled = config.DelayEnabled;
-		DelayInMillis = config.DelayInMillis;
-		InputSimulate = config.InputSimulate;
-		SendKeyEvents = config.SendKeyEvents;
-		SelfAntiCheat = config.SelfAntiCheat;
+
+		// 단어 검색
 		EndWordEnabled = config.EndWordEnabled;
+		AttackWordEnabled = config.AttackWordEnabled;
+		ReturnModeEnabled = config.ReturnModeEnabled;
+		MissionAutoDetectionEnabled = config.MissionAutoDetectionEnabled;
+		MaxDisplayedWordCount = config.MaxDisplayedWordCount;
+
+		// 자동 단어 입력
+		AutoEnterEnabled = config.AutoEnterEnabled;
+		DelayEnabled = config.DelayEnabled;
+		StartDelay = (config.DelayInMillis > 0) ? config.DelayInMillis : config.StartDelay; // Backward compatibility
+		StartDelayRandom = config.StartDelayRandom;
+		DelayPerChar = (config.DelayInMillis > 0 && config.DelayPerCharEnabled) ? config.DelayInMillis : config.DelayPerChar; // Backward compatibility
+		DelayPerCharRandom = config.DelayPerCharRandom;
+
+		DelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
+		InputSimulate = config.InputSimulate;
+
 		AutoFixEnabled = config.AutoFixEnabled;
 		FixDelayEnabled = config.FixDelayEnabled;
+		FixStartDelay = (config.FixDelayInMillis > 0) ? config.FixDelayInMillis : config.FixStartDelay; // Backward compatibility
+		FixStartDelayRandom = config.FixStartDelayRandom;
+		FixDelayPerChar = (config.FixDelayInMillis > 0 && config.FixDelayPerCharEnabled) ? config.FixDelayInMillis : config.FixDelayPerChar; // Backward compatibility
+		FixDelayPerCharRandom = config.FixDelayPerCharRandom;
+
+		RandomWordSelectionCount = config.RandomWordSelectionCount;
+		RandomWordSelection = config.RandomWordSelection;
+
+		// 데이터베이스 자동 업데이트
+		AutoDBUpdateEnabled = config.AutoDBUpdateEnabled;
+		AutoDBWordAddEnabled = config.AutoDBWordAddEnabled;
+		AutoDBWordRemoveEnabled = config.AutoDBWordRemoveEnabled;
+		AutoDBAddEndEnabled = config.AutoDBAddEndEnabled;
+
+		// 우회 관련
+		SendKeyEvents = config.SendKeyEvents;
 		HijackACPackets = config.HijackACPackets;
-		FixDelayInMillis = config.FixDelayInMillis;
-		AutoEnterEnabled = config.AutoEnterEnabled;
-		ReturnModeEnabled = config.ReturnModeEnabled;
-		AttackWordEnabled = config.AttackWordEnabled;
 		SimulateAntiCheat = config.SimulateAntiCheat;
 		DetectInputLogging = config.DetectInputLogging;
-		DelayPerCharEnabled = config.DelayPerCharEnabled;
-		AutoDBUpdateEnabled = config.AutoDBUpdateEnabled;
-		AutoDBAddEndEnabled = config.AutoDBAddEndEnabled;
-		RandomWordSelection = config.RandomWordSelection;
-		AutoDBWordAddEnabled = config.AutoDBWordAddEnabled;
+		LogChatting = config.LogChatting;
+		SelfAntiCheat = config.SelfAntiCheat;
+
+		// 단어 우선순외
 		ActiveWordPreference = config.ActiveWordPreference;
-		MaxDisplayedWordCount = config.MaxDisplayedWordCount;
 		InactiveWordPreference = config.InactiveWordPreference;
-		FixDelayPerCharEnabled = config.FixDelayPerCharEnabled;
-		AutoDBWordRemoveEnabled = config.AutoDBWordRemoveEnabled;
-		RandomWordSelectionCount = config.RandomWordSelectionCount;
-		MissionAutoDetectionEnabled = config.MissionAutoDetectionEnabled;
-		DelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
 	}
 
-	public override int GetHashCode() => HashCode.Combine(HashCode.Combine(
-		AutoEnterEnabled,
-		AutoDBUpdateEnabled,
-		ActiveWordPreference,
-		EndWordEnabled,
-		ReturnModeEnabled,
-		AutoFixEnabled,
-		MissionAutoDetectionEnabled), HashCode.Combine(
-			DelayEnabled,
-			DelayPerCharEnabled,
-			DelayInMillis,
-			DelayStartAfterWordEnterEnabled,
-			MaxDisplayedWordCount,
-			InputSimulate,
-			HashCode.Combine(RandomWordSelection,
-			RandomWordSelectionCount,
-			SendKeyEvents,
-			HijackACPackets,
-			SimulateAntiCheat,
-			DetectInputLogging,
-			LogChatting,
-			SelfAntiCheat)));
+	public override bool Equals(object? obj) => Equals(obj as Preference);
 
-	public override bool Equals(object? obj)
+	public bool Equals(Preference? other) => other is not null && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && DelayEnabled == other.DelayEnabled && StartDelay == other.StartDelay && StartDelayRandom == other.StartDelayRandom && DelayPerChar == other.DelayPerChar && DelayPerCharRandom == other.DelayPerCharRandom && DelayStartAfterWordEnterEnabled == other.DelayStartAfterWordEnterEnabled && InputSimulate == other.InputSimulate && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && SendKeyEvents == other.SendKeyEvents && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
+
+	public override int GetHashCode()
 	{
-		if (obj is not Preference other)
-			return false;
-
-		return LogChatting == other.LogChatting
-			&& DelayEnabled == other.DelayEnabled
-			&& DelayInMillis == other.DelayInMillis
-			&& InputSimulate == other.InputSimulate
-			&& SendKeyEvents == other.SendKeyEvents
-			&& SelfAntiCheat == other.SelfAntiCheat
-			&& AutoFixEnabled == other.AutoFixEnabled
-			&& EndWordEnabled == other.EndWordEnabled
-			&& FixDelayEnabled == other.FixDelayEnabled
-			&& HijackACPackets == other.HijackACPackets
-			&& AutoEnterEnabled == other.AutoEnterEnabled
-			&& FixDelayInMillis == other.FixDelayInMillis
-			&& AttackWordEnabled == other.AttackWordEnabled
-			&& ReturnModeEnabled == other.ReturnModeEnabled
-			&& SimulateAntiCheat == other.SimulateAntiCheat
-			&& DetectInputLogging == other.DetectInputLogging
-			&& AutoDBUpdateEnabled == other.AutoDBUpdateEnabled
-			&& DelayPerCharEnabled == other.DelayPerCharEnabled
-			&& RandomWordSelection == other.RandomWordSelection
-			&& ActiveWordPreference == other.ActiveWordPreference
-			&& MaxDisplayedWordCount == other.MaxDisplayedWordCount
-			&& InactiveWordPreference == other.InactiveWordPreference
-			&& FixDelayPerCharEnabled == other.FixDelayPerCharEnabled
-			&& RandomWordSelectionCount == other.RandomWordSelectionCount
-			&& MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled
-			&& DelayStartAfterWordEnterEnabled == other.DelayStartAfterWordEnterEnabled;
+		var hash = new HashCode();
+		hash.Add(EndWordEnabled);
+		hash.Add(AttackWordEnabled);
+		hash.Add(ReturnModeEnabled);
+		hash.Add(MissionAutoDetectionEnabled);
+		hash.Add(MaxDisplayedWordCount);
+		hash.Add(AutoEnterEnabled);
+		hash.Add(DelayEnabled);
+		hash.Add(StartDelay);
+		hash.Add(StartDelayRandom);
+		hash.Add(DelayPerChar);
+		hash.Add(DelayPerCharRandom);
+		hash.Add(DelayStartAfterWordEnterEnabled);
+		hash.Add(InputSimulate);
+		hash.Add(AutoFixEnabled);
+		hash.Add(FixDelayEnabled);
+		hash.Add(FixStartDelay);
+		hash.Add(FixStartDelayRandom);
+		hash.Add(FixDelayPerChar);
+		hash.Add(FixDelayPerCharRandom);
+		hash.Add(RandomWordSelection);
+		hash.Add(RandomWordSelectionCount);
+		hash.Add(AutoDBUpdateEnabled);
+		hash.Add(AutoDBWordAddEnabled);
+		hash.Add(AutoDBWordRemoveEnabled);
+		hash.Add(AutoDBAddEndEnabled);
+		hash.Add(SendKeyEvents);
+		hash.Add(HijackACPackets);
+		hash.Add(SimulateAntiCheat);
+		hash.Add(DetectInputLogging);
+		hash.Add(LogChatting);
+		hash.Add(SelfAntiCheat);
+		hash.Add(ActiveWordPreference);
+		hash.Add(InactiveWordPreference);
+		return hash.ToHashCode();
 	}
+
+	public static bool operator ==(Preference? left, Preference? right) => EqualityComparer<Preference>.Default.Equals(left, right);
+	public static bool operator !=(Preference? left, Preference? right) => !(left == right);
 }
 
 public static class ConfigEnums

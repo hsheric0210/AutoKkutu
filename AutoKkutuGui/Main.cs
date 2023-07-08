@@ -228,7 +228,7 @@ public static class Main
 		if (!AutoKkutu.HasGameSet)
 			return;
 
-		var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.DelayInMillis, Prefs.DelayPerCharEnabled, Prefs.InputSimulate);
+		var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom, Prefs.InputSimulate);
 		if (opt.SimulateInput)
 		{
 			Task.Run(async () => await AutoKkutu.Game.AutoEnter.PerformInputSimulation(message, opt));
@@ -293,7 +293,7 @@ public static class Main
 		}
 		else
 		{
-			var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.DelayInMillis, Prefs.DelayPerCharEnabled, Prefs.InputSimulate);
+			var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom, Prefs.InputSimulate);
 			var time = AutoKkutu.Game.GetTurnTimeMillis();
 			(var wordToEnter, var timeover) = args.FilteredWordList.ChooseBestWord(opt, time);
 			if (string.IsNullOrEmpty(wordToEnter))
@@ -371,8 +371,10 @@ public static class Main
 			AutoKkutu.Game.AutoEnter.PerformAutoFix(autoPathFindCache.FilteredWordList, new AutoEnterInfo(
 						new AutoEnterOptions(Prefs.DelayEnabled,
 							Prefs.DelayStartAfterWordEnterEnabled,
-							Prefs.DelayInMillis,
-							Prefs.DelayPerCharEnabled,
+							Prefs.StartDelay,
+							Prefs.StartDelayRandom,
+							Prefs.DelayPerChar,
+							Prefs.DelayPerCharRandom,
 							Prefs.InputSimulate),
 						autoPathFindCache.Details, wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
 	}
@@ -460,10 +462,13 @@ public static class Main
 			return;
 
 		AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(
-			new AutoEnterOptions(Prefs.DelayEnabled,
+			new AutoEnterOptions(
+				Prefs.DelayEnabled,
 				Prefs.DelayStartAfterWordEnterEnabled,
-				Prefs.DelayInMillis,
-				Prefs.DelayPerCharEnabled,
+				Prefs.StartDelay,
+				Prefs.StartDelayRandom,
+				Prefs.DelayPerChar,
+				Prefs.DelayPerCharRandom,
 				Prefs.InputSimulate),
 			PathDetails.Empty,
 			word));
