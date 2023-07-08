@@ -390,7 +390,7 @@ public static class Main
 	{
 		if (Prefs.AutoEnterEnabled)
 		{
-			if (preSearch?.Details.Condition.Equals(args.Condition) == true)
+			if (preSearch?.Details.Condition.IsSimilar(args.Condition) == true)
 			{
 				Log.Debug("Using the pre-search result for: {condition}", preSearch.Details.Condition);
 				TryAutoEnter(preSearch, usedPresearchResult: true);

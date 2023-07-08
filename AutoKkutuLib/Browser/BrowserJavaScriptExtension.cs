@@ -5,23 +5,6 @@ namespace AutoKkutuLib.Browser;
 public static class BrowserJavaScriptExtension
 {
 	/// <summary>
-	/// 주어진 <paramref name="script"/>를 브라우저에서 실행하고, 만약 오류가 발생하면 해당 오류 메세지를 가져옵니다.
-	/// </summary>
-	/// <param name="script">실행할 JavaScript</param>
-	/// <returns>만약 오류가 발생하였다면 <c>(true, 오류 메세지...)</c>, 이외에는 <c>(false, null)</c></returns>
-	public static async Task<(bool, string?)> EvaluateScriptAndGetErrorAsync(this BrowserBase browser, string script)
-	{
-		Task<JavaScriptCallback> task = browser.EvaluateJavaScriptRawAsync(script);
-
-		var timeout = Task.Delay(TimeSpan.FromMilliseconds(5));
-		if (await Task.WhenAny(task, timeout) == timeout) // https://stackoverflow.com/a/11191070
-			return (false, "Execution time-out");
-
-		JavaScriptCallback result = await task;
-		return result.Success ? (false, null) : (true, result.Message);
-	}
-
-	/// <summary>
 	/// 주어진 <paramref name="script"/>를 브라우저에서 실행하고, 결과를 주어진 리스트 타입으로 가져옵니다.
 	/// </summary>
 	/// <param name="script">실행할 JavaScript</param>
@@ -31,7 +14,7 @@ public static class BrowserJavaScriptExtension
 	{
 		try
 		{
-			var collectionResult = (await browser.EvaluateJavaScriptRawAsync(script)).Result;
+			var collectionResult = await browser.EvaluateJavaScriptRawAsync(script);
 			if (collectionResult == null)
 				return null;
 			return ((ICollection<object>)collectionResult).Select(e => (T)e).ToList();
@@ -58,7 +41,7 @@ public static class BrowserJavaScriptExtension
 	{
 		try
 		{
-			return (await browser.EvaluateJavaScriptRawAsync(script)).Result?.ToString() ?? defaultResult;
+			return (await browser.EvaluateJavaScriptRawAsync(script))?.ToString() ?? defaultResult;
 		}
 		catch (NullReferenceException)
 		{
@@ -92,7 +75,7 @@ public static class BrowserJavaScriptExtension
 	{
 		try
 		{
-			var interm = (await browser.EvaluateJavaScriptRawAsync(script)).Result;
+			var interm = await browser.EvaluateJavaScriptRawAsync(script);
 			return interm == null ? defaultResult : Convert.ToInt32(interm, CultureInfo.InvariantCulture);
 		}
 		catch (NullReferenceException)
@@ -127,7 +110,7 @@ public static class BrowserJavaScriptExtension
 	{
 		try
 		{
-			return Convert.ToBoolean((await browser.EvaluateJavaScriptRawAsync(script)).Result ?? defaultResult);
+			return Convert.ToBoolean(await browser.EvaluateJavaScriptRawAsync(script) ?? defaultResult);
 		}
 		catch (NullReferenceException)
 		{

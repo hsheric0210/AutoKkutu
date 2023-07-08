@@ -40,7 +40,7 @@ public static class WordToNodeExtension
 	{
 		return word == null
 			? throw new ArgumentNullException(nameof(word))
-			: word.Length >= 4 ? word.Substring(word.Length - 3, 2) : word.Last().ToString();
+			: word.Length >= 4 ? word.Substring(word.Length - 2, 2) : word.Last().ToString();
 	}
 
 	/// <summary>

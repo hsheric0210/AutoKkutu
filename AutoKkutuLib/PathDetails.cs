@@ -27,9 +27,9 @@ public readonly struct PathDetails
 	public PathDetails WithFlags(PathFlags flags) => new(Condition, this.flags | flags, ReuseAlreadyUsed, MaxDisplayed);
 	public PathDetails WithoutFlags(PathFlags flags) => new(Condition, this.flags & ~flags, ReuseAlreadyUsed, MaxDisplayed);
 
-	public override bool Equals([NotNullWhen(true)] object? obj) => obj is PathDetails other && IsSimilar(other) && flags == other.flags && MaxDisplayed == other.MaxDisplayed;
+	public override bool Equals([NotNullWhen(true)] object? obj) => obj is PathDetails other && IsSimilar(other) && Condition.Equals(other.Condition) && flags == other.flags && MaxDisplayed == other.MaxDisplayed;
 
-	public bool IsSimilar(PathDetails other) => Condition.Equals(other.Condition)
+	public bool IsSimilar(PathDetails other) => Condition.IsSimilar(other.Condition)
 		&& ReuseAlreadyUsed == other.ReuseAlreadyUsed
 		&& HasFlag(PathFlags.UseEndWord) == other.HasFlag(PathFlags.UseEndWord)
 		&& HasFlag(PathFlags.UseAttackWord) == other.HasFlag(PathFlags.UseAttackWord)

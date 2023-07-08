@@ -12,7 +12,7 @@ internal class BasicHandler : JavaScriptHandlerBase
 
 	public override string HandlerName => "Basic Handler";
 
-	public BasicHandler(BrowserBase jsEvaluator) : base(jsEvaluator)
+	public BasicHandler(BrowserBase browser) : base(browser)
 	{
 	}
 }

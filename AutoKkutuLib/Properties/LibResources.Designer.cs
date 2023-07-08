@@ -61,9 +61,8 @@ namespace AutoKkutuLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /* injectedJs : AutoKkutu JavaScript injection
+        ///   Looks up a localized string similar to /* mainInjected.js : AutoKkutu JavaScript injection
         /// * Reserved Names:
-        /// * ___wsHook___
         /// * ___originalWS___
         /// * ___wsFilter___
         /// * ___nativeSend___
@@ -71,22 +70,21 @@ namespace AutoKkutuLib.Properties {
         /// * ___passthru___
         /// * ___commSend___
         /// * ___commRecv___
+        /// * ___getComputedStyle___
+        /// * ___baseNamespace___
         /// */
         ///
         ////* eslint-disable no-proto */
         ////* eslint-disable accessor-pairs */
         ////* eslint-disable no-global-assign */
         ///
-        ////* wsHook.js
-        /// * https://github.com/skepticfx/wshook
-        /// * Reference: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
-        /// */
-        ///(function () {
-        ///    // Mut [rest of string was truncated]&quot;;.
+        ///___baseNamespace___ = function () { }
+        ///
+        ///___getComputedStyle___ = window.getComputedStyle; // Backup before being overwri [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string injectedJs {
+        public static string mainHelperJs {
             get {
-                return ResourceManager.GetString("injectedJs", resourceCulture);
+                return ResourceManager.GetString("mainHelperJs", resourceCulture);
             }
         }
     }

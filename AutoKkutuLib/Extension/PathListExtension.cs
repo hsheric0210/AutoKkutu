@@ -19,6 +19,9 @@ public static class PathListExtension
 		if (availableWordList is null)
 			throw new ArgumentNullException(nameof(availableWordList));
 
+		if (!delay.DelayEnabled) // Skip filter
+			return (availableWordList.Count <= wordIndex ? null : availableWordList[wordIndex].Content, false);
+
 		// FIXME: Presearch 시 Time-Filter 적용이 안되는 버그
 		// -> Pre-search 시 ChooseBestWord 호출할 때 remainingTurnTime를 min(<현재 게임 한 사람당 턴 시간>, <남은 라운드 시간>)으로 설정하여 호출하도록 하기
 

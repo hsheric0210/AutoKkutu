@@ -45,12 +45,12 @@ public partial class Game
 		}
 	}
 
-	public void NotifyGameMode(GameMode gameMode)
+	public void NotifyGameMode(GameMode gameMode, bool byDOM = false)
 	{
 		if (gameMode == CurrentGameMode)
 			return;
 		CurrentGameMode = gameMode;
-		Log.Debug("Game mode change detected : {gameMode}", gameMode.GameModeName());
+		Log.Debug("Game mode change detected : {gameMode} (byDOM: {byDOM})", gameMode.GameModeName(), byDOM);
 		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 	}
 

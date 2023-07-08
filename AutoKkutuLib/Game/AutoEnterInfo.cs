@@ -57,8 +57,10 @@ public readonly struct AutoEnterOptions
 		delayBeforeShiftKeyUp = (int)(delayPerChar * 1.2);
 	}
 
-	private static int GetDelay(int delay, int random)
+	private int GetDelay(int delay, int random)
 	{
+		if (!DelayEnabled)
+			return 0;
 		if (delay <= 0)
 			return delay;
 		return Random.Shared.Next(delay - delay * random / 100, delay + delay * random / 100 + 1); // +1 to bypass exclusive-maxValue restriction
@@ -78,7 +80,7 @@ public readonly struct AutoEnterOptions
 	/// 주어진 단어에 대해 최악의 경우(입력 시작 시간과 글자 입력 간 지연 시간이 최대)를 가정하고 최대 입력 지연 시간을 계산하여 반환합니다.
 	/// </summary>
 	/// <param name="input">입려하려는 내용</param>
-	public int GetMaxDelay(string? input) => startDelay + startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : (input.Length * (delayPerChar + delayPerChar * delayPerCharRandom / 100)));
+	public int GetMaxDelay(string? input) => DelayEnabled ? (startDelay + startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : (input.Length * (delayPerChar + delayPerChar * delayPerCharRandom / 100)))) : 0;
 
 	/// <summary>
 	/// 주어진 단어에 대해 랜덤값 적용된 입력 시작 지연과 랜덤값 적용된 글자 입력 간 지연을 고려하여 적용될 총 딜레이.
@@ -91,5 +93,5 @@ public readonly struct AutoEnterOptions
 	/// 주어진 단어에 대해 최적의 경우(입력 시작 시간과 글자 입력 간 지연 시간이 최소)를 가정하고 최소 입력 지연 시간을 계산하여 반환합니다.
 	/// </summary>
 	/// <param name="input">입력하려는 단어</param>
-	public int GetMinDelay(string? input) => startDelay - startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : (input.Length * (delayPerChar - delayPerChar * delayPerCharRandom / 100)));
+	public int GetMinDelay(string? input) => DelayEnabled ? (startDelay - startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : (input.Length * (delayPerChar - delayPerChar * delayPerCharRandom / 100)))) : 0;
 }

@@ -41,6 +41,15 @@ public struct WordCondition
 		&& string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase)
 		&& (!SubAvailable || string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
 
+	public bool IsSimilar(WordCondition? o)
+	{
+		return o is WordCondition other && MissionChar == other.MissionChar
+		&& (string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
+			|| SubAvailable && string.Equals(SubChar, other.Char, StringComparison.OrdinalIgnoreCase)
+			|| other.SubAvailable && string.Equals(Char, other.SubChar, StringComparison.OrdinalIgnoreCase)
+			|| SubAvailable && other.SubAvailable && string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
+	}
+
 	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar);
 
 	public override string ToString()

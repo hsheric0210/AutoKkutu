@@ -38,7 +38,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		WsServer = LocalWebSocketServer.Start(wsPort);
 		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
 
-		nameRandom = BrowserRandomNameMapping.CreateForWsHook(this);
+		nameRandom = BrowserRandomNameMapping.MainHelperJs(this);
 		nameRandom.Generate("___wsGlobal___", 16383);
 		nameRandom.Generate("___wsBuffer___", 16384);
 		nameRandom.Add("___wsAddr___", wsAddrClient);
@@ -103,7 +103,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
-			["source"] = nameRandom.ApplyTo(SeleniumResources.communicatorJs + ';' + LibResources.injectedJs)
+			["source"] = nameRandom.ApplyTo(SeleniumResources.communicatorJs + ';' + LibResources.mainHelperJs)
 		});
 		Log.Verbose("Injected pre-load scripts.");
 		driver.Url = config.MainPage;
@@ -126,12 +126,12 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		return localEP.Port;
 	}
 
-	public override Task<JavaScriptCallback> EvaluateJavaScriptRawAsync(string script)
+	public override Task<object?> EvaluateJavaScriptRawAsync(string script)
 	{
 		var result = driver.ExecuteScript("return " + script); // EVERTHING is IIFE(Immediately Invoked Function Expressions) in WebDriver >:(
 		if (result == null)
 			Log.Warning("Result of {js} is null. Possible undefined or null property.", script);
-		return Task.FromResult(new JavaScriptCallback(result?.ToString() ?? "null", true, result));
+		return Task.FromResult(result);
 	}
 
 	public override void ExecuteJavaScript(string script, string? errorMessage = null)

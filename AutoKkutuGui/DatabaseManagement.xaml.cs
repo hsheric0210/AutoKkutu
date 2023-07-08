@@ -7,12 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Sqlite;
 using AutoKkutuLib;
-using AutoKkutuLib.Database.Jobs;
 using AutoKkutuLib.Node;
 using AutoKkutuLib.Word;
+using AutoKkutuLib.Jobs;
 
 namespace AutoKkutuGui;
 

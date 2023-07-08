@@ -120,12 +120,8 @@ public class CefSharpBrowser : BrowserBase
 	{
 		var serializer = new XmlSerializer(typeof(CefConfigDto));
 
-		jsbGlobalObjectName = GenerateScriptTypeName(1677243, true);
-		jsbObjectName = GenerateScriptTypeName(1677244, true);
-
-		nameRandom = BrowserRandomNameMapping.CreateForWsHook(this);
-		nameRandom.Add("___jsbGlobal___", jsbGlobalObjectName);
-		nameRandom.Add("___jsbObj___", jsbObjectName);
+		jsbGlobalObjectName = GenerateRandomString(1677243);
+		jsbObjectName = GenerateRandomString(1677244);
 
 		config = GetDefaultCefConfig();
 		try
@@ -161,6 +157,11 @@ public class CefSharpBrowser : BrowserBase
 		}
 
 		Log.Verbose("Cef settings applied.");
+
+		nameRandom = BrowserRandomNameMapping.MainHelperJs(this);
+		nameRandom.Add("___jsbGlobal___", jsbGlobalObjectName);
+		nameRandom.Add("___jsbObj___", jsbObjectName);
+		Log.Debug("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
 	}
 
 	public override void LoadFrontPage()
@@ -178,7 +179,6 @@ public class CefSharpBrowser : BrowserBase
 		browser.FrameLoadEnd += OnFrameLoadEnd;
 		browser.LoadError += OnLoadError;
 
-		Log.Debug("JavaScript type name randomization: {nameRandom}", nameRandom);
 		browser.IsBrowserInitializedChanged += OnInitialized;
 
 		Log.Verbose("ChromiumWebBrowser instance created.");
@@ -195,7 +195,7 @@ public class CefSharpBrowser : BrowserBase
 		// 'FrameLoadStart' 이벤트 받자마자 스크립트 실행 등록시키더라도, 스크립트가 큐에 등록되고 전송되는 사이에 사이트 측 스크립트가 먼저 실행되어 버릴 위험성이 있음.
 		// 그러나, 'Page.addScriptToEvaluateOnNewDocumentAsync'는 크롬 자체 지원 기능이기도 하고, 무엇보다 사이트의 스크립트가 로드되기 전에 실행되는 것을 보장함. (https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-addScriptToEvaluateOnNewDocument)
 		browser.GetDevToolsClient().Page.EnableAsync();
-		browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(CefSharpResources.communicatorJs + ';' + LibResources.injectedJs));
+		browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(CefSharpResources.communicatorJs + ';' + LibResources.mainHelperJs));
 
 		Log.Information("ChromiumWebBrowser initialized.");
 	}
@@ -258,16 +258,20 @@ public class CefSharpBrowser : BrowserBase
 		}
 	}
 
-	public override async Task<JavaScriptCallback> EvaluateJavaScriptRawAsync(string script)
+	public override async Task<object?> EvaluateJavaScriptRawAsync(string script)
 	{
 		if (!browser.CanExecuteJavascriptInMainFrame)
-			return new JavaScriptCallback("MainFrame not ready", false, null);
+		{
+			Log.Warning("Trying to execute JavaScript before mainframe initialization finished.");
+			return null;
+		}
+
 		IFrame frame = browser.GetMainFrame();
 		if (frame is null)
-			return new JavaScriptCallback("MainFrame is null", false, null);
+			throw new InvalidOperationException("MainFrame is null");
 		Task<JavascriptResponse> task = frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(1));
 		await task.WaitAsync(TimeSpan.FromSeconds(1));
 		JavascriptResponse response = await task; // Will be finished immediately because the task had already finished @ L248
-		return new JavaScriptCallback(response.Message, response.Success, response.Result);
+		return response.Result;
 	}
 }

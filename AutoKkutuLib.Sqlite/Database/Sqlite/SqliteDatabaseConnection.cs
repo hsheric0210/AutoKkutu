@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Database.Sql;
 using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
+using Dapper;
 using Microsoft.Data.Sqlite;
 using Serilog;
 
@@ -39,6 +40,10 @@ public sealed class SqliteDatabaseConnection : AbstractDatabaseConnection
 
 			nativeConnection.CreateFunction<int, int, int, int, int, int, int>(connection.GetWordPriorityFuncName(), WordPriorityFunc, true);
 			nativeConnection.CreateFunction<string, int, string, int, int, int, int, int, int, int, int, int>(connection.GetMissionWordPriorityFuncName(), MissionWordPriorityFunc, true);
+
+			// Speed optimization
+			nativeConnection.Execute("PRAGMA synchronous = OFF;");
+			nativeConnection.Execute("PRAGMA journal_mode = MEMORY;");
 
 			// Check the database tables
 			connection.CheckTable();

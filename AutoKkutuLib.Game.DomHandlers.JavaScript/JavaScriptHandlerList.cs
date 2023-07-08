@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Game.DomHandlers;
-using AutoKkutuLib.Handlers.JavaScript;
 
 namespace AutoKkutuLib.Handlers.JavaScript;
 public class JavaScriptHandlerList : IDomHandlerList
@@ -11,7 +10,6 @@ public class JavaScriptHandlerList : IDomHandlerList
 	{
 		RegisterHandler(new BasicHandler(browser));
 		RegisterHandler(new SimpleBypassHandler(browser));
-		RegisterHandler(new OptimizedBypassHandler(browser));
 	}
 
 	public void RegisterHandler(DomHandlerBase handler) => RegisteredHandlers.Add(handler);

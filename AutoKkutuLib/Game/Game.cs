@@ -104,7 +104,7 @@ public partial class Game : IGame
 
 	public int GetTurnTimeMillis() => GetTurnTimeMillisAsync().Result;
 
-	public bool IsPathExpired(PathDetails path) => !path.HasFlag(PathFlags.ManualSearch) && CurrentWordCondition != null && !path.Condition.Equals(CurrentWordCondition);
+	public bool IsPathExpired(PathDetails path) => !path.HasFlag(PathFlags.ManualSearch) && CurrentWordCondition != null && !path.Condition.IsSimilar(CurrentWordCondition);
 
 	public bool RescanIfPathExpired(PathDetails path)
 	{

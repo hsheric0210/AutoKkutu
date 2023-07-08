@@ -115,7 +115,7 @@ public partial class Game
 			return;
 		typingWordCache = word;
 		currentPresentedWordCacheTime = Environment.TickCount64;
-		Log.Information("Word detected : {word} (delay: {delta})", word, tDelta);
+		Log.Verbose("Word detected : {word} (delay: {delta})", word, tDelta);
 		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));
 	}
 
@@ -123,7 +123,7 @@ public partial class Game
 	{
 		GameMode gameMode = await domHandler.GetGameMode();
 		if (gameMode != GameMode.None)
-			NotifyGameMode(gameMode);
+			NotifyGameMode(gameMode, true);
 	}
 
 	// TODO: Return nothing when the current gamemode is 'Free'

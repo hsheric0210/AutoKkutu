@@ -1,4 +1,6 @@
 ﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Game.WsHandlers.JavaScript.Properties;
+using Serilog;
 using System.Collections.Immutable;
 using System.Text.Json.Nodes;
 
@@ -20,21 +22,34 @@ public class WsHandlerJJoriping : WsHandlerBase
 		new Uri("https://kkutu.co.kr/"),
 		new Uri("https://kkutu.io/"),
 	};
+	private readonly BrowserRandomNameMapping mapping;
 
 	public override string MessageType_Welcome => "welcome";
 	public override string MessageType_Room => "room";
+	public override string MessageType_RoundReady => "roundReady";
 	public override string MessageType_TurnStart => "turnStart";
 	public override string MessageType_TurnEnd => "turnEnd";
 	public override string MessageType_TurnError => "turnError";
 
-	public WsHandlerJJoriping(BrowserBase browser) : base(browser) { }
+	public WsHandlerJJoriping(BrowserBase browser) : base(browser)
+	{
+		var mapping = new BrowserRandomNameMapping(browser);
+		mapping.GenerateScriptType("___roomMode2GameMode___", CommonNameRegistry.RoomModeToGameMode);
+		mapping.GenerateScriptType("___ruleKeys___", 1668);
+		mapping.GenerateScriptType("___helperRegistered___", 1669);
+		Log.Debug("wsHandlerHelperJs name mapping: {nameRandom}", mapping);
+		this.mapping = mapping;
+	}
 
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
-		=> await Browser.RegisterScriptFunction(alreadyRegistered, CommonNameRegistry.RoomModeToGameMode, "id", "return Object.keys(JSON.parse(document.getElementById('RULE').textContent))[id]");
+	{
+		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(1669)))
+			await Browser.EvaluateJavaScriptAsync(mapping.ApplyTo(JsResources.wsHandlerHelperJs));
+	}
 
 	public override async Task RegisterWebSocketFilter()
 	{
-		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
+		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WebSocketFilter);
 		if (await Browser.EvaluateJavaScriptBoolAsync($"{wsFilter}.registered"))
 			return;
 		Browser.ExecuteJavaScript(@$"
@@ -51,7 +66,7 @@ public class WsHandlerJJoriping : WsHandlerBase
 	{
 		var userId = json["id"]?.GetValue<string>() ?? throw InvalidWsMessage("welcome", "id");
 
-		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WsFilter, false, true);
+		var wsFilter = Browser.GetScriptTypeName(CommonNameRegistry.WebSocketFilter);
 
 		// IPC QUOTA OPTIMIZATION: only copy room.players, room.gaming, room.mode, room.game.seq
 		Browser.ExecuteJavaScript(@$"{wsFilter}['room']=function(d){{
@@ -99,7 +114,7 @@ return null;
 		JsonObject game = (room["game"] ?? throw InvalidWsMessage("room", "room.game")).AsObject();
 		var gameSeq = (game["seq"] ?? throw InvalidWsMessage("room", "room.game.seq")).AsArray().Select(ParsePlayer).ToImmutableList();
 
-		var modeString = await Browser.EvaluateJavaScriptAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode, false)}({modeId})", errorPrefix: "ParseRoom");
+		var modeString = await Browser.EvaluateJavaScriptAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode)}({modeId})", errorPrefix: "ParseRoom");
 		var mode = modeString switch
 		{
 			"ESH" or "KSH" => GameMode.LastAndFirst,
@@ -145,6 +160,16 @@ return null;
 			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("TurnError", "code"),
 			json["value"]?.GetValue<string>());
 	}
+
+	public override async Task<WsTypingBattleRoundReady> ParseTypingBattleRoundReady(JsonNode json)
+	{
+		return new(json["round"]?.GetValue<int>() ?? throw InvalidWsMessage("TurnError", "round"),
+			(json["list"] ?? throw InvalidWsMessage("TurnError", "list")).AsArray().Select(n => n!.GetValue<string>()).ToImmutableList());
+	}
+
+	public override async Task<WsTypingBattleTurnStart> ParseTypingBattleTurnStart(JsonNode json) => new(json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"));
+
+	public override async Task<WsTypingBattleTurnEnd> ParseTypingBattleTurnEnd(JsonNode json) => new(json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"));
 
 	private static Exception InvalidWsMessage(string messageType, string expectedAttribute)
 		=> new FormatException($"'{messageType}' message without '{expectedAttribute}' attribute");

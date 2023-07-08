@@ -68,3 +68,32 @@ public class WsTurnError
 		Value = value;
 	}
 }
+
+public class WsTypingBattleRoundReady
+{
+	public int Round { get; }
+	public IImmutableList<string> List { get; }
+	public WsTypingBattleRoundReady(int round, IImmutableList<string> list)
+	{
+		Round = round;
+		List = list;
+	}
+}
+
+public class WsTypingBattleTurnStart
+{
+	public long RoundTime { get; }
+	public WsTypingBattleTurnStart(long roundTime)
+	{
+		RoundTime = roundTime;
+	}
+}
+
+public class WsTypingBattleTurnEnd
+{
+	public bool Ok { get; }
+	public WsTypingBattleTurnEnd(bool ok)
+	{
+		Ok = ok;
+	}
+}

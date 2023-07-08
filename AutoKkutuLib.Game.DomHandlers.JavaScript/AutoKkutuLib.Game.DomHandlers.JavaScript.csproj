@@ -15,4 +15,19 @@
         <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Properties\JsResources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>JsResources.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Properties\JsResources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>JsResources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
 </Project>

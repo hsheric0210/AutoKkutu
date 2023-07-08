@@ -48,3 +48,37 @@ public enum GameMode
 	/// </summary>
 	LastAndFirstFree
 }
+
+public enum GameImplMode
+{
+	None = 0,
+	/// <summary>
+	/// 끝말잇기, 끄투, 쿵쿵따, 앞말잇기, 가운뎃말잇기, 자유, 자유 끝말잇기, 전체 등
+	/// </summary>
+	Classic,
+
+	/// <summary>
+	/// 타자 대결
+	/// </summary>
+	TypingBattle
+}
+
+public static class GameImplModeExtension
+{
+	public static GameImplMode ToGameImplMode(this GameMode mode)
+	{
+		return mode switch
+		{
+			GameMode.LastAndFirst
+			or GameMode.FirstAndLast
+			or GameMode.MiddleAndFirst
+			or GameMode.Kkutu
+			or GameMode.KungKungTta
+			or GameMode.All
+			or GameMode.Free
+			or GameMode.LastAndFirstFree => GameImplMode.Classic,
+			GameMode.TypingBattle => GameImplMode.TypingBattle,
+			_ => GameImplMode.None,
+		};
+	}
+}
