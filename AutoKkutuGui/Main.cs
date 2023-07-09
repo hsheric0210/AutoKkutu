@@ -1,4 +1,4 @@
-﻿#define SELENIUM
+﻿//#define SELENIUM
 using AutoKkutuLib;
 using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database;

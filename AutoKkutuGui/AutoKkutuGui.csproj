@@ -147,7 +147,6 @@
         <ProjectReference Include="..\AutoKkutuLib.Game.WsHandlers.JavaScript\AutoKkutuLib.Game.WsHandlers.JavaScript.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
-        <ProjectReference Include="..\AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
         <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
     </ItemGroup>
