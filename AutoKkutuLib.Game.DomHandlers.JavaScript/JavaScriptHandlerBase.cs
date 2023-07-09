@@ -15,36 +15,36 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		Browser = browser;
 
 		// functions
-		var mapping = new BrowserRandomNameMapping(browser);
-		mapping.GenerateScriptType("___gameInProgress___", CommonNameRegistry.GameInProgress);
-		mapping.GenerateScriptType("___getGameMode___", CommonNameRegistry.GameMode);
-		mapping.GenerateScriptType("___getPresentWord___", CommonNameRegistry.PresentedWord);
-		mapping.GenerateScriptType("___isMyTurn___", CommonNameRegistry.IsMyTurn);
-		mapping.GenerateScriptType("___getTurnError___", CommonNameRegistry.TurnError);
-		mapping.GenerateScriptType("___getTurnTime___", CommonNameRegistry.TurnTime);
-		mapping.GenerateScriptType("___getRoundTime___", CommonNameRegistry.RoundTime);
-		mapping.GenerateScriptType("___getRoundIndex___", CommonNameRegistry.RoundIndex);
-		mapping.GenerateScriptType("___getTurnHint___", CommonNameRegistry.TurnHint);
-		mapping.GenerateScriptType("___getMissionChar___", CommonNameRegistry.MissionChar);
-		mapping.GenerateScriptType("___getWordHistory___", CommonNameRegistry.WordHistory);
-		mapping.GenerateScriptType("___sendKeyEvents___", CommonNameRegistry.SendKeyEvents);
-		mapping.GenerateScriptType("___updateChat___", CommonNameRegistry.UpdateChat);
-		mapping.GenerateScriptType("___clickSubmit___", CommonNameRegistry.ClickSubmit);
-		mapping.GenerateScriptType("___funcRegistered___", CommonNameRegistry.FunctionsRegistered);
+		var names = BrowserRandomNameMapping.BaseJs(browser);
+		names.GenerateScriptType("___gameInProgress___", CommonNameRegistry.GameInProgress);
+		names.GenerateScriptType("___getGameMode___", CommonNameRegistry.GameMode);
+		names.GenerateScriptType("___getPresentWord___", CommonNameRegistry.PresentedWord);
+		names.GenerateScriptType("___isMyTurn___", CommonNameRegistry.IsMyTurn);
+		names.GenerateScriptType("___getTurnError___", CommonNameRegistry.TurnError);
+		names.GenerateScriptType("___getTurnTime___", CommonNameRegistry.TurnTime);
+		names.GenerateScriptType("___getRoundTime___", CommonNameRegistry.RoundTime);
+		names.GenerateScriptType("___getRoundIndex___", CommonNameRegistry.RoundIndex);
+		names.GenerateScriptType("___getTurnHint___", CommonNameRegistry.TurnHint);
+		names.GenerateScriptType("___getMissionChar___", CommonNameRegistry.MissionChar);
+		names.GenerateScriptType("___getWordHistory___", CommonNameRegistry.WordHistory);
+		names.GenerateScriptType("___sendKeyEvents___", CommonNameRegistry.SendKeyEvents);
+		names.GenerateScriptType("___updateChat___", CommonNameRegistry.UpdateChat);
+		names.GenerateScriptType("___clickSubmit___", CommonNameRegistry.ClickSubmit);
+		names.GenerateScriptType("___funcRegistered___", CommonNameRegistry.FunctionsRegistered);
 
 		// cache properties TODO: add registry id
 		int i = 16999;
-		mapping.GenerateScriptType("___roomHeadMode___", i++);
-		mapping.GenerateScriptType("___gameDisplay___", i++);
-		mapping.GenerateScriptType("___myInputDisplay___", i++);
-		mapping.GenerateScriptType("___turnTimeDisplay___", i++);
-		mapping.GenerateScriptType("___roundTimeDisplay___", i++);
-		mapping.GenerateScriptType("___chatBox___", i++);
-		mapping.GenerateScriptType("___chatBtn___", i);
+		names.GenerateScriptType("___roomHeadMode___", i++);
+		names.GenerateScriptType("___gameDisplay___", i++);
+		names.GenerateScriptType("___myInputDisplay___", i++);
+		names.GenerateScriptType("___turnTimeDisplay___", i++);
+		names.GenerateScriptType("___roundTimeDisplay___", i++);
+		names.GenerateScriptType("___chatBox___", i++);
+		names.GenerateScriptType("___chatBtn___", i);
 
-		Log.Debug("baseHandler name mapping: {nameRandom}", mapping);
+		Log.Debug("baseHandler name mapping: {nameRandom}", names);
 
-		this.mapping = mapping;
+		mapping = names;
 	}
 
 	#region Handler implementation
@@ -122,6 +122,9 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.FunctionsRegistered)))
-			await Browser.EvaluateJavaScriptAsync(mapping.ApplyTo(JsResources.baseHandler)); // Wait until execution finishes
+		{
+			var script = mapping.ApplyTo(JsResources.baseHandler);
+			Log.Warning("baseHandler injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
+		}
 	}
 }

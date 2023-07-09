@@ -7,7 +7,7 @@ public class NameMapping
 
 	public void Add(string key, object value) => mapping.Add(key, value?.ToString() ?? "~NULL~");
 
-	public string ApplyTo(string target)
+	public virtual string ApplyTo(string target)
 	{
 		foreach ((var from, var to) in mapping)
 			target = target.Replace(from, to);

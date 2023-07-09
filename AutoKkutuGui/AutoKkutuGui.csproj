@@ -125,8 +125,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CefSharp.Common.NETCore" Version="114.2.100" />
-        <PackageReference Include="CefSharp.Wpf.NETCore" Version="114.2.100" />
+        <PackageReference Include="CefSharp.Common.NETCore" Version="114.2.120" />
+        <PackageReference Include="CefSharp.Wpf.NETCore" Version="114.2.120" />
         <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
             <NoWarn>NU1701</NoWarn>
         </PackageReference>
@@ -147,6 +147,7 @@
         <ProjectReference Include="..\AutoKkutuLib.Game.WsHandlers.JavaScript\AutoKkutuLib.Game.WsHandlers.JavaScript.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
+        <ProjectReference Include="..\AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
         <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
     </ItemGroup>
@@ -192,15 +193,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="114.2.10" />
+        <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="114.2.12" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="114.2.10" />
+        <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="114.2.12" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="114.2.10" />
+        <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="114.2.12" />
     </ItemGroup>
 
 </Project>

@@ -17,8 +17,7 @@ internal sealed class SimpleBypassHandler : JavaScriptHandlerBase
 
 	public SimpleBypassHandler(BrowserBase browser) : base(browser)
 	{
-		var mapping = new BrowserRandomNameMapping(browser);
-		mapping.GenerateScriptType("___getComputedStyle___", CommonNameRegistry.GetComputedStyle); // 브라우저 초기화 시 랜덤 생성되고, mainInjected.js 에서 값이 초기화된다
+		var mapping = BrowserRandomNameMapping.BaseJs(browser);
 		mapping.GenerateScriptType("___funcRegistered___", CommonNameRegistry.FunctionsRegistered); // 아래 RegisterInGameFunctions()에서 검사를 수행하기 위함
 		mapping.GenerateScriptType("___updateChat___", CommonNameRegistry.UpdateChat);
 		mapping.GenerateScriptType("___clickSubmit___", CommonNameRegistry.ClickSubmit);
@@ -34,7 +33,7 @@ internal sealed class SimpleBypassHandler : JavaScriptHandlerBase
 	{
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.FunctionsRegistered)))
 		{
-			await Browser.EvaluateJavaScriptAsync(mapping.ApplyTo(JsResources.bypassHandler));
+			Log.Warning("bypassHandler injection result: {result}", await Browser.EvaluateJavaScriptAsync(mapping.ApplyTo(JsResources.bypassHandler)));
 			await base.RegisterInGameFunctions(alreadyRegistered);
 		}
 	}

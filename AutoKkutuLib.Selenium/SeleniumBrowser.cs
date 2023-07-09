@@ -38,12 +38,6 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		WsServer = LocalWebSocketServer.Start(wsPort);
 		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
 
-		nameRandom = BrowserRandomNameMapping.MainHelperJs(this);
-		nameRandom.Generate("___wsGlobal___", 16383);
-		nameRandom.Generate("___wsBuffer___", 16384);
-		nameRandom.Add("___wsAddr___", wsAddrClient);
-
-
 		var serializer = new XmlSerializer(typeof(SeleniumConfigDto));
 
 		// Default config
@@ -79,6 +73,13 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 
 		JavaScriptBaseNamespace = config.JavaScriptInjectionBaseNamespace;
+		if (string.IsNullOrWhiteSpace(JavaScriptBaseNamespace))
+			JavaScriptBaseNamespace = "window";
+
+		nameRandom = BrowserRandomNameMapping.MainHelperJs(this);
+		nameRandom.GenerateScriptType("___wsGlobal___", 16383);
+		nameRandom.GenerateScriptType("___wsBuffer___", 16384);
+		nameRandom.Add("___wsAddr___", wsAddrClient);
 	}
 
 	public override async void LoadFrontPage()
@@ -98,12 +99,12 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
-		Log.Debug("Name randomization: {nameRandom}", nameRandom);
+		Log.Debug("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
 
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
 		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
-			["source"] = nameRandom.ApplyTo(SeleniumResources.communicatorJs + ';' + LibResources.mainHelperJs)
+			["source"] = nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + LibResources.mainHelperJs + ';' + SeleniumResources.communicatorJs)
 		});
 		Log.Verbose("Injected pre-load scripts.");
 		driver.Url = config.MainPage;
@@ -129,9 +130,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 	public override Task<object?> EvaluateJavaScriptRawAsync(string script)
 	{
 		var result = driver.ExecuteScript("return " + script); // EVERTHING is IIFE(Immediately Invoked Function Expressions) in WebDriver >:(
-		if (result == null)
-			Log.Warning("Result of {js} is null. Possible undefined or null property.", script);
-		return Task.FromResult(result);
+		return Task.FromResult<object?>(result);
 	}
 
 	public override void ExecuteJavaScript(string script, string? errorMessage = null)

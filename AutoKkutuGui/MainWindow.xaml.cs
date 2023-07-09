@@ -82,7 +82,7 @@ public partial class MainWindow : Window
 
 	private void OnAutoEntered(object? sender, AutoEnterEventArgs args)
 	{
-		notifier.ShowSuccess("Path entered: " + args.Content);
+		//notifier.ShowSuccess("Path entered: " + args.Content);
 		this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
 	}
 

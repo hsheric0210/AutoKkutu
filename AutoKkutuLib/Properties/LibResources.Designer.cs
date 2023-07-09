@@ -61,7 +61,7 @@ namespace AutoKkutuLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /* mainInjected.js : AutoKkutu JavaScript injection
+        ///   Looks up a localized string similar to /* mainHelperJs.js : AutoKkutu JavaScript injection
         /// * Reserved Names:
         /// * ___originalWS___
         /// * ___wsFilter___
@@ -70,21 +70,37 @@ namespace AutoKkutuLib.Properties {
         /// * ___passthru___
         /// * ___commSend___
         /// * ___commRecv___
+        /// * 
+        /// * Global object back-ups:
         /// * ___getComputedStyle___
-        /// * ___baseNamespace___
         /// */
         ///
         ////* eslint-disable no-proto */
         ////* eslint-disable accessor-pairs */
         ////* eslint-disable no-global-assign */
         ///
-        ///___baseNamespace___ = function () { }
-        ///
-        ///___getComputedStyle___ = window.getComputedStyle; // Backup before being overwri [rest of string was truncated]&quot;;.
+        ///// Backup before being overwritten by some anticheat-like things
+        ///___getComputedStyle___ = window.getComputedSty [rest of string was truncated]&quot;;.
         /// </summary>
         public static string mainHelperJs {
             get {
                 return ResourceManager.GetString("mainHelperJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to // Make injection namespace invisible
+        ///Object.defineProperty(___baseNamespace___, &apos;___injectionNamespace___&apos;, {
+        ///    configurable: true,
+        ///    writable: true,
+        ///    enumerable: false,
+        ///    value: function () { }
+        ///})
+        ///.
+        /// </summary>
+        public static string namespaceInitJs {
+            get {
+                return ResourceManager.GetString("namespaceInitJs", resourceCulture);
             }
         }
     }

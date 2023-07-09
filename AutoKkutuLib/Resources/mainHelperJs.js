@@ -7,17 +7,35 @@
  * ___passthru___
  * ___commSend___
  * ___commRecv___
+ * 
+ * Global object back-ups:
  * ___getComputedStyle___
- * ___baseNamespace___
+ * ___dispatchEvent___
+ * ___consoleLog___
+ * ___setTimeout___
+ * ___setInterval___
+ * ___getElementsByClassName___
+ * ___querySelector___
+ * ___querySelectorAll___
+ * ___getElementById___
  */
 
 /* eslint-disable no-proto */
 /* eslint-disable accessor-pairs */
 /* eslint-disable no-global-assign */
 
-___baseNamespace___ = function () { }
+// Backup before being overwritten by some anticheat-like things
+___getComputedStyle___ = window.getComputedStyle;
+___consoleLog___ = console.log;
+___setTimeout___ = window.setTimeout;
+___setInterval___ = window.setInterval;
 
-___getComputedStyle___ = window.getComputedStyle; // Backup before being overwritten by some anticheat-like things
+___dispatchEvent___ = document.dispatchEvent;
+___getElementsByClassName___ = document.getElementsByClassName;
+___querySelector___ = document.querySelector;
+___querySelectorAll___ = document.querySelectorAll;
+___getElementById___ = document.getElementById;
+
 
 /* wsHook.js
  * https://github.com/skepticfx/wshook
@@ -57,13 +75,18 @@ ___getComputedStyle___ = window.getComputedStyle; // Backup before being overwri
     // Message filter impl
     function checkFilter(data) {
         let filterActive = ___wsFilter___.active;
-        let json = filterActive ? JSON.parse(data) : null;
-        let filter = filterActive ? ___wsFilter___[json.type] : null;
-        let filtered = (filter && typeof (filter) === 'function') ? filter(json) : null;
-        if (!filterActive || filtered)
-            return filtered === true ? null : filtered; // filtered==true -> pass-thru
-        else
-            return undefined
+        try {
+            let json = filterActive ? JSON.parse(data) : null;
+            let filter = filterActive ? ___wsFilter___[json.type] : null;
+            let filtered = (filter && typeof (filter) === 'function') ? filter(json) : null;
+            if (!filterActive || filtered)
+                return filtered === true ? null : filtered; // filtered==true -> pass-thru
+            else
+                return undefined
+        }
+        catch (exc) {
+            return undefined // do not handle
+        }
     }
 
     // Message send handler
@@ -85,7 +108,7 @@ ___getComputedStyle___ = window.getComputedStyle; // Backup before being overwri
 
     // Check WebSocket object and backup it
     if (!window.WebSocket) {
-        console.log("WebSocket unavailable @", location)
+        ___consoleLog___("WebSocket unavailable @", location)
     }
     let _WS = window.WebSocket
     ___originalWSPrototype___ = _WS?.prototype
@@ -218,6 +241,7 @@ ___getComputedStyle___ = window.getComputedStyle; // Backup before being overwri
             axios.interceptors.request.use(req => {
                 if (req.url == '/o/c') { // k****.c*.k* anticheat packet
                     ___commSend___(JSON.stringify({ "type": "AC", "data": req.data }));
+                    ___consoleLog___("AntiCheat blocked!", req.data);
                     return false; // cancel
                 }
                 return req;

@@ -5,9 +5,12 @@ public enum CommonNameRegistry
 	None = 0,
 
 	/// <summary>
-	/// 주입된 함수들이 속할 전역 JavaScript 네임스페이스 이름
+	/// 주입된 함수들이 속할 전역 JavaScript 개체 이름
 	/// </summary>
-	Namespace = 2023,
+	/// <remarks>
+	/// 예시: <c>window.s9TinU2gq05iep02R6q</c>
+	/// </remarks>
+	InjectionNamespace = 2023,
 
 	/// <summary>
 	/// 게임이 진행 중인지 상태를 반환하는 전역 JavaScript 함수 이름
@@ -172,4 +175,20 @@ public enum CommonNameRegistry
 	/// (안티치트 등에 의해 덮어씌워지기 전) 원본 window.getComputedStyle() 개체 백업 전역 변수 이름
 	/// </summary>
 	GetComputedStyle,
+
+	ConsoleLog,
+
+	SetTimeout,
+
+	SetInterval,
+
+	DispatchEvent,
+
+	GetElementsByClassName,
+
+	QuerySelector,
+
+	QuerySelectorAll,
+
+	GetElementById
 }

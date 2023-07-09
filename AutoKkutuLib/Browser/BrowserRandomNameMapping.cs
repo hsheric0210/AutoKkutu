@@ -3,7 +3,11 @@ public sealed class BrowserRandomNameMapping : NameMapping
 {
 	private readonly BrowserBase browser;
 
-	public BrowserRandomNameMapping(BrowserBase browser) => this.browser = browser;
+	public BrowserRandomNameMapping(BrowserBase browser)
+	{
+		this.browser = browser;
+		Generate("___injectionNamespace___", CommonNameRegistry.InjectionNamespace); // The object all injected things should be located in (e.g. 'window.s9TinU2gq05iep02R6q')
+	}
 
 	public void Generate(string key, CommonNameRegistry id) => Generate(key, (int)id);
 
@@ -15,7 +19,7 @@ public sealed class BrowserRandomNameMapping : NameMapping
 
 	public static BrowserRandomNameMapping MainHelperJs(BrowserBase browser)
 	{
-		var instance = new BrowserRandomNameMapping(browser);
+		BrowserRandomNameMapping instance = BaseJs(browser);
 		instance.GenerateScriptType("___originalWS___", CommonNameRegistry.OriginalWebSocket);
 		instance.GenerateScriptType("___wsFilter___", CommonNameRegistry.WebSocketFilter);
 		instance.Generate("___nativeSend___", CommonNameRegistry.WebSocketNativeSend);
@@ -23,10 +27,29 @@ public sealed class BrowserRandomNameMapping : NameMapping
 		instance.Generate("___passthru___", CommonNameRegistry.WebSocketPassThru);
 		instance.GenerateScriptType("___originalWSPrototype___", CommonNameRegistry.OriginalWebSocketPrototype);
 		instance.Generate("___injectedOnMessageListeners___", CommonNameRegistry.InjectedWebSocketMessageHandlerList);
-		instance.Generate("___commSend___", CommonNameRegistry.CommunicateSend);
-		instance.Generate("___commRecv___", CommonNameRegistry.CommunicateReceive);
-		instance.GenerateScriptType("___getComputedStyle___", CommonNameRegistry.InjectedWebSocketMessageHandlerList);
-		instance.Add("___baseNamespace___", browser.JavaScriptBaseNamespace + '.' + browser.GetRandomString(CommonNameRegistry.Namespace)); // Note that namespace random string is initialized on browser class initialization.
+		instance.GenerateScriptType("___commSend___", CommonNameRegistry.CommunicateSend);
+		instance.GenerateScriptType("___commRecv___", CommonNameRegistry.CommunicateReceive);
 		return instance;
 	}
+
+	public static BrowserRandomNameMapping BaseJs(BrowserBase browser)
+	{
+		var instance = new BrowserRandomNameMapping(browser);
+
+		// Global object backups
+		instance.GenerateScriptType("___getComputedStyle___", CommonNameRegistry.GetComputedStyle);
+		instance.GenerateScriptType("___consoleLog___", CommonNameRegistry.ConsoleLog);
+		instance.GenerateScriptType("___setTimeout___", CommonNameRegistry.SetTimeout);
+		instance.GenerateScriptType("___setInterval___", CommonNameRegistry.SetTimeout);
+
+		instance.GenerateScriptType("___dispatchEvent___", CommonNameRegistry.DispatchEvent);
+		instance.GenerateScriptType("___getElementsByClassName___", CommonNameRegistry.GetElementsByClassName);
+		instance.GenerateScriptType("___querySelector___", CommonNameRegistry.QuerySelector);
+		instance.GenerateScriptType("___querySelectorAll___", CommonNameRegistry.QuerySelectorAll);
+		instance.GenerateScriptType("___getElementById___", CommonNameRegistry.GetElementById);
+
+		return instance;
+	}
+
+	public override string ApplyTo(string target) => base.ApplyTo(target.Replace("___baseNamespace___", browser.JavaScriptBaseNamespace));
 }

@@ -33,18 +33,21 @@ public class WsHandlerJJoriping : WsHandlerBase
 
 	public WsHandlerJJoriping(BrowserBase browser) : base(browser)
 	{
-		var mapping = new BrowserRandomNameMapping(browser);
-		mapping.GenerateScriptType("___roomMode2GameMode___", CommonNameRegistry.RoomModeToGameMode);
-		mapping.GenerateScriptType("___ruleKeys___", 1668);
-		mapping.GenerateScriptType("___helperRegistered___", 1669);
-		Log.Debug("wsHandlerHelperJs name mapping: {nameRandom}", mapping);
-		this.mapping = mapping;
+		var names = BrowserRandomNameMapping.BaseJs(browser);
+		names.GenerateScriptType("___roomMode2GameMode___", CommonNameRegistry.RoomModeToGameMode);
+		names.GenerateScriptType("___ruleKeys___", 1668);
+		names.GenerateScriptType("___helperRegistered___", 1669);
+		Log.Debug("wsHandlerHelperJs name mapping: {nameRandom}", names);
+		mapping = names;
 	}
 
 	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(1669)))
-			await Browser.EvaluateJavaScriptAsync(mapping.ApplyTo(JsResources.wsHandlerHelperJs));
+		{
+			var script = mapping.ApplyTo(JsResources.wsHandlerHelperJs);
+			Log.Warning("wsHandlerHelperJs injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
+		}
 	}
 
 	public override async Task RegisterWebSocketFilter()
@@ -149,7 +152,6 @@ return null;
 	{
 		return new(
 			json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"),
-			ParseIntOrString(json["target"]) ?? throw InvalidWsMessage("turnEnd", "target"),
 			json["value"]?.GetValue<string>(),
 			json["hint"]?["_id"]?.GetValue<string>());
 	}

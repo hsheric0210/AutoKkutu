@@ -99,7 +99,7 @@ public class AutoEnter
 						if (isPreinputFinished) // Pre-search 입력 시뮬레이션 완료 시
 						{
 							CheckAndSubmit(CanPerformAutoEnterNow(param)); // 자동으로 전송
-							isPreinputFinished = false;
+							isPreinputSimInProg = isPreinputFinished = false;
 							return;
 						}
 						if (isInputInProgress && isPreinputSimInProg) // Pre-search 입력 시뮬레이션 진행 중일 시

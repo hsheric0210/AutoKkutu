@@ -43,13 +43,11 @@ public class WsClassicTurnStart
 public class WsClassicTurnEnd
 {
 	public string? Hint { get; }
-	public string Target { get; }
 	public string? Value { get; }
 	public bool Ok { get; }
-	public WsClassicTurnEnd(bool ok, string target, string? value, string? hint)
+	public WsClassicTurnEnd(bool ok, string? value, string? hint)
 	{
 		Ok = ok;
-		Target = target;
 		Value = value;
 		Hint = hint;
 	}

@@ -18,7 +18,7 @@ public abstract class BrowserBase
 	public EventHandler<PageErrorEventArgs>? PageError;
 	public EventHandler<WebSocketMessageEventArgs>? WebSocketMessage;
 
-	protected BrowserBase() => GenerateRandomString((int)CommonNameRegistry.Namespace); // Generate namespace string on initialize
+	protected BrowserBase() => GenerateRandomString((int)CommonNameRegistry.InjectionNamespace); // Generate namespace string on initialize
 
 	public abstract void LoadFrontPage();
 	public abstract void Load(string url);
@@ -50,7 +50,7 @@ public abstract class BrowserBase
 	public string GenerateScriptTypeName(int funcId)
 	{
 		var str = GenerateRandomString(funcId);
-		return $"{JavaScriptBaseNamespace}.{GetRandomString((int)CommonNameRegistry.Namespace)}.{str}";
+		return $"{JavaScriptBaseNamespace}.{GetRandomString((int)CommonNameRegistry.InjectionNamespace)}.{str}";
 	}
 
 	/// <summary>
@@ -63,5 +63,5 @@ public abstract class BrowserBase
 	/// 등록된 JavaScript 타입 이름을 기본 Namespace를 붙여서 반환합니다.
 	/// </summary>
 	/// <param name="funcId">타입 이름 등록 ID</param>
-	public string GetScriptTypeName(int funcId) => JavaScriptBaseNamespace + '.' + GetRandomString((int)CommonNameRegistry.Namespace) + '.' + RegisteredFunctions[funcId];
+	public string GetScriptTypeName(int funcId) => JavaScriptBaseNamespace + '.' + GetRandomString((int)CommonNameRegistry.InjectionNamespace) + '.' + RegisteredFunctions[funcId];
 }

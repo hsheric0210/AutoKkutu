@@ -195,7 +195,8 @@ public class CefSharpBrowser : BrowserBase
 		// 'FrameLoadStart' 이벤트 받자마자 스크립트 실행 등록시키더라도, 스크립트가 큐에 등록되고 전송되는 사이에 사이트 측 스크립트가 먼저 실행되어 버릴 위험성이 있음.
 		// 그러나, 'Page.addScriptToEvaluateOnNewDocumentAsync'는 크롬 자체 지원 기능이기도 하고, 무엇보다 사이트의 스크립트가 로드되기 전에 실행되는 것을 보장함. (https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-addScriptToEvaluateOnNewDocument)
 		browser.GetDevToolsClient().Page.EnableAsync();
-		browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(CefSharpResources.communicatorJs + ';' + LibResources.mainHelperJs));
+		browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + CefSharpResources.communicatorJs + ';' + LibResources.mainHelperJs));
+		// browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + LibResources.mainHelperJs + ';' + CefSharpResources.communicatorJs)); // TODO: try this.
 
 		Log.Information("ChromiumWebBrowser initialized.");
 	}

@@ -11,7 +11,7 @@ public partial class Game
 {
 	private IDictionary<GameImplMode, IDictionary<string, Func<JsonNode, Task>>>? specializedSniffers;
 	private IDictionary<string, Func<JsonNode, Task>>? baseSniffers;
-	private WsSessionInfo? wsSession;
+	private WsSessionState? wsSession;
 	private readonly JsonSerializerOptions unescapeUnicodeJso = new()
 	{
 		Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -104,40 +104,41 @@ public partial class Game
 		if (wsSniffHandler == null)
 			return;
 
-		wsSession = new WsSessionInfo(data.UserId);
+		wsSession = new WsSessionState(data.UserId);
 		Log.Debug("Caught user id: {id}", data.UserId);
 	}
 
 	private void OnWsRoom(WsRoom data)
 	{
-		if (wsSession is not WsSessionInfo session)
+		if (wsSession == null)
 			return;
 
-		if (!data.Players.Contains(session.MyUserId)) // It's other room
+		if (!data.Players.Contains(wsSession.MyUserId)) // It's other room
 			return;
 
 		if (data.Mode == GameMode.None)
 			Log.Warning("Unknown or unsupported game mode: {mode}", data.ModeString);
 
 		if (data.Gaming && data.GameSequence.Count > 0)
-			wsSession = session with { MyGameTurns = data.GameSequence.ToImmutableList() };
+			wsSession.UpdateGameSeq(data.GameSequence);
 
 		NotifyGameMode(data.Mode);
 	}
 
 	private void OnWsClassicTurnStart(WsClassicTurnStart data)
 	{
-		if (wsSession is WsSessionInfo session && session.IsGaming)
+		if (wsSession != null && wsSession.IsGaming)
 		{
-			if (session.IsMyTurn(data.Turn))
+			wsSession.Turn = data.Turn;
+			if (wsSession.IsMyTurn())
 			{
 				Log.Debug("WS: My turn start! Condition is {cond}", data.Condition);
 				NotifyMyTurn(true, data.Condition, bypassCache: true);
 				return;
 			}
-			else if (session.GetRelativeTurn(data.Turn) == session.GetMyPreviousUserTurn())
+			else if (wsSession.GetRelativeTurn() == wsSession.GetMyPreviousUserTurn())
 			{
-				wsSession = session with { MyGamePreviousUserMission = data.Condition.MissionChar };
+				wsSession.MyGamePreviousUserMission = data.Condition.MissionChar;
 				Log.Debug("WS: Captured previous user mission char: {missionChar}", data.Condition.MissionChar);
 			}
 
@@ -147,7 +148,7 @@ public partial class Game
 
 	private void OnWsClassicTurnEnd(WsClassicTurnEnd data)
 	{
-		if (wsSession is not WsSessionInfo session || !session.IsGaming)
+		if (wsSession == null || !wsSession.IsGaming)
 			return;
 
 		if (data.Ok)
@@ -155,18 +156,17 @@ public partial class Game
 			if (string.IsNullOrWhiteSpace(data.Value))
 				return;
 
-			var turn = session.GetTurnOf(data.Target);
-			var prvUsrTurn = session.GetMyPreviousUserTurn();
+			var turn = wsSession.Turn;
+			var prvUsrTurn = wsSession.GetMyPreviousUserTurn();
 			Log.Verbose("turn: {turn}, prev_user_turn: {puturn}", turn, prvUsrTurn);
 			if (turn >= 0 && turn == prvUsrTurn)
 			{
-				Log.Debug("WS: The previous user {target} submit: {txt}!", data.Target, data.Value);
-				var missionChar = session.MyGamePreviousUserMission;
+				var missionChar = wsSession.MyGamePreviousUserMission;
 				var presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.Available;
 				if (missionChar != null && data.Value.Contains(missionChar))
 					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.ContainsMissionChar;
 
-				WordCondition? condition = CurrentGameMode.ConvertWordToCondition(data.Value, session.MyGamePreviousUserMission);
+				WordCondition? condition = CurrentGameMode.ConvertWordToCondition(data.Value, wsSession.MyGamePreviousUserMission);
 				if (condition == null)
 					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.UnableToParse;
 
@@ -174,11 +174,11 @@ public partial class Game
 				PreviousUserTurnEnded?.Invoke(this, new PreviousUserTurnEndedEventArgs(presearch, condition));
 			}
 
-			if (!session.IsMyTurn(turn))
-				NotifyWordHistory(data.Value);
+			//if (!wsSession.IsMyTurn())
+			NotifyWordHistory(data.Value);
 		}
 
-		if (session.IsMyTurn(session.GetTurnOf(data.Target)))
+		if (wsSession.IsMyTurn())
 			NotifyMyTurn(false, bypassCache: true); // My turn ended
 
 		if (!string.IsNullOrWhiteSpace(data.Hint))

@@ -1,6 +1,6 @@
-﻿using AutoKkutuLib;
+﻿#define SELENIUM
+using AutoKkutuLib;
 using AutoKkutuLib.Browser;
-using AutoKkutuLib.CefSharp;
 using AutoKkutuLib.Database;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
@@ -144,7 +144,11 @@ public static class Main
 		Log.Verbose("Initializing browser");
 
 		// Initialize Browser
-		Browser = new CefSharpBrowser();
+#if SELENIUM
+		Browser = new AutoKkutuLib.Selenium.SeleniumBrowser();
+#else
+		Browser = new AutoKkutuLib.CefSharp.CefSharpBrowser();
+#endif
 		Browser.PageLoaded += OnPageLoaded;
 		Browser.PageError += OnPageError;
 
@@ -252,6 +256,8 @@ public static class Main
 	private static PathUpdateEventArgs? preSearch;
 	private static PathUpdateEventArgs? autoPathFindCache;
 
+	// TODO: 내가 이번 턴에 패배했고, 라운드가 끝났을 경우
+	// 다음 라운드 시작 단어에 대해 미리 Pre-search 및 입력 수행.
 	private static void OnRoundChanged(object? sender, EventArgs e) => preSearch = null; // Invalidate pre-search result on round changed
 
 	private static void OnPathUpdated(object? sender, PathUpdateEventArgs args)
@@ -376,7 +382,7 @@ public static class Main
 							Prefs.DelayPerChar,
 							Prefs.DelayPerCharRandom,
 							Prefs.InputSimulate),
-						autoPathFindCache.Details, wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // FIXME: according to current implementation, if user searches anything between AutoEnter and AutoFix, AutoFix uses the user search result, instead of previous AutoEnter search result.
+						autoPathFindCache.Details.WithoutFlags(PathFlags.PreSearch), wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // PreSearch 플래그 제거 안 하면 AutoFix한다고 다시 친 내용을 정작 보내질 않음
 	}
 
 	private static void OnMyTurnEnded(object? sender, EventArgs e)
