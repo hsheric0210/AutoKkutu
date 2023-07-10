@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <CodeAnalysisRuleSet>..\.sonarlint\hsheric0210_autokkutucsharp.ruleset</CodeAnalysisRuleSet>
+        <Configurations>DebugCefSharp;ReleaseCefSharp;ReleaseSelenium;DebugSelenium</Configurations>
     </PropertyGroup>
 
     <ItemGroup>

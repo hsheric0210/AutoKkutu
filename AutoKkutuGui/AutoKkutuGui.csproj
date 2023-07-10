@@ -15,6 +15,7 @@
         <Nullable>enable</Nullable>
         <NeutralLanguage>en-US</NeutralLanguage>
         <Platforms>AnyCPU;x64;x86</Platforms>
+        <Configurations>DebugCefSharp;ReleaseCefSharp;ReleaseSelenium;DebugSelenium</Configurations>
     </PropertyGroup>
 
     <ItemGroup>
@@ -142,7 +143,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Game.DomHandlers.JavaScript\AutoKkutuLib.Game.DomHandlers.JavaScript.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Game.WsHandlers.JavaScript\AutoKkutuLib.Game.WsHandlers.JavaScript.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
@@ -150,6 +150,20 @@
         <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
         <ProjectReference Include="..\AutoKkutuLib\AutoKkutuLib.csproj" />
     </ItemGroup>
+
+    <!-- https://stackoverflow.com/a/66674262 -->
+    <Choose>
+        <When Condition="$(DefineConstants.Contains('UseSelenium'))">
+            <ItemGroup>
+                <ProjectReference Include="..\AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj" />
+            </ItemGroup>
+        </When>
+        <Otherwise>
+            <ItemGroup>
+                <ProjectReference Include="..\AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj" />
+            </ItemGroup>
+        </Otherwise>
+    </Choose>
 
     <ItemGroup>
         <Compile Update="ColorManagement.xaml.cs">

@@ -2,6 +2,7 @@
 using AutoKkutuLib;
 using Serilog;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -222,6 +223,13 @@ public partial class ConfigWindow : Window
 	}
 
 	private void OnCancel(object sender, RoutedEventArgs e) => Close();
+
+	//https://stackoverflow.com/a/10238715
+	private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+	{
+		Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+		e.Handled = true;
+	}
 }
 
 public sealed class PreferenceItem : IEquatable<PreferenceItem>

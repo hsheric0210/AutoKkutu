@@ -144,7 +144,7 @@ public static class Main
 		Log.Verbose("Initializing browser");
 
 		// Initialize Browser
-#if SELENIUM
+#if UseSelenium
 		Browser = new AutoKkutuLib.Selenium.SeleniumBrowser();
 #else
 		Browser = new AutoKkutuLib.CefSharp.CefSharpBrowser();
