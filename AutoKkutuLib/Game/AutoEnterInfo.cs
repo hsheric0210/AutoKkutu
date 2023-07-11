@@ -1,29 +1,44 @@
-﻿namespace AutoKkutuLib.Game;
+﻿using System.Text;
 
-public struct AutoEnterInfo
+namespace AutoKkutuLib.Game;
+
+public struct AutoEnterInfo : IEquatable<AutoEnterInfo>
 {
 	public string? Content { get; set; }
 	public AutoEnterOptions Options { get; }
 	public PathDetails PathInfo { get; }
-	public int WordIndex { get; }
 
 	public int GetTotalDelay() => Options.GetDelayFor(Content);
 
-	public AutoEnterInfo(AutoEnterOptions delayParam, PathDetails param, string? content = null, int wordIndex = 0)
+	public AutoEnterInfo(AutoEnterOptions delayParam, PathDetails param, string? content = null)
 	{
 		Options = delayParam;
 		PathInfo = param;
 		Content = content;
-		WordIndex = wordIndex;
 	}
 
 	public static implicit operator PathDetails(AutoEnterInfo param) => param.PathInfo;
 	public static implicit operator AutoEnterOptions(AutoEnterInfo param) => param.Options;
 
+	public static bool operator ==(AutoEnterInfo left, AutoEnterInfo right) => left.Equals(right);
+	public static bool operator !=(AutoEnterInfo left, AutoEnterInfo right) => !(left == right);
+
 	public bool HasFlag(PathFlags flag) => PathInfo.HasFlag(flag);
+
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append(nameof(AutoEnterInfo)).Append('{');
+		builder.Append(nameof(Content)).Append(": ").Append(Content).Append(", ");
+		builder.Append(nameof(Options)).Append(": ").Append(Options).Append(", ");
+		builder.Append(nameof(PathInfo)).Append(": ").Append(PathInfo);
+		return builder.Append('}').ToString();
+	}
+	public override bool Equals(object? obj) => obj is AutoEnterInfo info && Equals(info);
+	public bool Equals(AutoEnterInfo other) => Content == other.Content && Options.Equals(other.Options) && PathInfo.Equals(other.PathInfo);
 }
 
-public readonly struct AutoEnterOptions
+public readonly struct AutoEnterOptions : IEquatable<AutoEnterOptions>
 {
 	private readonly bool delayAfterInput;
 	private readonly int startDelay;
@@ -32,22 +47,25 @@ public readonly struct AutoEnterOptions
 	private readonly int delayPerCharRandom;
 	private readonly int delayBeforeKeyUp;
 	private readonly int delayBeforeShiftKeyUp;
-	private readonly bool simulateInput;
 
 	public bool DelayEnabled { get; }
+	public AutoEnterMode Mode { get; }
 
 	public bool IsDelayPerCharRandomized => delayPerCharRandom > 0;
-	public bool DelayStartAfterCharEnterEnabled => DelayEnabled && delayAfterInput;
-	public int DelayBeforeKeyUp => SimulateInput ? delayBeforeKeyUp : 0;
-	public int DelayBeforeShiftKeyUp => SimulateInput ? delayBeforeShiftKeyUp : 0;
-	public bool SimulateInput => DelayEnabled && simulateInput;
 
-	public AutoEnterOptions(bool delay, bool delayAfterInput, int startDelay, int startDelayRandom, int delayPerChar, int delayPerCharRandom, bool simulateInput)
+	/// <summary>
+	/// Only used in 'Immediately' mode
+	/// </summary>
+	public bool DelayStartAfterCharEnterEnabled => DelayEnabled && delayAfterInput;
+	public int DelayBeforeKeyUp => Mode == AutoEnterMode.EnterImmediately ? 0 : delayBeforeKeyUp;
+	public int DelayBeforeShiftKeyUp => Mode == AutoEnterMode.EnterImmediately ? 0 : delayBeforeShiftKeyUp;
+
+	public AutoEnterOptions(AutoEnterMode mode, bool delay, bool delayAfterInput, int startDelay, int startDelayRandom, int delayPerChar, int delayPerCharRandom)
 	{
+		Mode = mode;
 		DelayEnabled = delay;
 		this.delayAfterInput = delayAfterInput;
 		this.startDelay = startDelay;
-		this.simulateInput = simulateInput;
 		this.startDelayRandom = startDelayRandom;
 		this.delayPerChar = delayPerChar;
 		this.delayPerCharRandom = delayPerCharRandom;
@@ -94,4 +112,39 @@ public readonly struct AutoEnterOptions
 	/// </summary>
 	/// <param name="input">입력하려는 단어</param>
 	public int GetMinDelay(string? input) => DelayEnabled ? (startDelay - startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : (input.Length * (delayPerChar - delayPerChar * delayPerCharRandom / 100)))) : 0;
+	public override bool Equals(object? obj) => obj is AutoEnterOptions options && Equals(options);
+	public bool Equals(AutoEnterOptions other) => delayAfterInput == other.delayAfterInput && startDelay == other.startDelay && startDelayRandom == other.startDelayRandom && delayPerChar == other.delayPerChar && delayPerCharRandom == other.delayPerCharRandom && delayBeforeKeyUp == other.delayBeforeKeyUp && delayBeforeShiftKeyUp == other.delayBeforeShiftKeyUp && DelayEnabled == other.DelayEnabled && Mode == other.Mode && DelayBeforeKeyUp == other.DelayBeforeKeyUp && DelayBeforeShiftKeyUp == other.DelayBeforeShiftKeyUp;
+
+	public override int GetHashCode()
+	{
+		var hash = new HashCode();
+		hash.Add(delayAfterInput);
+		hash.Add(startDelay);
+		hash.Add(startDelayRandom);
+		hash.Add(delayPerChar);
+		hash.Add(delayPerCharRandom);
+		hash.Add(delayBeforeKeyUp);
+		hash.Add(delayBeforeShiftKeyUp);
+		hash.Add(DelayEnabled);
+		hash.Add(Mode);
+		hash.Add(DelayBeforeKeyUp);
+		hash.Add(DelayBeforeShiftKeyUp);
+		return hash.ToHashCode();
+	}
+
+	public static bool operator ==(AutoEnterOptions left, AutoEnterOptions right) => left.Equals(right);
+
+	public static bool operator !=(AutoEnterOptions left, AutoEnterOptions right) => !(left == right);
+
+	public override string ToString()
+	{
+		var builder = new StringBuilder().Append(nameof(AutoEnterOptions)).Append('{');
+		builder.Append(nameof(Mode)).Append(": ").Append(Mode).Append(", ");
+		builder.Append(nameof(DelayEnabled)).Append(": ").Append(DelayEnabled).Append(", ");
+		builder.Append(nameof(startDelay)).Append(": ").Append(startDelay).Append(" (random: ").Append(startDelayRandom).Append("%), ");
+		builder.Append(nameof(delayPerChar)).Append(": ").Append(delayPerChar).Append(" (random: ").Append(delayPerCharRandom).Append("%), ");
+		builder.Append(nameof(delayBeforeKeyUp)).Append(": ").Append(delayBeforeKeyUp).Append(", ");
+		builder.Append(nameof(delayBeforeShiftKeyUp)).Append(": ").Append(delayBeforeShiftKeyUp);
+		return builder.Append('}').ToString();
+	}
 }

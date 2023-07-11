@@ -37,12 +37,12 @@ public class QwertyLayout : KeyboardLayout
 
 	protected override IDictionary<char, char> HangulClusterToAlphabetMapping => new Dictionary<char, char>()
 	{
-		['ㅃ'] = 'Q',
-		['ㅉ'] = 'W',
-		['ㄸ'] = 'E',
-		['ㄲ'] = 'R',
-		['ㅆ'] = 'T',
-		['ㅒ'] = 'O',
-		['ㅖ'] = 'P',
+		['ㅃ'] = 'q',
+		['ㅉ'] = 'w',
+		['ㄸ'] = 'e',
+		['ㄲ'] = 'r',
+		['ㅆ'] = 't',
+		['ㅒ'] = 'o',
+		['ㅖ'] = 'p',
 	};
 }

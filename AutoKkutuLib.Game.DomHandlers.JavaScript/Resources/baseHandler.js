@@ -106,14 +106,20 @@
     }
 
     if (!___sendKeyEvents___) {
-        ___sendKeyEvents___ = function (key, shift, hangul, upDelay, shiftUpDelay) {
+        ___sendKeyEvents___ = function (key, shift, hangul, upDelay) {
             function evt(type, param) {
                 ___dispatchEvent___.call(document, new KeyboardEvent('key' + type, param));
             }
 
             let kc = key.toUpperCase().charCodeAt(0);
-            if (shift) {
+            if (!___shiftState___ && shift) {
                 evt('down', { 'key': 'Shift', 'shiftKey': true, 'keyCode': 16 });
+                ___shiftState___ = true;
+            }
+            else if (___shiftState___ && !shift) {
+                if (hangul) evt('up', { 'key': 'Process', 'keyCode': 229 });
+                evt('up', { 'key': 'Shift', 'shiftKey': true, 'keyCode': 16 });
+                ___shiftState___ = false;
             }
 
             if (hangul) {
@@ -134,22 +140,20 @@
                 }
                 evt('up', { 'key': key, 'shiftKey': shift, 'keyCode': kc });
             }, upDelay);
+        }
+    }
 
-            if (shift) {
-                ___setTimeout___.call(window, function () {
-                    if (hangul) evt('up', { 'key': 'Process', 'keyCode': 229 });
-                    evt('up', { 'key': 'Shift', 'shiftKey': true, 'keyCode': 16 });
-                }, shiftUpDelay);
-            }
+    if (!___getChatBox___) {
+        ___getChatBox___ = function () {
+            if (!___chatBox___)
+                ___chatBox___ = ___querySelector___.call(document, '[id=\"Talk\"]');
+            return ___chatBox___;
         }
     }
 
     if (!___updateChat___) {
         ___updateChat___ = function (input) {
-            if (!___chatBox___)
-                ___chatBox___ = ___querySelector___.call(document, '[id=\"Talk\"]');
-
-            ___chatBox___.value = input
+            ___getChatBox___().value = input
         }
     }
 
@@ -159,6 +163,22 @@
                 ___chatBtn___ = ___getElementById___.call(document, 'ChatBtn');
 
             ___chatBtn___.click()
+        }
+    }
+
+    if (!___appendChat___) {
+        ___appendChat___ = function (textUpdate, sendEvents, key, shift, hangul, upDelay) {
+            let str = ___getChatBox___().value || '';
+            if (sendEvents) {
+                ___sendKeyEvents___(key, shift, hangul, upDelay); //https://stackoverflow.com/a/31415820
+            }
+            if (textUpdate.startsWith('_')) {
+                str = str.slice(0, -1) + textUpdate.slice(1)
+            }
+            else {
+                str += textUpdate;
+            }
+            ___getChatBox___().value = str;
         }
     }
 

@@ -30,6 +30,8 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		names.GenerateScriptType("___sendKeyEvents___", CommonNameRegistry.SendKeyEvents);
 		names.GenerateScriptType("___updateChat___", CommonNameRegistry.UpdateChat);
 		names.GenerateScriptType("___clickSubmit___", CommonNameRegistry.ClickSubmit);
+		names.GenerateScriptType("___getChatBox___", CommonNameRegistry.GetChatBox);
+		names.GenerateScriptType("___appendChat___", CommonNameRegistry.AppendChat);
 		names.GenerateScriptType("___funcRegistered___", CommonNameRegistry.FunctionsRegistered);
 
 		// cache properties TODO: add registry id
@@ -40,7 +42,8 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 		names.GenerateScriptType("___turnTimeDisplay___", i++);
 		names.GenerateScriptType("___roundTimeDisplay___", i++);
 		names.GenerateScriptType("___chatBox___", i++);
-		names.GenerateScriptType("___chatBtn___", i);
+		names.GenerateScriptType("___chatBtn___", i++);
+		names.GenerateScriptType("___shiftState___", i);
 
 		Log.Debug("baseHandler name mapping: {nameRandom}", names);
 
@@ -110,11 +113,12 @@ public abstract class JavaScriptHandlerBase : DomHandlerBase
 
 	public override async ValueTask<IList<string>?> GetWordInHistories() => await Browser.EvaluateJavaScriptArrayAsync($"{GetScriptNoArgFunctionName(CommonNameRegistry.WordHistory)}", "", errorPrefix: nameof(GetWordInHistories));
 
-	public override void CallKeyEvent(char key, bool shift, bool hangul, int upDelay, int shiftUpDelay) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.SendKeyEvents)}('{key}',{(shift ? "1" : "0")},{(hangul ? "1" : "0")},{upDelay},{shiftUpDelay})", errorMessage: nameof(CallKeyEvent));
-
 	public override void UpdateChat(string input) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.UpdateChat)}('{input}')", errorMessage: nameof(UpdateChat));
 
 	public override void ClickSubmit() => Browser.ExecuteJavaScript(GetScriptNoArgFunctionName(CommonNameRegistry.ClickSubmit), errorMessage: nameof(ClickSubmit));
+
+	public override void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay)
+		=> Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.AppendChat)}('{textUpdate}',{(sendEvents ? "1" : "0")},'{key}',{(shift ? "1" : "0")},{(hangul ? "1" : "0")},{upDelay})", errorMessage: nameof(AppendChat));
 	#endregion
 
 	protected string GetScriptNoArgFunctionName(CommonNameRegistry id) => Browser.GetScriptTypeName(id) + "()";

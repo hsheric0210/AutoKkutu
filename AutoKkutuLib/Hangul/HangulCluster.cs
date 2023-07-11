@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Hangul;
 
 /// <summary>
-/// 자음군 분리 및 합치기를 위한 유틸리티 클래스
+/// 자음군 / 합성 모음 분리 및 합치기를 위한 유틸리티 클래스
 /// </summary>
 internal enum HangulCluster
 {
@@ -47,29 +47,24 @@ internal static class HangulClusterExtension
 	/// (자음군 조합 예시: ['ㄱ', 'ㅅ']->'ㄳ')
 	/// (합성 모음 조합 예시: ['ㅜ', 'ㅔ']->'ㅞ')
 	/// </summary>
-	internal static char MergeCluster(this HangulCluster clusterType, params char?[] splitted)
+	internal static bool TryMergeCluster(this HangulCluster clusterType, char first, char second, out char result)
 	{
-		if (splitted is null)
-			throw new ArgumentNullException(nameof(splitted));
-
-		switch (splitted.Length)
+		if (char.IsWhiteSpace(first))
 		{
-			case 0:
-				return ' ';
-			case 1:
-				return splitted[0] ?? ' ';
-			default:
-				var filtered = splitted.Where(_ch => _ch is char ch && !char.IsWhiteSpace(ch)).Select(c => (char)c!).ToArray();
-				// TODO: 어두자음군 지원
-				var ch = filtered[0];
-				foreach (var consonant in filtered.Skip(1))
-				{
-					if (!GetCompositionTable(clusterType).TryGetValue(ch, out IImmutableDictionary<char, char>? combination) || !combination.TryGetValue(consonant, out ch))
-						throw new InvalidOperationException($"Unsupported consonant cluster combination: {ch} + {consonant}");
-				}
-
-				return ch;
+			result = second;
+			return true;
 		}
+		if (char.IsWhiteSpace(second))
+		{
+			result = first;
+			return true;
+		}
+
+		if (GetCompositionTable(clusterType).TryGetValue(first, out IImmutableDictionary<char, char>? combination) && combination.TryGetValue(second, out result))
+			return true;
+
+		result = ' ';
+		return false;
 	}
 
 	/// <summary>

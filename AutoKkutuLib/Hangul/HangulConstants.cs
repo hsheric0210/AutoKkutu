@@ -18,10 +18,23 @@ internal static class HangulConstants
 	/// </summary>
 	internal static readonly string MedialTable = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
 
+
 	/// <summary>
 	/// 종성
 	/// </summary>
 	internal static readonly string FinalConsonantTable = " ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+
+	/// <summary>
+	/// 쌍자음 (SHIFT키로 입력 가능한 자음)
+	/// </summary>
+	internal static readonly string SsangJaeum = "ㄲㄸㅃㅆㅉ";
+
+	/// <summary>
+	/// SHIFT키로 입력 가능한 모음 (쌍자음과는 달리, 이는 딱히 칭해 부르는 이름이 없음)
+	/// </summary>
+	internal static readonly string ShiftMedial = "ㅒㅖ";
+
+	internal static readonly string FinalConsonantBlacklist = "ㄸㅃㅉ";
 
 	/// <summary>
 	/// 유니코드 'Hangul Jamo' 초성 시작 위치
@@ -117,19 +130,15 @@ internal static class HangulConstants
 
 	static HangulConstants()
 	{
+		// 주의: 쌍자음의 경우 SHIFT로 입력하는 것이 더 빠르기에 분해/조합 테이블에 넣지 말 것!
+
 		var ccC = ImmutableDictionary.CreateBuilder<char, IImmutableDictionary<char, char>>();
 		ccC['ㅂ'] = CreateImmDict(('ㅅ', 'ㅄ'));
-		ccC['ㅅ'] = CreateImmDict(('ㅅ', 'ㅆ'));
-		ccC['ㅈ'] = CreateImmDict(('ㅈ', 'ㅉ'));
-		ccC['ㄱ'] = CreateImmDict(
-			('ㄱ', 'ㄲ'),
-			('ㅅ', 'ㄳ')
-		);
+		ccC['ㄱ'] = CreateImmDict(('ㅅ', 'ㄳ'));
 		ccC['ㄴ'] = CreateImmDict(
 			('ㅈ', 'ㄵ'),
 			('ㅎ', 'ㄶ')
 		);
-		ccC['ㄷ'] = CreateImmDict(('ㄷ', 'ㄸ'));
 		ccC['ㄹ'] = CreateImmDict(
 			('ㄱ', 'ㄺ'),
 			('ㅁ', 'ㄻ'),
@@ -181,10 +190,15 @@ internal static class HangulConstants
 	}
 }
 
-public enum JamoType
+public enum ConsonantType
 {
 	/// <summary>
-	/// 초성 또는 영어 알파벳
+	/// 초성, 중성, 종성에 포함되지 않는 문자 (영어 알파벳 등)를 나타냅니다.
+	/// </summary>
+	None,
+
+	/// <summary>
+	/// 초성
 	/// </summary>
 	Initial,
 
@@ -197,4 +211,22 @@ public enum JamoType
 	/// 종성
 	/// </summary>
 	Final
+}
+
+public enum JamoType
+{
+	/// <summary>
+	/// 한글 자음, 모음에 포함되지 않는 문자 (영어 알파벳 등)를 나타냅니다.
+	/// </summary>
+	None,
+
+	/// <summary>
+	/// 한글 자음
+	/// </summary>
+	Consonant,
+
+	/// <summary>
+	/// 한글 모음
+	/// </summary>
+	Medial
 }

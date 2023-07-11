@@ -40,7 +40,7 @@ public sealed class BrowserRandomNameMapping : NameMapping
 		instance.GenerateScriptType("___getComputedStyle___", CommonNameRegistry.GetComputedStyle);
 		instance.GenerateScriptType("___consoleLog___", CommonNameRegistry.ConsoleLog);
 		instance.GenerateScriptType("___setTimeout___", CommonNameRegistry.SetTimeout);
-		instance.GenerateScriptType("___setInterval___", CommonNameRegistry.SetTimeout);
+		instance.GenerateScriptType("___setInterval___", CommonNameRegistry.SetInterval);
 
 		instance.GenerateScriptType("___dispatchEvent___", CommonNameRegistry.DispatchEvent);
 		instance.GenerateScriptType("___getElementsByClassName___", CommonNameRegistry.GetElementsByClassName);

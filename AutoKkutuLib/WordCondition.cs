@@ -55,11 +55,11 @@ public struct WordCondition
 	public override string ToString()
 	{
 		var builder = new StringBuilder();
-		builder.Append("WordCondition[Char='").Append(Char).Append('\'');
+		builder.Append("WordCondition{Char: ").Append(Char);
 		if (SubAvailable)
-			builder.Append(", SubChar='").Append(SubChar).Append('\'');
+			builder.Append(", SubChar: ").Append(SubChar);
 		if (!string.IsNullOrWhiteSpace(MissionChar))
-			builder.Append(", MissionChar='").Append(MissionChar).Append('\'');
-		return builder.Append(']').ToString();
+			builder.Append(", MissionChar: ").Append(MissionChar);
+		return builder.Append('}').ToString();
 	}
 }

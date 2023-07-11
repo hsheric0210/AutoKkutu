@@ -144,7 +144,7 @@ public static class Main
 		Log.Verbose("Initializing browser");
 
 		// Initialize Browser
-#if UseSelenium
+#if RELEASESELENIUM || DEBUGSELENIUM
 		Browser = new AutoKkutuLib.Selenium.SeleniumBrowser();
 #else
 		Browser = new AutoKkutuLib.CefSharp.CefSharpBrowser();
@@ -232,16 +232,16 @@ public static class Main
 		if (!AutoKkutu.HasGameSet)
 			return;
 
-		var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom, Prefs.InputSimulate);
-		if (opt.SimulateInput)
-		{
-			Task.Run(async () => await AutoKkutu.Game.AutoEnter.PerformInputSimulation(message, opt));
-		}
-		else
-		{
-			AutoKkutu.Game.UpdateChat(message);
-			AutoKkutu.Game.ClickSubmitButton();
-		}
+		var opt = new AutoEnterOptions(
+			Prefs.AutoEnterMode,
+			Prefs.DelayEnabled,
+			Prefs.DelayStartAfterWordEnterEnabled,
+			0 /* Prefs.StartDelay */,
+			0 /*Prefs.StartDelayRandom*/,
+			Prefs.DelayPerChar,
+			Prefs.DelayPerCharRandom);
+		var inf = new AutoEnterInfo(opt, PathDetails.Empty.WithFlags(PathFlags.ManualMessage), message);
+		AutoKkutu.Game.AutoEnter.PerformAutoEnter(inf);
 	}
 
 	public static void ToggleFeature(Func<Preference, bool> toggleFunc, StatusMessage displayStatus)
@@ -299,7 +299,7 @@ public static class Main
 		}
 		else
 		{
-			var opt = new AutoEnterOptions(Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom, Prefs.InputSimulate);
+			var opt = new AutoEnterOptions(Prefs.AutoEnterMode, Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom);
 			var time = AutoKkutu.Game.GetTurnTimeMillis();
 			(var wordToEnter, var timeover) = args.FilteredWordList.ChooseBestWord(opt, time);
 			if (string.IsNullOrEmpty(wordToEnter))
@@ -374,15 +374,21 @@ public static class Main
 		Log.Warning(I18n.Main_MyPathIsUnsupported, word);
 
 		if (Prefs.AutoEnterEnabled && Prefs.AutoFixEnabled)
-			AutoKkutu.Game.AutoEnter.PerformAutoFix(autoPathFindCache.FilteredWordList, new AutoEnterInfo(
-						new AutoEnterOptions(Prefs.DelayEnabled,
-							Prefs.DelayStartAfterWordEnterEnabled,
-							Prefs.StartDelay,
-							Prefs.StartDelayRandom,
-							Prefs.DelayPerChar,
-							Prefs.DelayPerCharRandom,
-							Prefs.InputSimulate),
-						autoPathFindCache.Details.WithoutFlags(PathFlags.PreSearch), wordIndex: ++wordIndex), AutoKkutu.Game.GetTurnTimeMillis()); // PreSearch 플래그 제거 안 하면 AutoFix한다고 다시 친 내용을 정작 보내질 않음
+		{
+			var parameter = new AutoEnterInfo(
+							new AutoEnterOptions(Prefs.AutoEnterMode, Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom),
+							autoPathFindCache.Details.WithoutFlags(PathFlags.PreSearch));
+
+			(var content, var timeover) = autoPathFindCache.FilteredWordList.ChooseBestWord(parameter.Options, AutoKkutu.Game.GetTurnTimeMillis(), ++wordIndex);
+			if (string.IsNullOrEmpty(content))
+			{
+				Log.Warning(I18n.Main_NoMorePathAvailable);
+				//TODO: NoPathAvailable?.Invoke(this, new NoPathAvailableEventArgs(timeover, AutoKkutu.Game.GetTurnTimeMillis()));
+				return;
+			}
+
+			AutoKkutu.Game.AutoEnter.PerformAutoEnter(parameter with { Content = content });
+		}
 	}
 
 	private static void OnMyTurnEnded(object? sender, EventArgs e)
@@ -468,14 +474,7 @@ public static class Main
 			return;
 
 		AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(
-			new AutoEnterOptions(
-				Prefs.DelayEnabled,
-				Prefs.DelayStartAfterWordEnterEnabled,
-				Prefs.StartDelay,
-				Prefs.StartDelayRandom,
-				Prefs.DelayPerChar,
-				Prefs.DelayPerCharRandom,
-				Prefs.InputSimulate),
+			new AutoEnterOptions(Prefs.AutoEnterMode, Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom),
 			PathDetails.Empty,
 			word));
 	}

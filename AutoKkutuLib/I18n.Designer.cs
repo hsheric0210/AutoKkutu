@@ -376,7 +376,7 @@ namespace AutoKkutuLib {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Simulating {attr:l} word input: {word}.
+        ///   Looks up a localized string similar to Simulating word input: {word}.
         /// </summary>
         public static string Main_InputSimulating {
             get {
@@ -385,7 +385,7 @@ namespace AutoKkutuLib {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Input simulation of {attr:l} word aborted: {words}.
+        ///   Looks up a localized string similar to Input simulation aborted.
         /// </summary>
         public static string Main_InputSimulationAborted {
             get {
@@ -394,7 +394,7 @@ namespace AutoKkutuLib {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Input simulation of {attr:l} word finished: {word}.
+        ///   Looks up a localized string similar to Input simulation finished.
         /// </summary>
         public static string Main_InputSimulationFinished {
             get {

@@ -29,7 +29,7 @@ public interface IGame : IDisposable
 	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 
-	void AppendChat(Func<string, (bool, char, string)> appender, int keyUpDelay, int shiftUpDelay);
+	void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay);
 	void ClickSubmitButton();
 	bool HasSameDomHandler(DomHandlerBase otherHandler);
 	bool HasSameWsSniffingHandler(WsHandlerBase otherHandler);

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace AutoKkutuLib;
 
@@ -40,6 +41,17 @@ public readonly struct PathDetails
 	public static bool operator ==(PathDetails left, PathDetails right) => left.Equals(right);
 
 	public static bool operator !=(PathDetails left, PathDetails right) => !(left == right);
+
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append("PathDetails{");
+		builder.Append(nameof(Condition)).Append(": ").Append(Condition).Append(", ");
+		builder.Append("Flags=[").Append(flags).Append("],");
+		builder.Append(nameof(ReuseAlreadyUsed)).Append(": ").Append(ReuseAlreadyUsed).Append(", ");
+		builder.Append(nameof(MaxDisplayed)).Append(": ").Append(MaxDisplayed);
+		return builder.Append('}').ToString();
+	}
 }
 
 [Flags]
@@ -79,7 +91,15 @@ public enum PathFlags
 	/// 이 플래그가 설정되어 있고 자동 입력 수행 시, '자동 입력 완료 시 자동 전송' 기능을 비활성화해야 함.
 	/// '내 턴이 와서 이전 턴에 Pre-search한 결과를 사용할 때'는 이 플래그를 설정해서는 안됨.
 	/// </remarks>
-	PreSearch = 1 << 5
+	PreSearch = 1 << 5,
+
+	/// <summary>
+	/// 채팅창을 통해 수동으로 보낸 메시지일 경우 설정되는 플래그입니다.
+	/// </summary>
+	/// <remarks>
+	/// 이 플래그가 설정되어 있을 시, PathDetails에 대한 검사와 Path-expired 검사를 비활성화해야 합니다.
+	/// </remarks>
+	ManualMessage = 1 << 6,
 }
 
 public enum PathFindResultType

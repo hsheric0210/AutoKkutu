@@ -3,6 +3,7 @@ using AutoKkutuLib.CefSharp.Properties;
 using AutoKkutuLib.Properties;
 using CefSharp;
 using CefSharp.Wpf;
+using CefSharp.Wpf.Experimental;
 using Serilog;
 using System.IO;
 using System.Xml.Serialization;
@@ -175,6 +176,7 @@ public class CefSharpBrowser : BrowserBase
 		bindingObject.WebSocketSend += OnWebSocketSend;
 		bindingObject.WebSocketReceive += OnWebSocketReceive;
 		browser.JavascriptObjectRepository.Register(jsbObjectName, bindingObject);
+		browser.WpfKeyboardHandler = new WpfImeKeyboardHandler(browser); // https://github.com/cefsharp/CefSharp/issues/1262
 
 		browser.FrameLoadEnd += OnFrameLoadEnd;
 		browser.LoadError += OnLoadError;

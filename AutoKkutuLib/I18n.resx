@@ -233,16 +233,14 @@
     <comment>0: Module name, 1: Elapsed time in millis</comment>
   </data>
   <data name="Main_InputSimulating" xml:space="preserve">
-    <value>Simulating {attr:l} word input: {word}</value>
-    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
+    <value>Simulating word input: {word}</value>
+    <comment>word: The word</comment>
   </data>
   <data name="Main_InputSimulationAborted" xml:space="preserve">
-    <value>Input simulation of {attr:l} word aborted: {words}</value>
-    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
+    <value>Input simulation aborted</value>
   </data>
   <data name="Main_InputSimulationFinished" xml:space="preserve">
-    <value>Input simulation of {attr:l} word finished: {word}</value>
-    <comment>attr: Word explanation (Optimal, next), word: The word</comment>
+    <value>Input simulation finished</value>
   </data>
   <data name="Main_MyPathIsUnsupported" xml:space="preserve">
     <value>My path {word} was confirmed unsupported.</value>

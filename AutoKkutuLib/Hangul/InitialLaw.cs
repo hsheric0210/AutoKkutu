@@ -19,7 +19,7 @@ public static class InitialLaw
 			return condition;
 
 		var applied = true;
-		HangulSplitted split = condition.Char[0].Split();
+		HangulSplit split = HangulSplit.Parse(condition.Char[0]);
 		if (!split.IsHangul || !split.HasMedial)
 			return condition;
 

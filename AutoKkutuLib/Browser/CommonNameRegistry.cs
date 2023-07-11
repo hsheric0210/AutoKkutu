@@ -190,5 +190,9 @@ public enum CommonNameRegistry
 
 	QuerySelectorAll,
 
-	GetElementById
+	GetElementById,
+
+	GetChatBox,
+
+	AppendChat
 }

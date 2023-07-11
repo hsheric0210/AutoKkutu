@@ -39,4 +39,10 @@ internal static class HangulCharExtension
 	internal static bool IsHangul(this ushort index) => index.IsHangulJamoChoseong() || index.IsHangulJamoJungseong() || index.IsHangulJamoJongseong() || index.IsHangulCompatibilityJamoConsonant() || index.IsHangulCompatibilityJamoVowel() || index.IsHangulSyllable();
 
 	internal static bool IsHangul(this char character) => Convert.ToUInt16(character).IsHangul();
+
+	internal static bool IsSsangJaeum(this char character) => HangulConstants.SsangJaeum.Contains(character);
+
+	internal static bool IsShiftMedial(this char character) => HangulConstants.ShiftMedial.Contains(character);
+
+	internal static bool IsBlacklistedFromFinalConsonant(this char character) => HangulConstants.FinalConsonantBlacklist.Contains(character);
 }

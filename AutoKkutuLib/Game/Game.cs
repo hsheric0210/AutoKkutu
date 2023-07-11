@@ -124,16 +124,9 @@ public partial class Game : IGame
 		ChatUpdated?.Invoke(this, EventArgs.Empty);
 	}
 
-	public void AppendChat(Func<string, (bool, char, string)> appender, int keyUpDelay, int shiftUpDelay)
-	{
-		if (appender is null)
-			throw new ArgumentNullException(nameof(appender));
 
-		(var isHangul, var appendChar, var appendedString) = appender(lastChat);
-		(var ch, var shift) = KeyboardLayout.QWERTY.HangulToAlphabet(appendChar);
-		domHandler.CallKeyEvent(ch, shift, isHangul, keyUpDelay, shiftUpDelay);
-		UpdateChat(appendedString);
-	}
+	public void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay)
+		=> domHandler.AppendChat(textUpdate, sendEvents, key, shift, hangul, upDelay);
 
 	public void ClickSubmitButton()
 	{
@@ -144,7 +137,7 @@ public partial class Game : IGame
 	}
 	#endregion
 
-	public override string ToString() => $"Game[DOM-Poller={domHandler.HandlerName}, WS-Sniffer={wsSniffHandler?.HandlerName}, MainPoller={mainPoller?.Id}]";
+	public override string ToString() => $"Game{{DOM-Poller: {domHandler.HandlerName}, WS-Sniffer: {wsSniffHandler?.HandlerName}, MainPoller: {mainPoller?.Id}}}";
 
 	#region Disposal
 	protected virtual void Dispose(bool disposing)

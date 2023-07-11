@@ -16,6 +16,52 @@ public partial class ConfigWindow : Window
 {
 	private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
 
+	private AutoEnterMode GetAutoEnterMode()
+	{
+		if (AutoEnterInstant.IsChecked ?? false)
+			return AutoEnterMode.EnterImmediately;
+		if (AutoEnterInputSimulate.IsChecked ?? false)
+			return AutoEnterMode.SimulateInput;
+		if (AutoEnterInputSimulateJSKeyEvents.IsChecked ?? false)
+			return AutoEnterMode.SimulateInputJSKeyEvents;
+		if (AutoEnterInputSimulateWin32.IsChecked ?? false)
+			return AutoEnterMode.SimulateInputWin32;
+		if (AutoEnterInputSimulateArduino.IsChecked ?? false)
+			return AutoEnterMode.SimulateInputArduino;
+		throw new InvalidOperationException("None of the AutoEnter options are selected");
+	}
+
+	private void SetAutoEnterMode(AutoEnterMode mode)
+	{
+		// Reset selection
+		AutoEnterInstant.IsChecked = false;
+		AutoEnterInputSimulate.IsChecked = false;
+		AutoEnterInputSimulateJSKeyEvents.IsChecked = false;
+		AutoEnterInputSimulateWin32.IsChecked = false;
+		AutoEnterInputSimulateArduino.IsChecked = false;
+
+		switch (mode)
+		{
+			case AutoEnterMode.EnterImmediately:
+				AutoEnterInstant.IsChecked = true;
+				break;
+			case AutoEnterMode.SimulateInput:
+				AutoEnterInputSimulate.IsChecked = true;
+				break;
+			case AutoEnterMode.SimulateInputJSKeyEvents:
+				AutoEnterInputSimulateJSKeyEvents.IsChecked = true;
+				break;
+			case AutoEnterMode.SimulateInputWin32:
+				AutoEnterInputSimulateWin32.IsChecked = true;
+				break;
+			case AutoEnterMode.SimulateInputArduino:
+				AutoEnterInputSimulateArduino.IsChecked = true;
+				break;
+			default:
+				break;
+		}
+	}
+
 	public ConfigWindow(Preference config)
 	{
 		if (config == null)
@@ -39,7 +85,7 @@ public partial class ConfigWindow : Window
 		DelayPerCharRandomNumber.Text = config.DelayPerCharRandom.ToString(CultureInfo.InvariantCulture);
 
 		DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnterEnabled;
-		InputSimulate.IsChecked = config.InputSimulate;
+		SetAutoEnterMode(config.AutoEnterMode);
 
 		AutoFix.IsChecked = config.AutoFixEnabled;
 		FixDelay.IsChecked = config.FixDelayEnabled;
@@ -58,7 +104,6 @@ public partial class ConfigWindow : Window
 		DBAutoWordAddEnd.IsChecked = config.AutoDBAddEndEnabled;
 
 		// 우회 관련
-		SendKeyEvents.IsChecked = config.SendKeyEvents;
 		HijackACPackets.IsChecked = config.HijackACPackets;
 
 		SimulateAntiCheat.IsChecked = config.SimulateAntiCheat;
@@ -123,8 +168,8 @@ public partial class ConfigWindow : Window
 			DelayPerChar = delayPerChar,
 			DelayPerCharRandom = delayPerCharRandom,
 
+			AutoEnterMode = GetAutoEnterMode(),
 			DelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
-			InputSimulate = InputSimulate.IsChecked ?? false,
 
 			AutoFixEnabled = AutoFix.IsChecked ?? false,
 			FixDelayPerChar = fixDelayPerChar,
@@ -143,7 +188,6 @@ public partial class ConfigWindow : Window
 			AutoDBAddEndEnabled = DBAutoWordAddEnd.IsChecked ?? false,
 
 			// 우회 관련
-			SendKeyEvents = SendKeyEvents.IsChecked ?? false,
 			HijackACPackets = HijackACPackets.IsChecked ?? false,
 			SimulateAntiCheat = SimulateAntiCheat.IsChecked ?? false,
 			DetectInputLogging = DetectInputLogging.IsChecked ?? false,
@@ -174,8 +218,8 @@ public partial class ConfigWindow : Window
 			config.DelayPerChar = conf.DelayPerChar;
 			config.DelayPerCharRandom = conf.DelayPerCharRandom;
 
+			config.AutoEnterMode = (int)conf.AutoEnterMode;
 			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterWordEnterEnabled;
-			config.InputSimulate = conf.InputSimulate;
 
 			config.AutoFixEnabled = conf.AutoFixEnabled;
 			config.FixDelayEnabled = conf.FixDelayEnabled;
@@ -194,7 +238,6 @@ public partial class ConfigWindow : Window
 			config.AutoDBAddEndEnabled = conf.AutoDBAddEndEnabled;
 
 			// 우회 관련
-			config.SendKeyEvents = conf.SendKeyEvents;
 			config.HijackACPackets = conf.HijackACPackets;
 			config.SimulateAntiCheat = conf.SimulateAntiCheat;
 			config.DetectInputLogging = conf.DetectInputLogging;

@@ -37,12 +37,12 @@ public class ColemakLayout : KeyboardLayout
 
 	protected override IDictionary<char, char> HangulClusterToAlphabetMapping => new Dictionary<char, char>()
 	{
-		['ㅃ'] = 'Q',
-		['ㅉ'] = 'W',
-		['ㄸ'] = 'F',
-		['ㄲ'] = 'P',
-		['ㅆ'] = 'G',
-		['ㅒ'] = 'Y',
+		['ㅃ'] = 'q',
+		['ㅉ'] = 'w',
+		['ㄸ'] = 'f',
+		['ㄲ'] = 'p',
+		['ㅆ'] = 'g',
+		['ㅒ'] = 'y',
 		['ㅖ'] = ';',
 	};
 }

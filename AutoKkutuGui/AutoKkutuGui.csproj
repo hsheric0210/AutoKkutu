@@ -153,7 +153,7 @@
 
     <!-- https://stackoverflow.com/a/66674262 -->
     <Choose>
-        <When Condition="$(DefineConstants.Contains('UseSelenium'))">
+        <When Condition="'$(Configuration)' == 'ReleaseSelenium' Or '$(Configuration)' == 'DebugSelenium'">
             <ItemGroup>
                 <ProjectReference Include="..\AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj" />
             </ItemGroup>
