@@ -188,7 +188,7 @@ public partial class Game
 	private void OnWsTurnError(WsTurnError data)
 	{
 		if (!string.IsNullOrWhiteSpace(data.Value))
-			NotifyTurnError(data.Value, data.ErrorCode);
+			NotifyTurnError(data.Value, data.ErrorCode, false);
 	}
 
 	private void OnWsTypingBattleRoundReady(WsTypingBattleRoundReady data)

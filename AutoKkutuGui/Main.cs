@@ -287,7 +287,10 @@ public static class Main
 		PathListUpdated?.Invoke(null, new PathListUpdateEventArgs(args.FoundWordList.Select(po => new GuiPathObject(po)).ToImmutableList()));
 
 		if (autoEnter)
+		{
+			Log.Verbose("Auto-entering on path update...");
 			TryAutoEnter(args);
+		}
 	}
 
 	private static void TryAutoEnter(PathUpdateEventArgs args, bool usedPresearchResult = false)

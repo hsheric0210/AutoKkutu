@@ -118,10 +118,11 @@ public partial class Game
 		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));
 	}
 
-	public void NotifyTurnError(string word, TurnErrorCode errorCode)
+	public void NotifyTurnError(string word, TurnErrorCode errorCode, bool byDOM)
 	{
 		if (string.Equals(word, turnErrorWordCache, StringComparison.OrdinalIgnoreCase) || word.Contains("T.T", StringComparison.OrdinalIgnoreCase))
 			return;
+		Log.Debug("NotifyTurnError {word} byDOM={bydom}", word, byDOM);
 
 		turnErrorWordCache = word;
 		UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(word, errorCode != TurnErrorCode.NotFound, errorCode is TurnErrorCode.NoEndWordOnBegin or TurnErrorCode.EndWord));

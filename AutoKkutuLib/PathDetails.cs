@@ -47,7 +47,7 @@ public readonly struct PathDetails
 		var builder = new StringBuilder();
 		builder.Append("PathDetails{");
 		builder.Append(nameof(Condition)).Append(": ").Append(Condition).Append(", ");
-		builder.Append("Flags=[").Append(flags).Append("],");
+		builder.Append("Flags=[").Append(flags).Append("], ");
 		builder.Append(nameof(ReuseAlreadyUsed)).Append(": ").Append(ReuseAlreadyUsed).Append(", ");
 		builder.Append(nameof(MaxDisplayed)).Append(": ").Append(MaxDisplayed);
 		return builder.Append('}').ToString();

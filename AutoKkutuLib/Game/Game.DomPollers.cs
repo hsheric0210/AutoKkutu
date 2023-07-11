@@ -90,7 +90,7 @@ public partial class Game
 			else if (details.Contains("이미")) // '이미 사용된 단어'
 				errorCode = TurnErrorCode.AlreadyUsed;
 		}
-		NotifyTurnError(word, errorCode);
+		NotifyTurnError(word, errorCode, true);
 	}
 
 	/// <summary>

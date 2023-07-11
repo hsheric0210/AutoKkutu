@@ -24,6 +24,7 @@ public static class PathListExtension
 
 		// FIXME: Presearch 시 Time-Filter 적용이 안되는 버그
 		// -> Pre-search 시 ChooseBestWord 호출할 때 remainingTurnTime를 min(<현재 게임 한 사람당 턴 시간>, <남은 라운드 시간>)으로 설정하여 호출하도록 하기
+		// 아니면, 턴 시간 계산 공식을 긁어와서 써도 됨
 
 		var remain = Math.Max(300, remainingTurnTime); // clamp to min. 300ms
 		Log.Verbose("(TimeFilter) turnTime={time}, clamped={cTime}", remainingTurnTime, remain);
