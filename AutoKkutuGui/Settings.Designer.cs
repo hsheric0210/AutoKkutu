@@ -361,12 +361,12 @@ namespace AutoKkutuGui {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool SendKeyEvents {
+        public bool AutoEnterInputSimulateJavaScriptSendKeys {
             get {
-                return ((bool)(this["SendKeyEvents"]));
+                return ((bool)(this["AutoEnterInputSimulateJavaScriptSendKeys"]));
             }
             set {
-                this["SendKeyEvents"] = value;
+                this["AutoEnterInputSimulateJavaScriptSendKeys"] = value;
             }
         }
         

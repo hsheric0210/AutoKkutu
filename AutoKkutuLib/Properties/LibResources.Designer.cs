@@ -61,6 +61,98 @@ namespace AutoKkutuLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to (function () {
+        ///    // This code is safe both executed on global context and in IIFE template &apos;(function(){return &lt;code&gt;;})()&apos;
+        ///
+        ///    /* 스크립트 오류내기 싫으면 IIFE 함수 시작 전 부분에 공백이나 주석 넣지 마셈.
+        ///     * 만약 넣으면 코드가 내부적으로 (function(){
+        ///     *   return
+        ///     *   // ...
+        ///     *   &lt;IIFE&gt;()
+        ///     * })();
+        ///     * 이런 식으로 변해서 실행 시 오류남. (JavaScript는 줄 끝에 &apos;;&apos; 붙이지 않더라도 단지 줄바꿈만으로도 코드 줄 끝을 인식하기 때문에 그럼)
+        ///     */
+        ///
+        ///    // 여기 정의된 함수들은 먼저 실행된 스크립트(사이트 별 우회, 특화 기능 추가 등)들에 의해 언제든지 override될 수 있다.
+        ///    // 실수로라도 override된 함수들을 다시 덮어씌워 버리지  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string baseDomHandlerJs {
+            get {
+                return ResourceManager.GetString("baseDomHandlerJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (function () {
+        ///    ___wsFilter___[&apos;___welcome___&apos;] = function (d) {
+        ///        return { &apos;type&apos;: &apos;welcome&apos;, &apos;id&apos;: d.id };
+        ///    };
+        ///    ___wsFilter___[&apos;___turnStart___&apos;] = function (d) { return true; };
+        ///    ___wsFilter___[&apos;___turnEnd___&apos;] = function (d) { return true; };
+        ///    ___wsFilter___[&apos;___turnError___&apos;] = function (d) { return true; };
+        ///    ___wsFilter___.registered = true;
+        ///    ___wsFilter___.active = true;
+        ///})().
+        /// </summary>
+        public static string baseWebSocketFilterJs {
+            get {
+                return ResourceManager.GetString("baseWebSocketFilterJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (function () {
+        ///    ___roomMode2GameMode___ = function (id) {
+        ///        if (!___ruleKeys___)
+        ///            ___ruleKeys___ = Object.keys(JSON.parse(___getElementById___.call(document, &apos;RULE&apos;).textContent));
+        ///        return ___ruleKeys___[id];
+        ///    }
+        ///
+        ///    ___helperRegistered___ = true;
+        ///    return true;
+        ///})();.
+        /// </summary>
+        public static string baseWebSocketHelperJs {
+            get {
+                return ResourceManager.GetString("baseWebSocketHelperJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (function () {
+        ///    ___wsFilter___[&apos;room&apos;] = function (d) {
+        ///        if (d &amp;&amp; d.room &amp;&amp; d.room.players &amp;&amp; Array.prototype.includes.call(d.room.players, &apos;___userId___&apos;)) {
+        ///            function onlyPlayerId(plist) { if (!plist) { return []; } return Array.prototype.map.call(plist, p =&gt; typeof p === &apos;string&apos; ? p : p.id.toString()); }
+        ///            return {
+        ///                &apos;type&apos;: &apos;room&apos;,
+        ///                &apos;room&apos;: {
+        ///                    &apos;players&apos;: onlyPlayerId(d.room.players),
+        ///                    &apos;gaming&apos;: d.r [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string baseWebSocketRoomFilterJs {
+            get {
+                return ResourceManager.GetString("baseWebSocketRoomFilterJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (function () {
+        ///    // 안티 치트가 적용되었다고 하더라도 대부분의 사이트들은 게임 도중에 진짜 채팅창이나 진짜 &apos;전송&apos; 버튼을 바꿔치기 하지 않음.
+        ///    // 덕분에, 이러한 DOM 요소들을 매 번 계산하여 알아내는 대신 캐싱해 놓고 신나게 우려먹을 수 있음.
+        ///
+        ///    ___getChatBox___ = function () {
+        ///        if (!___chatBox___ || !___getElementById___.call(document, ___chatBox___.id))
+        ///            ___chatBox___ = Array.prototype.find.call(___querySelectorAll___.call(document, &apos;#Middle&gt;div.ChatBox.Product&gt;div.product-body&gt;input&apos;), e =&gt; ___getComputedStyle___.call(window, e).display != &apos;none&apos;);
+        ///
+        ///        retu [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string bypassDomHandlerJs {
+            get {
+                return ResourceManager.GetString("bypassDomHandlerJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /* mainHelperJs.js : AutoKkutu JavaScript injection
         /// * Reserved Names:
         /// * ___originalWS___
@@ -73,14 +165,17 @@ namespace AutoKkutuLib.Properties {
         /// * 
         /// * Global object back-ups:
         /// * ___getComputedStyle___
+        /// * ___dispatchEvent___
+        /// * ___consoleLog___
+        /// * ___setTimeout___
+        /// * ___setInterval___
+        /// * ___getElementsByClassName___
+        /// * ___querySelector___
+        /// * ___querySelectorAll___
+        /// * ___getElementById___
         /// */
         ///
-        ////* eslint-disable no-proto */
-        ////* eslint-disable accessor-pairs */
-        ////* eslint-disable no-global-assign */
-        ///
-        ///// Backup before being overwritten by some anticheat-like things
-        ///___getComputedStyle___ = window.getComputedSty [rest of string was truncated]&quot;;.
+        ////* eslint-disable no-pro [rest of string was truncated]&quot;;.
         /// </summary>
         public static string mainHelperJs {
             get {
@@ -101,6 +196,24 @@ namespace AutoKkutuLib.Properties {
         public static string namespaceInitJs {
             get {
                 return ResourceManager.GetString("namespaceInitJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (function () {
+        ///    ___wsFilter___[&apos;___turnEnd___&apos;] = function (data) {
+        ///        if (data.sum) {
+        ///            let keyProp = String.fromCharCode(data.sum - data.score);
+        ///            let xorKey = unescape(atob(data[keyProp]));
+        ///            let value = &apos;&apos;;
+        ///            for (let i = 1, j = data.value.length; i &lt; j; i++) {
+        ///                value += String.fromCharCode(data.value.charCodeAt(i) ^ xorKey.charCodeAt(i - 1))
+        ///            }
+        ///            ___consoleLog___(&quot;Decoded turnEnd packet&quot;, data.value, &quot;to&quot;, valu [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string teDecoderWebSocketFilterJs {
+            get {
+                return ResourceManager.GetString("teDecoderWebSocketFilterJs", resourceCulture);
             }
         }
     }

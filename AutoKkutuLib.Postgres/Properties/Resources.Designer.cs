@@ -67,12 +67,16 @@ namespace AutoKkutuLib.Postgres.Properties {
         ///RETURNS INTEGER AS $$
         ///BEGIN
         ///	IF ((flags &amp; endWordFlag) != 0) THEN
-        ///		RETURN endWordOrdinal * {DatabaseConstants.MaxWordLength};
+        ///		RETURN endWordOrdinal * __MaxWordLength__;
         ///	END IF;
         ///	IF ((flags &amp; attackWordFlag) != 0) THEN
-        ///		RETURN attackWordOrdinal * {DatabaseConstants.MaxWordLength};
+        ///		RETURN attackWordOrdinal * __MaxWordLength__;
         ///	END IF;
-        ///	RETURN normalWordOrdinal * {DatabaseConstants.M [rest of string was truncated]&quot;;.
+        ///	RETURN normalWordOrdinal * __MaxWordLength__;
+        ///END;
+        ///$$ LANGUAGE plpgsql;
+        ///
+        ///CR [rest of string was truncated]&quot;;.
         /// </summary>
         public static string Initialization {
             get {

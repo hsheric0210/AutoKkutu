@@ -44,18 +44,25 @@ public class UnsupportedWordEventArgs : EventArgs
 	public string Word { get; }
 	public bool IsExistingWord { get; }
 	public bool IsEndWord { get; }
-	public UnsupportedWordEventArgs(string word, bool isExistingWord, bool isEndWord)
+	public bool IsMyTurn { get; }
+	public UnsupportedWordEventArgs(string word, bool isExistingWord, bool isEndWord, bool isMyTurn)
 	{
 		Word = word;
 		IsExistingWord = isExistingWord;
 		IsEndWord = isEndWord;
+		IsMyTurn = isMyTurn;
 	}
 }
 
 public class WordConditionPresentEventArgs : EventArgs
 {
 	public WordCondition Condition { get; }
-	public WordConditionPresentEventArgs(WordCondition condition) => Condition = condition;
+	public bool IsMyTurn { get; }
+	public WordConditionPresentEventArgs(WordCondition condition, bool isMyTurn)
+	{
+		Condition = condition;
+		IsMyTurn = isMyTurn;
+	}
 }
 
 public class PreviousUserTurnEndedEventArgs : EventArgs

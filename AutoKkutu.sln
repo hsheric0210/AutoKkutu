@@ -23,11 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Postgres", "Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.CefSharp", "AutoKkutuLib.CefSharp\AutoKkutuLib.CefSharp.csproj", "{A612B087-8FBC-485F-A1B4-BAC3A033A840}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Game.DomHandlers.JavaScript", "AutoKkutuLib.Game.DomHandlers.JavaScript\AutoKkutuLib.Game.DomHandlers.JavaScript.csproj", "{F5AFA21D-536B-4707-9BE0-0117713C6C58}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Selenium", "AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj", "{EE454914-8625-4778-90E8-9A05297198EA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Game.WsHandlers.JavaScript", "AutoKkutuLib.Game.WsHandlers.JavaScript\AutoKkutuLib.Game.WsHandlers.JavaScript.csproj", "{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -213,30 +209,6 @@ Global
 		{A612B087-8FBC-485F-A1B4-BAC3A033A840}.ReleaseSelenium|x64.Build.0 = ReleaseSelenium|Any CPU
 		{A612B087-8FBC-485F-A1B4-BAC3A033A840}.ReleaseSelenium|x86.ActiveCfg = ReleaseSelenium|Any CPU
 		{A612B087-8FBC-485F-A1B4-BAC3A033A840}.ReleaseSelenium|x86.Build.0 = ReleaseSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugCefSharp|Any CPU.ActiveCfg = DebugCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugCefSharp|Any CPU.Build.0 = DebugCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugCefSharp|x64.ActiveCfg = DebugCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugCefSharp|x64.Build.0 = DebugCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugCefSharp|x86.ActiveCfg = DebugCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugCefSharp|x86.Build.0 = DebugCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugSelenium|Any CPU.ActiveCfg = DebugSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugSelenium|Any CPU.Build.0 = DebugSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugSelenium|x64.ActiveCfg = DebugSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugSelenium|x64.Build.0 = DebugSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugSelenium|x86.ActiveCfg = DebugSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.DebugSelenium|x86.Build.0 = DebugSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseCefSharp|Any CPU.ActiveCfg = Release|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseCefSharp|Any CPU.Build.0 = Release|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseCefSharp|x64.ActiveCfg = ReleaseCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseCefSharp|x64.Build.0 = ReleaseCefSharp|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseCefSharp|x86.ActiveCfg = Release|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseCefSharp|x86.Build.0 = Release|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseSelenium|Any CPU.ActiveCfg = ReleaseSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseSelenium|Any CPU.Build.0 = ReleaseSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseSelenium|x64.ActiveCfg = ReleaseSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseSelenium|x64.Build.0 = ReleaseSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseSelenium|x86.ActiveCfg = ReleaseSelenium|Any CPU
-		{F5AFA21D-536B-4707-9BE0-0117713C6C58}.ReleaseSelenium|x86.Build.0 = ReleaseSelenium|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|Any CPU.ActiveCfg = DebugCefSharp|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|x64.ActiveCfg = DebugCefSharp|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|x86.ActiveCfg = DebugCefSharp|Any CPU
@@ -258,30 +230,6 @@ Global
 		{EE454914-8625-4778-90E8-9A05297198EA}.ReleaseSelenium|x64.Build.0 = ReleaseSelenium|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.ReleaseSelenium|x86.ActiveCfg = ReleaseSelenium|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.ReleaseSelenium|x86.Build.0 = ReleaseSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugCefSharp|Any CPU.ActiveCfg = DebugCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugCefSharp|Any CPU.Build.0 = DebugCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugCefSharp|x64.ActiveCfg = DebugCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugCefSharp|x64.Build.0 = DebugCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugCefSharp|x86.ActiveCfg = DebugCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugCefSharp|x86.Build.0 = DebugCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugSelenium|Any CPU.ActiveCfg = DebugSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugSelenium|Any CPU.Build.0 = DebugSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugSelenium|x64.ActiveCfg = DebugSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugSelenium|x64.Build.0 = DebugSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugSelenium|x86.ActiveCfg = DebugSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.DebugSelenium|x86.Build.0 = DebugSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseCefSharp|Any CPU.ActiveCfg = Release|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseCefSharp|Any CPU.Build.0 = Release|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseCefSharp|x64.ActiveCfg = ReleaseCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseCefSharp|x64.Build.0 = ReleaseCefSharp|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseCefSharp|x86.ActiveCfg = Release|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseCefSharp|x86.Build.0 = Release|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseSelenium|Any CPU.ActiveCfg = ReleaseSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseSelenium|Any CPU.Build.0 = ReleaseSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseSelenium|x64.ActiveCfg = ReleaseSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseSelenium|x64.Build.0 = ReleaseSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseSelenium|x86.ActiveCfg = ReleaseSelenium|Any CPU
-		{ABE93B9E-D67F-422F-866A-18DAD96D8BC1}.ReleaseSelenium|x86.Build.0 = ReleaseSelenium|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -61,7 +61,7 @@ namespace AutoKkutuLib.CefSharp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /* communicator.js
+        ///   Looks up a localized string similar to /* communicatorJs : AutoKkutu - CefSharp JSB communicator
         /// * 
         /// * Reserved names:
         /// * ___jsbGlobal___
@@ -70,16 +70,18 @@ namespace AutoKkutuLib.CefSharp.Properties {
         /// * onReceive
         /// * bindObjectAsync
         /// * BindObjectAsync
+        /// * ___commSend___
+        /// * ___commRecv___
         /// */
         ///
-        ///window[&apos;___commSend___&apos;] = (async function (msg) {
+        ///___commSend___ = (async function (msg) {
         ///    let fn = window[&apos;___jsbGlobal___&apos;][&apos;bindObjectAsync&apos;] ?? window[&apos;___jsbGlobal___&apos;][&apos;BindObjectAsync&apos;];
         ///    await fn(&apos;___jsbObj___&apos;);
         ///    window[&apos;___jsbObj___&apos;][&apos;onSend&apos;](msg)
         ///});
         ///
-        ///window[&apos;___commRecv___&apos;] = (async function (msg) {
-        ///    let fn = window[&apos;___jsbGlobal___&apos;][&apos;bindObjectAsync&apos;] ?? wind [rest of string was truncated]&quot;;.
+        ///___commRecv___ = (async function (msg) {
+        ///    let  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string communicatorJs {
             get {

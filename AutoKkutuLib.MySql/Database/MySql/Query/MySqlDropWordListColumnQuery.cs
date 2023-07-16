@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class MySqlDropWordListColumnQuery : AbstractDropWordListColumnQuery

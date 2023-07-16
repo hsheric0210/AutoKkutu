@@ -2,6 +2,10 @@
 
 namespace AutoKkutuLib;
 
+/// <summary>
+/// 단어 선호도 순위 목록을 나타냅니다.
+/// 목록 상 맨 위에 있는 단어 조건부터 우선하여 검색됩니다.
+/// </summary>
 [TypeConverter(typeof(WordPreferenceTypeConverter))]
 public sealed class WordPreference : IEquatable<WordPreference?>
 {

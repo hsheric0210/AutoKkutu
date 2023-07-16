@@ -9,9 +9,8 @@ using System.Text;
 using System.Windows;
 using AutoKkutuLib.Database.Sqlite;
 using AutoKkutuLib;
-using AutoKkutuLib.Node;
-using AutoKkutuLib.Word;
-using AutoKkutuLib.Jobs;
+using AutoKkutuLib.Database.Jobs.Node;
+using AutoKkutuLib.Database.Jobs.Word;
 
 namespace AutoKkutuGui;
 

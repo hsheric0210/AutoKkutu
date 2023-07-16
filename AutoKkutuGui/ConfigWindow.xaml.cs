@@ -1,5 +1,6 @@
 ﻿using AutoKkutuGui.Config;
 using AutoKkutuLib;
+using AutoKkutuLib.Game.Enterer;
 using Serilog;
 using System;
 using System.Diagnostics;
@@ -16,45 +17,39 @@ public partial class ConfigWindow : Window
 {
 	private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
 
-	private AutoEnterMode GetAutoEnterMode()
+	private EntererMode GetAutoEnterMode()
 	{
 		if (AutoEnterInstant.IsChecked ?? false)
-			return AutoEnterMode.EnterImmediately;
-		if (AutoEnterInputSimulate.IsChecked ?? false)
-			return AutoEnterMode.SimulateInput;
-		if (AutoEnterInputSimulateJSKeyEvents.IsChecked ?? false)
-			return AutoEnterMode.SimulateInputJSKeyEvents;
+			return EntererMode.EnterImmediately;
+		if (AutoEnterInputSimulateJavaScript.IsChecked ?? false)
+			return EntererMode.SimulateInputJavaScript;
 		if (AutoEnterInputSimulateWin32.IsChecked ?? false)
-			return AutoEnterMode.SimulateInputWin32;
+			return EntererMode.SimulateInputWin32;
 		if (AutoEnterInputSimulateArduino.IsChecked ?? false)
-			return AutoEnterMode.SimulateInputArduino;
+			return EntererMode.SimulateInputArduino;
 		throw new InvalidOperationException("None of the AutoEnter options are selected");
 	}
 
-	private void SetAutoEnterMode(AutoEnterMode mode)
+	private void SetAutoEnterMode(EntererMode mode)
 	{
 		// Reset selection
 		AutoEnterInstant.IsChecked = false;
-		AutoEnterInputSimulate.IsChecked = false;
-		AutoEnterInputSimulateJSKeyEvents.IsChecked = false;
+		AutoEnterInputSimulateJavaScript.IsChecked = false;
 		AutoEnterInputSimulateWin32.IsChecked = false;
 		AutoEnterInputSimulateArduino.IsChecked = false;
 
 		switch (mode)
 		{
-			case AutoEnterMode.EnterImmediately:
+			case EntererMode.EnterImmediately:
 				AutoEnterInstant.IsChecked = true;
 				break;
-			case AutoEnterMode.SimulateInput:
-				AutoEnterInputSimulate.IsChecked = true;
+			case EntererMode.SimulateInputJavaScript:
+				AutoEnterInputSimulateJavaScript.IsChecked = true;
 				break;
-			case AutoEnterMode.SimulateInputJSKeyEvents:
-				AutoEnterInputSimulateJSKeyEvents.IsChecked = true;
-				break;
-			case AutoEnterMode.SimulateInputWin32:
+			case EntererMode.SimulateInputWin32:
 				AutoEnterInputSimulateWin32.IsChecked = true;
 				break;
-			case AutoEnterMode.SimulateInputArduino:
+			case EntererMode.SimulateInputArduino:
 				AutoEnterInputSimulateArduino.IsChecked = true;
 				break;
 			default:
@@ -78,14 +73,15 @@ public partial class ConfigWindow : Window
 
 		// 자동 단어 입력
 		AutoEnter.IsChecked = config.AutoEnterEnabled;
-		Delay.IsChecked = config.DelayEnabled;
-		StartDelayNumber.Text = config.StartDelay.ToString(CultureInfo.InvariantCulture);
-		StartDelayRandomNumber.Text = config.StartDelayRandom.ToString(CultureInfo.InvariantCulture);
-		DelayPerCharNumber.Text = config.DelayPerChar.ToString(CultureInfo.InvariantCulture);
-		DelayPerCharRandomNumber.Text = config.DelayPerCharRandom.ToString(CultureInfo.InvariantCulture);
+		Delay.IsChecked = config.AutoEnterDelayEnabled;
+		StartDelayNumber.Text = config.AutoEnterStartDelay.ToString(CultureInfo.InvariantCulture);
+		StartDelayRandomNumber.Text = config.AutoEnterStartDelayRandom.ToString(CultureInfo.InvariantCulture);
+		DelayPerCharNumber.Text = config.AutoEnterDelayPerChar.ToString(CultureInfo.InvariantCulture);
+		DelayPerCharRandomNumber.Text = config.AutoEnterDelayPerCharRandom.ToString(CultureInfo.InvariantCulture);
 
-		DelayStartAfterWordEnter.IsChecked = config.DelayStartAfterWordEnterEnabled;
 		SetAutoEnterMode(config.AutoEnterMode);
+		DelayStartAfterWordEnter.IsChecked = config.AutoEnterDelayStartAfterWordEnterEnabled;
+		AutoEnterInputSimulateJavaScriptSendKeys.IsChecked = config.AutoEnterInputSimulateJavaScriptSendKeys;
 
 		AutoFix.IsChecked = config.AutoFixEnabled;
 		FixDelay.IsChecked = config.FixDelayEnabled;
@@ -162,14 +158,15 @@ public partial class ConfigWindow : Window
 
 			// 자동 단어 입력
 			AutoEnterEnabled = AutoEnter.IsChecked ?? false,
-			DelayEnabled = Delay.IsChecked ?? false,
-			StartDelay = startDelay,
-			StartDelayRandom = startDelayRandom,
-			DelayPerChar = delayPerChar,
-			DelayPerCharRandom = delayPerCharRandom,
+			AutoEnterDelayEnabled = Delay.IsChecked ?? false,
+			AutoEnterStartDelay = startDelay,
+			AutoEnterStartDelayRandom = startDelayRandom,
+			AutoEnterDelayPerChar = delayPerChar,
+			AutoEnterDelayPerCharRandom = delayPerCharRandom,
 
 			AutoEnterMode = GetAutoEnterMode(),
-			DelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
+			AutoEnterDelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
+			AutoEnterInputSimulateJavaScriptSendKeys = AutoEnterInputSimulateJavaScriptSendKeys.IsChecked ?? false,
 
 			AutoFixEnabled = AutoFix.IsChecked ?? false,
 			FixDelayPerChar = fixDelayPerChar,
@@ -212,14 +209,15 @@ public partial class ConfigWindow : Window
 
 			// 자동 단어 입력
 			config.AutoEnterEnabled = conf.AutoEnterEnabled;
-			config.DelayEnabled = conf.DelayEnabled;
-			config.StartDelay = conf.StartDelay;
-			config.StartDelayRandom = conf.StartDelayRandom;
-			config.DelayPerChar = conf.DelayPerChar;
-			config.DelayPerCharRandom = conf.DelayPerCharRandom;
+			config.DelayEnabled = conf.AutoEnterDelayEnabled;
+			config.StartDelay = conf.AutoEnterStartDelay;
+			config.StartDelayRandom = conf.AutoEnterStartDelayRandom;
+			config.DelayPerChar = conf.AutoEnterDelayPerChar;
+			config.DelayPerCharRandom = conf.AutoEnterDelayPerCharRandom;
 
 			config.AutoEnterMode = (int)conf.AutoEnterMode;
-			config.DelayStartAfterWordEnterEnabled = conf.DelayStartAfterWordEnterEnabled;
+			config.DelayStartAfterWordEnterEnabled = conf.AutoEnterDelayStartAfterWordEnterEnabled;
+			config.AutoEnterInputSimulateJavaScriptSendKeys = conf.AutoEnterInputSimulateJavaScriptSendKeys;
 
 			config.AutoFixEnabled = conf.AutoFixEnabled;
 			config.FixDelayEnabled = conf.FixDelayEnabled;

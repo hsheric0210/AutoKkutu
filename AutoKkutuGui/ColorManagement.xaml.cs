@@ -4,6 +4,7 @@ using System.Windows;
 
 namespace AutoKkutuGui;
 
+// TODO: ColorManagement 창 완전 제거 후 ConfigWindow와 통합.
 /// <summary>
 /// ColorManagement.xaml에 대한 상호 작용 논리
 /// </summary>

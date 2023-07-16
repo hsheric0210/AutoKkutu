@@ -12,34 +12,31 @@ public partial class Game
 		pollerCancel = new CancellationTokenSource();
 		CancellationToken token = pollerCancel.Token;
 
-		try
-		{
-			mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", looseInterval), token);
-			mainPoller.Start();
+		mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", looseInterval), token);
+		mainPoller.Start();
 
-			Task.Run(async () => await BaseDomPoller(
-				PollWordHistory,
-				null,
-				(ex) => Log.Error(ex, "'Word Histories' poller exception"),
-				() => IsGameInProgress && !CurrentGameMode.IsFreeMode(),
-				intenseInterval,
-				idleInterval,
-				token));
-			Task.Run(async () => await BaseDomPoller(
-				PollTypingWord,
-				null,
-				(ex) => Log.Error(ex, "'Typing-word' poller exception"),
-				() => IsGameInProgress && CurrentGameMode == GameMode.TypingBattle,
-				intenseInterval,
-				idleInterval,
-				token));
+		Task.Run(async () => await BaseDomPoller(
+			PollWordHistory,
+			null,
+			(ex) => Log.Error(ex, "'Word Histories' poller exception"),
+			() => IsGameInProgress && !CurrentGameMode.IsFreeMode(),
+			intenseInterval,
+			idleInterval,
+			token));
+		Task.Run(async () => await BaseDomPoller(
+			PollTypingWord,
+			null,
+			(ex) => Log.Error(ex, "'Typing-word' poller exception"),
+			() => IsGameInProgress && CurrentGameMode == GameMode.TypingBattle,
+			intenseInterval,
+			idleInterval,
+			token));
 
-			Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller", looseInterval));
-			Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
-			Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller", looseInterval));
-			Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
-		}
-		catch { }
+		Task.Run(async () => await GameDomPoller(PollMyTurn, token, "My turn poller", looseInterval));
+		Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller", looseInterval));
+		Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
+		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller", looseInterval));
+		Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
 		//Task.Run(async () => await GameDomPoller(PollTurn, token, "My turn poller"));//temporary disabled due to race-condition with wssniffer
 		Log.Debug("DOM pollers are now active.");
 	}
@@ -51,25 +48,25 @@ public partial class Game
 		mainPoller?.Wait(); // await to be terminated
 	}
 
-	private async Task PollGameProgress()
+	private async ValueTask PollGameProgress()
 	{
 		await RegisterInGameFunctions(new HashSet<int>());
 		await RegisterWebSocketFilters();
 		NotifyGameProgress(await domHandler.GetIsGameInProgress());
 	}
 
-	private async Task PollTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition(), true);
+	private async ValueTask PollMyTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition(), true);
 
-	private async Task PollWordHistory()
+	private async ValueTask PollWordHistory()
 	{
 		var histories = await domHandler.GetWordInHistories();
 		if (histories != null)
 			NotifyWordHistories(histories);
 	}
 
-	private async Task PollRound() => NotifyRound(await domHandler.GetRoundIndex());
+	private async ValueTask PollRound() => NotifyRound(await domHandler.GetRoundIndex());
 
-	private async Task PollWordError()
+	private async ValueTask PollWordError()
 	{
 		var word = await domHandler.GetUnsupportedWord();
 		if (string.IsNullOrWhiteSpace(word))
@@ -96,14 +93,14 @@ public partial class Game
 	/// <summary>
 	/// 라운드가 끝났을 때, 회색으로 옅게 제시되는 예시 단어를 읽어들입니다.
 	/// </summary>
-	private async Task PollWordHint()
+	private async ValueTask PollWordHint()
 	{
 		var word = await domHandler.GetExampleWord();
 		if (!string.IsNullOrWhiteSpace(word) && !word.StartsWith("게임 끝", StringComparison.Ordinal))
 			NotifyWordHint(word);
 	}
 
-	private async Task PollTypingWord() // TODO: Remove it and merge with UpdateWord
+	private async ValueTask PollTypingWord() // TODO: Remove it and merge with UpdateWord
 	{
 		var word = await domHandler.GetPresentedWord();
 		if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝", StringComparison.InvariantCultureIgnoreCase))
@@ -119,7 +116,7 @@ public partial class Game
 		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));
 	}
 
-	private async Task PollGameMode()
+	private async ValueTask PollGameMode()
 	{
 		GameMode gameMode = await domHandler.GetGameMode();
 		if (gameMode != GameMode.None)
@@ -127,7 +124,7 @@ public partial class Game
 	}
 
 	// TODO: Return nothing when the current gamemode is 'Free'
-	private async Task<WordCondition?> PollWordCondition()
+	private async ValueTask<WordCondition?> PollWordCondition()
 	{
 		var condition = await domHandler.GetPresentedWord();
 		var missionChar = await domHandler.GetMissionChar();

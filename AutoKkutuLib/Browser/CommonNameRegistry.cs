@@ -194,5 +194,25 @@ public enum CommonNameRegistry
 
 	GetChatBox,
 
-	AppendChat
+	AppendChat,
+
+	RuleKeys,
+
+	WebSocketHelperRegistered,
+
+	RoomHeadModeCache,
+
+	GameDisplayCache,
+
+	MyInputDisplayCache,
+
+	TurnTimeDisplayCache,
+
+	RoundTimeDisplayCache,
+
+	ChatBoxCache,
+
+	ChatBtnCache,
+
+	ShiftState
 }

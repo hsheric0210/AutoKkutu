@@ -5,7 +5,7 @@ namespace AutoKkutuLib;
 /// <summary>
 /// 단어 검색 조건을 나타냅니다
 /// </summary>
-public struct WordCondition
+public readonly struct WordCondition
 {
 	public static WordCondition Empty { get; } = new WordCondition("");
 
@@ -41,6 +41,15 @@ public struct WordCondition
 		&& string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase)
 		&& (!SubAvailable || string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
 
+	/// <summary>
+	/// 단어 검색 조건이 서로 비슷한지의 여부를 반환합니다.
+	/// 단어 검색 조건이 비슷하다는 것은 서로 한 개 이상의 조건을 공유하고, 미션 단어가 동일하다는 것을 의미합니다.
+	/// </summary>
+	/// <remarks>
+	/// 에시로, <c>{Char: 나, MissionChar: 마}</c> 와 <c>{Char: 라, SubChar: 나, MissionChar: 마}</c>는 서로 비슷한 단어 검색 조건입니다.
+	/// </remarks>
+	/// <param name="o"></param>
+	/// <returns></returns>
 	public bool IsSimilar(WordCondition? o)
 	{
 		return o is WordCondition other && MissionChar == other.MissionChar
@@ -62,4 +71,8 @@ public struct WordCondition
 			builder.Append(", MissionChar: ").Append(MissionChar);
 		return builder.Append('}').ToString();
 	}
+
+	public static bool operator ==(WordCondition left, WordCondition right) => left.Equals(right);
+
+	public static bool operator !=(WordCondition left, WordCondition right) => !(left == right);
 }

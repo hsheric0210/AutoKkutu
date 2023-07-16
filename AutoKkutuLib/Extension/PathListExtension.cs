@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Game;
+﻿using AutoKkutuLib.Game.Enterer;
 using Serilog;
 using System.Collections.Immutable;
 
@@ -8,13 +8,14 @@ public static class PathListExtension
 {
 	/// <summary>
 	/// 현재 턴 시간을 고려하여 사용 가능한 최적의 단어를 선정합니다.
+	/// 만약 현재 남은 턴 시간 안에 입력할 수 있는 단어가 없다면, <c>(null, true)</c>를 대신 반환합니다.
 	/// </summary>
 	/// <param name="availableWordList">사용 가능한 모든 단어가 정렬되어 담겨 있는 목록</param>
 	/// <param name="delay">입력 딜레이 정보</param>
 	/// <param name="remainingTurnTime">남은 턴 시간</param>
 	/// <param name="wordIndex">만약 주어진다면, N번째 최적의 단어를 선택합니다.</param>
-	/// <returns>(<c>최적의 단어</c>, <c>턴 시간 초과 여부</c>)</returns>
-	public static (string?, bool) ChooseBestWord(this IImmutableList<PathObject> availableWordList, AutoEnterOptions delay, int remainingTurnTime, int wordIndex = 0)
+	/// <returns>최적의 단어를 찾은 경우 <c>([최적의 단어], false)</c>, 그렇지 못한 경우 <c>(null, true)</c></returns>
+	public static (string?, bool) ChooseBestWord(this IImmutableList<PathObject> availableWordList, EnterOptions delay, int remainingTurnTime, int wordIndex = 0)
 	{
 		if (availableWordList is null)
 			throw new ArgumentNullException(nameof(availableWordList));

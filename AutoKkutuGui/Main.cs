@@ -1,106 +1,166 @@
 ﻿//#define SELENIUM
+using AutoKkutuGui.Properties;
 using AutoKkutuLib;
 using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.Jobs;
+using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.DomHandlers;
-using AutoKkutuLib.Game.WebSocketListener;
-using AutoKkutuLib.Game.WsHandlers;
-using AutoKkutuLib.Handlers.JavaScript;
-using AutoKkutuLib.Path;
+using AutoKkutuLib.Game.Enterer;
+using AutoKkutuLib.Game.WebSocketHandlers;
+using AutoKkutuLib.MySql.Properties;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection.Metadata.Ecma335;
 using System.Windows;
+using System.Xml.Serialization;
 
 namespace AutoKkutuGui;
 
-public static class Main
+public partial class Main
 {
-	public static Preference Prefs
+	private const string ServerConfigFile = "Servers.xml";
+
+	private static Main? instance;
+
+	public Preference Prefs { get; set; } = null!;
+	public ColorPreference ColorPreference { get; set; } = null!;
+	public ServerConfig ServerConfig { get; }
+
+	public BrowserBase Browser { get; private set; } = null!;
+	public AutoKkutu? AutoKkutu { get; private set; }
+
+	public event EventHandler? BrowserInitialized;
+	public event EventHandler? AutoKkutuInitialized;
+	public event EventHandler<PathListUpdateEventArgs>? PathListUpdated;
+	public event EventHandler<SearchStateChangedEventArgs>? SearchStateChanged;
+	public event EventHandler<StatusMessageChangedEventArgs>? StatusMessageChanged;
+	public event EventHandler? ChatUpdated;
+
+	private Main(Preference prefs, ColorPreference colorPrefs, ServerConfig serverConfig, BrowserBase browser)
 	{
-		get; set;
-	} = null!;
+		Prefs = prefs;
+		ColorPreference = colorPrefs;
+		ServerConfig = serverConfig;
+		Browser = browser;
 
-	public static ColorPreference ColorPreference
+		browser.LoadFrontPage();
+		BrowserInitialized?.Invoke(this, EventArgs.Empty);
+	}
+
+	public static Main GetInstance()
 	{
-		get; set;
-	} = null!;
+		if (instance == null)
+			instance = NewInstance();
+		return instance;
+	}
 
-	public static BrowserBase Browser { get; private set; } = null!;
-
-	public static IDomHandlerList DomHandlerList { get; private set; } = null!;
-	public static IWsHandlerList WsSniffingHandlerList { get; private set; } = null!;
-
-	public static AutoKkutu AutoKkutu
-	{
-		get; private set;
-	} = null!;
-
-	/* EVENTS */
-	public static event EventHandler? BrowserFrameLoad;
-	public static event EventHandler<PathListUpdateEventArgs>? PathListUpdated;
-	public static event EventHandler? InitializationFinished;
-	public static event EventHandler<SearchStateChangedEventArgs>? SearchStateChanged;
-	public static event EventHandler<StatusMessageChangedEventArgs>? StatusMessageChanged;
-	public static event EventHandler? ChatUpdated;
-
-	/* Misc. variables */
-
-	/* Initialization-related */
-
-	public static void Initialize()
+	/// <summary>
+	/// 데이터베이스 설정을 로드하고, 데이터베이스 연결을 초기화한 후 서비스 제공자 인터페이스를 리턴합니다.
+	/// </summary>
+	private AbstractDatabaseConnection? InitializeDatabase(Uri uri)
 	{
 		try
 		{
-			// Load default config
-			InitializeConfiguration();
-
-			// Initialize browser
-			SetupBrowser();
-
-			// Initialize database
-			var db = InitializeDatabase();
-
-			if (db is null)
-			{
-				Log.Error("Failed to initialize database!");
-				MessageBox.Show("Failed to initialize database!", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
-				Environment.Exit(0);
-			}
-
-			AutoKkutu = new AutoKkutu(db);
-
-			AutoKkutu.PathFinder.OnPathUpdated += OnPathUpdated;
-			AutoKkutu.GameEnded += OnGameEnded;
-			AutoKkutu.GameModeChanged += OnGameModeChange;
-			AutoKkutu.GameStarted += OnGameStarted;
-			AutoKkutu.MyPathIsUnsupported += OnMyPathIsUnsupported;
-			AutoKkutu.MyTurnEnded += OnMyTurnEnded;
-			AutoKkutu.MyTurnStarted += OnMyTurnStarted;
-			AutoKkutu.UnsupportedWordEntered += OnUnsupportedWordEntered;
-			AutoKkutu.TypingWordPresented += OnTypingWordPresented;
-			AutoKkutu.ChatUpdated += OnChatUpdated;
-			AutoKkutu.PreviousUserTurnEnded += OnPreviousUserTurnEnded;
-			AutoKkutu.RoundChanged += OnRoundChanged;
-			InitializationFinished?.Invoke(null, EventArgs.Empty);
-
-			Browser.LoadFrontPage();
-			BrowserFrameLoad?.Invoke(null, EventArgs.Empty);
+			ServerInfo config = ServerConfig.Servers.FirstOrDefault(server => server.ServerUri == uri, ServerConfig.Default);
+			return DatabaseInit.Connect(config.DatabaseType, config.DatabaseConnectionString);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			Log.Error(e, "Initialization failure");
+			Log.Error(ex, I18n.Main_DBConfigException);
+			return null;
 		}
 	}
 
-	public static PathFlags SetupPathFinderFlags(PathFlags flags = PathFlags.None)
+	public void FrameReloaded() => Browser.PageLoaded += OnPageLoaded;
+
+	private void OnPageLoaded(object? sender, PageLoadedEventArgs args)
+	{
+		var uri = new Uri(new Uri(args.Url).Host); // What a worst solution
+
+		var prevInstance = AutoKkutu;
+		if (prevInstance != null)
+		{
+			// 동일한 서버에 대하여 이미 AutoKkutu 파사드가 존재할 경우, 재 초기화 방지
+			if (prevInstance.IsForServer(uri) == true)
+				return;
+
+			// 이전 AutoKkutu 파사드 제거
+			prevInstance.Dispose();
+
+			Log.Information("Disposed previous facade.");
+		}
+
+		// 서버에 대해 적절한 DOM Handler 탐색
+		if (!domHandlerMapping.TryGetValue(uri, out var domHandlerName))
+		{
+			Log.Warning(I18n.Main_UnsupportedURL, uri);
+			return;
+		}
+		if (!domHandlerMapping.TryGetValue(domHandlerName, out var domHandler))
+		{
+			Log.Error("DOM Handler doesn't exists: {name}", domHandlerName);
+			return;
+		}
+
+		// 서버에 대해 적절한 WebSocket Handler 탐색
+		if (!webSocketHandlerMapping.TryGetValue(uri, out var webSocketHandlerName))
+		{
+			Log.Warning("WebSocket sniffing is not supported on: {url}", uri);
+		}
+		if (!webSocketHandlerMapping.TryGetValue(webSocketHandlerName, out var webSocketHandler))
+		{
+			Log.Error("WebSocket Handler doesn't exists: {name}", webSocketHandlerName);
+		}
+
+		// 서버에 대해 적절한 Database 연결 수립
+		var db = InitializeDatabase(uri);
+		if (db is null)
+		{
+			// TODO: DataBaseError 이벤트 트리거
+			Log.Error("Failed to initialize database!");
+			MessageBox.Show("Failed to initialize database!", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+			return;
+		}
+
+		var game = new Game(domHandler, webSocketHandler);
+
+		AutoKkutu = new AutoKkutu(uri, db, game);
+		AutoKkutu.PathFinder.PathUpdated += OnPathUpdated;
+		AutoKkutu.GameEnded += OnGameEnded;
+		AutoKkutu.GameModeChanged += OnGameModeChange;
+		AutoKkutu.GameStarted += OnGameStarted;
+		AutoKkutu.MyTurnEnded += OnMyTurnEnded;
+		AutoKkutu.MyTurnStarted += OnMyTurnStarted;
+		AutoKkutu.UnsupportedWordEntered += OnUnsupportedWordEntered;
+		AutoKkutu.TypingWordPresented += OnTypingWordPresented;
+		AutoKkutu.PreviousUserTurnEnded += OnPreviousUserTurnEnded;
+		AutoKkutu.RoundChanged += OnRoundChanged;
+		AutoKkutuInitialized?.Invoke(null, EventArgs.Empty);
+
+		// 정상적으로 파사드가 초기화되었다면, 페이지 로드 이벤트 등록 해제
+		Browser.PageLoaded -= OnPageLoaded;
+	}
+
+	private void Browser_PageError(object? sender, PageErrorEventArgs args)
+	{
+		Log.Error("Browser load error!");
+		Log.Error("Error: {error}", args.ErrorText);
+	}
+
+	public void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdateEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
+
+	public void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
+
+	public PathFlags SetupPathFinderFlags(PathFlags flags = PathFlags.None)
 	{
 		if (Prefs.EndWordEnabled && (flags.HasFlag(PathFlags.ManualSearch) || AutoKkutu.PathFilter.PreviousPaths.Count > 0))  // 첫 턴 한방 방지
 			flags |= PathFlags.UseEndWord;
@@ -113,135 +173,37 @@ public static class Main
 		return flags;
 	}
 
-	private static void InitializeConfiguration()
+	// FIXME: DOM Handler, WebSocket Handler 처럼 List 클래스 만들고 거기에 쑤셔넣기
+	// 지금 이 상태의 구현대로라면 사용할 때마다 객체가 생성됨
+	public static EntererBase CreateEnterer(EntererMode mode, IGame game)
 	{
-		Log.Verbose("Initializing configuration");
-
-		try
+		return mode switch
 		{
-			Settings config = Settings.Default;
-			config.Reload();
-			Prefs = new Preference(config);
-
-			ColorPreference = new ColorPreference
-			{
-				EndWordColor = config.EndWordColor.ToMediaColor(),
-				AttackWordColor = config.AttackWordColor.ToMediaColor(),
-				MissionWordColor = config.MissionWordColor.ToMediaColor(),
-				EndMissionWordColor = config.EndMissionWordColor.ToMediaColor(),
-				AttackMissionWordColor = config.AttackMissionWordColor.ToMediaColor()
-			};
-		}
-		catch (Exception ex)
-		{
-			// This exception log may only available in the log file.
-			Log.Error(ex, I18n.Main_ConfigLoadException);
-		}
+			EntererMode.EnterImmediately => new DelayedInstantEnterer(game),
+			EntererMode.SimulateInputJavaScript => new JavaScriptInputSimulator(game),
+			EntererMode.SimulateInputWin32 => new Win32InputSimulator(game),
+			EntererMode.SimulateInputArduino => throw new NotImplementedException("Arduino input simulator is not implemented yet"),
+			_ => throw new ArgumentException("Unsupported enterer: " + mode, nameof(mode))
+		};
 	}
-
-	private static void SetupBrowser()
-	{
-		Log.Verbose("Initializing browser");
-
-		// Initialize Browser
-#if RELEASESELENIUM || DEBUGSELENIUM
-		Browser = new AutoKkutuLib.Selenium.SeleniumBrowser();
-#else
-		Browser = new AutoKkutuLib.CefSharp.CefSharpBrowser();
-#endif
-		Browser.PageLoaded += OnPageLoaded;
-		Browser.PageError += OnPageError;
-
-		DomHandlerList = new JavaScriptHandlerList();
-		DomHandlerList.InitDefaultHandlers(Browser);
-
-		WsSniffingHandlerList = new WsHandlerList();
-		WsSniffingHandlerList.InitDefaultHandlers(Browser);
-
-	}
-
-	private static AbstractDatabaseConnection? InitializeDatabase()
-	{
-		try
-		{
-			var watch = new Stopwatch();
-			watch.Start();
-
-			System.Configuration.Configuration databaseConfig = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap() { ExeConfigFilename = "database.config" }, ConfigurationUserLevel.None);
-			var database = DatabaseInit.Connect(databaseConfig);
-			Log.Information(I18n.Main_Initialization, "Database connection initialization", watch.ElapsedMilliseconds);
-
-			watch.Restart();
-			Log.Information(I18n.Main_Initialization, "PathFinder initialization", watch.ElapsedMilliseconds);
-
-			watch.Stop();
-			return database;
-		}
-		catch (Exception ex)
-		{
-			Log.Error(ex, I18n.Main_DBConfigException);
-			return null;
-		}
-	}
-
-	/* Browser-related */
-
-	public static void FrameReloaded() => Browser.PageLoaded += OnPageLoaded;
-
-	/* EVENTS: Browser */
-
-	private static void OnPageLoaded(object? sender, PageLoadedEventArgs args)
-	{
-		var url = args.Url;
-
-		// Find appropriate handler for current URL
-		DomHandlerBase? domHandler = DomHandlerList.GetByUri(new Uri(url));
-		if (domHandler is null)
-		{
-			Log.Warning(I18n.Main_UnsupportedURL, url);
-			return;
-		}
-
-		WsHandlerBase? wsHandler = WsSniffingHandlerList.GetByUri(new Uri(url));
-		if (wsHandler is null)
-		{
-			Log.Warning("WebSocket sniffing is not supported on: {url}", url);
-		}
-
-		if (!AutoKkutu.HasGameSet || !AutoKkutu.Game.HasSameDomHandler(domHandler) || wsHandler != null && AutoKkutu.Game.HasSameWsSniffingHandler(wsHandler)) // TODO: Move to Lib
-		{
-			Log.Information("Browser frame loaded.");
-			AutoKkutu.SetGame(new Game(domHandler, wsHandler));
-			Browser.PageLoaded -= OnPageLoaded;
-		}
-	}
-
-	private static void OnPageError(object? sender, PageErrorEventArgs args)
-	{
-		Log.Error("Browser load error!");
-		Log.Error("Error: {error}", args.ErrorText);
-	}
-
-	public static void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdateEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(null, new SearchStateChangedEventArgs(arguments, isEndWord));
-
-	public static void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(null, new StatusMessageChangedEventArgs(status, formatterArgs));
 
 	// TODO: Move to Lib
-	public static void SendMessage(string message)
+	public void SendMessage(string message)
 	{
-		if (!AutoKkutu.HasGameSet)
+		if (AutoKkutu == null)
 			return;
 
-		var opt = new AutoEnterOptions(
-			Prefs.AutoEnterMode,
-			Prefs.DelayEnabled,
-			Prefs.DelayStartAfterWordEnterEnabled,
+		var enterer = CreateEnterer(Prefs.AutoEnterMode, AutoKkutu.Game);
+		var opt = new EnterOptions(
+			Prefs.AutoEnterDelayEnabled,
+			Prefs.AutoEnterDelayStartAfterWordEnterEnabled,
+			Prefs.AutoEnterInputSimulateJavaScriptSendKeys,
 			0 /* Prefs.StartDelay */,
 			0 /*Prefs.StartDelayRandom*/,
-			Prefs.DelayPerChar,
-			Prefs.DelayPerCharRandom);
-		var inf = new AutoEnterInfo(opt, PathDetails.Empty.WithFlags(PathFlags.ManualMessage), message);
-		AutoKkutu.Game.AutoEnter.PerformAutoEnter(inf);
+			Prefs.AutoEnterDelayPerChar,
+			Prefs.AutoEnterDelayPerCharRandom);
+		var inf = new EnterInfo(opt, PathDetails.Empty.WithFlags(PathFlags.ManualMessage), message);
+		enterer.RequestSend(inf);
 	}
 
 	public static void ToggleFeature(Func<Preference, bool> toggleFunc, StatusMessage displayStatus)
@@ -302,7 +264,7 @@ public static class Main
 		}
 		else
 		{
-			var opt = new AutoEnterOptions(Prefs.AutoEnterMode, Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom);
+			var opt = new EnterOptions(Prefs.AutoEnterDelayEnabled, Prefs.AutoEnterDelayStartAfterWordEnterEnabled, Prefs.AutoEnterInputSimulateJavaScriptSendKeys, Prefs.AutoEnterStartDelay, Prefs.AutoEnterStartDelayRandom, Prefs.AutoEnterDelayPerChar, Prefs.AutoEnterDelayPerCharRandom);
 			var time = AutoKkutu.Game.GetTurnTimeMillis();
 			(var wordToEnter, var timeover) = args.FilteredWordList.ChooseBestWord(opt, time);
 			if (string.IsNullOrEmpty(wordToEnter))
@@ -323,7 +285,7 @@ public static class Main
 				var param = args.Details;
 				if (usedPresearchResult)
 					param = param.WithoutFlags(PathFlags.PreSearch); // Fixme: 이런 번거로운 방법 대신 더 나은 방법 생각해보기
-				AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(opt, param, wordToEnter));
+				CreateEnterer(Prefs.AutoEnterMode, AutoKkutu.Game).RequestSend(new EnterInfo(opt, param, wordToEnter));
 			}
 		}
 	}
@@ -378,8 +340,8 @@ public static class Main
 
 		if (Prefs.AutoEnterEnabled && Prefs.AutoFixEnabled)
 		{
-			var parameter = new AutoEnterInfo(
-							new AutoEnterOptions(Prefs.AutoEnterMode, Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom),
+			var parameter = new EnterInfo(
+							new EnterOptions(Prefs.AutoEnterDelayEnabled, Prefs.AutoEnterDelayStartAfterWordEnterEnabled, Prefs.AutoEnterInputSimulateJavaScriptSendKeys, Prefs.AutoEnterStartDelay, Prefs.AutoEnterStartDelayRandom, Prefs.AutoEnterDelayPerChar, Prefs.AutoEnterDelayPerCharRandom),
 							autoPathFindCache.Details.WithoutFlags(PathFlags.PreSearch));
 
 			(var content, var timeover) = autoPathFindCache.FilteredWordList.ChooseBestWord(parameter.Options, AutoKkutu.Game.GetTurnTimeMillis(), ++wordIndex);
@@ -469,15 +431,15 @@ public static class Main
 		list.Add(word);
 	}
 
-	private static void OnTypingWordPresented(object? sender, WordPresentEventArgs args)
+	private void OnTypingWordPresented(object? sender, WordPresentEventArgs args)
 	{
 		var word = args.Word;
 
 		if (!Prefs.AutoEnterEnabled)
 			return;
 
-		AutoKkutu.Game.AutoEnter.PerformAutoEnter(new AutoEnterInfo(
-			new AutoEnterOptions(Prefs.AutoEnterMode, Prefs.DelayEnabled, Prefs.DelayStartAfterWordEnterEnabled, Prefs.StartDelay, Prefs.StartDelayRandom, Prefs.DelayPerChar, Prefs.DelayPerCharRandom),
+		AutoEnter.PerformAutoEnter(new EnterInfo(
+			new EnterOptions(Prefs.AutoEnterDelayEnabled, Prefs.AutoEnterDelayStartAfterWordEnterEnabled, Prefs.AutoEnterInputSimulateJavaScriptSendKeys, Prefs.AutoEnterStartDelay, Prefs.AutoEnterStartDelayRandom, Prefs.AutoEnterDelayPerChar, Prefs.AutoEnterDelayPerCharRandom),
 			PathDetails.Empty,
 			word));
 	}

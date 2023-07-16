@@ -1,6 +1,5 @@
 ﻿// Original source available at https://plog2012.blogspot.com/2012/11/c.html
 
-using AutoKkutuLib.Hangul;
 using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Hangul;

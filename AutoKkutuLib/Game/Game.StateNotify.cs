@@ -4,11 +4,25 @@ using Serilog;
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
+	// 모든 캐시 필드들은 Thread-safe해야 함.
+	private readonly object gameModeLock = new object();
+	private readonly object turnLock = new object();
+
+	private readonly object roundIndexLock = new object();
 	private int roundIndexCache = -1;
+
 	private long currentPresentedWordCacheTime = -1;
+
+	private readonly object turnErrorWordLock = new object();
 	private string? turnErrorWordCache;
+
+	private readonly object turnHintWordLock = new object();
 	private string? turnHintWordCache;
+
+	//private readonly object typingWordLock = new object();
 	private string? typingWordCache;
+
+	private readonly object wordHistoryLock = new object();
 	private string? wordHistoryCache;
 	private IList<string>? wordHistoriesCache;
 
@@ -38,7 +52,7 @@ public partial class Game
 			typingWordCache = null;
 			wordHistoryCache = null;
 			wordHistoriesCache = null;
-			Interlocked.Exchange(ref isMyTurn, 0);
+			IsMyTurn = false;
 
 			GameEnded?.Invoke(this, EventArgs.Empty);
 			IsGameInProgress = false;
@@ -47,115 +61,141 @@ public partial class Game
 
 	public void NotifyGameMode(GameMode gameMode, bool byDOM = false)
 	{
-		if (gameMode == CurrentGameMode)
-			return;
-		CurrentGameMode = gameMode;
-		Log.Debug("Game mode change detected : {gameMode} (byDOM: {byDOM})", gameMode.GameModeName(), byDOM);
-		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
+		lock (gameModeLock)
+		{
+			if (gameMode == CurrentGameMode)
+				return;
+			CurrentGameMode = gameMode;
+			Log.Debug("Game mode change detected : {gameMode} (byDOM: {byDOM})", gameMode.GameModeName(), byDOM);
+			GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
+		}
 	}
 
 	public void NotifyWordHint(string hint)
 	{
-		if (string.Equals(hint, turnHintWordCache, StringComparison.OrdinalIgnoreCase))
-			return;
-
-		turnHintWordCache = hint;
-		Log.Debug("Path example detected : {word}", hint);
-		ExampleWordPresented?.Invoke(this, new WordPresentEventArgs(hint));
-	}
-
-	public void NotifyMyTurn(bool myTurn, WordCondition? wordCondition = null, bool byDOM = false, bool bypassCache = false)
-	{
-		if (myTurn)
+		lock (turnHintWordLock)
 		{
-			if (Interlocked.Exchange(ref isMyTurn, 1) == 1 && !bypassCache)
+			if (string.Equals(hint, turnHintWordCache, StringComparison.OrdinalIgnoreCase))
 				return;
 
-			if (CurrentGameMode == GameMode.Free)
+			turnHintWordCache = hint;
+			Log.Debug("Path example detected : {word}", hint);
+			HintWordPresented?.Invoke(this, new WordPresentEventArgs(hint));
+		}
+	}
+
+	// TODO: 다른 사람 턴 때도 이벤트 발생시키도록 수정
+	public void NotifyMyTurn(bool isMyTurn, WordCondition? wordCondition = null, bool byDOM = false, bool bypassCache = false)
+	{
+		lock (turnLock)
+		{
+			if (isMyTurn)
 			{
-				MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs(WordCondition.Empty));
+				if (IsMyTurn && !bypassCache)
+					return;
+
+				IsMyTurn = true;
+
+				if (CurrentGameMode == GameMode.Free)
+				{
+					TurnStarted?.Invoke(this, new WordConditionPresentEventArgs(WordCondition.Empty, isMyTurn));
+					return;
+				}
+
+				if (wordCondition == null)
+					return;
+
+				Log.Debug("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
+				CurrentWordCondition = wordCondition;
+				TurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition, isMyTurn));
+
 				return;
 			}
 
-			if (wordCondition == null)
+			if (IsMyTurn && !bypassCache)
 				return;
 
-			Log.Debug("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
-			CurrentWordCondition = wordCondition;
-			MyTurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition));
+			IsMyTurn = false;
 
-			return;
+			Log.Debug("My turn ended. (byDOM:{dom})", byDOM);
+
+			// Clear turn-specific caches
+			turnErrorWordCache = null;
+
+			TurnEnded?.Invoke(this, EventArgs.Empty);
 		}
-
-		if (Interlocked.Exchange(ref isMyTurn, 0) == 0 && !bypassCache)
-			return;
-
-		Log.Debug("My turn ended. (byDOM:{dom})", byDOM);
-
-		// Clear turn-specific caches
-		turnErrorWordCache = null;
-
-		MyTurnEnded?.Invoke(this, EventArgs.Empty);
 	}
 
 	public void NotifyRound(int roundIndex)
 	{
-		if (roundIndex == roundIndexCache)
-			return;
+		lock (roundIndexLock)
+		{
+			if (roundIndex == roundIndexCache)
+				return;
 
-		roundIndexCache = roundIndex;
-		if (roundIndex <= 0)
-			return;
+			roundIndexCache = roundIndex;
+			if (roundIndex <= 0)
+				return;
 
-		// Clear round-specific caches
-		turnErrorWordCache = null;
-		turnHintWordCache = null;
-		typingWordCache = null;
-		wordHistoryCache = null;
-		wordHistoriesCache = null;
+			// Clear round-specific caches
+			turnErrorWordCache = null;
+			turnHintWordCache = null;
+			typingWordCache = null;
+			wordHistoryCache = null;
+			wordHistoriesCache = null;
 
-		Log.Debug("Round Changed : {0}", roundIndex);
-		RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));
+			Log.Debug("Round Changed : {0}", roundIndex);
+			RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));
+		}
 	}
 
 	public void NotifyTurnError(string word, TurnErrorCode errorCode, bool byDOM)
 	{
-		if (string.Equals(word, turnErrorWordCache, StringComparison.OrdinalIgnoreCase) || word.Contains("T.T", StringComparison.OrdinalIgnoreCase))
-			return;
-		Log.Debug("NotifyTurnError {word} byDOM={bydom}", word, byDOM);
+		lock (turnErrorWordLock)
+		{
+			if (string.Equals(word, turnErrorWordCache, StringComparison.OrdinalIgnoreCase) || word.Contains("T.T", StringComparison.OrdinalIgnoreCase))
+				return;
+			Log.Debug("NotifyTurnError {word} byDOM={bydom}", word, byDOM);
 
-		turnErrorWordCache = word;
-		UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(word, errorCode != TurnErrorCode.NotFound, errorCode is TurnErrorCode.NoEndWordOnBegin or TurnErrorCode.EndWord));
-
-		// TODO: Remove
-		if (IsMyTurn)
-			MyPathIsUnsupported?.Invoke(this, new UnsupportedWordEventArgs(word, errorCode != TurnErrorCode.NotFound, errorCode is TurnErrorCode.NoEndWordOnBegin or TurnErrorCode.EndWord));
+			turnErrorWordCache = word;
+			UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(
+				word,
+				errorCode != TurnErrorCode.NotFound,
+				errorCode is TurnErrorCode.NoEndWordOnBegin or TurnErrorCode.EndWord,
+				IsMyTurn));
+		}
 	}
 
 	public void NotifyWordHistories(IList<string> newHistories)
 	{
-		if (CurrentGameMode.IsFreeMode())
-			return;
-
-		foreach (var historyElement in newHistories)
+		lock (wordHistoryLock)
 		{
-			if (!string.IsNullOrWhiteSpace(historyElement) && historyElement != wordHistoryCache /*WebSocket에 의한 단어 수신이 DOM 업데이트보다 더 먼저 일어나기에 이러한 코드가 작동 가능하다.*/ && (wordHistoriesCache == null || !wordHistoriesCache.Contains(historyElement)))
-			{
-				Log.Debug("DOM: Found new used word in history : {word}", historyElement);
-				DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(historyElement));
-			}
-		}
+			if (CurrentGameMode.IsFreeMode())
+				return;
 
-		wordHistoriesCache = newHistories;
+			foreach (var historyElement in newHistories)
+			{
+				if (!string.IsNullOrWhiteSpace(historyElement) && historyElement != wordHistoryCache /*WebSocket에 의한 단어 수신이 DOM 업데이트보다 더 먼저 일어나기에 이러한 코드가 작동 가능하다.*/ && (wordHistoriesCache == null || !wordHistoriesCache.Contains(historyElement)))
+				{
+					Log.Debug("DOM: Found new used word in history : {word}", historyElement);
+					DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(historyElement));
+				}
+			}
+
+			wordHistoriesCache = newHistories;
+		}
 	}
 
 	// TODO: Optimize
 	public void NotifyWordHistory(string newHistoryElement)
 	{
-		if (wordHistoryCache?.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase) == true)
-			return;
+		lock (wordHistoryLock)
+		{
+			if (wordHistoryCache?.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase) == true)
+				return;
 
-		Log.Debug("WS: Found new used word in history : {word}", newHistoryElement);
-		DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(newHistoryElement));
+			Log.Debug("WS: Found new used word in history : {word}", newHistoryElement);
+			DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(newHistoryElement));
+		}
 	}
 }

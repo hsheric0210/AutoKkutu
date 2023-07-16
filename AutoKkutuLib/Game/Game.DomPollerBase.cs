@@ -14,9 +14,9 @@ public partial class Game
 	/// <param name="idleInterval"><paramref name="activateCondition"/>가 만족되지 않았을 시 반복 실행 시간 간격 (ms 단위)</param>
 	/// <param name="cancelToken">실행 중단 및 반복 종료를 위한 위한 취소 토큰</param>
 	/// <returns></returns>
-	private static async Task BaseDomPoller(
-		Func<Task> mainJob,
-		Func<Task>? idleJob,
+	private static async ValueTask BaseDomPoller(
+		Func<ValueTask> mainJob,
+		Func<ValueTask>? idleJob,
 		Action<Exception> onException,
 		Func<bool> activateCondition,
 		int intenseInterval,
@@ -51,13 +51,14 @@ public partial class Game
 				}
 			}
 		}
-		catch (Exception ex)
+		catch
 		{
+			// ignored
 			// Mostly OperationCanceledException or TaskCanceledException
 		}
 	}
 
-	private static async Task SlowDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null)
+	private static async ValueTask SlowDomPoller(Func<ValueTask> action, CancellationToken cancelToken, string? watchdogName = null)
 	{
 		await BaseDomPoller(
 			action,
@@ -76,7 +77,7 @@ public partial class Game
 	/// <param name="cancelToken">실행 중단 및 반복 종료를 위한 위한 취소 토큰</param>
 	/// <param name="watchdogName"></param>
 	/// <returns></returns>
-	private async Task GameDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int interval = intenseInterval)
+	private async ValueTask GameDomPoller(Func<ValueTask> action, CancellationToken cancelToken, string? watchdogName = null, int interval = intenseInterval)
 	{
 		await BaseDomPoller(
 			action,
@@ -88,7 +89,7 @@ public partial class Game
 			cancelToken);
 	}
 
-	private async Task ConditionlessDomPoller(Func<Task> action, CancellationToken cancelToken, string? watchdogName = null, int interval = intenseInterval)
+	private async ValueTask ConditionlessDomPoller(Func<ValueTask> action, CancellationToken cancelToken, string? watchdogName = null, int interval = intenseInterval)
 	{
 		await BaseDomPoller(
 			action,

@@ -9,9 +9,9 @@ using AutoKkutuLib.Selenium.Properties;
 using System.Net;
 using System.Net.Sockets;
 using AutoKkutuLib.Browser;
-using OpenQA.Selenium.DevTools.V113;
-using OpenQA.Selenium.DevTools.V113.Page;
-using AutoKkutuLib.Game;
+using System.Reflection;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable
@@ -25,6 +25,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 	private IDisposable? WsServer;
 	private SeleniumConfigDto config;
 	private bool disposedValue;
+	private IntPtr mainHwnd;
 
 	public override object? BrowserControl => null;
 
@@ -102,6 +103,14 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		Log.Debug("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
 
 		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
+		try
+		{
+			mainHwnd = GetHwnd(driver);
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, "Failed to get HWND of the Chrome window.");
+		}
 		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
 			["source"] = nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + LibResources.mainHelperJs + ';' + SeleniumResources.communicatorJs)
@@ -260,4 +269,41 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		Dispose(disposing: true);
 		GC.SuppressFinalize(this);
 	}
+
+
+	public override void SendWin32KeyEvent(int message, int wParam, int lParam) => PostMessage(mainHwnd, message, wParam, lParam);
+
+	public override IntPtr GetWindowHandle() => mainHwnd;
+
+	private static IntPtr GetHwnd(UndetectedChromeDriver driver)
+	{
+		FieldInfo? field = typeof(UndetectedChromeDriver).GetField("_process", BindingFlags.NonPublic | BindingFlags.Instance);
+		if (field == null)
+			throw new MissingFieldException("_process field is not available.");
+
+		var val = field.GetValue(driver);
+		if (val == null)
+			throw new FieldAccessException("_process field is not set yet.");
+
+		return ((Process)val).MainWindowHandle;
+	}
+
+	/// <summary>
+	/// Places (posts) a message in the message queue associated with the thread
+	/// that created the specified window and returns without waiting for the thread to process the message.
+	/// </summary>
+	/// <param name="hWnd">A handle to the window whose window procedure is to receive the message. The following values have special meanings.</param>
+	/// <param name="Msg">The message to be posted.</param>
+	/// <param name="wParam">Additional message-specific information.</param>
+	/// <param name="lParam">Additional message-specific information.</param>
+	/// <returns>
+	/// If the function succeeds, the return value is nonzero.
+	/// If the function fails, the return value is zero.To get extended error information, call GetLastError.
+	/// </returns>
+	[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+	private static extern int PostMessage(
+		[In] IntPtr hWnd,
+		[In] int Msg,
+		[In] int wParam,
+		[In] int lParam);
 }

@@ -57,9 +57,9 @@ public static class SqliteDatabaseHelper
 		return affected;
 	}
 
-	public static SqliteConnection OpenConnection(string databaseFile)
+	public static SqliteConnection OpenConnection(string connectionString)
 	{
-		var connection = new SqliteConnection($"Data Source={databaseFile}");
+		var connection = new SqliteConnection(connectionString);
 		connection.Open();
 		return connection;
 	}

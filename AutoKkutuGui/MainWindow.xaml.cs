@@ -1,22 +1,18 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Hangul;
-using AutoKkutuLib.Path;
-using CefSharp;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using ToastNotifications;
-using ToastNotifications.Core;
 using ToastNotifications.Lifetime;
 using ToastNotifications.Messages;
 using ToastNotifications.Position;
@@ -50,8 +46,8 @@ public partial class MainWindow : Window
 		DatabaseEvents.DatabaseImportDone += OnDatabaseImportDone;
 
 		Main.PathListUpdated += OnPathListUpdated;
-		Main.BrowserFrameLoad += OnBrowserFrameLoad;
-		Main.InitializationFinished += OnInitializeFinished;
+		Main.BrowserInitialized += OnBrowserFrameLoad;
+		Main.AutoKkutuInitialized += AutoKkutu_Initialized;
 		Main.SearchStateChanged += OnSearchStateChanged;
 		Main.StatusMessageChanged += OnStatusMessageChanged;
 
@@ -102,7 +98,7 @@ public partial class MainWindow : Window
 		});
 	}
 
-	private void OnInitializeFinished(object? sender, EventArgs args)
+	private void AutoKkutu_Initialized(object? sender, EventArgs args)
 	{
 		this.UpdateStatusMessage(StatusMessage.Wait);
 		UpdateSearchState(null, false);
@@ -135,9 +131,9 @@ public partial class MainWindow : Window
 
 	/* EVENT: Hotkeys */
 
-	private void OnToggleDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.DelayEnabled = !config.DelayEnabled, StatusMessage.DelayToggled);
+	private void OnToggleDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterDelayEnabled = !config.AutoEnterDelayEnabled, StatusMessage.DelayToggled);
 
-	private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.DelayEnabled = config.FixDelayEnabled = !config.DelayEnabled, StatusMessage.AllDelayToggled);
+	private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterDelayEnabled = config.FixDelayEnabled = !config.AutoEnterDelayEnabled, StatusMessage.AllDelayToggled);
 
 	private void OnToggleAutoEnter(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterEnabled = !config.AutoEnterEnabled, StatusMessage.AutoEnterToggled);
 
@@ -301,7 +297,7 @@ public partial class MainWindow : Window
 	private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
 	{
 		Main.Browser.Load(CurrentURL.Text);
-		Main.FrameReloaded();
+		//Main.FrameReloaded();
 	}
 
 	private void OnWindowClose(object? sender, CancelEventArgs e)

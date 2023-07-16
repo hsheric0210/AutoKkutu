@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib;
+using AutoKkutuLib.Game.Enterer;
 using System;
 using System.Collections.Generic;
-using System.Windows.Documents;
 
 namespace AutoKkutuGui;
 
@@ -23,19 +23,21 @@ public sealed class Preference : IEquatable<Preference?>
 
 	public bool AutoEnterEnabled { get; set; } = true;
 
-	public bool DelayEnabled { get; set; }
+	public bool AutoEnterDelayEnabled { get; set; }
 
-	public int StartDelay { get; set; } = 10;
+	public int AutoEnterStartDelay { get; set; } = 10;
 
-	public int StartDelayRandom { get; set; } = 10;
+	public int AutoEnterStartDelayRandom { get; set; } = 10;
 
-	public int DelayPerChar { get; set; } = 10;
+	public int AutoEnterDelayPerChar { get; set; } = 10;
 
-	public int DelayPerCharRandom { get; set; } = 10;
+	public int AutoEnterDelayPerCharRandom { get; set; } = 10;
 
-	public bool DelayStartAfterWordEnterEnabled { get; set; } = true;
+	public bool AutoEnterDelayStartAfterWordEnterEnabled { get; set; } = true;
 
-	public AutoEnterMode AutoEnterMode { get; set; }
+	public bool AutoEnterInputSimulateJavaScriptSendKeys { get; set; } = true;
+
+	public EntererMode AutoEnterMode { get; set; }
 
 	public bool AutoFixEnabled { get; set; } = true;
 
@@ -97,14 +99,15 @@ public sealed class Preference : IEquatable<Preference?>
 
 		// 자동 단어 입력
 		AutoEnterEnabled = config.AutoEnterEnabled;
-		DelayEnabled = config.DelayEnabled;
-		StartDelay = (config.DelayInMillis > 0) ? config.DelayInMillis : config.StartDelay; // Backward compatibility
-		StartDelayRandom = config.StartDelayRandom;
-		DelayPerChar = (config.DelayInMillis > 0 && config.DelayPerCharEnabled) ? config.DelayInMillis : config.DelayPerChar; // Backward compatibility
-		DelayPerCharRandom = config.DelayPerCharRandom;
+		AutoEnterDelayEnabled = config.DelayEnabled;
+		AutoEnterStartDelay = (config.DelayInMillis > 0) ? config.DelayInMillis : config.StartDelay; // Backward compatibility
+		AutoEnterStartDelayRandom = config.StartDelayRandom;
+		AutoEnterDelayPerChar = (config.DelayInMillis > 0 && config.DelayPerCharEnabled) ? config.DelayInMillis : config.DelayPerChar; // Backward compatibility
+		AutoEnterDelayPerCharRandom = config.DelayPerCharRandom;
 
-		DelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
-		AutoEnterMode = (AutoEnterMode)config.AutoEnterMode;
+		AutoEnterMode = (EntererMode)config.AutoEnterMode;
+		AutoEnterDelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
+		AutoEnterInputSimulateJavaScriptSendKeys = config.AutoEnterInputSimulateJavaScriptSendKeys;
 
 		AutoFixEnabled = config.AutoFixEnabled;
 		FixDelayEnabled = config.FixDelayEnabled;
@@ -136,7 +139,7 @@ public sealed class Preference : IEquatable<Preference?>
 
 	public override bool Equals(object? obj) => Equals(obj as Preference);
 
-	public bool Equals(Preference? other) => other is not null && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && DelayEnabled == other.DelayEnabled && StartDelay == other.StartDelay && StartDelayRandom == other.StartDelayRandom && DelayPerChar == other.DelayPerChar && DelayPerCharRandom == other.DelayPerCharRandom && DelayStartAfterWordEnterEnabled == other.DelayStartAfterWordEnterEnabled && AutoEnterMode == other.AutoEnterMode && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
+	public bool Equals(Preference? other) => other is not null && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && AutoEnterDelayEnabled == other.AutoEnterDelayEnabled && AutoEnterStartDelay == other.AutoEnterStartDelay && AutoEnterStartDelayRandom == other.AutoEnterStartDelayRandom && AutoEnterDelayPerChar == other.AutoEnterDelayPerChar && AutoEnterDelayPerCharRandom == other.AutoEnterDelayPerCharRandom && AutoEnterDelayStartAfterWordEnterEnabled == other.AutoEnterDelayStartAfterWordEnterEnabled && AutoEnterMode == other.AutoEnterMode && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
 
 	public override int GetHashCode()
 	{
@@ -147,12 +150,12 @@ public sealed class Preference : IEquatable<Preference?>
 		hash.Add(MissionAutoDetectionEnabled);
 		hash.Add(MaxDisplayedWordCount);
 		hash.Add(AutoEnterEnabled);
-		hash.Add(DelayEnabled);
-		hash.Add(StartDelay);
-		hash.Add(StartDelayRandom);
-		hash.Add(DelayPerChar);
-		hash.Add(DelayPerCharRandom);
-		hash.Add(DelayStartAfterWordEnterEnabled);
+		hash.Add(AutoEnterDelayEnabled);
+		hash.Add(AutoEnterStartDelay);
+		hash.Add(AutoEnterStartDelayRandom);
+		hash.Add(AutoEnterDelayPerChar);
+		hash.Add(AutoEnterDelayPerCharRandom);
+		hash.Add(AutoEnterDelayStartAfterWordEnterEnabled);
 		hash.Add(AutoEnterMode);
 		hash.Add(AutoFixEnabled);
 		hash.Add(FixDelayEnabled);

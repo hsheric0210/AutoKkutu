@@ -1,11 +1,10 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Game.DomHandlers;
-using AutoKkutuLib.Game.WebSocketListener;
+using AutoKkutuLib.Game.WebSocketHandlers;
 
 namespace AutoKkutuLib.Game;
 public interface IGame : IDisposable
 {
-	AutoEnter AutoEnter { get; }
 	GameMode CurrentGameMode { get; }
 	WordCondition? CurrentWordCondition { get; }
 	bool IsGameInProgress { get; }
@@ -15,24 +14,25 @@ public interface IGame : IDisposable
 
 	int GetTurnTimeMillis();
 
-	event EventHandler? ChatUpdated;
-	event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
-	event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
+	// Game events
 	event EventHandler? GameEnded;
-	event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 	event EventHandler? GameStarted;
-	event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
-	event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
-	event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
-	event EventHandler? MyTurnEnded;
 	event EventHandler? RoundChanged;
-	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
+	event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
+
+	// Turn events
+	event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
+	event EventHandler<WordConditionPresentEventArgs>? TurnStarted;
+	event EventHandler? TurnEnded;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
+	event EventHandler<WordPresentEventArgs>? HintWordPresented;
+	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
+	event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
 
 	void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay);
 	void ClickSubmitButton();
-	bool HasSameDomHandler(DomHandlerBase otherHandler);
-	bool HasSameWsSniffingHandler(WsHandlerBase otherHandler);
+	bool HasSameDomHandler(IDomHandler otherHandler);
+	bool HasSameWebSocketHandler(IWebSocketHandler otherHandler);
 	bool IsPathExpired(PathDetails path);
 	bool RescanIfPathExpired(PathDetails path);
 	void Start();

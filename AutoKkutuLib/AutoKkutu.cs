@@ -1,68 +1,92 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database;
+using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Game;
-using AutoKkutuLib.Node;
-using AutoKkutuLib.Path;
-using Serilog;
 
 namespace AutoKkutuLib;
 
 public class AutoKkutu : IDisposable
 {
-	#region Internal fields
 	private bool disposedValue;
-	private IGame? game;
-	#endregion
 
-	#region Module exposures
-	public NodeManager NodeManager { get; private set; }
-	public PathFilter PathFilter { get; private set; }
-	public PathFinder PathFinder { get; private set; }
+	private Uri serverUri;
+
+	#region Facade implementation - Module exposure
 	public AbstractDatabaseConnection Database { get; }
+	public IGame Game { get; }
 
-	public IGame Game => game ?? throw new InvalidOperationException("Game is not registered yet!");
-	public BrowserBase? Browser => game?.Browser;
-	public bool HasGameSet => game is not null;
+	public PathFilter PathFilter { get; }
+	public NodeManager NodeManager { get; }
+	public PathFinder PathFinder { get; }
 	#endregion
 
-	#region Event redirects
-	public event EventHandler? ChatUpdated;
-	public event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
-	public event EventHandler? GameEnded;
-	public event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
+	#region Module sub-element exposure wrapper (to enforce Law of Demeter)
+	public BrowserBase Browser => Game.Browser;
+	#endregion
+
+	#region Redirect module events
+	// Game
 	public event EventHandler? GameStarted;
-	public event EventHandler<UnsupportedWordEventArgs>? MyPathIsUnsupported;
+	public event EventHandler? GameEnded;
 	public event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
 	public event EventHandler<WordConditionPresentEventArgs>? MyTurnStarted;
 	public event EventHandler? MyTurnEnded;
-	public event EventHandler? RoundChanged;
-	public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
-	public event EventHandler<WordPresentEventArgs>? ExampleWordPresented;
+	public event EventHandler? RoundChanged;
+	public event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
+	public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
+	public event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
+	public event EventHandler<WordPresentEventArgs>? HintWordPresented;
 
-	public event EventHandler<InputDelayEventArgs>? InputDelayApply;
-	public event EventHandler<AutoEnterEventArgs>? AutoEntered;
-	public event EventHandler<NoPathAvailableEventArgs>? NoPathAvailable;
+	// PathFinder
+	public event EventHandler<PathFinderStateEventArgs>? FindStateChanged;
+	public event EventHandler<PathUpdateEventArgs>? PathUpdated;
 	#endregion
 
-	public AutoKkutu(AbstractDatabaseConnection dbConnection)
+	/// <summary>
+	/// AutoKkutu 파사드 클래스를 생성합니다.
+	/// <paramref name="dbConnection"/>에 해당하는 데이터베이스 연결은 초기화 이전에 이미 열려 있어야 하며,
+	/// <paramref name="game"/>에 해당하는 게임 핸들러 인스턴스는 이미 시작된 상태(<c>Start</c> 함수가 호출된 상태)이어야 합니다.
+	/// </summary>
+	/// <param name="dbConnection">데이터베이스 연결 인스턴스</param>
+	/// <param name="game">게임 핸들러 인스턴스</param>
+	public AutoKkutu(Uri serverUri, AbstractDatabaseConnection dbConnection, IGame game)
 	{
+		this.serverUri = serverUri;
+
 		Database = dbConnection;
 		PathFilter = new PathFilter();
 		NodeManager = new NodeManager(dbConnection);
 		PathFinder = new PathFinder(NodeManager, PathFilter);
 
-		InterconnectModules();
+		Game = game;
+
+		// Mediators
+		game.DiscoverWordHistory += HandleDiscoverWordHistory;
+		game.HintWordPresented += HandleExampleWordPresented;
+		game.RoundChanged += HandleRoundChanged;
+
+		// Module event wrappers
+		game.GameStarted += Game_GameStarted;
+		game.GameEnded += Game_GameEnded;
+		game.RoundChanged += Game_RoundChanged;
+		game.GameModeChanged += Game_GameModeChanged;
+
+		game.PreviousUserTurnEnded += Game_PreviousUserTurnEnded;
+		game.TurnStarted += Game_MyTurnStarted;
+		game.TurnEnded += Game_MyTurnEnded;
+		game.UnsupportedWordEntered += Game_UnsupportedWordEntered;
+		game.HintWordPresented += Game_HintWordPresented;
+		game.TypingWordPresented += Game_TypingWordPresented;
+		game.DiscoverWordHistory += Game_DiscoverWordHistory;
+
+		PathFinder.FindStateChanged += PathFinder_FindStateChanged;
+		PathFinder.PathUpdated += PathFinder_PathUpdated;
 	}
 
-	private void InterconnectModules()
-	{
-		// TODO: Default game implementation in AutoKkutuGui should moved to here
-		DiscoverWordHistory += HandleDiscoverWordHistory;
-		ExampleWordPresented += HandleExampleWordPresented;
-		RoundChanged += HandleRoundChanged;
-	}
+	public bool IsForServer(Uri server) => serverUri.Host.Equals(server.Host, StringComparison.OrdinalIgnoreCase);
 
+	#region Module interconnector (Mediator)
 	private void HandleDiscoverWordHistory(object? sender, WordHistoryEventArgs args)
 	{
 		var word = args.Word;
@@ -77,79 +101,23 @@ public class AutoKkutu : IDisposable
 	}
 
 	private void HandleRoundChanged(object? sender, EventArgs args) => PathFilter.PreviousPaths.Clear();
+	#endregion
 
-	public void SetGame(IGame game)
-	{
-		if (HasGameSet)
-		{
-			UnregisterEventRedirects(Game);
-			Game.Stop();
-			Game.Dispose();
-		}
-		this.game = game;
-		RegisterEventRedirects(game);
-		game.Start();
-	}
+	#region Redirect module events
+	private void Game_GameStarted(object? sender, EventArgs e) => GameStarted?.Invoke(sender, e);
+	private void Game_GameEnded(object? sender, EventArgs e) => GameEnded?.Invoke(sender, e);
+	private void Game_PreviousUserTurnEnded(object? sender, PreviousUserTurnEndedEventArgs e) => PreviousUserTurnEnded?.Invoke(sender, e);
+	private void Game_MyTurnStarted(object? sender, WordConditionPresentEventArgs e) => MyTurnStarted?.Invoke(sender, e);
+	private void Game_MyTurnEnded(object? sender, EventArgs e) => MyTurnEnded?.Invoke(sender, e);
+	private void Game_UnsupportedWordEntered(object? sender, UnsupportedWordEventArgs e) => UnsupportedWordEntered?.Invoke(sender, e);
+	private void Game_RoundChanged(object? sender, EventArgs e) => RoundChanged?.Invoke(sender, e);
+	private void Game_GameModeChanged(object? sender, GameModeChangeEventArgs e) => GameModeChanged?.Invoke(sender, e);
+	private void Game_TypingWordPresented(object? sender, WordPresentEventArgs e) => TypingWordPresented?.Invoke(sender, e);
+	private void Game_DiscoverWordHistory(object? sender, WordHistoryEventArgs e) => DiscoverWordHistory?.Invoke(sender, e);
+	private void Game_HintWordPresented(object? sender, WordPresentEventArgs e) => HintWordPresented?.Invoke(sender, e);
 
-	#region Event redirects
-	private void RegisterEventRedirects(IGame game)
-	{
-		game.ChatUpdated += RedirectChatUpdated;
-		game.DiscoverWordHistory += RedirectDiscoverWordHistory;
-		game.GameEnded += RedirectGameEnded;
-		game.GameModeChanged += RedirectGameModeChanged;
-		game.GameStarted += RedirectGameStarted;
-		game.MyPathIsUnsupported += RedirectMyPathIsUnsupported;
-		game.MyTurnEnded += RedirectMyTurnEnded;
-		game.MyTurnStarted += RedirectMyTurnStarted;
-		game.PreviousUserTurnEnded += RedirectPreviousUserTurnEnded;
-		game.RoundChanged += RedirectRoundChanged;
-		game.TypingWordPresented += RedirectTypingWordPresented;
-		game.UnsupportedWordEntered += RedirectUnsupportedWordEntered;
-		game.ExampleWordPresented += RedirectExampleWordPresented;
-
-		game.AutoEnter.InputDelayApply += RedirectInputDelayApply;
-		game.AutoEnter.AutoEntered += RedirectAutoEntered;
-		game.AutoEnter.NoPathAvailable += RedirectNoPathAvailable;
-	}
-
-	private void UnregisterEventRedirects(IGame game)
-	{
-		game.ChatUpdated -= RedirectChatUpdated;
-		game.DiscoverWordHistory -= RedirectDiscoverWordHistory;
-		game.GameEnded -= RedirectGameEnded;
-		game.GameModeChanged -= RedirectGameModeChanged;
-		game.GameStarted -= RedirectGameStarted;
-		game.MyPathIsUnsupported -= RedirectMyPathIsUnsupported;
-		game.MyTurnEnded -= RedirectMyTurnEnded;
-		game.MyTurnStarted -= RedirectMyTurnStarted;
-		game.PreviousUserTurnEnded -= RedirectPreviousUserTurnEnded;
-		game.RoundChanged -= RedirectRoundChanged;
-		game.TypingWordPresented -= RedirectTypingWordPresented;
-		game.UnsupportedWordEntered -= RedirectUnsupportedWordEntered;
-		game.ExampleWordPresented -= RedirectExampleWordPresented;
-
-		game.AutoEnter.InputDelayApply -= RedirectInputDelayApply;
-		game.AutoEnter.AutoEntered -= RedirectAutoEntered;
-		game.AutoEnter.NoPathAvailable -= RedirectNoPathAvailable;
-	}
-
-	private void RedirectChatUpdated(object? sender, EventArgs e) => ChatUpdated?.Invoke(sender, e);
-	private void RedirectDiscoverWordHistory(object? sender, WordHistoryEventArgs e) => DiscoverWordHistory?.Invoke(sender, e);
-	private void RedirectGameStarted(object? sender, EventArgs e) => GameStarted?.Invoke(sender, e);
-	private void RedirectGameEnded(object? sender, EventArgs e) => GameEnded?.Invoke(sender, e);
-	private void RedirectGameModeChanged(object? sender, GameModeChangeEventArgs e) => GameModeChanged?.Invoke(sender, e);
-	private void RedirectMyTurnStarted(object? sender, WordConditionPresentEventArgs e) => MyTurnStarted?.Invoke(sender, e);
-	private void RedirectMyTurnEnded(object? sender, EventArgs e) => MyTurnEnded?.Invoke(sender, e);
-	private void RedirectMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs e) => MyPathIsUnsupported?.Invoke(sender, e);
-	private void RedirectUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs e) => UnsupportedWordEntered?.Invoke(sender, e);
-	private void RedirectPreviousUserTurnEnded(object? sender, PreviousUserTurnEndedEventArgs e) => PreviousUserTurnEnded?.Invoke(sender, e);
-	private void RedirectRoundChanged(object? sender, EventArgs e) => RoundChanged?.Invoke(sender, e);
-	private void RedirectTypingWordPresented(object? sender, WordPresentEventArgs e) => TypingWordPresented?.Invoke(sender, e);
-	private void RedirectExampleWordPresented(object? sender, WordPresentEventArgs e) => ExampleWordPresented?.Invoke(sender, e);
-	private void RedirectInputDelayApply(object? sender, InputDelayEventArgs e) => InputDelayApply?.Invoke(sender, e);
-	private void RedirectAutoEntered(object? sender, AutoEnterEventArgs e) => AutoEntered?.Invoke(sender, e);
-	private void RedirectNoPathAvailable(object? sender, NoPathAvailableEventArgs e) => NoPathAvailable?.Invoke(sender, e);
+	private void PathFinder_FindStateChanged(object? sender, PathFinderStateEventArgs e) => FindStateChanged?.Invoke(sender, e);
+	private void PathFinder_PathUpdated(object? sender, PathUpdateEventArgs e) => PathUpdated?.Invoke(sender, e);
 	#endregion
 
 	#region Disposal
@@ -157,22 +125,58 @@ public class AutoKkutu : IDisposable
 	{
 		if (!disposedValue)
 		{
-			// Dispose sub-components
-			if (disposing)
+			// Unregister game events
+			if (disposing && Game != null)
 			{
-				game?.Dispose();
-			}
+				// Remove Mediators
+				Game.DiscoverWordHistory -= HandleDiscoverWordHistory;
+				Game.HintWordPresented -= HandleExampleWordPresented;
+				Game.RoundChanged -= HandleRoundChanged;
 
-			// Set fields to null to encourage GC
-			game = null;
-			NodeManager = null!;
-			PathFilter = null!;
-			PathFinder = null!;
+				// Remove module event wrappers
+				Game.GameStarted -= Game_GameStarted;
+				Game.GameEnded -= Game_GameEnded;
+				Game.RoundChanged -= Game_RoundChanged;
+				Game.GameModeChanged -= Game_GameModeChanged;
+
+				Game.PreviousUserTurnEnded -= Game_PreviousUserTurnEnded;
+				Game.TurnStarted -= Game_MyTurnStarted;
+				Game.TurnEnded -= Game_MyTurnEnded;
+				Game.UnsupportedWordEntered -= Game_UnsupportedWordEntered;
+				Game.HintWordPresented -= Game_HintWordPresented;
+				Game.TypingWordPresented -= Game_TypingWordPresented;
+				Game.DiscoverWordHistory -= Game_DiscoverWordHistory;
+
+				// Clear event listeners: https://stackoverflow.com/a/9513372
+				GameStarted = null;
+				GameEnded = null;
+				PreviousUserTurnEnded = null;
+				MyTurnStarted = null;
+				MyTurnEnded = null;
+				UnsupportedWordEntered = null;
+				RoundChanged = null;
+				GameModeChanged = null;
+				TypingWordPresented = null;
+				DiscoverWordHistory = null;
+				HintWordPresented = null;
+				FindStateChanged = null;
+				PathUpdated = null;
+
+				PathFinder.FindStateChanged -= PathFinder_FindStateChanged;
+				PathFinder.PathUpdated -= PathFinder_PathUpdated;
+
+				Game.Dispose();
+				Database.Dispose();
+			}
 
 			disposedValue = true;
 		}
 	}
 
+	/// <summary>
+	/// 현재 AutoKkutu 파사드가 소유한 모든 리소스를 Dispose합니다.
+	/// 생성자 파라미터로 넘어온 <c>dbConnection</c>과 <c>game</c> 역시 Dispose된다는 사실에 주의하세요.
+	/// </summary>
 	public void Dispose()
 	{
 		Dispose(disposing: true);

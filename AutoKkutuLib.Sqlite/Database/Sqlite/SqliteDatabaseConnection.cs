@@ -21,20 +21,12 @@ public sealed class SqliteDatabaseConnection : AbstractDatabaseConnection
 
 	public override string GetWordListColumnOptions() => $"{DatabaseConstants.SequenceColumnName} INTEGER PRIMARY KEY AUTOINCREMENT, {DatabaseConstants.WordColumnName} VARCHAR(256) UNIQUE NOT NULL, {DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL, {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL, {DatabaseConstants.KkutuWordIndexColumnName} VARCHAR(2) NOT NULL, {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL";
 
-	public static SqliteDatabaseConnection? Create(string dataSource)
+	public static SqliteDatabaseConnection? Create(string connectionString)
 	{
 		try
 		{
-			// Create database if not exists
-			if (!new FileInfo(dataSource).Exists)
-			{
-				Log.Information("Inexistent SQLite database file {file} will be newly created.", dataSource);
-				File.Create(dataSource).Close();
-			}
-
 			// Open the connection
-			Log.Information("Establishing SQLite connection for {file}.", dataSource);
-			SqliteConnection nativeConnection = SqliteDatabaseHelper.OpenConnection(dataSource);
+			SqliteConnection nativeConnection = SqliteDatabaseHelper.OpenConnection(connectionString);
 			var connection = new SqliteDatabaseConnection(nativeConnection);
 			connection.query = new SqliteQueryFactory(connection);
 

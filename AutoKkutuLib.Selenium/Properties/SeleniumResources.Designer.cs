@@ -61,27 +61,25 @@ namespace AutoKkutuLib.Selenium.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /* ws_listener.js
+        ///   Looks up a localized string similar to /* communicatorJs : AutoKkutu - Selenium communicator
         /// * 
         /// * Reserved names:
-        /// * ___wsHook___
         /// * ___wsAddr___
         /// * ___originalWS___
         /// * ___wsGlobal___
         /// * ___wsBuffer___
+        /// * ___commSend___
+        /// * ___commRecv___
         /// */
         ///
-        ///// Workaround for constructor renaming bug
-        ///window.___wsGlobal___ = new window[&apos;___originalWS___&apos;](&apos;___wsAddr___&apos;);
-        ///window.___wsBuffer___ = []
-        ///let open = false
-        ///___wsGlobal___.onopen = function () {
-        ///    console.log(&apos;WebSocket connected.&apos;);
-        ///    ___wsBuffer___.forEach(msg =&gt; ___wsGlobal___.send(msg));
-        ///    ___wsBuffer___.length = 0;
-        ///    open = true;
-        ///};
-        ///___wsHoo [rest of string was truncated]&quot;;.
+        ///(function () {
+        ///    window.___wsGlobal___ = new ___originalWS___(&apos;___wsAddr___&apos;);
+        ///    window.___wsBuffer___ = []
+        ///    let open = false
+        ///    ___wsGlobal___.onopen = function () {
+        ///        console.log(&apos;WebSocket connected.&apos;);
+        ///        ___wsBuffer___.forEach(msg =&gt; ___wsGlobal___.send(msg));
+        ///        ___wsBuffer [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string communicatorJs {
             get {

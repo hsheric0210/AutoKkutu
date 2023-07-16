@@ -1,7 +1,7 @@
 ﻿namespace AutoKkutuLib;
 
 /// <summary>
-/// 'flags' column of word entry in database
+/// 데이터베이스의 'flags' 행에 해당하는 비스마스크 플래그를 나타냅니다.
 /// </summary>
 [Flags]
 public enum WordFlags

@@ -1,4 +1,5 @@
-﻿namespace AutoKkutuLib.Hangul;
+﻿
+namespace AutoKkutuLib.Hangul;
 public abstract class KeyboardLayout
 {
 	public static readonly KeyboardLayout QWERTY = new QwertyLayout();

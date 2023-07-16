@@ -1,7 +1,4 @@
-﻿using AutoKkutuLib.Game;
-using System.Reflection.Metadata.Ecma335;
-
-namespace AutoKkutuLib.Hangul;
+﻿namespace AutoKkutuLib.Hangul;
 
 public struct HangulSplit
 {

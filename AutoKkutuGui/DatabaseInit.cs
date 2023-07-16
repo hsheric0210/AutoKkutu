@@ -3,34 +3,27 @@ using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.MySql;
 using AutoKkutuLib.Database.PostgreSql;
 using AutoKkutuLib.Database.Sqlite;
-using Serilog;
 using System;
 
 namespace AutoKkutuGui;
 
 public static class DatabaseInit
 {
-	public static AbstractDatabaseConnection? Connect(System.Configuration.Configuration config)
+	public static AbstractDatabaseConnection? Connect(string type, string connString)
 	{
-		if (config == null)
-			throw new ArgumentNullException(nameof(config));
-
-		switch (((DatabaseTypeSection)config.GetSection("dbtype")).Type.ToUpperInvariant())
+		switch (type.ToUpperInvariant())
 		{
 			case "MARIADB":
 			case "MYSQL":
-				var mysqlConnectionString = ((MySqlSection)config.GetSection("mysql")).ConnectionString;
-				return MySqlDatabaseConnection.Create(mysqlConnectionString);
+				return MySqlDatabaseConnection.Create(connString);
 
 			case "POSTGRESQL":
 			case "POSTGRES":
 			case "POSTGRE":
 			case "PGSQL":
-				var pgsqlConnectionString = ((PostgreSqlSection)config.GetSection("postgresql")).ConnectionString;
-				return PostgreSqlDatabaseConnection.Create(pgsqlConnectionString);
+				return PostgreSqlDatabaseConnection.Create(connString);
 		}
 
-		var file = ((SqliteSection)config.GetSection("sqlite")).File;
-		return SqliteDatabaseConnection.Create(file);
+		return SqliteDatabaseConnection.Create(connString);
 	}
 }

@@ -2,6 +2,10 @@
 using Serilog;
 
 namespace AutoKkutuLib.Extension;
+
+/// <summary>
+/// <c>PathObject</c>의 단어 종류를 바꾸는 기능을 지원하는 확장 클래스입니다.
+/// </summary>
 public static class PathObjectCategoryChangeExtension
 {
 	public static void MakeAttack(this AbstractDatabaseConnection connection, PathObject pathObject, GameMode mode)
@@ -44,6 +48,7 @@ public static class PathObjectCategoryChangeExtension
 			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
 	}
 
+	// TODO: Move to other class
 	public static string GetAttackWordListTableName(this GameMode mode) => mode switch
 	{
 		GameMode.FirstAndLast => DatabaseConstants.ReverseAttackNodeIndexTableName,
@@ -52,6 +57,7 @@ public static class PathObjectCategoryChangeExtension
 		_ => DatabaseConstants.AttackNodeIndexTableName,
 	};
 
+	// TODO: Move to other class
 	public static string GetEndWordListTableName(this GameMode mode) => mode switch
 	{
 		GameMode.FirstAndLast => DatabaseConstants.ReverseEndNodeIndexTableName,

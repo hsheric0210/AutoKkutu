@@ -143,8 +143,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AutoKkutuLib.Game.DomHandlers.JavaScript\AutoKkutuLib.Game.DomHandlers.JavaScript.csproj" />
-        <ProjectReference Include="..\AutoKkutuLib.Game.WsHandlers.JavaScript\AutoKkutuLib.Game.WsHandlers.JavaScript.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.MySql\AutoKkutuLib.MySql.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Postgres\AutoKkutuLib.Postgres.csproj" />
         <ProjectReference Include="..\AutoKkutuLib.Sqlite\AutoKkutuLib.Sqlite.csproj" />
@@ -174,6 +172,11 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>GuiI18n.resx</DependentUpon>
         </Compile>
+        <Compile Update="Properties\GuiResources.Designer.cs">
+          <DesignTime>True</DesignTime>
+          <AutoGen>True</AutoGen>
+          <DependentUpon>GuiResources.resx</DependentUpon>
+        </Compile>
         <Compile Update="Settings.Designer.cs">
             <DesignTimeSharedInput>True</DesignTimeSharedInput>
             <AutoGen>True</AutoGen>
@@ -185,6 +188,10 @@
         <EmbeddedResource Update="GuiI18n.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>GuiI18n.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Properties\GuiResources.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>GuiResources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
 

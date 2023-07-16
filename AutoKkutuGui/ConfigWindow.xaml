@@ -385,26 +385,32 @@
                                 </Grid>
                             </Grid>
                             <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <RadioButton Name="AutoEnterInputSimulate" Grid.Column="0" Content="입력 시뮬레이션, 우회 미사용" GroupName="InputSimulateBypass" Style="{StaticResource SettingRadioButtonStyle}" ToolTip="입력 시뮬레이션을 사용하되, 아무런 우회를 사용하지 않습니다." />
-                                <Separator Grid.Column="1" Margin="5,0,5,0" Style="{StaticResource SettingSeparatorStyle}" />
-                                <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulate, Path=ToolTip}" Style="{StaticResource SettingLabelStyle}" />
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton Name="AutoEnterInputSimulateJavaScript" Grid.Column="0" Content="입력 시뮬레이션, JavaScript 기반" GroupName="InputSimulateBypass" IsChecked="True" Style="{StaticResource SettingRadioButtonStyle}" ToolTip="JavaScript를 기반으로 입력 시뮬레이션을 수행합니다." />
+                                    <Separator Grid.Column="1" Margin="5,0,5,0" Style="{StaticResource SettingSeparatorStyle}" />
+                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateJavaScript, Path=ToolTip}" Style="{StaticResource SettingLabelStyle}" />
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="30,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Name="AutoEnterInputSimulateJavaScriptSendKeys" Grid.Column="0" Content="키 입력 이벤트 전송" IsChecked="True" Style="{StaticResource SettingCheckBoxStyle}" ToolTip="단어 입력 시 사이트 측에 JavaScript 키보드 키 다운/업 이벤트를 전송합니다." />
+                                    <Separator Grid.Column="1" Style="{StaticResource SettingSeparatorStyle}" />
+                                    <Label Grid.Column="2" Content="{Binding ElementName=AutoEnterInputSimulateJavaScriptSendKeys, Path=ToolTip}" Style="{StaticResource SettingLabelStyle}" ToolTip="입력 시 JavaScript 'keydown', 'keyup' 이벤트 발생을 시뮬레이트합니다. *기본* 입력 로깅 구현에 대해 우회 가능하나, 'input' 이벤트에 대한 로깅은 우회할 수 없습니다." />
+                                </Grid>
                             </Grid>
                             <Grid Grid.Row="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <RadioButton Name="AutoEnterInputSimulateJSKeyEvents" Grid.Column="0" Content="입력 시뮬레이션, 키 입력 이벤트 전송" GroupName="InputSimulateBypass" IsChecked="True" Style="{StaticResource SettingRadioButtonStyle}" ToolTip="단어 입력 시 사이트 측에 JavaScript 키보드 키 다운/업 이벤트를 전송합니다." />
-                                <Separator Grid.Column="1" Margin="5,0,5,0" Style="{StaticResource SettingSeparatorStyle}" />
-                                <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateJSKeyEvents, Path=ToolTip}" Style="{StaticResource SettingLabelStyle}" ToolTip="입력 시 JavaScript 'keydown', 'keyup' 이벤트 발생을 시뮬레이트합니다. *기본* 입력 로깅 구현에 대해 우회 가능하나, 'input' 이벤트에 대한 로깅은 우회할 수 없습니다." />
-                            </Grid>
-                            <Grid Grid.Row="3">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
@@ -414,7 +420,7 @@
                                 <Separator Grid.Column="1" Margin="5,0,5,0" Style="{StaticResource SettingSeparatorStyle}" />
                                 <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateWin32, Path=ToolTip}" Style="{StaticResource SettingLabelStyle}" ToolTip="잠재적인 모든 '이상 입력' 감지 메커니즘을 우회할 수 있으나, 실행 시 입력할 때 자동으로 브라우저 창, 채팅창이 포커스됩니다. AutoHotKey 등 여러 매크로가 사용하는 방식과 동일합니다." />
                             </Grid>
-                            <Grid Grid.Row="4">
+                            <Grid Grid.Row="3">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />

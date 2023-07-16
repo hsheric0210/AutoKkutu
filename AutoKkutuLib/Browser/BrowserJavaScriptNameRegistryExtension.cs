@@ -1,6 +1,4 @@
-﻿using Serilog;
-
-namespace AutoKkutuLib.Browser;
+﻿namespace AutoKkutuLib.Browser;
 public static class BrowserJavaScriptNameRegistryExtension
 {
 	public static string GenerateRandomString(this BrowserBase browser, CommonNameRegistry funcId) => browser.GenerateRandomString((int)funcId);

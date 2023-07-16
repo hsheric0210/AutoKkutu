@@ -277,4 +277,8 @@ public class CefSharpBrowser : BrowserBase
 		JavascriptResponse response = await task; // Will be finished immediately because the task had already finished @ L248
 		return response.Result;
 	}
+
+	public override void SendWin32KeyEvent(int message, int wParam, int lParam) => browser.GetBrowserHost().SendKeyEvent(message, wParam, lParam);
+
+	public override IntPtr GetWindowHandle() => browser.GetBrowserHost().GetWindowHandle();
 }

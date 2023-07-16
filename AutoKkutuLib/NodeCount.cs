@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace AutoKkutuLib;
-public struct NodeCount
+public struct NodeCount : IEquatable<NodeCount>
 {
 	public int TotalCount { get; private set; }
 	public int TotalError { get; private set; }
@@ -55,31 +55,36 @@ public struct NodeCount
 		TotalAttackCount += attack;
 	}
 
-	public bool Equals(WordCount other)
-	{
-		return EndCount == other.EndCount
-			&& AttackCount == other.AttackCount
-			&& ReverseEndCount == other.ReverseEndCount
-			&& ReverseAttackCount == other.ReverseAttackCount
-			&& KkutuEndCount == other.KkutuEndCount
-			&& KkutuAttackCount == other.KkutuAttackCount
-			&& KKTEndCount == other.KKTEndCount
-			&& KKTAttackCount == other.KKTAttackCount;
-	}
-
-	public override bool Equals([NotNullWhen(true)] object? obj) => obj is WordCount other && Equals(other);
+	public override bool Equals(object? obj) => obj is NodeCount count && Equals(count);
+	public bool Equals(NodeCount other) => TotalCount == other.TotalCount
+		&& TotalError == other.TotalError
+		&& TotalEndCount == other.TotalEndCount
+		&& TotalAttackCount == other.TotalAttackCount
+		&& EndCount == other.EndCount
+		&& AttackCount == other.AttackCount
+		&& ReverseEndCount == other.ReverseEndCount
+		&& ReverseAttackCount == other.ReverseAttackCount
+		&& KkutuEndCount == other.KkutuEndCount
+		&& KkutuAttackCount == other.KkutuAttackCount
+		&& KKTEndCount == other.KKTEndCount
+		&& KKTAttackCount == other.KKTAttackCount;
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(HashCode.Combine(
-			EndCount,
-			AttackCount,
-			ReverseEndCount,
-			ReverseAttackCount,
-			KkutuEndCount,
-			KkutuAttackCount), HashCode.Combine(
-				KKTEndCount,
-				KKTAttackCount));
+		var hash = new HashCode();
+		hash.Add(TotalCount);
+		hash.Add(TotalError);
+		hash.Add(TotalEndCount);
+		hash.Add(TotalAttackCount);
+		hash.Add(EndCount);
+		hash.Add(AttackCount);
+		hash.Add(ReverseEndCount);
+		hash.Add(ReverseAttackCount);
+		hash.Add(KkutuEndCount);
+		hash.Add(KkutuAttackCount);
+		hash.Add(KKTEndCount);
+		hash.Add(KKTAttackCount);
+		return hash.ToHashCode();
 	}
 
 	public static bool operator ==(NodeCount left, NodeCount right) => left.Equals(right);

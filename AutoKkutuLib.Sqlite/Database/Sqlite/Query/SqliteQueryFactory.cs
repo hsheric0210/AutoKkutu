@@ -1,7 +1,5 @@
 ﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Sql;
 using AutoKkutuLib.Database.Sql.Query;
-using Dapper;
 
 namespace AutoKkutuLib.Postgres.Database.PostgreSql.Query;
 internal class SqliteQueryFactory : QueryFactory
