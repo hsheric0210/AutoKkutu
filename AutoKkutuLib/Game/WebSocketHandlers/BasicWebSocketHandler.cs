@@ -75,12 +75,12 @@ public class BasicWebSocketHandler : IWebSocketHandler
 
 	public virtual async ValueTask<WsRoom> ParseRoom(JsonNode json)
 	{
-		JsonObject room = (json["room"] ?? throw InvalidWsMessage("room", "room")).AsObject();
+		var room = (json["room"] ?? throw InvalidWsMessage("room", "room")).AsObject();
 		var players = (room["players"] ?? throw InvalidWsMessage("room", "room.players")).AsArray().Select(ParsePlayer).ToImmutableList();
 		var gaming = (room["gaming"] ?? throw InvalidWsMessage("room", "room.gaming")).GetValue<bool>();
 		var modeId = (room["mode"] ?? throw InvalidWsMessage("room", "room.mode")).GetValue<int>();
 
-		JsonObject game = (room["game"] ?? throw InvalidWsMessage("room", "room.game")).AsObject();
+		var game = (room["game"] ?? throw InvalidWsMessage("room", "room.game")).AsObject();
 		var gameSeq = (game["seq"] ?? throw InvalidWsMessage("room", "room.game.seq")).AsArray().Select(ParsePlayer).ToImmutableList();
 
 		var modeString = await Browser.EvaluateJavaScriptAsync($"{Browser.GetScriptTypeName(CommonNameRegistry.RoomModeToGameMode)}({modeId})", errorPrefix: "ParseRoom");

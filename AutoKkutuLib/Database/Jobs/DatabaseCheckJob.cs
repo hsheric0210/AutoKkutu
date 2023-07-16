@@ -53,7 +53,7 @@ public class DatabaseCheckJob
 				// Check for errorsd
 				Log.Information("Searching problems...");
 				watch.Start();
-				foreach (WordModel element in DbConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+				foreach (var element in DbConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 				{
 					currentElementIndex++;
 					var word = element.Word;
@@ -121,7 +121,7 @@ public class DatabaseCheckJob
 	#region Database checkings
 	private void VerifyWordFlags(string word, int currentFlags, IDictionary<string, int> correction)
 	{
-		WordFlags correctFlags = nodeManager.CalcWordFlags(word);
+		var correctFlags = nodeManager.CalcWordFlags(word);
 		var correctFlagsInt = (int)correctFlags;
 		if (correctFlagsInt != currentFlags)
 		{
@@ -167,7 +167,7 @@ public class DatabaseCheckJob
 	{
 		var Counter = 0;
 
-		foreach (KeyValuePair<string, int> pair in correction)
+		foreach (var pair in correction)
 		{
 			var affected = DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET flags = @Flags WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{
@@ -187,7 +187,7 @@ public class DatabaseCheckJob
 	private int ResetWordIndex(IDictionary<string, string> correction, string indexColumnName)
 	{
 		var counter = 0;
-		foreach (KeyValuePair<string, string> pair in correction)
+		foreach (var pair in correction)
 		{
 			var affected = DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{

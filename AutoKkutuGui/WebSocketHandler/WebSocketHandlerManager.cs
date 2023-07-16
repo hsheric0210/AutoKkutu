@@ -13,10 +13,10 @@ public class WebSocketHandlerManager
 		if (providers == null)
 			throw new ArgumentNullException(nameof(providers));
 
-		ImmutableDictionary<string, IWebSocketHandler>.Builder builder = ImmutableDictionary.CreateBuilder<string, IWebSocketHandler>();
-		foreach (IWebSocketHandlerProvider provider in providers)
+		var builder = ImmutableDictionary.CreateBuilder<string, IWebSocketHandler>();
+		foreach (var provider in providers)
 		{
-			foreach (IWebSocketHandler handler in provider.GetWebSocketHandlers())
+			foreach (var handler in provider.GetWebSocketHandlers())
 				builder.Add(handler.HandlerName, handler);
 		}
 		handlers = builder.ToImmutable();

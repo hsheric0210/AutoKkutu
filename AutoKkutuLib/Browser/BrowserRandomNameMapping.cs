@@ -63,7 +63,7 @@ public sealed class BrowserRandomNameMapping : NameMapping
 	/// <param name="browser">대상 브라우저</param>
 	public static BrowserRandomNameMapping MainHelperJs(BrowserBase browser)
 	{
-		BrowserRandomNameMapping instance = BaseJs(browser);
+		var instance = BaseJs(browser);
 		instance.GenerateScriptType("___originalWS___", CommonNameRegistry.OriginalWebSocket);
 		instance.GenerateScriptType("___wsFilter___", CommonNameRegistry.WebSocketFilter);
 		instance.Generate("___nativeSend___", CommonNameRegistry.WebSocketNativeSend);
@@ -78,7 +78,7 @@ public sealed class BrowserRandomNameMapping : NameMapping
 
 	public static BrowserRandomNameMapping WebSocketFilterJs(BrowserBase browser)
 	{
-		BrowserRandomNameMapping instance = BaseJs(browser);
+		var instance = BaseJs(browser);
 		instance.GenerateScriptType("___wsFilter___", CommonNameRegistry.WebSocketFilter);
 		return instance;
 	}

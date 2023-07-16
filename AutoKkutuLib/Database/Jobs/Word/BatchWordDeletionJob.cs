@@ -15,7 +15,7 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 
 		var count = new WordCount();
 		var transaction = DbConnection.BeginTransaction();
-		WordDeletionQuery query = DbConnection.Query.DeleteWord();
+		var query = DbConnection.Query.DeleteWord();
 		foreach (var word in wordList)
 		{
 			if (RemoveSingleWord(query, word))

@@ -86,7 +86,7 @@ public class ReorderableList<TItem> where TItem : class
 
 	private T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
 	{
-		DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+		var parentObject = VisualTreeHelper.GetParent(child);
 		if (parentObject == null)
 			return null;
 		return parentObject is T parent ? parent : FindVisualParent<T>(parentObject);
@@ -126,7 +126,7 @@ public class ReorderableList<TItem> where TItem : class
 			return;
 		for (var i = 0; i < itemCount; i++)
 		{
-			TItem selectedItem = items[i];
+			var selectedItem = items[i];
 			var oldIndex = ItemListBox.Items.IndexOf(selectedItem);
 			var newIndex = oldIndex == 0 ? itemCount - 1 : oldIndex - 1;
 
@@ -144,7 +144,7 @@ public class ReorderableList<TItem> where TItem : class
 			return;
 		for (var i = itemCount - 1; i >= 0; i--)
 		{
-			TItem selectedItem = items[i];
+			var selectedItem = items[i];
 			var oldIndex = ItemListBox.Items.IndexOf(selectedItem);
 			var newIndex = oldIndex == itemCount - 1 ? 0 : oldIndex + 1;
 
@@ -189,14 +189,14 @@ public class ReorderableList<TItem> where TItem : class
 
 	private void OnListPreviewMouseMove(object sender, MouseEventArgs e)
 	{
-		Point currentCursorPos = e.GetPosition(null);
-		Vector cursorVector = CursorStartPosition - currentCursorPos;
+		var currentCursorPos = e.GetPosition(null);
+		var cursorVector = CursorStartPosition - currentCursorPos;
 
 		if (e.LeftButton == MouseButtonState.Pressed
 			&& (Math.Abs(cursorVector.X) > SystemParameters.MinimumHorizontalDragDistance
 			|| Math.Abs(cursorVector.Y) > SystemParameters.MinimumVerticalDragDistance))
 		{
-			ListBoxItem? targetItem = FindVisualParent<ListBoxItem>((DependencyObject)e.OriginalSource);
+			var targetItem = FindVisualParent<ListBoxItem>((DependencyObject)e.OriginalSource);
 			if (targetItem != null)
 				DragDrop.DoDragDrop(targetItem, targetItem.DataContext, DragDropEffects.Move);
 		}

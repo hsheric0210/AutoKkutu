@@ -60,7 +60,7 @@ internal static class HangulClusterExtension
 			return true;
 		}
 
-		if (clusterType.GetCompositionTable().TryGetValue(first, out IImmutableDictionary<char, char>? combination) && combination.TryGetValue(second, out result))
+		if (clusterType.GetCompositionTable().TryGetValue(first, out var combination) && combination.TryGetValue(second, out result))
 			return true;
 
 		result = ' ';
@@ -74,7 +74,7 @@ internal static class HangulClusterExtension
 	/// </summary>
 	internal static IImmutableList<char> SplitCluster(this HangulCluster clusterType, char combined)
 	{
-		return clusterType.GetDecompositionTable().TryGetValue(combined, out IImmutableList<char>? consonants)
+		return clusterType.GetDecompositionTable().TryGetValue(combined, out var consonants)
 			? consonants
 			: ImmutableList.Create(combined);
 	}

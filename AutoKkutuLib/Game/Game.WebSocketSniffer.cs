@@ -166,7 +166,7 @@ public partial class Game
 				if (missionChar != null && data.Value.Contains(missionChar))
 					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.ContainsMissionChar;
 
-				WordCondition? condition = CurrentGameMode.ConvertWordToCondition(data.Value, wsSession.MyGamePreviousUserMission);
+				var condition = CurrentGameMode.ConvertWordToCondition(data.Value, wsSession.MyGamePreviousUserMission);
 				if (condition == null)
 					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.UnableToParse;
 

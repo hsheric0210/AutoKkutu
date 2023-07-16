@@ -53,7 +53,7 @@ public partial class AutoKkutu
 			list = PathFilter.UnsupportedPaths;
 			if (args.IsEndWord)
 			{
-				GameMode gm = Game.CurrentGameMode;
+				var gm = Game.CurrentGameMode;
 				var node = gm.ConvertWordToTailNode(word);
 				if (!string.IsNullOrWhiteSpace(node))
 				{

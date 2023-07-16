@@ -71,7 +71,7 @@ public partial class Main
 	{
 		try
 		{
-			ServerInfo config = ServerConfig.Servers.FirstOrDefault(server => server.ServerHost.Equals(serverHost, StringComparison.OrdinalIgnoreCase), ServerConfig.Default);
+			var config = ServerConfig.Servers.FirstOrDefault(server => server.ServerHost.Equals(serverHost, StringComparison.OrdinalIgnoreCase), ServerConfig.Default);
 			return DatabaseInit.Connect(config.DatabaseType, config.DatabaseConnectionString);
 		}
 		catch (Exception ex)
@@ -100,7 +100,7 @@ public partial class Main
 
 	public void SendMessage(string message)
 	{
-		if (!EntererManager.TryGetEnterer(AutoKkutu.Game, Preference.AutoEnterMode, out IEnterer? enterer))
+		if (!EntererManager.TryGetEnterer(AutoKkutu.Game, Preference.AutoEnterMode, out var enterer))
 		{
 			Log.Error("SendMessage interrupted because the enterer {name} is not available.", Preference.AutoEnterMode);
 			return;

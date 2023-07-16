@@ -113,9 +113,9 @@ public sealed class HangulRecomposer
 		var builder = ImmutableList.CreateBuilder<InputCommand>();
 
 		// Process remaining chars
-		HangulSplit prevSplit = HangulSplit.EmptyHangul;
+		var prevSplit = HangulSplit.EmptyHangul;
 		InputCommand? lastInput = null;
-		foreach (HangulSplit piece in pieces)
+		foreach (var piece in pieces)
 		{
 			// 이전 글자 종성에 초성이 끼어들어가 버려서 입력이 제대로 되지 않을 것이 예상되는 경우 (예시: 믈ㅅ셕)
 			if (prevSplit.HasInitialConsonant && prevSplit.HasMedial && prevSplit.HasFinalConsonant && HangulCluster.Consonant.TryMergeCluster(prevSplit.FinalConsonant, piece.InitialConsonant, out _))
@@ -125,9 +125,9 @@ public sealed class HangulRecomposer
 				builder.Add(terminate); // 강제로 조합 중단 (오른쪽 화살표 키를 누른다던지...)
 			}
 
-			foreach ((ConsonantType type, var ch) in piece.Serialize())
+			foreach ((var type, var ch) in piece.Serialize())
 			{
-				(HangulSplit prevSplitNew, HangulSplit? newSplit, InputCommand input) = Append(prevSplit, lastInput, Consonant2Jamo(type), ch);
+				(var prevSplitNew, var newSplit, var input) = Append(prevSplit, lastInput, Consonant2Jamo(type), ch);
 				prevSplit = prevSplitNew;
 
 				Log.Verbose("Composition simuation [prev: {prev}, new: {new}, input: {input}]", prevSplitNew, newSplit, input);

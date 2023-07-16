@@ -10,7 +10,7 @@ public class DefaultDomHandlerProvider : IDomHandlerProvider
 
 	public DefaultDomHandlerProvider(BrowserBase browser)
 	{
-		ImmutableList<IDomHandler>.Builder builder = ImmutableList.CreateBuilder<IDomHandler>();
+		var builder = ImmutableList.CreateBuilder<IDomHandler>();
 		builder.Add(new BasicDomHandler(browser));
 		builder.Add(new BasicBypassDomHandler(browser));
 		handlers = builder.ToImmutable();

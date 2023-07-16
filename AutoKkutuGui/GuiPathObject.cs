@@ -67,7 +67,7 @@ public record GuiPathObject
 
 		var prefs = Main.GetInstance().Preference;
 
-		WordCategories flags = pathObject.Categories;
+		var flags = pathObject.Categories;
 		MakeEndAvailable = !flags.HasFlag(WordCategories.EndWord);
 		MakeAttackAvailable = !flags.HasFlag(WordCategories.AttackWord);
 		MakeNormalAvailable = !MakeEndAvailable || !MakeAttackAvailable;

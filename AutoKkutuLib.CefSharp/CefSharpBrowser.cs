@@ -129,12 +129,12 @@ public class CefSharpBrowser : BrowserBase
 		{
 			if (File.Exists(ConfigFile))
 			{
-				using FileStream stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+				using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 				config = (CefConfigDto?)serializer.Deserialize(stream)!;
 			}
 			else
 			{
-				using FileStream stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+				using var stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 				serializer.Serialize(stream, config);
 			}
 		}
@@ -269,12 +269,12 @@ public class CefSharpBrowser : BrowserBase
 			return null;
 		}
 
-		IFrame frame = browser.GetMainFrame();
+		var frame = browser.GetMainFrame();
 		if (frame is null)
 			throw new InvalidOperationException("MainFrame is null");
-		Task<JavascriptResponse> task = frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(1));
+		var task = frame.EvaluateScriptAsync(script, timeout: TimeSpan.FromSeconds(1));
 		await task.WaitAsync(TimeSpan.FromSeconds(1));
-		JavascriptResponse response = await task; // Will be finished immediately because the task had already finished @ L248
+		var response = await task; // Will be finished immediately because the task had already finished @ L248
 		return response.Result;
 	}
 

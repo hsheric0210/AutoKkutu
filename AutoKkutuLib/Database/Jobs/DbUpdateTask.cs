@@ -88,10 +88,10 @@ public class DbUpdateTask
 	private int AddNewPaths(ICollection<string> paths)
 	{
 		var count = 0;
-		WordAdditionQuery query = dbConnection.Query.AddWord();
+		var query = dbConnection.Query.AddWord();
 		foreach (var word in paths)
 		{
-			WordFlags flags = nodeManager.CalcWordFlags(word);
+			var flags = nodeManager.CalcWordFlags(word);
 
 			try
 			{
@@ -114,7 +114,7 @@ public class DbUpdateTask
 	private int RemoveInexistentPaths(ICollection<string> paths)
 	{
 		var count = 0;
-		WordDeletionQuery query = dbConnection.Query.DeleteWord();
+		var query = dbConnection.Query.DeleteWord();
 		foreach (var word in paths)
 		{
 			try
@@ -135,17 +135,17 @@ public class DbUpdateTask
 			return 0;
 
 		var dict = new Dictionary<GameMode, ICollection<string>>();
-		foreach ((GameMode gm, var nodeList) in nodeMap)
+		foreach ((var gm, var nodeList) in nodeMap)
 		{
-			if (!dict.TryGetValue(gm, out ICollection<string>? list))
+			if (!dict.TryGetValue(gm, out var list))
 				dict.Add(gm, list = new List<string>());
 			list.Add(nodeList);
 		}
 
 		var count = 0;
-		foreach ((GameMode gm, ICollection<string> nodeList) in dict)
+		foreach ((var gm, var nodeList) in dict)
 		{
-			NodeAdditionQuery query = dbConnection.Query.AddNode(gm.GetEndWordListTableName());
+			var query = dbConnection.Query.AddNode(gm.GetEndWordListTableName());
 			foreach (var node in nodeList)
 			{
 				try

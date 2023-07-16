@@ -172,7 +172,7 @@ public partial class MainWindow : Window
 	private void OnPathListContextMenuOpen(object? sender, ContextMenuEventArgs e)
 	{
 		var source = (FrameworkElement)e.Source;
-		ContextMenu contextMenu = source.ContextMenu;
+		var contextMenu = source.ContextMenu;
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not PathObject)
 			return;
@@ -250,7 +250,7 @@ public partial class MainWindow : Window
 
 		path.Underlying.Excluded = true;
 		path.Underlying.RemoveQueued = false;
-		PathFilter filter = mainInstance.AutoKkutu.PathFilter;
+		var filter = mainInstance.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Add(path.Content);
 		filter.InexistentPaths.Remove(path.Content);
 		PathList.Items.Refresh();
@@ -264,7 +264,7 @@ public partial class MainWindow : Window
 
 		path.Underlying.Excluded = false;
 		path.Underlying.RemoveQueued = false;
-		PathFilter filter = mainInstance.AutoKkutu.PathFilter;
+		var filter = mainInstance.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Remove(path.Content);
 		filter.InexistentPaths.Remove(path.Content);
 		PathList.Items.Refresh();
@@ -278,7 +278,7 @@ public partial class MainWindow : Window
 
 		path.Underlying.Excluded = false;
 		path.Underlying.RemoveQueued = true;
-		PathFilter filter = mainInstance.AutoKkutu.PathFilter;
+		var filter = mainInstance.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Add(path.Content);
 		filter.InexistentPaths.Add(path.Content);
 		PathList.Items.Refresh();

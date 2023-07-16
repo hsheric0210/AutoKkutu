@@ -34,7 +34,7 @@ public class PathFilter
 			throw new ArgumentNullException(nameof(pathList));
 
 		var qualifiedList = new List<PathObject>();
-		foreach (PathObject path in pathList)
+		foreach (var path in pathList)
 		{
 			if (InexistentPaths.Contains(path.Content))
 				path.RemoveQueued = true;

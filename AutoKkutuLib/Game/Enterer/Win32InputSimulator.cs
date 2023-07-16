@@ -23,7 +23,7 @@ public class Win32InputSimulator : InputSimulatorBase
 	static Win32InputSimulator()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-		ImmutableDictionary<char, int>.Builder vkBuilder = ImmutableDictionary.CreateBuilder<char, int>();
+		var vkBuilder = ImmutableDictionary.CreateBuilder<char, int>();
 		vkBuilder.Add('\t', 0x09);
 		vkBuilder.Add('\n', 0x0d);
 		vkBuilder.Add('0', 0x30);

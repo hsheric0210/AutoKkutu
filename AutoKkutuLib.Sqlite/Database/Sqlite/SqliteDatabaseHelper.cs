@@ -113,7 +113,7 @@ public static class SqliteDatabaseHelper
 			: DatabaseConstants.WordColumnName + ", " + DatabaseConstants.FlagsColumnName;
 
 		// Inevitable dynamically-formatted SQL: The column name could't be parameterized
-		foreach (CompatibleWordModel word in args.source.Query<CompatibleWordModel>($"SELECT {columns} FROM {DatabaseConstants.WordTableName}"))
+		foreach (var word in args.source.Query<CompatibleWordModel>($"SELECT {columns} FROM {DatabaseConstants.WordTableName}"))
 		{
 			if (hasIsEndwordColumn)
 				args.destination.ImportSingleWordLegacy(word.Word, word.Flags);

@@ -21,8 +21,8 @@ public class ServerConfig
 		if (!File.Exists(file))
 			File.WriteAllText(file, GuiResources.Servers);
 
-		ImmutableList<ServerInfo>.Builder builder = ImmutableList.CreateBuilder<ServerInfo>();
-		using (FileStream stream = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+		var builder = ImmutableList.CreateBuilder<ServerInfo>();
+		using (var stream = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
 		{
 			using var xr = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, ValidationFlags = XmlSchemaValidationFlags.None });
 			var ser = new XmlSerializer(typeof(ServerConfigDto));
@@ -35,7 +35,7 @@ public class ServerConfig
 				var defaultDatabaseConnectionString = dto.DefaultServer.Database.DatabaseConnectionString;
 				Default = new ServerInfo("blank", defaultDomHandler, defaultWebSocketHandler, defaultDatabaseType, defaultDatabaseConnectionString);
 
-				foreach (ServerEntry server in dto.Servers)
+				foreach (var server in dto.Servers)
 				{
 					var serverUri = new Uri(server.Url).Host;
 					var domHandler = DefaultIfNullOrEmpty(server.DomHandlerName, defaultDomHandler);
@@ -54,8 +54,8 @@ public class ServerConfig
 	{
 		if (serverCache == null)
 		{
-			ImmutableDictionary<string, ServerInfo>.Builder builder = ImmutableDictionary.CreateBuilder<string, ServerInfo>();
-			foreach (ServerInfo server in Servers)
+			var builder = ImmutableDictionary.CreateBuilder<string, ServerInfo>();
+			foreach (var server in Servers)
 				builder.Add(server.ServerHost, server);
 			serverCache = builder.ToImmutable();
 		}

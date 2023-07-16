@@ -12,10 +12,10 @@ public class DomHandlerManager
 		if (providers == null)
 			throw new ArgumentNullException(nameof(providers));
 
-		ImmutableDictionary<string, IDomHandler>.Builder builder = ImmutableDictionary.CreateBuilder<string, IDomHandler>();
-		foreach (IDomHandlerProvider provider in providers)
+		var builder = ImmutableDictionary.CreateBuilder<string, IDomHandler>();
+		foreach (var provider in providers)
 		{
-			foreach (IDomHandler handler in provider.GetDomHandlers())
+			foreach (var handler in provider.GetDomHandlers())
 				builder.Add(handler.HandlerName, handler);
 		}
 		handlers = builder.ToImmutable();

@@ -64,16 +64,16 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 			throw new InvalidOperationException(nameof(Parameter) + " not set.");
 
 		Log.Debug(nameof(FindWordQuery) + ": Finding the optimal word list for {0}.", param);
-		FindQuery findQuery = CreateQuery(param);
+		var findQuery = CreateQuery(param);
 		var result = new List<PathObject>();
 		try
 		{
 			Log.Debug(nameof(FindWordQuery) + ": Full query string is {0}.", findQuery.Sql);
 
-			foreach (WordModel found in Connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
+			foreach (var found in Connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
 			{
 				var wordString = found.Word.Trim();
-				WordCategories categories = SetupWordCategories(
+				var categories = SetupWordCategories(
 					 wordString,
 					(WordFlags)found.Flags,
 					param.Condition.MissionChar,
@@ -97,7 +97,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 		string? missionChar,
 		out int missionCharCount)
 	{
-		WordCategories category = WordCategories.None;
+		var category = WordCategories.None;
 		if (wordFlags.HasFlag(endWordFlag))
 			category |= WordCategories.EndWord;
 		if (wordFlags.HasFlag(attackWordFlag))
@@ -142,7 +142,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 
 		if (mode != GameMode.All)
 		{
-			WordCondition word = parameter.Condition;
+			var word = parameter.Condition;
 			var wordIndexColumn = GetIndexColumnName(word);
 			param.Add("@PrimaryWord", word.Char);
 			if (word.SubAvailable)
@@ -234,7 +234,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 
 	private static int GetWordTypePriority(WordPreference preference, WordCategories category)
 	{
-		WordCategories[] fullAttribs = preference.GetAttributes();
+		var fullAttribs = preference.GetAttributes();
 		var index = Array.IndexOf(fullAttribs, category);
 		return fullAttribs.Length - (index >= 0 ? (index - 1) : fullAttribs.Length); // Shouldn't be negative
 	}

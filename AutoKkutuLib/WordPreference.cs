@@ -25,7 +25,7 @@ public sealed class WordPreference : IEquatable<WordPreference?>
 	public override int GetHashCode()
 	{
 		var hash = new HashCode();
-		foreach (WordCategories category in attributes)
+		foreach (var category in attributes)
 			hash.Add(category);
 		return hash.ToHashCode();
 	}

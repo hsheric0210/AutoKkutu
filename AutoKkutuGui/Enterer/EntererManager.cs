@@ -19,12 +19,12 @@ public class EntererManager
     {
         if (enterers == null)
         {
-            ImmutableDictionary<string, IEnterer>.Builder builder = ImmutableDictionary.CreateBuilder<string, IEnterer>();
-            foreach (IEntererProvider provider in providers)
+            var builder = ImmutableDictionary.CreateBuilder<string, IEnterer>();
+            foreach (var provider in providers)
             {
-                foreach (EntererSupplier entererSupplier in provider.GetEntererSuppliers())
+                foreach (var entererSupplier in provider.GetEntererSuppliers())
                 {
-                    IEnterer enterer = entererSupplier(game);
+                    var enterer = entererSupplier(game);
                     enterer.EnterFinished += Enterer_AutoEntered;
                     enterer.InputDelayApply += Enterer_InputDelayApply;
                     builder.Add(enterer.EntererName, enterer);

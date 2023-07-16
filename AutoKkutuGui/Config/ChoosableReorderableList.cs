@@ -84,7 +84,7 @@ public class ChoosableReorderableList<TItem> where TItem : class
 
 	private void OnActivateButtonClick(object sender, RoutedEventArgs args)
 	{
-		foreach (TItem item in (from object itemObj in InactiveItemListBox.SelectedItems where itemObj is TItem let item = itemObj as TItem select item).ToArray())
+		foreach (var item in (from object itemObj in InactiveItemListBox.SelectedItems where itemObj is TItem let item = itemObj as TItem select item).ToArray())
 		{
 			InactiveItemList.Remove(item);
 			ActiveItemReorderableList.Add(item);
@@ -93,7 +93,7 @@ public class ChoosableReorderableList<TItem> where TItem : class
 
 	private void OnDeactivateButtonClick(object sender, RoutedEventArgs args)
 	{
-		foreach (TItem item in (from object itemObj in ActiveItemReorderableList.SelectedItems where itemObj is TItem let item = itemObj as TItem select item).ToArray())
+		foreach (var item in (from object itemObj in ActiveItemReorderableList.SelectedItems where itemObj is TItem let item = itemObj as TItem select item).ToArray())
 		{
 			ActiveItemReorderableList.Remove(item);
 			InactiveItemList.Add(item);

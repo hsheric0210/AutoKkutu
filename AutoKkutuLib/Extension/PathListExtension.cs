@@ -30,7 +30,7 @@ public static class PathListExtension
 		var remain = Math.Max(300, remainingTurnTime); // clamp to min. 300ms
 		Log.Verbose("(TimeFilter) turnTime={time}, clamped={cTime}", remainingTurnTime, remain);
 
-		PathObject[] arr = availableWordList.Where(po => delay.GetMaxDelay(po?.Content) <= remain).ToArray(); // 딜레이가 항상 최악으로 적용된다고 가정하고 탐색
+		var arr = availableWordList.Where(po => delay.GetMaxDelay(po?.Content) <= remain).ToArray(); // 딜레이가 항상 최악으로 적용된다고 가정하고 탐색
 		var word = arr.Length <= wordIndex ? null : arr[wordIndex].Content;
 		if (word != null)
 		{
@@ -57,7 +57,7 @@ public static class PathListExtension
 
 		Log.Warning(I18n.TimeFilter_TimeOver, remain);
 
-		PathObject? closest = availableWordList.MinBy(w => delay.GetMaxDelay(w.Content));
+		var closest = availableWordList.MinBy(w => delay.GetMaxDelay(w.Content));
 		if (closest != null)
 			Log.Verbose("(TimeFilter) Closest word to the delay: {word} (minTime: {minTime}, maxTime: {maxTime})", closest.Content, delay.GetMinDelay(closest.Content), delay.GetMaxDelay(closest.Content));
 

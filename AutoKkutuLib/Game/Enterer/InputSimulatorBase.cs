@@ -28,7 +28,7 @@ public abstract class InputSimulatorBase : EntererBase
 			list.Add(HangulSplit.Parse(ch));
 
 		var recomp = new HangulRecomposer(KeyboardLayout.QWERTY, list.ToImmutableList()); // TODO: Make KeyboardLayout configurable with AutoEnterOptions
-		IImmutableList<InputCommand> inputList = recomp.Recompose();
+		var inputList = recomp.Recompose();
 
 		var startDelay = info.Options.GetStartDelay();
 		await Task.Delay(startDelay);
@@ -36,7 +36,7 @@ public abstract class InputSimulatorBase : EntererBase
 		Log.Information(I18n.Main_InputSimulating, content);
 		game.UpdateChat("");
 
-		foreach (InputCommand input in inputList)
+		foreach (var input in inputList)
 		{
 			Log.Debug("Input requested: {ipt}", input);
 			if (!CanPerformAutoEnterNow(info.PathInfo, !isPreinputSimInProg))

@@ -16,13 +16,13 @@ public partial class Main
 	{
 		try
 		{
-			Settings config = Settings.Default;
+			var config = Settings.Default;
 			config.Reload();
 			var prefs = new Preference(config);
 
 			var serverConfig = new ServerConfig(ServerConfigFile);
 
-			BrowserBase browser = InitializeBrowser();
+			var browser = InitializeBrowser();
 
 			var plugin = new PluginLoader(PluginFolder, browser);
 			var entererMan = new EntererManager(plugin.EntererProviders.Add(new DefaultEntererProvider()));

@@ -113,13 +113,13 @@ public partial class ConfigWindow : Window
 
 		if (config.ActiveWordPreference != null)
 		{
-			foreach (WordCategories attr in config.ActiveWordPreference.GetAttributes())
+			foreach (var attr in config.ActiveWordPreference.GetAttributes())
 				preferenceReorderList.AddActive(new PreferenceItem(attr, WordPreference.GetName(attr)));
 		}
 
 		if (config.InactiveWordPreference != null)
 		{
-			foreach (WordCategories attr in config.InactiveWordPreference.GetAttributes())
+			foreach (var attr in config.InactiveWordPreference.GetAttributes())
 				preferenceReorderList.AddInactive(new PreferenceItem(attr, WordPreference.GetName(attr)));
 		}
 	}
@@ -200,7 +200,7 @@ public partial class ConfigWindow : Window
 		try
 		{
 			// FIXME: 프로그램 설정을 저장하면 색 강조 설정이 초기화됨(날라감). 그 반대도 마찬가지.
-			Settings config = Settings.Default;
+			var config = Settings.Default;
 
 			// 단어 검색
 			config.EndWordEnabled = conf.EndWordEnabled;

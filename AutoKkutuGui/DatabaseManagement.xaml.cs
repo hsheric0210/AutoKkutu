@@ -111,7 +111,7 @@ public partial class DatabaseManagement : Window
 
 	private WordFlags GetBatchAddWordDatabaseAttributes()
 	{
-		WordFlags flags = WordFlags.None;
+		var flags = WordFlags.None;
 
 		// 한방 단어
 		if (Batch_EndWord.IsChecked ?? false)
@@ -158,7 +158,7 @@ public partial class DatabaseManagement : Window
 
 	private BatchJobOptions GetBatchWordJobFlags()
 	{
-		BatchJobOptions mode = BatchJobOptions.None;
+		var mode = BatchJobOptions.None;
 
 		// Remove
 		if (Batch_Remove.IsChecked ?? false)

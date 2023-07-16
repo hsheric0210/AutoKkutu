@@ -39,7 +39,7 @@ public partial class Main
 			Log.Information("Disposed previous facade.");
 		}
 
-		if (!ServerConfig.TryGetServer(serverHost, out ServerInfo serverInfo))
+		if (!ServerConfig.TryGetServer(serverHost, out var serverInfo))
 		{
 			Log.Warning(I18n.Main_UnsupportedURL, serverHost);
 			return;

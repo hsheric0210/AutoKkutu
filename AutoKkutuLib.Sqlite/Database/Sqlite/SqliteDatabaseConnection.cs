@@ -26,7 +26,7 @@ public sealed class SqliteDatabaseConnection : AbstractDatabaseConnection
 		try
 		{
 			// Open the connection
-			SqliteConnection nativeConnection = SqliteDatabaseHelper.OpenConnection(connectionString);
+			var nativeConnection = SqliteDatabaseHelper.OpenConnection(connectionString);
 			var connection = new SqliteDatabaseConnection(nativeConnection);
 			connection.query = new SqliteQueryFactory(connection);
 

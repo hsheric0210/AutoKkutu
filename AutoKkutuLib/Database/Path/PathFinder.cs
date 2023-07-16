@@ -91,7 +91,7 @@ public class PathFinder
 
 		stopWatch.Stop();
 
-		IImmutableList<PathObject> availableWordList = pathFilter.FilterPathList(totalWordList, parameter.ReuseAlreadyUsed);
+		var availableWordList = pathFilter.FilterPathList(totalWordList, parameter.ReuseAlreadyUsed);
 		// If there's no word found (or all words was filtered out)
 		if (availableWordList.Count == 0)
 		{

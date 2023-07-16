@@ -52,7 +52,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		{
 			try
 			{
-				using FileStream stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+				using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 				config = (SeleniumConfigDto?)serializer.Deserialize(stream)!;
 			}
 			catch (Exception ex)
@@ -64,7 +64,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		{
 			try
 			{
-				using FileStream stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+				using var stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 				serializer.Serialize(stream, config);
 			}
 			catch (Exception ex)
@@ -277,7 +277,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 	private static IntPtr GetHwnd(UndetectedChromeDriver driver)
 	{
-		FieldInfo? field = typeof(UndetectedChromeDriver).GetField("_process", BindingFlags.NonPublic | BindingFlags.Instance);
+		var field = typeof(UndetectedChromeDriver).GetField("_process", BindingFlags.NonPublic | BindingFlags.Instance);
 		if (field == null)
 			throw new MissingFieldException("_process field is not available.");
 

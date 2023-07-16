@@ -73,7 +73,7 @@ public class NodeManager
 
 	public void LoadNodeLists(AbstractDatabaseConnection connection)
 	{
-		NodeListQuery query = connection.Query.ListNode();
+		var query = connection.Query.ListNode();
 		AttackNodes = query.Execute(DatabaseConstants.AttackNodeIndexTableName);
 		EndNodes = query.Execute(DatabaseConstants.EndNodeIndexTableName);
 		ReverseAttackNodes = query.Execute(DatabaseConstants.ReverseAttackNodeIndexTableName);
@@ -102,7 +102,7 @@ public class NodeManager
 		if (string.IsNullOrEmpty(word))
 			throw new ArgumentException(null, nameof(word));
 
-		WordFlags flags = WordFlags.None;
+		var flags = WordFlags.None;
 
 		// 한방 노드
 		CalcWordFlagsInternal(word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags);

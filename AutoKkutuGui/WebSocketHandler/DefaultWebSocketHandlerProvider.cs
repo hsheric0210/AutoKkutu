@@ -10,7 +10,7 @@ public class DefaultWebSocketHandlerProvider : IWebSocketHandlerProvider
 
 	public DefaultWebSocketHandlerProvider(BrowserBase browser)
 	{
-		ImmutableList<IWebSocketHandler>.Builder builder = ImmutableList.CreateBuilder<IWebSocketHandler>();
+		var builder = ImmutableList.CreateBuilder<IWebSocketHandler>();
 		builder.Add(new BasicWebSocketHandler(browser));
 		builder.Add(new RioDecodeWebSocketHandler(browser));
 		handlers = builder.ToImmutable();

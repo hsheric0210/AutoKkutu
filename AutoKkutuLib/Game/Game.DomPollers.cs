@@ -10,7 +10,7 @@ public partial class Game
 	private void StartPollers()
 	{
 		pollerCancel = new CancellationTokenSource();
-		CancellationToken token = pollerCancel.Token;
+		var token = pollerCancel.Token;
 
 		mainPoller = new Task(async () => await ConditionlessDomPoller(PollGameProgress, token, "Game-Progress poller", looseInterval), token);
 		mainPoller.Start();
@@ -72,7 +72,7 @@ public partial class Game
 		if (string.IsNullOrWhiteSpace(word))
 			return;
 
-		TurnErrorCode errorCode = TurnErrorCode.NotFound;
+		var errorCode = TurnErrorCode.NotFound;
 		if (word.Contains(':'))
 		{
 			var details = word[..word.IndexOf(':')];
@@ -118,7 +118,7 @@ public partial class Game
 
 	private async ValueTask PollGameMode()
 	{
-		GameMode gameMode = await domHandler.GetGameMode();
+		var gameMode = await domHandler.GetGameMode();
 		if (gameMode != GameMode.None)
 			NotifyGameMode(gameMode, true);
 	}
