@@ -1,6 +1,4 @@
-﻿using static Slapper.AutoMapper;
-
-namespace AutoKkutuLib.Browser;
+﻿namespace AutoKkutuLib.Browser;
 
 /// <summary>
 /// 브라우저 스크립트 내 타입 이름 및 문자열들의 랜덤화를 담당합니다.

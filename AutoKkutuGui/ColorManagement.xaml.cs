@@ -10,10 +10,12 @@ namespace AutoKkutuGui;
 /// </summary>
 public partial class ColorManagement : Window
 {
-	public ColorManagement(ColorPreference config)
+	private Preference pref;
+	public ColorManagement(Preference config)
 	{
 		if (config == null)
 			throw new ArgumentNullException(nameof(config));
+		pref = config;
 
 		InitializeComponent();
 		EndWordColor.SelectedColor = config.EndWordColor;
@@ -25,31 +27,33 @@ public partial class ColorManagement : Window
 
 	private void OnSubmit(object sender, RoutedEventArgs e)
 	{
-		var newPref = new ColorPreference
-		{
-			EndWordColor = EndWordColor.SelectedColor ?? ColorPreference.DefaultEndWordColor,
-			AttackWordColor = AttackWordColor.SelectedColor ?? ColorPreference.DefaultAttackWordColor,
-			MissionWordColor = MissionWordColor.SelectedColor ?? ColorPreference.DefaultMissionWordColor,
-			EndMissionWordColor = EndMissionWordColor.SelectedColor ?? ColorPreference.DefaultEndMissionWordColor,
-			AttackMissionWordColor = AttackMissionWordColor.SelectedColor ?? ColorPreference.DefaultAttackMissionWordColor,
-		};
+		/*
+			var newPref = pref with
+			{
+				EndWordColor = EndWordColor.SelectedColor ?? ColorPreference.DefaultEndWordColor,
+				AttackWordColor = AttackWordColor.SelectedColor ?? ColorPreference.DefaultAttackWordColor,
+				MissionWordColor = MissionWordColor.SelectedColor ?? ColorPreference.DefaultMissionWordColor,
+				EndMissionWordColor = EndMissionWordColor.SelectedColor ?? ColorPreference.DefaultEndMissionWordColor,
+				AttackMissionWordColor = AttackMissionWordColor.SelectedColor ?? ColorPreference.DefaultAttackMissionWordColor,
+			};
 
-		try
-		{
-			Settings config = Settings.Default;
-			config.EndWordColor = newPref.EndWordColor.ToDrawingColor();
-			config.AttackWordColor = newPref.AttackWordColor.ToDrawingColor();
-			config.MissionWordColor = newPref.MissionWordColor.ToDrawingColor();
-			config.EndMissionWordColor = newPref.EndMissionWordColor.ToDrawingColor();
-			config.AttackMissionWordColor = newPref.AttackMissionWordColor.ToDrawingColor();
-			Settings.Default.Save();
-		}
-		catch (Exception ex)
-		{
-			Log.Error(ex, "Failed to save the configuration.");
-		}
+			try
+			{
+				Settings config = Settings.Default;
+				config.EndWordColor = newPref.EndWordColor.ToDrawingColor();
+				config.AttackWordColor = newPref.AttackWordColor.ToDrawingColor();
+				config.MissionWordColor = newPref.MissionWordColor.ToDrawingColor();
+				config.EndMissionWordColor = newPref.EndMissionWordColor.ToDrawingColor();
+				config.AttackMissionWordColor = newPref.AttackMissionWordColor.ToDrawingColor();
+				Settings.Default.Save();
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Failed to save the configuration.");
+			}
 
-		Main.ColorPreference = newPref;
+			Main.ColorPreference = newPref;
+			*/
 		Close();
 	}
 

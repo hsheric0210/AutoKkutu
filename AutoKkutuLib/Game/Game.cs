@@ -115,6 +115,8 @@ public partial class Game : IGame
 		=> domHandler.AppendChat(textUpdate, sendEvents, key, shift, hangul, upDelay);
 
 	public void ClickSubmitButton() => domHandler.ClickSubmit();
+
+	public void FocusChat() => domHandler.FocusChat();
 	#endregion
 
 	public override string ToString() => $"Game{{DOM-Poller: {domHandler.HandlerName}, WS-Sniffer: {webSocketHandler?.HandlerName}, MainPoller: {mainPoller?.Id}}}";

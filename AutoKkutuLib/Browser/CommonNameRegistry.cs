@@ -214,5 +214,7 @@ public enum CommonNameRegistry
 
 	ChatBtnCache,
 
-	ShiftState
+	ShiftState,
+
+	FocusChat
 }

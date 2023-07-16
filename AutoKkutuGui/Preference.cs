@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib;
-using AutoKkutuLib.Game.Enterer;
 using System;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace AutoKkutuGui;
 
@@ -37,7 +37,7 @@ public sealed class Preference : IEquatable<Preference?>
 
 	public bool AutoEnterInputSimulateJavaScriptSendKeys { get; set; } = true;
 
-	public EntererMode AutoEnterMode { get; set; }
+	public string AutoEnterMode { get; set; }
 
 	public bool AutoFixEnabled { get; set; } = true;
 
@@ -77,6 +77,31 @@ public sealed class Preference : IEquatable<Preference?>
 
 	public bool SelfAntiCheat { get; set; }
 
+	public Color EndWordColor
+	{
+		get; set;
+	} = Color.FromRgb(0xFF, 0x11, 0x00);
+
+	public Color AttackWordColor
+	{
+		get; set;
+	} = Color.FromRgb(0xFF, 0x80, 0x00);
+
+	public Color MissionWordColor
+	{
+		get; set;
+	} = Color.FromRgb(0x40, 0xFF, 0x40);
+
+	public Color EndMissionWordColor
+	{
+		get; set;
+	} = Color.FromRgb(0x20, 0xC0, 0xA8);
+
+	public Color AttackMissionWordColor
+	{
+		get; set;
+	} = Color.FromRgb(0xFF, 0xFF, 0x40);
+
 	public WordPreference ActiveWordPreference { get; set; } = new WordPreference(WordPreference.GetDefault());
 
 	public WordPreference InactiveWordPreference { get; set; } = new WordPreference();
@@ -105,7 +130,7 @@ public sealed class Preference : IEquatable<Preference?>
 		AutoEnterDelayPerChar = (config.DelayInMillis > 0 && config.DelayPerCharEnabled) ? config.DelayInMillis : config.DelayPerChar; // Backward compatibility
 		AutoEnterDelayPerCharRandom = config.DelayPerCharRandom;
 
-		AutoEnterMode = (EntererMode)config.AutoEnterMode;
+		AutoEnterMode = config.AutoEnterMode;
 		AutoEnterDelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
 		AutoEnterInputSimulateJavaScriptSendKeys = config.AutoEnterInputSimulateJavaScriptSendKeys;
 
@@ -132,6 +157,12 @@ public sealed class Preference : IEquatable<Preference?>
 		LogChatting = config.LogChatting;
 		SelfAntiCheat = config.SelfAntiCheat;
 
+		EndWordColor = config.EndWordColor.ToMediaColor();
+		AttackWordColor = config.AttackWordColor.ToMediaColor();
+		MissionWordColor = config.MissionWordColor.ToMediaColor();
+		EndMissionWordColor = config.EndMissionWordColor.ToMediaColor();
+		AttackMissionWordColor = config.AttackMissionWordColor.ToMediaColor();
+
 		// 단어 우선순외
 		ActiveWordPreference = config.ActiveWordPreference;
 		InactiveWordPreference = config.InactiveWordPreference;
@@ -139,7 +170,7 @@ public sealed class Preference : IEquatable<Preference?>
 
 	public override bool Equals(object? obj) => Equals(obj as Preference);
 
-	public bool Equals(Preference? other) => other is not null && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && AutoEnterDelayEnabled == other.AutoEnterDelayEnabled && AutoEnterStartDelay == other.AutoEnterStartDelay && AutoEnterStartDelayRandom == other.AutoEnterStartDelayRandom && AutoEnterDelayPerChar == other.AutoEnterDelayPerChar && AutoEnterDelayPerCharRandom == other.AutoEnterDelayPerCharRandom && AutoEnterDelayStartAfterWordEnterEnabled == other.AutoEnterDelayStartAfterWordEnterEnabled && AutoEnterMode == other.AutoEnterMode && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
+	public bool Equals(Preference? other) => other is not null && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && AutoEnterDelayEnabled == other.AutoEnterDelayEnabled && AutoEnterStartDelay == other.AutoEnterStartDelay && AutoEnterStartDelayRandom == other.AutoEnterStartDelayRandom && AutoEnterDelayPerChar == other.AutoEnterDelayPerChar && AutoEnterDelayPerCharRandom == other.AutoEnterDelayPerCharRandom && AutoEnterDelayStartAfterWordEnterEnabled == other.AutoEnterDelayStartAfterWordEnterEnabled && AutoEnterInputSimulateJavaScriptSendKeys == other.AutoEnterInputSimulateJavaScriptSendKeys && AutoEnterMode == other.AutoEnterMode && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EndWordColor.Equals(other.EndWordColor) && AttackWordColor.Equals(other.AttackWordColor) && MissionWordColor.Equals(other.MissionWordColor) && EndMissionWordColor.Equals(other.EndMissionWordColor) && AttackMissionWordColor.Equals(other.AttackMissionWordColor) && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
 
 	public override int GetHashCode()
 	{
@@ -156,6 +187,7 @@ public sealed class Preference : IEquatable<Preference?>
 		hash.Add(AutoEnterDelayPerChar);
 		hash.Add(AutoEnterDelayPerCharRandom);
 		hash.Add(AutoEnterDelayStartAfterWordEnterEnabled);
+		hash.Add(AutoEnterInputSimulateJavaScriptSendKeys);
 		hash.Add(AutoEnterMode);
 		hash.Add(AutoFixEnabled);
 		hash.Add(FixDelayEnabled);
@@ -174,6 +206,11 @@ public sealed class Preference : IEquatable<Preference?>
 		hash.Add(DetectInputLogging);
 		hash.Add(LogChatting);
 		hash.Add(SelfAntiCheat);
+		hash.Add(EndWordColor);
+		hash.Add(AttackWordColor);
+		hash.Add(MissionWordColor);
+		hash.Add(EndMissionWordColor);
+		hash.Add(AttackMissionWordColor);
 		hash.Add(ActiveWordPreference);
 		hash.Add(InactiveWordPreference);
 		return hash.ToHashCode();

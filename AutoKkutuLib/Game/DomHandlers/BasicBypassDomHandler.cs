@@ -8,7 +8,7 @@ public sealed class BasicBypassDomHandler : BasicDomHandler
 {
 	private readonly BrowserRandomNameMapping mapping;
 
-	public override string HandlerName => "BasicBypassHandler";
+	public override string HandlerName => "BasicBypassDomHandler";
 	public override string HandlerDetails => "Basic DOM handler with fake DOM element bypass";
 
 	public BasicBypassDomHandler(BrowserBase browser) : base(browser)
@@ -25,7 +25,7 @@ public sealed class BasicBypassDomHandler : BasicDomHandler
 		mapping = names;
 	}
 
-	public override async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
+	public override async ValueTask RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.FunctionsRegistered)))
 		{

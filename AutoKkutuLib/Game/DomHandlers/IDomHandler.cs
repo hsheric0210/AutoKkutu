@@ -21,6 +21,7 @@ public interface IDomHandler
 	ValueTask<float> GetTurnTime();
 	ValueTask<string?> GetUnsupportedWord();
 	ValueTask<IList<string>?> GetWordInHistories();
-	Task RegisterInGameFunctions(ISet<int> alreadyRegistered);
+	ValueTask RegisterInGameFunctions(ISet<int> alreadyRegistered);
 	void UpdateChat(string input);
+	void FocusChat();
 }

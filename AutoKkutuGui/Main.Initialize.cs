@@ -1,18 +1,18 @@
-﻿using AutoKkutuLib;
+﻿using AutoKkutuGui.Enterer;
 using AutoKkutuLib.Browser;
-using AutoKkutuLib.Database;
-using AutoKkutuLib.Game.DomHandlers;
-using AutoKkutuLib.Game.WebSocketHandlers;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Configuration;
 
 namespace AutoKkutuGui;
 public partial class Main
 {
-	private static Main? NewInstance()
+	/// <summary>
+	/// 새로운 <c>AutoKkutu</c> 인스턴스를 생성합니다.
+	/// 만약 생성에 실패할 경우, <c>AggregateException</c>을 발생시킵니다.
+	/// 이 때 생성된 InvalidOperationException는 복구 불가능한 오류를 나태니기에 catch해서는 안 됩니다.
+	/// </summary>
+	/// <exception cref="AggregateException"><c>AutoKkutu</c> 개체 생성 중 오류 발생했을 때 발생합니다.</exception>
+	private static Main NewInstance()
 	{
 		try
 		{
@@ -20,28 +20,25 @@ public partial class Main
 			config.Reload();
 			var prefs = new Preference(config);
 
-			var colorPrefs = new ColorPreference
-			{
-				EndWordColor = config.EndWordColor.ToMediaColor(),
-				AttackWordColor = config.AttackWordColor.ToMediaColor(),
-				MissionWordColor = config.MissionWordColor.ToMediaColor(),
-				EndMissionWordColor = config.EndMissionWordColor.ToMediaColor(),
-				AttackMissionWordColor = config.AttackMissionWordColor.ToMediaColor()
-			};
-
 			var serverConfig = new ServerConfig(ServerConfigFile);
 
-			// Initialize browser
-			var browser = InitializeBrowser();
-			var (domHandlers, webSocketHandlers) = LoadHandlers(browser);
+			BrowserBase browser = InitializeBrowser();
 
-			return new Main(prefs, colorPrefs, serverConfig, browser);
+			var plugin = new PluginLoader(PluginFolder, browser);
+			var entererMan = new EntererManager(plugin.EntererProviders.Add(new DefaultEntererProvider()));
+			var domHandlerMan = new DomHandlerManager(plugin.DomHandlerProviders.Add(new DefaultDomHandlerProvider(browser)));
+			var webSocketMan = new WebSocketHandlerManager(plugin.WebSocketHandlerProviders.Add(new DefaultWebSocketHandlerProvider(browser)));
+
+			var inst = new Main(prefs, serverConfig, browser, entererMan, domHandlerMan, webSocketMan);
+			browser.PageLoaded += inst.Browser_PageLoaded;
+			browser.PageError += inst.Browser_PageError;
+			return inst;
 		}
 		catch (Exception e)
 		{
 			Log.Error(e, "Initialization failure");
+			throw new AggregateException("AutoKkutu instance initialization failure", e);
 		}
-		return null;
 	}
 
 	/// <summary>
@@ -57,26 +54,6 @@ public partial class Main
 #else
 		var browser = new AutoKkutuLib.CefSharp.CefSharpBrowser();
 #endif
-		browser.PageLoaded += OnPageLoaded;
-		browser.PageError += Browser_PageError;
-
 		return browser;
-	}
-
-	private static (IImmutableDictionary<string, IDomHandler>, IImmutableDictionary<string, IWebSocketHandler>) LoadHandlers(BrowserBase browser)
-	{
-		var domHandlerMapping = ImmutableDictionary.CreateBuilder<string, IDomHandler>();
-		var webSocketHandlerMapping = ImmutableDictionary.CreateBuilder<string, IWebSocketHandler>();
-
-		void AddDomHandler(IDomHandler handler) => domHandlerMapping.Add(handler.HandlerName, handler);
-		void AddWebSocketHandler(IWebSocketHandler handler) => webSocketHandlerMapping.Add(handler.HandlerName, handler);
-
-		AddDomHandler(new BasicDomHandler(browser));
-		AddDomHandler(new BasicBypassDomHandler(browser));
-
-		AddWebSocketHandler(new BasicWebSocketHandler(browser));
-		AddWebSocketHandler(new RioDecodeWebSocketHandler(browser));
-
-		return (domHandlerMapping.ToImmutable(), webSocketHandlerMapping.ToImmutable());
 	}
 }

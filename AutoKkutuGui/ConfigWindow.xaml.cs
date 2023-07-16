@@ -15,22 +15,24 @@ namespace AutoKkutuGui;
 /// </summary>
 public partial class ConfigWindow : Window
 {
-	private readonly ChoosableReorderableList<PreferenceItem> PreferenceReorderList;
+	private readonly ChoosableReorderableList<PreferenceItem> preferenceReorderList;
 
-	private EntererMode GetAutoEnterMode()
+	public event EventHandler<PreferenceUpdateEventArgs>? PreferenceUpdate;
+
+	private string GetAutoEnterMode()
 	{
 		if (AutoEnterInstant.IsChecked ?? false)
-			return EntererMode.EnterImmediately;
+			return DelayedInstantEnterer.Name;
 		if (AutoEnterInputSimulateJavaScript.IsChecked ?? false)
-			return EntererMode.SimulateInputJavaScript;
+			return JavaScriptInputSimulator.Name;
 		if (AutoEnterInputSimulateWin32.IsChecked ?? false)
-			return EntererMode.SimulateInputWin32;
+			return Win32InputSimulator.Name;
 		if (AutoEnterInputSimulateArduino.IsChecked ?? false)
-			return EntererMode.SimulateInputArduino;
+			return "ArduinoInputSimulator";
 		throw new InvalidOperationException("None of the AutoEnter options are selected");
 	}
 
-	private void SetAutoEnterMode(EntererMode mode)
+	private void SetAutoEnterMode(string mode)
 	{
 		// Reset selection
 		AutoEnterInstant.IsChecked = false;
@@ -40,16 +42,16 @@ public partial class ConfigWindow : Window
 
 		switch (mode)
 		{
-			case EntererMode.EnterImmediately:
+			case DelayedInstantEnterer.Name:
 				AutoEnterInstant.IsChecked = true;
 				break;
-			case EntererMode.SimulateInputJavaScript:
+			case JavaScriptInputSimulator.Name:
 				AutoEnterInputSimulateJavaScript.IsChecked = true;
 				break;
-			case EntererMode.SimulateInputWin32:
+			case Win32InputSimulator.Name:
 				AutoEnterInputSimulateWin32.IsChecked = true;
 				break;
-			case EntererMode.SimulateInputArduino:
+			case "ArduinoInputSimulator":
 				AutoEnterInputSimulateArduino.IsChecked = true;
 				break;
 			default:
@@ -107,18 +109,18 @@ public partial class ConfigWindow : Window
 		LogChatting.IsChecked = config.LogChatting;
 		SelfAntiCheat.IsChecked = config.SelfAntiCheat;
 
-		PreferenceReorderList = new ChoosableReorderableList<PreferenceItem>(new ChoosableReorderableListUIElements(InactivePreferences, ActivePreferences, ActivatePreferenceButton, DeactivatePreferenceButton, MoveUpPreferenceButton, MoveDownPreferenceButton), "Name");
+		preferenceReorderList = new ChoosableReorderableList<PreferenceItem>(new ChoosableReorderableListUIElements(InactivePreferences, ActivePreferences, ActivatePreferenceButton, DeactivatePreferenceButton, MoveUpPreferenceButton, MoveDownPreferenceButton), "Name");
 
 		if (config.ActiveWordPreference != null)
 		{
 			foreach (WordCategories attr in config.ActiveWordPreference.GetAttributes())
-				PreferenceReorderList.AddActive(new PreferenceItem(attr, WordPreference.GetName(attr)));
+				preferenceReorderList.AddActive(new PreferenceItem(attr, WordPreference.GetName(attr)));
 		}
 
 		if (config.InactiveWordPreference != null)
 		{
 			foreach (WordCategories attr in config.InactiveWordPreference.GetAttributes())
-				PreferenceReorderList.AddInactive(new PreferenceItem(attr, WordPreference.GetName(attr)));
+				preferenceReorderList.AddInactive(new PreferenceItem(attr, WordPreference.GetName(attr)));
 		}
 	}
 
@@ -191,8 +193,8 @@ public partial class ConfigWindow : Window
 			LogChatting = LogChatting.IsChecked ?? false,
 			SelfAntiCheat = SelfAntiCheat.IsChecked ?? false,
 
-			InactiveWordPreference = new WordPreference(PreferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
-			ActiveWordPreference = new WordPreference(PreferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
+			InactiveWordPreference = new WordPreference(preferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
+			ActiveWordPreference = new WordPreference(preferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
 		};
 
 		try
@@ -215,7 +217,7 @@ public partial class ConfigWindow : Window
 			config.DelayPerChar = conf.AutoEnterDelayPerChar;
 			config.DelayPerCharRandom = conf.AutoEnterDelayPerCharRandom;
 
-			config.AutoEnterMode = (int)conf.AutoEnterMode;
+			config.AutoEnterMode = conf.AutoEnterMode;
 			config.DelayStartAfterWordEnterEnabled = conf.AutoEnterDelayStartAfterWordEnterEnabled;
 			config.AutoEnterInputSimulateJavaScriptSendKeys = conf.AutoEnterInputSimulateJavaScriptSendKeys;
 
@@ -259,7 +261,7 @@ public partial class ConfigWindow : Window
 			Log.Error(ex, "Failed to save the configuration.");
 		}
 
-		Main.Prefs = conf;
+		PreferenceUpdate?.Invoke(this, new PreferenceUpdateEventArgs(conf));
 		Close();
 	}
 
@@ -268,7 +270,7 @@ public partial class ConfigWindow : Window
 	//https://stackoverflow.com/a/10238715
 	private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
 	{
-		Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+		Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
 		e.Handled = true;
 	}
 }
@@ -296,4 +298,10 @@ public sealed class PreferenceItem : IEquatable<PreferenceItem>
 	public override bool Equals(object? obj) => obj is PreferenceItem other && Equals(other);
 
 	public bool Equals(PreferenceItem? other) => other != null && Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) && NodeType == other.NodeType;
+}
+
+public class PreferenceUpdateEventArgs : EventArgs
+{
+	public Preference Preference { get; }
+	public PreferenceUpdateEventArgs(Preference preference) => Preference = preference;
 }

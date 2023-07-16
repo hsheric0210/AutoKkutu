@@ -63,9 +63,9 @@ public record GuiPathObject
 		if (pathObject is null)
 			throw new ArgumentNullException(nameof(pathObject));
 
-		this.Underlying = pathObject;
+		Underlying = pathObject;
 
-		ColorPreference colorPref = Main.ColorPreference;
+		var prefs = Main.GetInstance().Preference;
 
 		WordCategories flags = pathObject.Categories;
 		MakeEndAvailable = !flags.HasFlag(WordCategories.EndWord);
@@ -95,30 +95,30 @@ public record GuiPathObject
 			case 0:
 				// End mission word
 				tooltipPrefix = I18n.PathTooltip_EndMission;
-				color = colorPref.EndMissionWordColor;
+				color = prefs.EndMissionWordColor;
 				break;
 
 			case 1:
 				// End word
 				tooltipPrefix = I18n.PathTooltip_End;
-				color = colorPref.EndWordColor;
+				color = prefs.EndWordColor;
 				break;
 
 			case 2:
 				// Attack mission word
 				tooltipPrefix = I18n.PathTooltip_AttackMission;
-				color = colorPref.AttackMissionWordColor;
+				color = prefs.AttackMissionWordColor;
 				break;
 
 			case 3:
 				// Attack word
 				tooltipPrefix = I18n.PathTooltip_Attack;
-				color = colorPref.AttackWordColor;
+				color = prefs.AttackWordColor;
 				break;
 
 			case 4:
 				// Mission word
-				color = colorPref.MissionWordColor;
+				color = prefs.MissionWordColor;
 				tooltipPrefix = I18n.PathTooltip_Mission;
 				break;
 

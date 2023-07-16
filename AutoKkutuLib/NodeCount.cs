@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace AutoKkutuLib;
+﻿namespace AutoKkutuLib;
 public struct NodeCount : IEquatable<NodeCount>
 {
 	public int TotalCount { get; private set; }

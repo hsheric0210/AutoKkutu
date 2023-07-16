@@ -182,6 +182,12 @@
         }
     }
 
+    if (!___focusChat___) {
+        ___focusChat___ = function () {
+            ___getChatBox___().focus()
+        }
+    }
+
     ___funcRegistered___ = true;
     return true;
 })();

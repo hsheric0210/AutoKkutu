@@ -31,6 +31,7 @@ public interface IGame : IDisposable
 
 	void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay);
 	void ClickSubmitButton();
+	void FocusChat();
 	bool HasSameDomHandler(IDomHandler otherHandler);
 	bool HasSameWebSocketHandler(IWebSocketHandler otherHandler);
 	bool IsPathExpired(PathDetails path);

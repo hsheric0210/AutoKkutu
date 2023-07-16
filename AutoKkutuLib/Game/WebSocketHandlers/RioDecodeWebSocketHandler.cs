@@ -1,9 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Properties;
-using Serilog;
-using System.Collections.Immutable;
-using System.Text.Json.Nodes;
-using System.Transactions;
 
 namespace AutoKkutuLib.Game.WebSocketHandlers;
 
@@ -15,9 +11,8 @@ namespace AutoKkutuLib.Game.WebSocketHandlers;
 /// </summary>
 public class RioDecodeWebSocketHandler : BasicWebSocketHandler
 {
-	public virtual string HandlerName => "RioDecodeHandler";
-	public virtual string HandlerDetails => "Basic WebSocket handler with KkutuIO turnEnd packet decoder";
-
+	public override string HandlerName => "RioDecodeWebSocketHandler";
+	public override string HandlerDetails => "Basic WebSocket handler with KkutuIO turnEnd packet decoder";
 
 	public RioDecodeWebSocketHandler(BrowserBase browser) : base(browser)
 	{

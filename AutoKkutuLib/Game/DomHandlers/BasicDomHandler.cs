@@ -6,7 +6,7 @@ namespace AutoKkutuLib.Game.DomHandlers;
 
 public class BasicDomHandler : IDomHandler
 {
-	public virtual string HandlerName => "BasicHandler";
+	public virtual string HandlerName => "BasicDomHandler";
 	public virtual string HandlerDetails => "JJoriping-compatible basic DOM Handler";
 
 	public BrowserBase Browser { get; }
@@ -35,6 +35,7 @@ public class BasicDomHandler : IDomHandler
 		names.GenerateScriptType("___clickSubmit___", CommonNameRegistry.ClickSubmit);
 		names.GenerateScriptType("___getChatBox___", CommonNameRegistry.GetChatBox);
 		names.GenerateScriptType("___appendChat___", CommonNameRegistry.AppendChat);
+		names.GenerateScriptType("___focusChat___", CommonNameRegistry.FocusChat);
 		names.GenerateScriptType("___funcRegistered___", CommonNameRegistry.FunctionsRegistered);
 
 		// cache properties
@@ -121,11 +122,13 @@ public class BasicDomHandler : IDomHandler
 
 	public virtual void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay)
 		=> Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.AppendChat)}('{textUpdate}',{(sendEvents ? "1" : "0")},'{key}',{(shift ? "1" : "0")},{(hangul ? "1" : "0")},{upDelay})", errorMessage: nameof(AppendChat));
+
+	public virtual void FocusChat() => Browser.ExecuteJavaScript(GetScriptNoArgFunctionName(CommonNameRegistry.FocusChat), errorMessage: nameof(FocusChat));
 	#endregion
 
 	protected string GetScriptNoArgFunctionName(CommonNameRegistry id) => Browser.GetScriptTypeName(id) + "()";
 
-	public virtual async Task RegisterInGameFunctions(ISet<int> alreadyRegistered)
+	public virtual async ValueTask RegisterInGameFunctions(ISet<int> alreadyRegistered)
 	{
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.FunctionsRegistered)))
 		{

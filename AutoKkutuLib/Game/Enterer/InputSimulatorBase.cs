@@ -5,18 +5,20 @@ using System.Collections.Immutable;
 namespace AutoKkutuLib.Game.Enterer;
 public abstract class InputSimulatorBase : EntererBase
 {
-	public InputSimulatorBase(EntererMode mode, IGame game) : base(mode, game)
+	public InputSimulatorBase(string name, IGame game) : base(name, game)
 	{
 	}
 
-	protected abstract Task AppendAsync(EnterOptions options, InputCommand input);
+	protected abstract ValueTask AppendAsync(EnterOptions options, InputCommand input);
 	protected virtual void SimulationStarted() { }
 	protected virtual void SimulationFinished() { }
 
-	protected override async Task SendAsync(EnterInfo info)
+	protected override async ValueTask SendAsync(EnterInfo info)
 	{
 		isPreinputSimInProg = info.HasFlag(PathFlags.PreSearch);
 		IsPreinputFinished = false;
+
+		SimulationStarted();
 
 		var content = info.Content;
 		var valid = true;
@@ -56,5 +58,7 @@ public abstract class InputSimulatorBase : EntererBase
 		}
 
 		TrySubmit(valid);
+
+		SimulationFinished();
 	}
 }

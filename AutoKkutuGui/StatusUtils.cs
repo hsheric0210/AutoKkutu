@@ -54,7 +54,7 @@ public static class StatusUtils
 				image = "searching";
 				break;
 
-			case StatusMessage.AutoEntered:
+			case StatusMessage.EnterFinished:
 				color = ColorDefinitions.NormalColor;
 				explain = "단어 자동 입력됨: {0}";
 				image = "ok";
@@ -150,7 +150,7 @@ public enum StatusMessage
 	/// <summary>
 	/// 단어 자동 입력됨
 	/// </summary>
-	AutoEntered,
+	EnterFinished,
 
 	/// <summary>
 	/// 단어를 찾을 수 없음

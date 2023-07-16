@@ -61,11 +61,20 @@ namespace AutoKkutuGui.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to &lt;!-- If you messed up with this file and want to restore defaults, just delete and re-run the program. --&gt;
+        ///&lt;servers&gt;
+        ///    &lt;default&gt;
+        ///        &lt;!-- Supported DOM Handlers: BasisHandler, BasicBypassHandler --&gt;
+        ///        &lt;domHandler&gt;BasicHandler&lt;/domHandler&gt;
+        ///
+        ///        &lt;!-- Supported WebSocket Handlers: BasicHandler, RioDecodeHandler --&gt;
+        ///        &lt;webSocketHandler&gt;BasicHandler&lt;/webSocketHandler&gt;
+        ///
+        ///        &lt;!-- Supported database types (case insensitive): SQLite, PostgreSQL(postgres, pgsql), MySQL(MariaDB) --&gt;        /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string DefaultServers {
+        internal static string Servers {
             get {
-                return ResourceManager.GetString("DefaultServers", resourceCulture);
+                return ResourceManager.GetString("Servers", resourceCulture);
             }
         }
     }

@@ -3,11 +3,13 @@
 namespace AutoKkutuLib.Game.Enterer;
 public class DelayedInstantEnterer : EntererBase
 {
-	public DelayedInstantEnterer(IGame game) : base(EntererMode.EnterImmediately, game)
+	public const string Name = "DelayedInstant";
+
+	public DelayedInstantEnterer(IGame game) : base(Name, game)
 	{
 	}
 
-	protected override async Task SendAsync(EnterInfo info)
+	protected override async ValueTask SendAsync(EnterInfo info)
 	{
 		var totalDelay = info.GetTotalDelay();
 		if (info.Options.DelayStartAfterCharEnterEnabled)

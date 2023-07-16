@@ -27,6 +27,7 @@ public partial class MainWindow : Window
 	private const string TITLE = "AutoKkutu - Next-gen KKutu-Helper V";
 
 	private readonly Notifier notifier;
+	private readonly Main mainInstance;
 
 	public MainWindow()
 	{
@@ -45,16 +46,18 @@ public partial class MainWindow : Window
 		DatabaseEvents.DatabaseImportStart += OnDatabaseImportStart;
 		DatabaseEvents.DatabaseImportDone += OnDatabaseImportDone;
 
-		Main.PathListUpdated += OnPathListUpdated;
-		Main.BrowserInitialized += OnBrowserFrameLoad;
-		Main.AutoKkutuInitialized += AutoKkutu_Initialized;
-		Main.SearchStateChanged += OnSearchStateChanged;
-		Main.StatusMessageChanged += OnStatusMessageChanged;
-
-		Main.Initialize();
-		Main.AutoKkutu.InputDelayApply += OnEnterDelaying;
-		Main.AutoKkutu.NoPathAvailable += OnPathNotFound;
-		Main.AutoKkutu.AutoEntered += OnAutoEntered;
+		var main = Main.GetInstance();
+		main.PathListUpdated += Main_PathListUpdated;
+		main.BrowserInitialized += Main_BrowserFrameLoad;
+		main.AutoKkutuInitialized += Main_AutoKkutuInitialized;
+		main.SearchStateChanged += Main_SearchStateChanged;
+		main.StatusMessageChanged += Main_StatusMessageChanged;
+		main.NoPathAvailable += Main_PathNotFound;
+		main.AllPathTimeOver += Main_AllPathTimeOver;
+		main.EntererManager.InputDelayApply += EntererManager_EnterDelaying;
+		main.EntererManager.EnterFinished += EntererManager_EnterFinished;
+		mainInstance = main;
+		main.LoadFrontPage();
 
 		notifier = new Notifier(cfg =>
 		{
@@ -62,43 +65,44 @@ public partial class MainWindow : Window
 			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(3), MaximumNotificationCount.FromCount(6));
 			cfg.Dispatcher = Dispatcher;
 			cfg.DisplayOptions.Width = 250;
-			cfg.DisplayOptions.TopMost = true;
 		});
 	}
 
 	/* EVENTS: AutoEnter */
 
-	private void OnEnterDelaying(object? sender, InputDelayEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
-
-	private void OnPathNotFound(object? sender, NoPathAvailableEventArgs args)
+	private void Main_PathNotFound(object? sender, EventArgs args)
 	{
 		notifier.ShowWarning("No path available!");
-		this.UpdateStatusMessage(args.TimeOver ? StatusMessage.AllWordTimeOver : StatusMessage.NotFound, args.RemainingTurnTime);
+		this.UpdateStatusMessage(StatusMessage.NotFound);
 	}
 
-	private void OnAutoEntered(object? sender, AutoEnterEventArgs args)
+	private void Main_AllPathTimeOver(object? sender, AllPathTimeOverEventArgs args)
 	{
-		//notifier.ShowSuccess("Path entered: " + args.Content);
-		this.UpdateStatusMessage(StatusMessage.AutoEntered, args.Content);
+		notifier.ShowWarning($"No path enterable within turn time {args.RemainingTurnTime}ms!");
+		this.UpdateStatusMessage(StatusMessage.AllWordTimeOver);
 	}
+
+	private void EntererManager_EnterDelaying(object? sender, InputDelayEventArgs args) => this.UpdateStatusMessage(StatusMessage.Delaying, args.Delay);
+
+	private void EntererManager_EnterFinished(object? sender, EnterFinishedEventArgs args) => this.UpdateStatusMessage(StatusMessage.EnterFinished, args.Content);
 
 	/* EVENTS: AutoKkutu */
 
-	private void OnPathListUpdated(object? sender, PathListUpdateEventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = args.GuiPathList);
+	private void Main_PathListUpdated(object? sender, PathListUpdateEventArgs args) => Dispatcher.Invoke(() => PathList.ItemsSource = args.GuiPathList);
 
-	private void OnBrowserFrameLoad(object? sender, EventArgs args)
+	private void Main_BrowserFrameLoad(object? sender, EventArgs args)
 	{
 		Dispatcher.Invoke(() =>
 		{
 			// Apply browser frame
-			BrowserContainer.Content = Main.Browser.BrowserControl;
+			BrowserContainer.Content = mainInstance.Browser.BrowserControl;
 
 			// Hide LoadOverlay
 			LoadOverlay.Visibility = Visibility.Hidden;
 		});
 	}
 
-	private void AutoKkutu_Initialized(object? sender, EventArgs args)
+	private void Main_AutoKkutuInitialized(object? sender, AutoKkutuInitializedEventArgs args)
 	{
 		this.UpdateStatusMessage(StatusMessage.Wait);
 		UpdateSearchState(null, false);
@@ -107,15 +111,15 @@ public partial class MainWindow : Window
 			// Update database icon
 			var img = new BitmapImage();
 			img.BeginInit();
-			img.UriSource = new Uri($@"Images\{Main.AutoKkutu.Database.DbType}.png", UriKind.Relative);
+			img.UriSource = new Uri($@"Images\{args.Instance.Database.DbType}.png", UriKind.Relative);
 			img.EndInit();
 			DBLogo.Source = img;
 		});
 	}
 
-	private void OnSearchStateChanged(object? sender, SearchStateChangedEventArgs args) => UpdateSearchState(args.Arguments, args.IsEndWord);
+	private void Main_SearchStateChanged(object? sender, SearchStateChangedEventArgs args) => UpdateSearchState(args.Arguments, args.IsEndWord);
 
-	private void OnStatusMessageChanged(object? sender, StatusMessageChangedEventArgs args) => this.UpdateStatusMessage(args.Status, args.GetFormatterArguments());
+	private void Main_StatusMessageChanged(object? sender, StatusMessageChangedEventArgs args) => this.UpdateStatusMessage(args.Status, args.GetFormatterArguments());
 
 	/* EVENTS: Database */
 
@@ -131,11 +135,11 @@ public partial class MainWindow : Window
 
 	/* EVENT: Hotkeys */
 
-	private void OnToggleDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterDelayEnabled = !config.AutoEnterDelayEnabled, StatusMessage.DelayToggled);
+	private void OnToggleDelay(object? sender, RoutedEventArgs e) => Main.GetInstance().ToggleFeature(config => config.AutoEnterDelayEnabled = !config.AutoEnterDelayEnabled, StatusMessage.DelayToggled);
 
-	private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterDelayEnabled = config.FixDelayEnabled = !config.AutoEnterDelayEnabled, StatusMessage.AllDelayToggled);
+	private void OnToggleAllDelay(object? sender, RoutedEventArgs e) => Main.GetInstance().ToggleFeature(config => config.AutoEnterDelayEnabled = config.FixDelayEnabled = !config.AutoEnterDelayEnabled, StatusMessage.AllDelayToggled);
 
-	private void OnToggleAutoEnter(object? sender, RoutedEventArgs e) => Main.ToggleFeature(config => config.AutoEnterEnabled = !config.AutoEnterEnabled, StatusMessage.AutoEnterToggled);
+	private void OnToggleAutoEnter(object? sender, RoutedEventArgs e) => Main.GetInstance().ToggleFeature(config => config.AutoEnterEnabled = !config.AutoEnterEnabled, StatusMessage.AutoEnterToggled);
 
 	/* EVENTS: UI */
 
@@ -151,7 +155,7 @@ public partial class MainWindow : Window
 		{
 			var clipboard = Clipboard.GetText();
 			if (!string.IsNullOrWhiteSpace(clipboard))
-				Main.SendMessage(clipboard);
+				mainInstance.SendMessage(clipboard);
 		}
 		catch (Exception ex)
 		{
@@ -159,11 +163,11 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(Main.ColorPreference).Show();
+	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(mainInstance.Preference).Show();
 
-	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(Main.AutoKkutu).Show();
+	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(mainInstance.AutoKkutu).Show();
 
-	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => Main.Browser.ShowDevTools();
+	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => mainInstance.Browser.ShowDevTools();
 
 	private void OnPathListContextMenuOpen(object? sender, ContextMenuEventArgs e)
 	{
@@ -215,7 +219,8 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
-		Main.AutoKkutu.Database.MakeAttack(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
+
+		mainInstance.AutoKkutu.Database.MakeAttack(path.Underlying, mainInstance.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -223,7 +228,8 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
-		Main.AutoKkutu.Database.MakeEnd(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
+
+		mainInstance.AutoKkutu.Database.MakeEnd(path.Underlying, mainInstance.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -231,7 +237,8 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
-		Main.AutoKkutu.Database.MakeNormal(path.Underlying, Main.AutoKkutu.Game.CurrentGameMode);
+
+		mainInstance.AutoKkutu.Database.MakeNormal(path.Underlying, mainInstance.AutoKkutu.Game.CurrentGameMode);
 	}
 
 	// TODO: Move these duplicate path list writes to Lib.SpecialPathList
@@ -240,9 +247,10 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
+
 		path.Underlying.Excluded = true;
 		path.Underlying.RemoveQueued = false;
-		PathFilter filter = Main.AutoKkutu.PathFilter;
+		PathFilter filter = mainInstance.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Add(path.Content);
 		filter.InexistentPaths.Remove(path.Content);
 		PathList.Items.Refresh();
@@ -253,9 +261,10 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
+
 		path.Underlying.Excluded = false;
 		path.Underlying.RemoveQueued = false;
-		PathFilter filter = Main.AutoKkutu.PathFilter;
+		PathFilter filter = mainInstance.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Remove(path.Content);
 		filter.InexistentPaths.Remove(path.Content);
 		PathList.Items.Refresh();
@@ -266,9 +275,10 @@ public partial class MainWindow : Window
 		var currentSelected = PathList.SelectedItem;
 		if (currentSelected is not GuiPathObject path)
 			return;
+
 		path.Underlying.Excluded = false;
 		path.Underlying.RemoveQueued = true;
-		PathFilter filter = Main.AutoKkutu.PathFilter;
+		PathFilter filter = mainInstance.AutoKkutu.PathFilter;
 		filter.UnsupportedPaths.Add(path.Content);
 		filter.InexistentPaths.Add(path.Content);
 		PathList.Items.Refresh();
@@ -289,15 +299,22 @@ public partial class MainWindow : Window
 			return;
 		var content = path.Content;
 		Log.Information(I18n.Main_PathSubmitted, content);
-		Main.SendMessage(content);
+		mainInstance.SendMessage(content);
 	}
 
-	private void OnSettingsClick(object? sender, RoutedEventArgs e) => new ConfigWindow(Main.Prefs).Show();
+	private void OnSettingsClick(object? sender, RoutedEventArgs e)
+	{
+		var wnd = new ConfigWindow(mainInstance.Preference);
+		wnd.PreferenceUpdate += ConfigWindow_PreferenceUpdate;
+		wnd.Show();
+	}
+
+	private void ConfigWindow_PreferenceUpdate(object? sender, PreferenceUpdateEventArgs e) => mainInstance.Preference = e.Preference;
 
 	private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
 	{
-		Main.Browser.Load(CurrentURL.Text);
-		//Main.FrameReloaded();
+		mainInstance.Browser.Load(CurrentURL.Text);
+		mainInstance.NewFrameLoaded();
 	}
 
 	private void OnWindowClose(object? sender, CancelEventArgs e)
@@ -305,13 +322,11 @@ public partial class MainWindow : Window
 		Log.Information(I18n.Main_ClosingDBConnection);
 		try
 		{
-			// Dispose 책임 순서 꼬일거같은데
-			Main.AutoKkutu.Database.Dispose();
-			Main.AutoKkutu.Dispose();
+			mainInstance.AutoKkutu?.Dispose();
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Failed to dispose database object.");
+			Log.Error(ex, "Failed to dispose AutoKkutu instance.");
 		}
 		Log.CloseAndFlush();
 	}
@@ -371,7 +386,7 @@ public partial class MainWindow : Window
 	{
 		if (!string.IsNullOrWhiteSpace(ChatField.Text))
 		{
-			Main.SendMessage(ChatField.Text);
+			mainInstance.SendMessage(ChatField.Text);
 			ChatField.Text = "";
 		}
 	}
@@ -408,20 +423,20 @@ public partial class MainWindow : Window
 					gameMode = GameMode.LastAndFirstFree;
 					break;
 				default:
-					gameMode = Main.AutoKkutu.Game.CurrentGameMode;
+					gameMode = mainInstance.AutoKkutu.Game.CurrentGameMode;
 					break;
 
 			}
 
 			var missionChar = SearchMissionChar.Text;
 			if (string.IsNullOrWhiteSpace(missionChar))
-				missionChar = Main.AutoKkutu.Game.CurrentWordCondition?.MissionChar;
+				missionChar = mainInstance.AutoKkutu.Game.CurrentWordCondition?.MissionChar;
 
-			Main.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
+			mainInstance.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
 				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "")),
-				Main.SetupPathFinderFlags(PathFlags.ManualSearch),
-				Main.Prefs.ReturnModeEnabled,
-				Main.Prefs.MaxDisplayedWordCount), Main.Prefs.ActiveWordPreference);
+				mainInstance.SetupPathFinderFlags(PathFlags.ManualSearch),
+				mainInstance.Preference.ReturnModeEnabled,
+				mainInstance.Preference.MaxDisplayedWordCount), mainInstance.Preference.ActiveWordPreference);
 			SearchField.Text = "";
 		}
 	}

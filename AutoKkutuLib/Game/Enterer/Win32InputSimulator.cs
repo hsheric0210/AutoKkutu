@@ -1,14 +1,13 @@
-﻿using AutoKkutuLib.Database;
-using AutoKkutuLib.Hangul;
+﻿using AutoKkutuLib.Hangul;
 using Serilog;
 using System.Collections.Immutable;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace AutoKkutuLib.Game.Enterer;
 public class Win32InputSimulator : InputSimulatorBase
 {
+	public const string Name = "Win32InputSimulate";
+
 	private static readonly IImmutableDictionary<char, int> vkCodeMapping;
 
 	private const int WM_KEYDOWN = 0x0100;
@@ -78,7 +77,7 @@ public class Win32InputSimulator : InputSimulatorBase
 	private bool hangulImeState;
 	private bool shiftState;
 
-	public Win32InputSimulator(IGame game) : base(EntererMode.SimulateInputWin32, game)
+	public Win32InputSimulator(IGame game) : base(Name, game)
 	{
 		hkl = GetKeyboardLayout(0);
 		shiftScanCode = MapVirtualKeyEx(VK_RSHIFT, MAPVK_VK_TO_VSC, hkl);
@@ -90,10 +89,11 @@ public class Win32InputSimulator : InputSimulatorBase
 
 	protected override void SimulationStarted()
 	{
-		// TODO: Focus chat field
+		game.Browser.SetFocus();
+		game.FocusChat();
 	}
 
-	protected async override Task AppendAsync(EnterOptions options, InputCommand input)
+	protected async override ValueTask AppendAsync(EnterOptions options, InputCommand input)
 	{
 		int vkCode;
 		if (input.Type == InputCommandType.ImeCompositionTermination)

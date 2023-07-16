@@ -2,13 +2,12 @@
 using System.Diagnostics;
 
 namespace AutoKkutuLib.Game.Enterer;
-public abstract class EntererBase
+public abstract class EntererBase : IEnterer
 {
-	public event EventHandler<NoPathAvailableEventArgs>? NoPathAvailable;
 	public event EventHandler<InputDelayEventArgs>? InputDelayApply;
-	public event EventHandler<AutoEnterEventArgs>? AutoEntered;
+	public event EventHandler<EnterFinishedEventArgs>? EnterFinished;
 
-	public EntererMode Mode { get; }
+	public string EntererName { get; }
 
 	protected readonly IGame game;
 
@@ -49,19 +48,15 @@ public abstract class EntererBase
 	/// </remarks>
 	protected PathDetails lastPreinputPath = PathDetails.Empty;
 
-	/// <summary>
-	/// SHIFT 키가 눌린 (것과 같은 상태로 취급하는) 상태라면 <c>true</c>, 아니라면 <c>false</c>.
-	/// </summary>
-	protected bool shiftState;
 
-	protected EntererBase(EntererMode mode, IGame game)
+	protected EntererBase(string name, IGame game)
 	{
-		Mode = mode;
+		EntererName = name;
 		this.game = game;
 	}
 
 	// TODO: info.Content empty & null checks
-	protected abstract Task SendAsync(EnterInfo info);
+	protected abstract ValueTask SendAsync(EnterInfo info);
 
 	/// <summary>
 	/// 자동 입력 수행을 요청합니다
@@ -174,6 +169,6 @@ public abstract class EntererBase
 		game.UpdateChat(content);
 		game.ClickSubmitButton();
 		InputStopwatch.Restart();
-		AutoEntered?.Invoke(this, new AutoEnterEventArgs(content));
+		EnterFinished?.Invoke(this, new EnterFinishedEventArgs(content));
 	}
 }

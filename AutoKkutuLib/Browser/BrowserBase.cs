@@ -26,6 +26,7 @@ public abstract class BrowserBase
 	public abstract Task<object?> EvaluateJavaScriptRawAsync(string script);
 	public abstract void SendWin32KeyEvent(int message, int wParam, int lParam);
 	public abstract IntPtr GetWindowHandle();
+	public virtual void SetFocus() { }
 
 	/// <summary>
 	/// 문자열을 하나 랜덤하게 생성하고 주어진 <paramref name="id"/>에 대해 등록합니다.

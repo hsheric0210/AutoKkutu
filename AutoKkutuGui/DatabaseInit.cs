@@ -1,9 +1,7 @@
-﻿using AutoKkutuGui.ConfigFile;
-using AutoKkutuLib.Database;
+﻿using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.MySql;
 using AutoKkutuLib.Database.PostgreSql;
 using AutoKkutuLib.Database.Sqlite;
-using System;
 
 namespace AutoKkutuGui;
 

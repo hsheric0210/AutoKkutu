@@ -3,13 +3,15 @@
 namespace AutoKkutuLib.Game.Enterer;
 public class JavaScriptInputSimulator : InputSimulatorBase
 {
+	public const string Name = "JavaScriptInputSimulate";
+
 	private bool shiftState;
 
-	public JavaScriptInputSimulator(IGame game) : base(EntererMode.SimulateInputJavaScript, game)
+	public JavaScriptInputSimulator(IGame game) : base(Name, game)
 	{
 	}
 
-	protected async override Task AppendAsync(EnterOptions options, InputCommand input)
+	protected async override ValueTask AppendAsync(EnterOptions options, InputCommand input)
 	{
 		if (shiftState && input.ShiftState == ShiftState.Release)
 			shiftState = false;

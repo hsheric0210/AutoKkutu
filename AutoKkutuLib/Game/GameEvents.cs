@@ -1,8 +1,8 @@
 ﻿namespace AutoKkutuLib.Game;
-public class AutoEnterEventArgs : EventArgs
+public class EnterFinishedEventArgs : EventArgs
 {
 	public string Content { get; }
-	public AutoEnterEventArgs(string content) => Content = content;
+	public EnterFinishedEventArgs(string content) => Content = content;
 }
 
 public class GameModeChangeEventArgs : EventArgs
@@ -22,15 +22,10 @@ public class InputDelayEventArgs : EventArgs
 	}
 }
 
-public class NoPathAvailableEventArgs : EventArgs
+public class AllPathTimeOverEventArgs : EventArgs
 {
-	public bool TimeOver { get; }
 	public long RemainingTurnTime { get; }
-	public NoPathAvailableEventArgs(bool timeover, long remainingTurnTime)
-	{
-		TimeOver = timeover;
-		RemainingTurnTime = remainingTurnTime;
-	}
+	public AllPathTimeOverEventArgs(long remainingTurnTime) => RemainingTurnTime = remainingTurnTime;
 }
 
 public class RoundChangeEventArgs : EventArgs

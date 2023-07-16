@@ -528,10 +528,10 @@ namespace AutoKkutuGui {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public int AutoEnterMode {
+        [global::System.Configuration.DefaultSettingValueAttribute("Win32InputSimulator")]
+        public string AutoEnterMode {
             get {
-                return ((int)(this["AutoEnterMode"]));
+                return ((string)(this["AutoEnterMode"]));
             }
             set {
                 this["AutoEnterMode"] = value;

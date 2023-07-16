@@ -2,10 +2,10 @@
 <servers>
     <default>
         <!-- Supported DOM Handlers: BasisHandler, BasicBypassHandler -->
-        <domHandler>BasicHandler</domHandler>
+        <domHandler>BasicDomHandler</domHandler>
 
         <!-- Supported WebSocket Handlers: BasicHandler, RioDecodeHandler -->
-        <webSocketHandler>BasicHandler</webSocketHandler>
+        <webSocketHandler>BasicWebSocketHandler</webSocketHandler>
 
         <!-- Supported database types (case insensitive): SQLite, PostgreSQL(postgres, pgsql), MySQL(MariaDB) -->
         <!-- Element accepts database connection string -->
@@ -14,6 +14,9 @@
         <!-- PostgreSQL: 'Host=;Port=;Username=;Password=;Database=' -->
         <database type="sqlite">Data Source=path.sqlite</database>
     </default>
+
+    <!-- Note that all additional URLs protocols, path, segments are ignored. -->
+    <!-- For example, these formats will be converted to: 'https://google.com/a', 'https://google.com/?paramC=E', 'https://google.com/' -> 'google.com' -->
     <servers>
         <server>
             <url>https://kkutu.pink</url>
@@ -23,13 +26,13 @@
         </server>
         <server>
             <url>https://kkutu.co.kr</url>
-            <domHandler>BasicBypassHandler</domHandler>
+            <domHandler>BasicBypassDomHandler</domHandler>
             <webSocketHandler>BasicDecodeHandler</webSocketHandler>
         </server>
         <server>
             <url>https://kkutu.io</url>
-            <domHandler>BasicBypassHandler</domHandler>
-            <webSocketHandler>RioDecodeHandler</webSocketHandler>
+            <domHandler>BasicBypassDomHandler</domHandler>
+            <webSocketHandler>RioDecodeWebSocketHandler</webSocketHandler>
         </server>
     </servers>
 </servers>
