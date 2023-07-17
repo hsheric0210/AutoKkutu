@@ -114,7 +114,7 @@ public partial class Main
 			0 /*Prefs.StartDelayRandom*/,
 			Preference.AutoEnterDelayPerChar,
 			Preference.AutoEnterDelayPerCharRandom);
-		var inf = new EnterInfo(opt, PathDetails.Empty.WithFlags(PathFlags.ManualMessage), message);
+		var inf = new EnterInfo(opt, PathDetails.Empty.WithFlags(PathFlags.DoNotCheckExpired), message);
 		enterer.RequestSend(inf);
 	}
 

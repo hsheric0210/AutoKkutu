@@ -53,11 +53,13 @@ public readonly struct EnterOptions : IEquatable<EnterOptions>
 	/// </summary>
 	public int GetDelayPerChar() => GetDelay(delayPerChar, delayPerCharRandom);
 
+	public int GetMaxDelayPerChar() => delayPerChar + delayPerChar * delayPerCharRandom / 100;
+
 	/// <summary>
 	/// 주어진 단어에 대해 최악의 경우(입력 시작 시간과 글자 입력 간 지연 시간이 최대)를 가정하고 최대 입력 지연 시간을 계산하여 반환합니다.
 	/// </summary>
 	/// <param name="input">입려하려는 내용</param>
-	public int GetMaxDelay(string? input) => DelayEnabled ? startDelay + startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : input.Length * (delayPerChar + delayPerChar * delayPerCharRandom / 100)) : 0;
+	public int GetMaxDelay(string? input) => DelayEnabled ? startDelay + startDelay * startDelayRandom / 100 + (string.IsNullOrEmpty(input) ? 0 : input.Length * GetMaxDelayPerChar()) : 0;
 
 	/// <summary>
 	/// 주어진 단어에 대해 랜덤값 적용된 입력 시작 지연과 랜덤값 적용된 글자 입력 간 지연을 고려하여 적용될 총 딜레이.

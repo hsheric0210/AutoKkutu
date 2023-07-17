@@ -10,15 +10,15 @@ public abstract class InputSimulatorBase : EntererBase
 	}
 
 	protected abstract ValueTask AppendAsync(EnterOptions options, InputCommand input);
-	protected virtual void SimulationStarted() { }
-	protected virtual void SimulationFinished() { }
+	protected virtual async ValueTask SimulationStarted() { }
+	protected virtual async ValueTask SimulationFinished() { }
 
 	protected override async ValueTask SendAsync(EnterInfo info)
 	{
 		isPreinputSimInProg = info.HasFlag(PathFlags.PreSearch);
 		IsPreinputFinished = false;
 
-		SimulationStarted();
+		await SimulationStarted();
 
 		var content = info.Content;
 		var valid = true;
@@ -50,6 +50,8 @@ public abstract class InputSimulatorBase : EntererBase
 			await Task.Delay(delay);
 		}
 
+		await SimulationFinished();
+
 		if (isPreinputSimInProg) // As this function runs asynchronously, this value could have been changed.
 		{
 			isPreinputSimInProg = false;
@@ -57,8 +59,6 @@ public abstract class InputSimulatorBase : EntererBase
 			return; // Don't submit yet
 		}
 
-		TrySubmit(valid);
-
-		SimulationFinished();
+		TrySubmitInput(valid);
 	}
 }

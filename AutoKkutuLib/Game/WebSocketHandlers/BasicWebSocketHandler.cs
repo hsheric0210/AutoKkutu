@@ -56,6 +56,10 @@ public class BasicWebSocketHandler : IWebSocketHandler
 
 		var mapping = BrowserRandomNameMapping.BaseJs(Browser);
 		mapping.GenerateScriptType("___wsFilter___", CommonNameRegistry.WebSocketFilter);
+		mapping.Add("___welcome___", MessageType_Welcome);
+		mapping.Add("___turnStart___", MessageType_TurnStart);
+		mapping.Add("___turnEnd___", MessageType_TurnEnd);
+		mapping.Add("___turnError___", MessageType_TurnError);
 
 		Browser.ExecuteJavaScript(mapping.ApplyTo(LibResources.baseWebSocketFilterJs), "WsFilter register");
 	}
@@ -66,6 +70,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 
 		var mapping = BrowserRandomNameMapping.BaseJs(Browser);
 		mapping.GenerateScriptType("___wsFilter___", CommonNameRegistry.WebSocketFilter);
+		mapping.Add("___room___", MessageType_Room);
 		mapping.Add("___userId___", userId);
 
 		// IPC QUOTA OPTIMIZATION: only copy room.players, room.gaming, room.mode, room.game.seq
@@ -137,7 +142,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 
 	public virtual async ValueTask<WsTypingBattleTurnStart> ParseTypingBattleTurnStart(JsonNode json) => new(json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"));
 
-	public virtual async ValueTask<WsTypingBattleTurnEnd> ParseTypingBattleTurnEnd(JsonNode json) => new(json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"));
+	public virtual async ValueTask<WsTypingBattleTurnEnd> ParseTypingBattleTurnEnd(JsonNode json) => new(json["ok"]?.GetValue<bool>() ?? false);
 
 	public virtual void OnWebSocketMessage(JsonNode json) { }
 

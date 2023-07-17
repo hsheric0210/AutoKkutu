@@ -164,27 +164,27 @@ internal static class HangulConstants
 		ConsonantClusterDecompositionTable = ccDec.ToImmutable();
 
 		var vcC = ImmutableDictionary.CreateBuilder<char, IImmutableDictionary<char, char>>();
-		ccC['ㅗ'] = CreateImmDict(
+		vcC['ㅗ'] = CreateImmDict(
 			('ㅏ', 'ㅘ'),
 			('ㅐ', 'ㅙ'),
 			('ㅣ', 'ㅚ')
 		);
-		ccC['ㅜ'] = CreateImmDict(
+		vcC['ㅜ'] = CreateImmDict(
 			('ㅓ', 'ㅝ'),
 			('ㅔ', 'ㅞ'),
 			('ㅣ', 'ㅟ')
 		);
-		ccC['ㅡ'] = CreateImmDict(('ㅣ', 'ㅢ'));
+		vcC['ㅡ'] = CreateImmDict(('ㅣ', 'ㅢ'));
 		VowelClusterCompositionTable = vcC.ToImmutable();
 
 		var vcDec = ImmutableDictionary.CreateBuilder<char, IImmutableList<char>>();
-		ccDec['ㅘ'] = ImmutableList.Create('ㅗ', 'ㅏ');
-		ccDec['ㅙ'] = ImmutableList.Create('ㅗ', 'ㅐ');
-		ccDec['ㅚ'] = ImmutableList.Create('ㅗ', 'ㅣ');
-		ccDec['ㅝ'] = ImmutableList.Create('ㅜ', 'ㅓ');
-		ccDec['ㅞ'] = ImmutableList.Create('ㅜ', 'ㅔ');
-		ccDec['ㅟ'] = ImmutableList.Create('ㅜ', 'ㅣ');
-		ccDec['ㅢ'] = ImmutableList.Create('ㅡ', 'ㅣ');
+		vcDec['ㅘ'] = ImmutableList.Create('ㅗ', 'ㅏ');
+		vcDec['ㅙ'] = ImmutableList.Create('ㅗ', 'ㅐ');
+		vcDec['ㅚ'] = ImmutableList.Create('ㅗ', 'ㅣ');
+		vcDec['ㅝ'] = ImmutableList.Create('ㅜ', 'ㅓ');
+		vcDec['ㅞ'] = ImmutableList.Create('ㅜ', 'ㅔ');
+		vcDec['ㅟ'] = ImmutableList.Create('ㅜ', 'ㅣ');
+		vcDec['ㅢ'] = ImmutableList.Create('ㅡ', 'ㅣ');
 		VowelClusterDecompositionTable = vcDec.ToImmutable();
 	}
 }

@@ -94,12 +94,12 @@ public enum PathFlags
 	PreSearch = 1 << 5,
 
 	/// <summary>
-	/// 채팅창을 통해 수동으로 보낸 메시지일 경우 설정되는 플래그입니다.
+	/// 이 플래그가 설정되어 있을 시, PathDetails에 대한 검사와 Path-expired 검사를 비활성화해야 합니다.
 	/// </summary>
 	/// <remarks>
-	/// 이 플래그가 설정되어 있을 시, PathDetails에 대한 검사와 Path-expired 검사를 비활성화해야 합니다.
+	/// 채팅창을 통해 수동으로 보낸 메시지이거나, 타자 대결 자동 입력일 때 등의 경우 설정되는 플래그입니다.
 	/// </remarks>
-	ManualMessage = 1 << 6,
+	DoNotCheckExpired = 1 << 6,
 }
 
 public enum PathFindResultType

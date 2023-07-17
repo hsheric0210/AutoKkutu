@@ -270,9 +270,6 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		GC.SuppressFinalize(this);
 	}
 
-
-	public override void SendWin32KeyEvent(int message, int wParam, int lParam) => PostMessage(mainHwnd, message, wParam, lParam);
-
 	public override IntPtr GetWindowHandle() => mainHwnd;
 
 	private static IntPtr GetHwnd(UndetectedChromeDriver driver)
@@ -287,23 +284,4 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 		return ((Process)val).MainWindowHandle;
 	}
-
-	/// <summary>
-	/// Places (posts) a message in the message queue associated with the thread
-	/// that created the specified window and returns without waiting for the thread to process the message.
-	/// </summary>
-	/// <param name="hWnd">A handle to the window whose window procedure is to receive the message. The following values have special meanings.</param>
-	/// <param name="Msg">The message to be posted.</param>
-	/// <param name="wParam">Additional message-specific information.</param>
-	/// <param name="lParam">Additional message-specific information.</param>
-	/// <returns>
-	/// If the function succeeds, the return value is nonzero.
-	/// If the function fails, the return value is zero.To get extended error information, call GetLastError.
-	/// </returns>
-	[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-	private static extern int PostMessage(
-		[In] IntPtr hWnd,
-		[In] int Msg,
-		[In] int wParam,
-		[In] int lParam);
 }

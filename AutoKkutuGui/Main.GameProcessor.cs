@@ -147,6 +147,9 @@ public partial class Main
 
 	private void OnMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 	{
+		if (!args.IsMyTurn)
+			return;
+
 		if (autoPathFindCache is null)
 		{
 			Log.Warning("이전에 수행한 단어 검색 결과를 찾을 수 없습니다!");
@@ -169,7 +172,7 @@ public partial class Main
 							new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterDelayStartAfterWordEnterEnabled, Preference.AutoEnterInputSimulateJavaScriptSendKeys, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom),
 							autoPathFindCache.Details.WithoutFlags(PathFlags.PreSearch));
 
-			(var content, var timeover) = autoPathFindCache.FilteredWordList.ChooseBestWord(parameter.Options, AutoKkutu.Game.GetTurnTimeMillis(), ++wordIndex);
+			(var content, var _) = autoPathFindCache.FilteredWordList.ChooseBestWord(parameter.Options, AutoKkutu.Game.GetTurnTimeMillis(), ++wordIndex);
 			if (string.IsNullOrEmpty(content))
 			{
 				Log.Warning(I18n.Main_NoMorePathAvailable);
@@ -187,7 +190,6 @@ public partial class Main
 		wordIndex = 0;
 	}
 
-	// TODO: Move to Lib
 	private void OnMyTurnStarted(object? sender, WordConditionPresentEventArgs args)
 	{
 		if (Preference.AutoEnterEnabled)
@@ -234,17 +236,15 @@ public partial class Main
 		if (!Preference.AutoEnterEnabled)
 			return;
 
-
 		if (!EntererManager.TryGetEnterer(AutoKkutu.Game, Preference.AutoEnterMode, out var enterer))
 		{
 			Log.Error("TypingBattle Auto-Enter interrupted because the enterer {name} is not available.", Preference.AutoEnterMode);
 			return;
 		}
 
-
 		enterer.RequestSend(new EnterInfo(
 			new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterDelayStartAfterWordEnterEnabled, Preference.AutoEnterInputSimulateJavaScriptSendKeys, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom),
-			PathDetails.Empty,
+			PathDetails.Empty.WithFlags(PathFlags.DoNotCheckExpired),
 			word));
 	}
 

@@ -105,20 +105,7 @@
                         Grid.Column="0"
                         Margin="5,5,5,5"
                         VerticalAlignment="Stretch"
-                        FontSize="16">
-                        <ComboBoxItem Content="https://kkutu.org/" />
-                        <ComboBoxItem Content="https://kkutu.pink/" />
-                        <ComboBoxItem Content="https://kkutu.co.kr/" />
-                        <ComboBoxItem Content="https://kkutu.io/" />
-                        <ComboBoxItem Content="https://bfkkutu.kr/" />
-                        <ComboBoxItem Content="https://kkutu.ihah.me/" />
-                        <ComboBoxItem Content="https://musickkutu.xyz/" />
-                        <ComboBoxItem Content="https://kkutu.top/" />
-                        <ComboBoxItem Content="https://kkutu.club/" />
-                        <ComboBoxItem Content="https://kkutu.blue/" />
-                        <ComboBoxItem Content="https://www.whatismyip.com/" />
-                        <ComboBoxItem Content="https://www.whatsmyua.info/" />
-                    </ComboBox>
+                        FontSize="16" />
                     <Button
                         Name="SubmitURL"
                         Grid.Column="1"

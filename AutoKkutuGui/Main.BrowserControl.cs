@@ -35,7 +35,6 @@ public partial class Main
 
 			// 이전 AutoKkutu 파사드 제거
 			prevInstance.Dispose();
-
 			Log.Information("Disposed previous facade.");
 		}
 
@@ -82,6 +81,7 @@ public partial class Main
 		AutoKkutu.MyTurnEnded += OnMyTurnEnded;
 		AutoKkutu.MyTurnStarted += OnMyTurnStarted;
 		AutoKkutu.TypingWordPresented += OnTypingWordPresented;
+		AutoKkutu.UnsupportedWordEntered += OnMyPathIsUnsupported;
 		AutoKkutu.PreviousUserTurnEnded += OnPreviousUserTurnEnded;
 		AutoKkutu.RoundChanged += OnRoundChanged;
 		AutoKkutuInitialized?.Invoke(this, new AutoKkutuInitializedEventArgs(AutoKkutu));

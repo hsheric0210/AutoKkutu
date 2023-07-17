@@ -83,7 +83,7 @@ public abstract class EntererBase : IEnterer
 				{
 					if (IsPreinputFinished) // Pre-search 입력 시뮬레이션 완료 시
 					{
-						TrySubmit(CanPerformAutoEnterNow(param)); // 자동으로 전송
+						TrySubmitInput(CanPerformAutoEnterNow(param)); // 자동으로 전송
 						isPreinputSimInProg = IsPreinputFinished = false;
 						return;
 					}
@@ -109,23 +109,32 @@ public abstract class EntererBase : IEnterer
 		}
 	}
 
+	protected virtual void SubmitInput()
+	{
+		game.ClickSubmitButton();
+		game.UpdateChat("");
+	}
+
+	protected virtual void ClearInput() => game.UpdateChat("");
+
+
 	/// <summary>
 	/// <paramref name="valid"/>가 <c>true</c>일 경우, 지금까지 입력된 내용을 전송 시도합니다.
 	/// <paramref name="valid"/>가 <c>false</c>일 경우 자동 입력이 중단되었다는 로그를 남깁니다.
 	/// </summary>
 	/// <param name="valid">입력 내용을 제시할지의 여부입니다.</param>
-	protected void TrySubmit(bool valid)
+	protected void TrySubmitInput(bool valid)
 	{
 		if (valid)
 		{
-			game.ClickSubmitButton();
+			SubmitInput();
 			Log.Information(I18n.Main_InputSimulationFinished); // TODO: Rename those
 		}
 		else
 		{
+			ClearInput();
 			Log.Warning(I18n.Main_InputSimulationAborted); // TODO: Rename those
 		}
-		game.UpdateChat("");
 	}
 
 	/// <summary>
@@ -137,7 +146,7 @@ public abstract class EntererBase : IEnterer
 	/// <returns>자동 입력을 계속 이어나갈 수 있는지의 여부</returns>
 	protected bool CanPerformAutoEnterNow(PathDetails? detail, bool checkTurn = true)
 	{
-		if (detail is PathDetails detail1 && detail1.HasFlag(PathFlags.ManualMessage))
+		if (detail is PathDetails detail1 && detail1.HasFlag(PathFlags.DoNotCheckExpired))
 			return true;
 
 		// Game is already ended

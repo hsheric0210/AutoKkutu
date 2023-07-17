@@ -278,13 +278,12 @@ public class CefSharpBrowser : BrowserBase
 		return response.Result;
 	}
 
-	public override void SendWin32KeyEvent(int message, int wParam, int lParam) => browser.GetBrowserHost().SendKeyEvent(message, wParam, lParam);
-
 	public override IntPtr GetWindowHandle() => browser.GetBrowserHost().GetWindowHandle();
 
 	public override void SetFocus()
 	{
-		browser.Focus();
+		//browser.Focus();
 		browser.GetBrowserHost().SetFocus(true);
+		browser.GetBrowserHost().SendFocusEvent(true);
 	}
 }

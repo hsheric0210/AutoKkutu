@@ -33,16 +33,19 @@ public class ServerConfig
 				var defaultWebSocketHandler = dto.DefaultServer.WebSocketHandlerName;
 				var defaultDatabaseType = dto.DefaultServer.Database.DatabaseConnectionString;
 				var defaultDatabaseConnectionString = dto.DefaultServer.Database.DatabaseConnectionString;
-				Default = new ServerInfo("blank", defaultDomHandler, defaultWebSocketHandler, defaultDatabaseType, defaultDatabaseConnectionString);
+
+				var blankUri = new Uri("about:blank");
+				Default = new ServerInfo(blankUri, blankUri.Host, defaultDomHandler, defaultWebSocketHandler, defaultDatabaseType, defaultDatabaseConnectionString);
 
 				foreach (var server in dto.Servers)
 				{
-					var serverUri = new Uri(server.Url).Host;
+					var fullUri = new Uri(server.Url);
+					var serverUri = fullUri.Host;
 					var domHandler = DefaultIfNullOrEmpty(server.DomHandlerName, defaultDomHandler);
 					var webSocketHandler = DefaultIfNullOrEmpty(server.WebSocketHandlerName, defaultWebSocketHandler);
 					var databaseType = DefaultIfNullOrEmpty(server.Database?.DatabaseType, defaultDatabaseType);
 					var databaseConnectionString = DefaultIfNullOrEmpty(server.Database?.DatabaseConnectionString, defaultDatabaseConnectionString);
-					builder.Add(new ServerInfo(serverUri, domHandler, webSocketHandler, databaseType, databaseConnectionString));
+					builder.Add(new ServerInfo(fullUri, serverUri, domHandler, webSocketHandler, databaseType, databaseConnectionString));
 				}
 			}
 		}
@@ -70,14 +73,16 @@ public class ServerConfig
 
 public readonly struct ServerInfo : IEquatable<ServerInfo>
 {
+	public readonly Uri FullUrl { get; }
 	public readonly string ServerHost { get; }
 	public readonly string DomHandler { get; }
 	public readonly string WebSocketHandler { get; }
 	public readonly string DatabaseType { get; }
 	public readonly string DatabaseConnectionString { get; }
 
-	public ServerInfo(string serverHost, string domHandler, string webSocketHandler, string databaseType, string databaseConnectionString)
+	public ServerInfo(Uri fullUrl, string serverHost, string domHandler, string webSocketHandler, string databaseType, string databaseConnectionString)
 	{
+		FullUrl = fullUrl;
 		ServerHost = serverHost;
 		DomHandler = domHandler;
 		WebSocketHandler = webSocketHandler;

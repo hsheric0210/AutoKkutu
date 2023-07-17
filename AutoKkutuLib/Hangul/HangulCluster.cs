@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using Serilog;
+using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Hangul;
 
@@ -73,9 +74,5 @@ internal static class HangulClusterExtension
 	/// (합성 모음 분해 예시: 'ㅟ'->['ㅜ', 'ㅣ'])
 	/// </summary>
 	internal static IImmutableList<char> SplitCluster(this HangulCluster clusterType, char combined)
-	{
-		return clusterType.GetDecompositionTable().TryGetValue(combined, out var consonants)
-			? consonants
-			: ImmutableList.Create(combined);
-	}
+		=> clusterType.GetDecompositionTable().TryGetValue(combined, out var consonants) ? consonants : ImmutableList.Create(combined);
 }

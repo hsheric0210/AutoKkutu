@@ -105,19 +105,19 @@ public partial class Game
 				if (wordCondition == null)
 					return;
 
-				Log.Debug("My turn arrived (byDOM:{dom}), presented word is {word}.", byDOM, wordCondition);
+				Log.Debug("My turn arrived (DOM: {dom}), presented word is {word}.", byDOM, wordCondition);
 				CurrentWordCondition = wordCondition;
 				TurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)wordCondition, isMyTurn));
 
 				return;
 			}
 
-			if (IsMyTurn && !bypassCache)
+			if (!IsMyTurn && !bypassCache)
 				return;
 
 			IsMyTurn = false;
 
-			Log.Debug("My turn ended. (byDOM:{dom})", byDOM);
+			Log.Debug("My turn ended.", byDOM);
 
 			// Clear turn-specific caches
 			turnErrorWordCache = null;

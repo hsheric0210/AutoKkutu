@@ -1,5 +1,5 @@
 ﻿(function () {
-    ___wsFilter___['room'] = function (d) {
+    ___wsFilter___['___room___'] = function (d) {
         if (d && d.room && d.room.players && Array.prototype.includes.call(d.room.players, '___userId___')) {
             function onlyPlayerId(plist) { if (!plist) { return []; } return Array.prototype.map.call(plist, p => typeof p === 'string' ? p : p.id.toString()); }
             return {

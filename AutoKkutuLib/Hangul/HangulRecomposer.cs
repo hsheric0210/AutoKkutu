@@ -15,7 +15,7 @@ public sealed class HangulRecomposer
 	{
 		this.layout = layout;
 		this.pieces = pieces;
-		Log.Information("pieces: {pieces}", string.Join(',', pieces));
+		Log.Debug("pieces: {pieces}", string.Join(',', pieces));
 	}
 
 	// TODO: make private
@@ -125,12 +125,13 @@ public sealed class HangulRecomposer
 				builder.Add(terminate); // 강제로 조합 중단 (오른쪽 화살표 키를 누른다던지...)
 			}
 
-			foreach ((var type, var ch) in piece.Serialize())
+			foreach ((var _type, var ch) in piece.Serialize())
 			{
-				(var prevSplitNew, var newSplit, var input) = Append(prevSplit, lastInput, Consonant2Jamo(type), ch);
+				var type = Consonant2Jamo(_type);
+				(var prevSplitNew, var newSplit, var input) = Append(prevSplit, lastInput, type, ch);
 				prevSplit = prevSplitNew;
 
-				Log.Verbose("Composition simuation [prev: {prev}, new: {new}, input: {input}]", prevSplitNew, newSplit, input);
+				Log.Verbose("Composition simuation of appending {type} char {ch} -> {prev: {prev}, new: {new}, input: {input}}", type, ch, prevSplitNew, newSplit, input);
 
 				if (newSplit is HangulSplit newSplitNonNull)
 					prevSplit = newSplitNonNull;

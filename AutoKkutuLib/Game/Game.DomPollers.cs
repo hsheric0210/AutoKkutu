@@ -103,7 +103,7 @@ public partial class Game
 	private async ValueTask PollTypingWord() // TODO: Remove it and merge with UpdateWord
 	{
 		var word = await domHandler.GetPresentedWord();
-		if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝", StringComparison.InvariantCultureIgnoreCase))
+		if (string.IsNullOrWhiteSpace(word) || word.StartsWith("게임 끝", StringComparison.InvariantCultureIgnoreCase) || !await domHandler.GetIsMyTurn())
 			return;
 		if (word.Contains(' ', StringComparison.Ordinal))
 			word = word[..word.IndexOf(' ', StringComparison.Ordinal)];

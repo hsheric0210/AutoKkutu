@@ -24,7 +24,6 @@ public abstract class BrowserBase
 	public abstract void ShowDevTools();
 	public abstract void ExecuteJavaScript(string script, string? errorMessage = null);
 	public abstract Task<object?> EvaluateJavaScriptRawAsync(string script);
-	public abstract void SendWin32KeyEvent(int message, int wParam, int lParam);
 	public abstract IntPtr GetWindowHandle();
 	public virtual void SetFocus() { }
 

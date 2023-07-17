@@ -3,11 +3,13 @@ using AutoKkutuLib.Database;
 using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
+using AutoKkutuLib.Game.Enterer;
 using AutoKkutuLib.Hangul;
 using Serilog;
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -58,6 +60,7 @@ public partial class MainWindow : Window
 		main.EntererManager.EnterFinished += EntererManager_EnterFinished;
 		mainInstance = main;
 		main.LoadFrontPage();
+		CurrentURL.ItemsSource = main.ServerConfig.Servers.Select(server => server.FullUrl.ToString()).ToList();
 
 		notifier = new Notifier(cfg =>
 		{
@@ -65,6 +68,17 @@ public partial class MainWindow : Window
 			cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(TimeSpan.FromSeconds(3), MaximumNotificationCount.FromCount(6));
 			cfg.Dispatcher = Dispatcher;
 			cfg.DisplayOptions.Width = 250;
+		});
+
+		Win32InputSimulator.FocusToBrowser += Win32InputSimulator_FocusToBrowser;
+	}
+
+	private void Win32InputSimulator_FocusToBrowser(object? sender, EventArgs e)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			if (BrowserContainer.Content is UIElement elem)
+				elem.Focus();
 		});
 	}
 
