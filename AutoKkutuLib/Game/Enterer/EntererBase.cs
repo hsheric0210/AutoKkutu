@@ -13,25 +13,37 @@ public abstract class EntererBase : IEnterer
 
 	protected Stopwatch InputStopwatch { get; } = new();
 
-	private volatile bool isInputInProgress;
+	/// <summary>
+	/// 현재 입력이 진행 중인지를 나타냅니다.
+	/// 수정 시에는 반드시 <c>Interlocked.CompareExchange</c>를 이용하여야 합니다.
+	/// </summary>
+	private int isInputInProgress;
+
+	private bool IsInputInProgress => isInputInProgress == 1;
 
 	/// <summary>
-	/// 현재 진행 중인 입력 시뮬레이션이 Pre-search 기능에 의한 것인지에 대한 여부를 나타냅니다.
+	/// 현재 진행 중인 입력이 Pre-search 기능에 의한 것인지에 대한 여부를 나타냅니다.
+	/// 수정 시에는 반드시 <c>Interlocked.CompareExchange</c>를 이용하여야 합니다.
 	/// </summary>
 	/// <remarks>
-	/// Pre-search 기능에 의한 자동 입력에서 자동입력 완료 후 자동 전송을 막기 위해 존재합니다.
+	/// Pre-search 기능에 의한 자동 입력에서 자동 입력 완료 후 자동 전송을 막기 위해 존재합니다.
 	/// (Pre-search 기능에 의한 자동 입력이 진행되는 시점에서는 아직 내 턴이 오지 않았을 확률이 있기 때문입니다)
 	/// </remarks>
-	protected volatile bool isPreinputSimInProg;
+	protected int isPreinputSimInProg;
+
+	protected bool IsPreinputSimInProg => isPreinputSimInProg == 1;
 
 	/// <summary>
-	/// 마지막으로 완료된 입력 시뮬레이션이 Pre-search 기능에 의한 것인지에 대한 여부를 나타냅니다.
+	/// 마지막으로 완료된 입이 Pre-search 기능에 의한 것인지에 대한 여부를 나타냅니다.
+	/// 수정 시에는 반드시 <c>Interlocked.CompareExchange</c>를 이용하여야 합니다.
 	/// </summary>
 	/// <remarks>
-	/// 해당 검사는 '만약 현재 입력 시뮬레이션을 수행할 단어가 마지막으로 완료된 입력 시뮬레이션과 동일하다면
-	/// 굳이 다시 입력 시뮬레이션을 수행는 대신 그냥 전송 버튼만 누르면 되는' 것과 같은 최적화가 가능하기에 필수적입니다.
+	/// 해당 검사는 '만약 현재 입력할 단어가 마지막으로 입력이 완료된 단어와 동일하다면
+	/// 굳이 다시 입력을 수행하는 대신 그냥 전송 버튼만 누르면 되는' 것과 같은 최적화가 가능하기에 필수적입니다.
 	/// </remarks>
-	protected bool IsPreinputFinished { get; set; }
+	protected int isPreinputFinished;
+
+	protected bool IsPreinputFinished => isPreinputFinished == 1;
 
 	/// <summary>
 	/// 마지막으로 완료된(또는 현재 진행 중인) 입력 시뮬레이션에 패스파인더 매개 변수입니다.
@@ -69,37 +81,47 @@ public abstract class EntererBase : IEnterer
 		if (string.IsNullOrWhiteSpace(param.Content)) // TODO: Make AutoEnterInfo.content always non-null-able
 			throw new ArgumentException("Content to auto-enter is not provided", nameof(param));
 
-		Log.Verbose("AutoEnter request received: {request}", param);
+		Log.Verbose("Enter request received: {request}", param);
+
+		if (IsInputInProgress)
+		{
+			// 여러 입력 작업 동시 진행 방지 (높은 확률로 입력이 꼬임, 특히 입력 시뮬레이션일 때)
+			Log.Warning("Rejected enter request as other entering is in progress.");
+			return;
+		}
 
 		var pre = param.HasFlag(PathFlags.PreSearch);
-		if (param.Options.DelayEnabled && !param.HasFlag(PathFlags.DryRun))
+		if (param.Options.DelayEnabled)
 		{
 			if (pre)
+			{
 				lastPreinputPath = param;
+			}
 			else
 			{
 				// Pre-search 입력 시뮬레이션 관련 최적화들 (자세한 내용은 위 필드들 설명 참조)
 				if (lastPreinputPath.IsSimilar(param))
 				{
-					if (IsPreinputFinished) // Pre-search 입력 시뮬레이션 완료 시
+					if (isPreinputFinished == 1) // Pre-search 입력 시뮬레이션 완료 시
 					{
 						TrySubmitInput(CanPerformAutoEnterNow(param)); // 자동으로 전송
-						isPreinputSimInProg = IsPreinputFinished = false;
+						Interlocked.CompareExchange(ref isPreinputSimInProg, 0, 1);
+						Interlocked.CompareExchange(ref isPreinputFinished, 0, 1);
 						return;
 					}
-					if (isInputInProgress && isPreinputSimInProg) // Pre-search 입력 시뮬레이션 진행 중일 시
+					if (isInputInProgress == 1 && isPreinputSimInProg == 1) // Pre-search 입력 시뮬레이션 진행 중일 시
 					{
-						isPreinputSimInProg = false; // 현재 진행 중인 이른 자동 입력을 정규 자동 입력으로 승격. 이를 통해 해당 이른 자동 입력 완료 시 자동 전송 기능 활성화됨.
+						Interlocked.CompareExchange(ref isPreinputSimInProg, 0, 1); // 현재 진행 중인 이른 자동 입력을 정규 자동 입력으로 승격. 이를 통해 해당 이른 자동 입력 완료 시 자동 전송 기능 활성화됨.
 						return; // 현재 새로 요청된 입력 시뮬레이션은 취소시킴
 					}
 				}
 			}
 
-			isInputInProgress = true;
+			Interlocked.CompareExchange(ref isInputInProgress, 1, 0);
 			Task.Run(async () =>
 			{
 				await SendAsync(param);
-				isInputInProgress = false;
+				Interlocked.CompareExchange(ref isInputInProgress, 0, 1);
 			});
 		}
 		else if (!pre)
@@ -150,15 +172,15 @@ public abstract class EntererBase : IEnterer
 			return true;
 
 		// Game is already ended
-		if (!game.IsGameInProgress)
+		if (!game.Session.AmIGaming)
 			return false;
 
 		// Not my turn
-		if (checkTurn && !game.IsMyTurn)
+		if (checkTurn && (!game.Session.IsMyTurn() || !game.Session.IsTurnInProgress))
 			return false;
 
 		// Path is expired
-		if (detail is PathDetails detail2 && game.RescanIfPathExpired(detail2.WithFlags(PathFlags.DryRun)))
+		if (detail is PathDetails detail2 && game.RequestRescanIfPathExpired(detail2))
 			return false;
 
 		return true;

@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
 public partial class Win32InputSimulator

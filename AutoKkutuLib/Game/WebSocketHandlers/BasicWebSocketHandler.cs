@@ -113,8 +113,8 @@ public class BasicWebSocketHandler : IWebSocketHandler
 			json["turnTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turnTime"),
 			new WordCondition(
 				json["char"]?.GetValue<string>() ?? "",
-				json["subChar"]?.GetValue<string>(),
-				json["mission"]?.GetValue<string>()));
+				json["subChar"]?.GetValue<string>() ?? "",
+				json["mission"]?.GetValue<string>() ?? ""));
 	}
 
 	// TODO: 내 바로 이전 사람 턴이 끝남을 감지하고, 그 사람이 입력한 단어에서 내가 입력해야 할 단어의 조건 노드 파싱하기 (두음법칙 적용해서)

@@ -131,5 +131,14 @@
     <Setting Name="AutoEnterMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">Win32InputSimulator</Value>
     </Setting>
+    <Setting Name="OnlySearchOnMyTurn" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ArduinoPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COM7</Value>
+    </Setting>
+    <Setting Name="ArduinoBaudrate" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">115200</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

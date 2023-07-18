@@ -7,6 +7,13 @@ public partial class Game
 	private Task? mainPoller;
 	private CancellationTokenSource? pollerCancel;
 
+	// Be careful, these cache variables are not thread-safe.
+	// They should be called and modified only within a single thread.
+	private bool domIsMyTurn;
+	private int domTurnIndex = -1;
+	private GameSessionState? domSession;
+	private string domUserId = "";
+
 	private void StartPollers()
 	{
 		pollerCancel = new CancellationTokenSource();
@@ -19,25 +26,25 @@ public partial class Game
 			PollWordHistory,
 			null,
 			(ex) => Log.Error(ex, "'Word Histories' poller exception"),
-			() => IsGameInProgress && !CurrentGameMode.IsFreeMode(),
+			() => Session.AmIGaming && !Session.GameMode.IsFreeMode(),
 			intenseInterval,
 			idleInterval,
 			token));
 		Task.Run(async () => await BaseDomPoller(
 			PollTypingWord,
 			null,
-			(ex) => Log.Error(ex, "'Typing-word' poller exception"),
-			() => IsGameInProgress && CurrentGameMode == GameMode.TypingBattle,
+			(ex) => Log.Error(ex, "Typing-battle word poller exception"),
+			() => Session.AmIGaming && Session.GameMode == GameMode.TypingBattle,
 			intenseInterval,
 			idleInterval,
 			token));
 
-		Task.Run(async () => await GameDomPoller(PollMyTurn, token, "My turn poller", looseInterval));
+		Task.Run(async () => await GameDomPoller(PollClassicTurn, token, "Classic turn poller", looseInterval));
 		Task.Run(async () => await GameDomPoller(PollRound, token, "Round index poller", looseInterval));
-		Task.Run(async () => await GameDomPoller(PollWordError, token, "Unsupported word poller"));
-		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word-Hint poller", looseInterval));
+		Task.Run(async () => await GameDomPoller(PollWordError, token, "Word error poller"));
+		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word hint poller", looseInterval));
 		Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
-		//Task.Run(async () => await GameDomPoller(PollTurn, token, "My turn poller"));//temporary disabled due to race-condition with wssniffer
+		Task.Run(async () => await ConditionlessDomPoller(PollUserId, token, "User-ID poller", looseInterval));
 		Log.Debug("DOM pollers are now active.");
 	}
 
@@ -52,10 +59,57 @@ public partial class Game
 	{
 		await RegisterInGameFunctions(new HashSet<int>());
 		await RegisterWebSocketFilters();
-		NotifyGameProgress(await domHandler.GetIsGameInProgress());
+		NotifyGameSession(await domHandler.GetUserId());
+		NotifyGameSequence(await domHandler.GetGameSeq());
 	}
 
-	private async ValueTask PollMyTurn() => NotifyMyTurn(await domHandler.GetIsMyTurn(), await PollWordCondition(), true);
+	private async ValueTask PollUserId()
+	{
+		var userId = await domHandler.GetUserId();
+		if (string.IsNullOrWhiteSpace(userId) || domUserId.Equals(userId, StringComparison.OrdinalIgnoreCase))
+			return;
+		domUserId = userId;
+	}
+
+	private async ValueTask PollClassicTurn()
+	{
+		// Use fast method to determine my turn *START*
+		var myTurn = await domHandler.GetIsMyTurn();
+		if (myTurn)
+		{
+			// Interlock check
+			if (domIsMyTurn)
+				return;
+			domIsMyTurn = true;
+
+			Log.Verbose("DOM Handler detected my turn start.");
+			NotifyClassicTurnStart(true, -1, await PollWordCondition());
+			return;
+		}
+
+		if (domTurnIndex != Session.GetRelativeTurn()) // Failsafe for DOM out-of-sync (Often occurred when using both DomHandler and WebSocketHandler, with very fast game tempo)
+			domTurnIndex = Session.GetRelativeTurn();
+
+		// Use slow but accurate method to determine my turn *END* and other player turn changes
+		var turnIndexNow = await domHandler.GetTurnIndex();
+		if (turnIndexNow != domTurnIndex) // Turn-index changed
+		{
+			if (domTurnIndex != -1) // turnEnd: prev != -1
+			{
+				Log.Verbose("DOM Handler detected turn end (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
+				NotifyClassicTurnEnd("");
+				domIsMyTurn = false;
+			}
+
+			if (turnIndexNow != -1) // turnStart: now != -1
+			{
+				Log.Verbose("DOM Handler detected other user turn start (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
+				NotifyClassicTurnStart(false, turnIndexNow, await PollWordCondition());
+			}
+
+			domTurnIndex = turnIndexNow;
+		}
+	}
 
 	private async ValueTask PollWordHistory()
 	{
@@ -124,14 +178,13 @@ public partial class Game
 	}
 
 	// TODO: Return nothing when the current gamemode is 'Free'
-	private async ValueTask<WordCondition?> PollWordCondition()
+	private async ValueTask<WordCondition> PollWordCondition()
 	{
 		var condition = await domHandler.GetPresentedWord();
 		var missionChar = await domHandler.GetMissionChar();
-		missionChar = string.IsNullOrWhiteSpace(missionChar) ? null : missionChar;
 
 		if (string.IsNullOrEmpty(condition))
-			return null;
+			return WordCondition.Empty;
 
 		string cChar;
 		var cSubChar = string.Empty;
@@ -146,11 +199,22 @@ public partial class Game
 		{
 			cChar = condition;
 		}
-		else
+		else if (Session.GameMode != GameMode.None)
 		{
 			// 가끔가다가 서버 렉때문에 '내가 입력해야할 단어의 조건' 대신 '이전 라운드에 입력되었었던 단어'가
 			// 나한테 그대로 넘어오는 경우가 왕왕 있음. 특히 양쪽이 오토 켜놓고 대결할 때.
-			return CurrentGameMode.ConvertWordToCondition(condition, missionChar);
+			var converted = Session.GameMode.ConvertWordToCondition(condition, missionChar);
+			if (converted == null)
+			{
+				Log.Error("Failed to convert word {word} to condition. (missionChar: {missionChar})", condition, missionChar);
+				return WordCondition.Empty;
+			}
+
+			return (WordCondition)converted;
+		}
+		else
+		{
+			return WordCondition.Empty;
 		}
 
 		return new WordCondition(cChar, cSubChar, missionChar);

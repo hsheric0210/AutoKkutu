@@ -177,8 +177,6 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void OnColorManagerClick(object? sender, RoutedEventArgs e) => new ColorManagement(mainInstance.Preference).Show();
-
 	private void OnDBManagementClicked(object? sender, RoutedEventArgs e) => new DatabaseManagement(mainInstance.AutoKkutu).Show();
 
 	private void OnOpenDevConsoleClicked(object? sender, RoutedEventArgs e) => mainInstance.Browser.ShowDevTools();
@@ -234,7 +232,7 @@ public partial class MainWindow : Window
 		if (currentSelected is not GuiPathObject path)
 			return;
 
-		mainInstance.AutoKkutu.Database.MakeAttack(path.Underlying, mainInstance.AutoKkutu.Game.CurrentGameMode);
+		mainInstance.AutoKkutu.Database.MakeAttack(path.Underlying, mainInstance.AutoKkutu.Game.Session.GameMode);
 	}
 
 	private void OnPathListMakeEndClick(object? sender, RoutedEventArgs e)
@@ -243,7 +241,7 @@ public partial class MainWindow : Window
 		if (currentSelected is not GuiPathObject path)
 			return;
 
-		mainInstance.AutoKkutu.Database.MakeEnd(path.Underlying, mainInstance.AutoKkutu.Game.CurrentGameMode);
+		mainInstance.AutoKkutu.Database.MakeEnd(path.Underlying, mainInstance.AutoKkutu.Game.Session.GameMode);
 	}
 
 	private void OnPathListMakeNormalClick(object? sender, RoutedEventArgs e)
@@ -252,7 +250,7 @@ public partial class MainWindow : Window
 		if (currentSelected is not GuiPathObject path)
 			return;
 
-		mainInstance.AutoKkutu.Database.MakeNormal(path.Underlying, mainInstance.AutoKkutu.Game.CurrentGameMode);
+		mainInstance.AutoKkutu.Database.MakeNormal(path.Underlying, mainInstance.AutoKkutu.Game.Session.GameMode);
 	}
 
 	// TODO: Move these duplicate path list writes to Lib.SpecialPathList
@@ -437,18 +435,18 @@ public partial class MainWindow : Window
 					gameMode = GameMode.LastAndFirstFree;
 					break;
 				default:
-					gameMode = mainInstance.AutoKkutu.Game.CurrentGameMode;
+					gameMode = mainInstance.AutoKkutu.Game.Session.GameMode;
 					break;
 
 			}
 
 			var missionChar = SearchMissionChar.Text;
 			if (string.IsNullOrWhiteSpace(missionChar))
-				missionChar = mainInstance.AutoKkutu.Game.CurrentWordCondition?.MissionChar;
+				missionChar = mainInstance.AutoKkutu.Game.Session.WordCondition.MissionChar;
 
 			mainInstance.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
 				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "")),
-				mainInstance.SetupPathFinderFlags(PathFlags.ManualSearch),
+				mainInstance.SetupPathFinderFlags(PathFlags.DoNotAutoEnter),
 				mainInstance.Preference.ReturnModeEnabled,
 				mainInstance.Preference.MaxDisplayedWordCount), mainInstance.Preference.ActiveWordPreference);
 			SearchField.Text = "";

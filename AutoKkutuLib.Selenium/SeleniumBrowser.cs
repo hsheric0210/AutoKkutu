@@ -274,14 +274,15 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 	private static IntPtr GetHwnd(UndetectedChromeDriver driver)
 	{
-		var field = typeof(UndetectedChromeDriver).GetField("_process", BindingFlags.NonPublic | BindingFlags.Instance);
+		var field = Array.Find(typeof(UndetectedChromeDriver).GetFields(BindingFlags.NonPublic | BindingFlags.Instance), f => f.FieldType == typeof(Process) || f.FieldType == typeof(Nullable) && f.FieldType.GetGenericArguments()[0] == typeof(Process));
 		if (field == null)
-			throw new MissingFieldException("_process field is not available.");
+			throw new MissingFieldException("Browser process field is not available.");
 
 		var val = field.GetValue(driver);
 		if (val == null)
-			throw new FieldAccessException("_process field is not set yet.");
-
-		return ((Process)val).MainWindowHandle;
+			throw new FieldAccessException("Browser process field is not set yet.");
+		var process = (Process)val;
+		Log.Debug("Got browser process: module={module} pid={pid} handle={handle}", process.MainModule?.FileName, process.Handle, process.MainWindowHandle);
+		return process.MainWindowHandle;
 	}
 }

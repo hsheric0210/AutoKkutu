@@ -14,7 +14,7 @@ public static class GameModeExtension
 	/// <param name="path">현재 제시된 단어</param>
 	/// <param name="missionChar">미션 글자</param>
 	/// <param name="initialLaw">두음법칙 적용 여부</param>
-	public static WordCondition? ConvertWordToCondition(this GameMode gameMode, string path, string? missionChar, bool initialLaw = true)
+	public static WordCondition? ConvertWordToCondition(this GameMode gameMode, string path, string missionChar, bool initialLaw = true)
 	{
 		var node = gameMode.ConvertWordToTailNode(path);
 		if (string.IsNullOrWhiteSpace(node))

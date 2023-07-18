@@ -67,6 +67,7 @@ public partial class ConfigWindow : Window
 		InitializeComponent();
 
 		// 단어 검색
+		OnlySearchOnMyTurn.IsChecked = config.OnlySearchOnMyTurn;
 		AttackWord.IsChecked = config.AttackWordEnabled;
 		EndWord.IsChecked = config.EndWordEnabled;
 		ReturnMode.IsChecked = config.ReturnModeEnabled;
@@ -84,6 +85,9 @@ public partial class ConfigWindow : Window
 		SetAutoEnterMode(config.AutoEnterMode);
 		DelayStartAfterWordEnter.IsChecked = config.AutoEnterDelayStartAfterWordEnterEnabled;
 		AutoEnterInputSimulateJavaScriptSendKeys.IsChecked = config.AutoEnterInputSimulateJavaScriptSendKeys;
+
+		ArduinoPort.Text = config.ArduinoPort;
+		ArduinoBaudrate.Text = config.ArduinoBaudrate.ToString(CultureInfo.InvariantCulture);
 
 		AutoFix.IsChecked = config.AutoFixEnabled;
 		FixDelay.IsChecked = config.FixDelayEnabled;
@@ -108,6 +112,12 @@ public partial class ConfigWindow : Window
 		DetectInputLogging.IsChecked = config.DetectInputLogging;
 		LogChatting.IsChecked = config.LogChatting;
 		SelfAntiCheat.IsChecked = config.SelfAntiCheat;
+
+		EndWordColor.SelectedColor = config.EndWordColor;
+		AttackWordColor.SelectedColor = config.AttackWordColor;
+		MissionWordColor.SelectedColor = config.MissionWordColor;
+		EndMissionWordColor.SelectedColor = config.EndMissionWordColor;
+		AttackMissionWordColor.SelectedColor = config.AttackMissionWordColor;
 
 		preferenceReorderList = new ChoosableReorderableList<PreferenceItem>(new ChoosableReorderableListUIElements(InactivePreferences, ActivePreferences, ActivatePreferenceButton, DeactivatePreferenceButton, MoveUpPreferenceButton, MoveDownPreferenceButton), "Name");
 
@@ -142,6 +152,8 @@ public partial class ConfigWindow : Window
 		var delayPerChar = Parse("delay per char", DelayPerCharNumber.Text, 10);
 		var delayPerCharRandom = Parse("delay per char randomization", DelayPerCharRandomNumber.Text, 10);
 
+		var arduinoBaudrate = Parse("arduino baudrate", ArduinoBaudrate.Text, 115200);
+
 		var fixStartDelay = Parse("fix start delay", FixStartDelayNumber.Text, 10);
 		var fixStartDelayRandom = Parse("fix start delay randomization", FixStartDelayRandomNumber.Text, 10);
 		var fixDelayPerChar = Parse("fix delay per char", FixDelayPerCharNumber.Text, 10);
@@ -152,6 +164,7 @@ public partial class ConfigWindow : Window
 		var conf = new Preference
 		{
 			// 단어 검색
+			OnlySearchOnMyTurn = OnlySearchOnMyTurn.IsChecked ?? false,
 			EndWordEnabled = EndWord.IsChecked ?? false,
 			AttackWordEnabled = AttackWord.IsChecked ?? false,
 			ReturnModeEnabled = ReturnMode.IsChecked ?? false,
@@ -169,6 +182,9 @@ public partial class ConfigWindow : Window
 			AutoEnterMode = GetAutoEnterMode(),
 			AutoEnterDelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
 			AutoEnterInputSimulateJavaScriptSendKeys = AutoEnterInputSimulateJavaScriptSendKeys.IsChecked ?? false,
+
+			ArduinoPort = ArduinoPort.Text,
+			ArduinoBaudrate = arduinoBaudrate,
 
 			AutoFixEnabled = AutoFix.IsChecked ?? false,
 			FixDelayPerChar = fixDelayPerChar,
@@ -193,6 +209,13 @@ public partial class ConfigWindow : Window
 			LogChatting = LogChatting.IsChecked ?? false,
 			SelfAntiCheat = SelfAntiCheat.IsChecked ?? false,
 
+			// 단어 색
+			EndWordColor = EndWordColor.SelectedColor ?? Preference.DefaultEndWordColor,
+			AttackWordColor = AttackWordColor.SelectedColor ?? Preference.DefaultAttackWordColor,
+			MissionWordColor = MissionWordColor.SelectedColor ?? Preference.DefaultMissionWordColor,
+			EndMissionWordColor = EndMissionWordColor.SelectedColor ?? Preference.DefaultEndMissionWordColor,
+			AttackMissionWordColor = AttackMissionWordColor.SelectedColor ?? Preference.DefaultAttackMissionWordColor,
+
 			InactiveWordPreference = new WordPreference(preferenceReorderList.GetInactiveItemArray().Select(s => s.NodeType).ToArray()),
 			ActiveWordPreference = new WordPreference(preferenceReorderList.GetActiveItemArray().Select(s => s.NodeType).ToArray()),
 		};
@@ -203,6 +226,7 @@ public partial class ConfigWindow : Window
 			var config = Settings.Default;
 
 			// 단어 검색
+			config.OnlySearchOnMyTurn = conf.OnlySearchOnMyTurn;
 			config.EndWordEnabled = conf.EndWordEnabled;
 			config.AttackWordEnabled = conf.AttackWordEnabled;
 			config.ReturnModeEnabled = conf.ReturnModeEnabled;
@@ -220,6 +244,9 @@ public partial class ConfigWindow : Window
 			config.AutoEnterMode = conf.AutoEnterMode;
 			config.DelayStartAfterWordEnterEnabled = conf.AutoEnterDelayStartAfterWordEnterEnabled;
 			config.AutoEnterInputSimulateJavaScriptSendKeys = conf.AutoEnterInputSimulateJavaScriptSendKeys;
+
+			config.ArduinoPort = conf.ArduinoPort;
+			config.ArduinoBaudrate = conf.ArduinoBaudrate;
 
 			config.AutoFixEnabled = conf.AutoFixEnabled;
 			config.FixDelayEnabled = conf.FixDelayEnabled;
@@ -243,6 +270,13 @@ public partial class ConfigWindow : Window
 			config.DetectInputLogging = conf.DetectInputLogging;
 			config.LogChatting = conf.LogChatting;
 			config.SelfAntiCheat = conf.SelfAntiCheat;
+
+			// 단어 색
+			config.EndWordColor = conf.EndWordColor.ToDrawingColor();
+			config.AttackWordColor = conf.AttackWordColor.ToDrawingColor();
+			config.MissionWordColor = conf.MissionWordColor.ToDrawingColor();
+			config.EndMissionWordColor = conf.EndMissionWordColor.ToDrawingColor();
+			config.AttackMissionWordColor = conf.AttackMissionWordColor.ToDrawingColor();
 
 			// 단어 우선순외
 			config.ActiveWordPreference = conf.ActiveWordPreference;

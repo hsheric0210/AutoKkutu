@@ -9,18 +9,7 @@ public partial class Game : IGame
 {
 	public BrowserBase Browser => domHandler.Browser;
 
-	#region Game status properties
-
-	public WordCondition? CurrentWordCondition { get; private set; }
-
-	public GameMode CurrentGameMode { get; private set; } = GameMode.LastAndFirst;
-
-	public bool IsGameInProgress { get; private set; }
-
-	public bool IsMyTurn { get; private set; }
-
-	public bool ReturnMode { get; set; }
-	#endregion
+	public GameSessionState Session { get; private set; }
 
 	#region Internal handle holder fields
 	private readonly IDomHandler domHandler;
@@ -42,9 +31,9 @@ public partial class Game : IGame
 	public event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 
 	// Turn events
-	public event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
-	public event EventHandler<WordConditionPresentEventArgs>? TurnStarted;
-	public event EventHandler? TurnEnded;
+	public event EventHandler<TurnStartEventArgs>? TurnStarted;
+	public event EventHandler<WordConditionPresentEventArgs>? PathRescanRequested;
+	public event EventHandler<TurnEndEventArgs>? TurnEnded;
 	public event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 	public event EventHandler<WordPresentEventArgs>? HintWordPresented;
 	public event EventHandler<WordPresentEventArgs>? TypingWordPresented;
@@ -55,6 +44,8 @@ public partial class Game : IGame
 	{
 		this.domHandler = domHandler;
 		this.webSocketHandler = webSocketHandler;
+
+		Session = new GameSessionState(""); // default game session
 	}
 
 	public bool HasSameDomHandler(IDomHandler otherHandler) => domHandler.HandlerName.Equals(otherHandler.HandlerName, StringComparison.OrdinalIgnoreCase);
@@ -96,14 +87,17 @@ public partial class Game : IGame
 
 	public int GetTurnTimeMillis() => GetTurnTimeMillisAsync().Result;
 
-	public bool IsPathExpired(PathDetails path) => !path.HasFlag(PathFlags.ManualSearch) && CurrentWordCondition != null && !path.Condition.IsSimilar(CurrentWordCondition);
+	public bool IsPathExpired(PathDetails path)
+		=> !path.HasFlag(PathFlags.DoNotCheckExpired)
+			&& !path.HasFlag(PathFlags.PreSearch) // Pre-search 시 다음 턴에 제시될 단어 조건을 미리 예측하고 치는 것이기에, 당연히 Path-expired 검사에서 걸린다. 이를 우회하기 위해서 Presearch flag를 검사한다.
+			&& !path.Condition.IsSimilar(Session.WordCondition);
 
-	public bool RescanIfPathExpired(PathDetails path)
+	public bool RequestRescanIfPathExpired(PathDetails path)
 	{
-		if (IsPathExpired(path))
+		if (IsPathExpired(path) && !Session.WordCondition.IsEmpty())
 		{
-			Log.Warning(I18n.PathFinder_InvalidatedUpdate);
-			TurnStarted?.Invoke(this, new WordConditionPresentEventArgs((WordCondition)CurrentWordCondition!, IsMyTurn)); // Re-trigger search
+			Log.Warning("Path is expired. Requesting re-scan. old={opath} new={npath}", path.Condition, Session.WordCondition);
+			PathRescanRequested?.Invoke(this, new WordConditionPresentEventArgs(Session.WordCondition)); // Request re-scan
 			return true;
 		}
 		return false;

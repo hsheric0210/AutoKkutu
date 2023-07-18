@@ -70,19 +70,17 @@ public enum PathFlags
 	UseAttackWord = 1 << 1,
 
 	/// <summary>
-	/// 이번 검색의 단어를 자동입력하지 않도록 설정합니다
+	/// 해당 검색 결과에 대하여 자동 입력을 수행하지 않도록 설정합니다.
 	/// </summary>
-	DryRun = 1 << 2,
+	/// <remarks>
+	/// 다른 사람 턴에 검색된 단어, 수동 검색된 단어 등에 붙여집니다.
+	/// </remarks>
+	DoNotAutoEnter = 1 << 2,
 
 	/// <summary>
-	/// 수동 검색된 Path
+	/// 검색 시 미션 글자를 고려하도록 설정합니다
 	/// </summary>
-	ManualSearch = 1 << 3,
-
-	/// <summary>
-	/// 검색 시 미션 글자 고려
-	/// </summary>
-	MissionWordExists = 1 << 4,
+	MissionWordExists = 1 << 3,
 
 	/// <summary>
 	/// 나 바로 이전 턴 유저의 입력 단어를 기반으로 미리 검색을 수행했을 때 설정되는 플래그.
@@ -91,7 +89,7 @@ public enum PathFlags
 	/// 이 플래그가 설정되어 있고 자동 입력 수행 시, '자동 입력 완료 시 자동 전송' 기능을 비활성화해야 함.
 	/// '내 턴이 와서 이전 턴에 Pre-search한 결과를 사용할 때'는 이 플래그를 설정해서는 안됨.
 	/// </remarks>
-	PreSearch = 1 << 5,
+	PreSearch = 1 << 4,
 
 	/// <summary>
 	/// 이 플래그가 설정되어 있을 시, PathDetails에 대한 검사와 Path-expired 검사를 비활성화해야 합니다.
@@ -99,7 +97,7 @@ public enum PathFlags
 	/// <remarks>
 	/// 채팅창을 통해 수동으로 보낸 메시지이거나, 타자 대결 자동 입력일 때 등의 경우 설정되는 플래그입니다.
 	/// </remarks>
-	DoNotCheckExpired = 1 << 6,
+	DoNotCheckExpired = 1 << 5,
 }
 
 public enum PathFindResultType

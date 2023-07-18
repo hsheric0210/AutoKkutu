@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Database.Sql.Query;
-using AutoKkutuLib.Extension;
+﻿using AutoKkutuLib.Extension;
 using Serilog;
 using System.Globalization;
 

@@ -87,7 +87,7 @@ public partial class Main
 
 	public PathFlags SetupPathFinderFlags(PathFlags flags = PathFlags.None)
 	{
-		if (Preference.EndWordEnabled && (flags.HasFlag(PathFlags.ManualSearch) || AutoKkutu.PathFilter.PreviousPaths.Count > 0))  // 첫 턴 한방 방지
+		if (Preference.EndWordEnabled && (flags.HasFlag(PathFlags.DoNotAutoEnter) || AutoKkutu.PathFilter.PreviousPaths.Count > 0))  // 첫 턴 한방 방지
 			flags |= PathFlags.UseEndWord;
 		else
 			flags &= ~PathFlags.UseEndWord;
@@ -96,6 +96,15 @@ public partial class Main
 		else
 			flags &= ~PathFlags.UseAttackWord;
 		return flags;
+	}
+
+	private void StartPathScan(GameMode gameMode, WordCondition condition, PathFlags additionalFlags = PathFlags.None)
+	{
+		var flags = SetupPathFinderFlags(additionalFlags);
+		AutoKkutu.PathFinder.FindPath(
+			gameMode,
+			new PathDetails(condition, flags, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
+			Preference.ActiveWordPreference);
 	}
 
 	public void SendMessage(string message)

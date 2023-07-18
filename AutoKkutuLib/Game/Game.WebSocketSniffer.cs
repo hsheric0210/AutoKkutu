@@ -1,7 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Extension;
 using Serilog;
-using System.Collections.Immutable;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -11,7 +9,6 @@ public partial class Game
 {
 	private IDictionary<GameImplMode, IDictionary<string, Func<JsonNode, Task>>>? specializedSniffers;
 	private IDictionary<string, Func<JsonNode, Task>>? baseSniffers;
-	private WsSessionState? wsSession;
 	private readonly JsonSerializerOptions unescapeUnicodeJso = new()
 	{
 		Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -37,7 +34,7 @@ public partial class Game
 			};
 		}
 
-		Log.Information("WebSocket Sniffer initialized.");
+		Log.Information("WebSocket Handler initialized.");
 
 		baseSniffers = new Dictionary<string, Func<JsonNode, Task>>
 		{
@@ -92,8 +89,8 @@ public partial class Game
 	private void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
 	{
 		webSocketHandler?.OnWebSocketMessage(args.Json);
-		Log.Verbose("WS Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
-		if (specializedSniffers != null && specializedSniffers.TryGetValue(CurrentGameMode.ToGameImplMode(), out var snifferTable) && snifferTable.TryGetValue(args.Type, out var mySpecialSniffer))
+		Log.Verbose("WebSocket Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
+		if (specializedSniffers != null && specializedSniffers.TryGetValue(Session.GameMode.ToGameImplMode(), out var snifferTable) && snifferTable.TryGetValue(args.Type, out var mySpecialSniffer))
 			Task.Run(async () => await mySpecialSniffer(args.Json));
 		else if (baseSniffers?.TryGetValue(args.Type, out var myBaseSniffer) ?? false)
 			Task.Run(async () => await myBaseSniffer(args.Json));
@@ -104,91 +101,56 @@ public partial class Game
 		if (webSocketHandler == null)
 			return;
 
-		wsSession = new WsSessionState(data.UserId);
-		Log.Debug("Caught user id: {id}", data.UserId);
+		Log.Debug("WebSocket Handler detected game session: {userId: '{userId}'}", data.UserId);
+		NotifyGameSession(data.UserId);
 	}
 
 	private void OnWsRoom(WsRoom data)
 	{
-		if (wsSession == null)
-			return;
-
-		if (!data.Players.Contains(wsSession.MyUserId)) // It's other room
-			return;
-
 		if (data.Mode == GameMode.None)
 			Log.Warning("Unknown or unsupported game mode: {mode}", data.ModeString);
 
-		if (data.Gaming && data.GameSequence.Count > 0)
-			wsSession.UpdateGameSeq(data.GameSequence);
+		if (data.Gaming)
+		{
+			Log.Debug("WebSocket Handler detected gameSeq: seq=[{seq}]", string.Join(", ", data.GameSequence));
+			NotifyGameSequence(data.GameSequence);
+		}
 
+		Log.Debug("WebSocket Handler detected game mode change: mode={mode} modeName='{modeName}'", data.Mode, data.ModeString);
 		NotifyGameMode(data.Mode);
 	}
 
 	private void OnWsClassicTurnStart(WsClassicTurnStart data)
 	{
-		if (wsSession != null && wsSession.IsGaming)
-		{
-			wsSession.Turn = data.Turn;
-			if (wsSession.IsMyTurn())
-			{
-				Log.Debug("WS: My turn start! Condition is {cond}", data.Condition);
-				NotifyMyTurn(true, data.Condition, bypassCache: true);
-				return;
-			}
-			else if (wsSession.GetRelativeTurn() == wsSession.GetMyPreviousUserTurn())
-			{
-				wsSession.MyGamePreviousUserMission = data.Condition.MissionChar;
-				Log.Debug("WS: Captured previous user mission char: {missionChar}", data.Condition.MissionChar);
-			}
-
-			NotifyMyTurn(false); // Other user turn start -> not my turn
-		}
+		Log.Debug("WebSocket Handler detected turn start: turn={turn} condition={condition}", data.Turn, data.Condition);
+		NotifyClassicTurnStart(false, data.Turn, data.Condition);
 	}
 
 	private void OnWsClassicTurnEnd(WsClassicTurnEnd data)
 	{
-		if (wsSession == null || !wsSession.IsGaming)
-			return;
-
 		if (data.Ok)
 		{
-			if (string.IsNullOrWhiteSpace(data.Value))
-				return;
+			Log.Debug("WebSocket Handler detected turn end (ok): value='{value}'", data.Value);
+			NotifyClassicTurnEnd(data.Value ?? "");
 
-			var turn = wsSession.Turn;
-			var prvUsrTurn = wsSession.GetMyPreviousUserTurn();
-			Log.Verbose("turn: {turn}, prev_user_turn: {puturn}", turn, prvUsrTurn);
-			if (turn >= 0 && turn == prvUsrTurn)
-			{
-				var missionChar = wsSession.MyGamePreviousUserMission;
-				var presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.Available;
-				if (missionChar != null && data.Value.Contains(missionChar))
-					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.ContainsMissionChar;
-
-				var condition = CurrentGameMode.ConvertWordToCondition(data.Value, wsSession.MyGamePreviousUserMission);
-				if (condition == null)
-					presearch = PreviousUserTurnEndedEventArgs.PresearchAvailability.UnableToParse;
-
-				CurrentWordCondition = condition; // Required to bypass initial 'CheckPathExpired' check
-				PreviousUserTurnEnded?.Invoke(this, new PreviousUserTurnEndedEventArgs(presearch, condition));
-			}
-
-			//if (!wsSession.IsMyTurn())
-			NotifyWordHistory(data.Value);
+			if (!string.IsNullOrWhiteSpace(data.Value))
+				NotifyWordHistory(data.Value);
 		}
 
-		if (wsSession.IsMyTurn())
-			NotifyMyTurn(false, bypassCache: true); // My turn ended
-
 		if (!string.IsNullOrWhiteSpace(data.Hint))
+		{
+			Log.Debug("WebSocket Handler detected turn end (hint): hint='{hint}'", data.Hint);
 			NotifyWordHint(data.Hint);
+		}
 	}
 
 	private void OnWsTurnError(WsTurnError data)
 	{
 		if (!string.IsNullOrWhiteSpace(data.Value))
+		{
+			Log.Debug("WebSocket Handler detected turn error: value='{value}' errorCode={code}", data.Value, data.ErrorCode);
 			NotifyTurnError(data.Value, data.ErrorCode, false);
+		}
 	}
 
 	private void OnWsTypingBattleRoundReady(WsTypingBattleRoundReady data)

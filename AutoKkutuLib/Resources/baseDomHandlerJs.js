@@ -13,14 +13,6 @@
     // 여기 정의된 함수들은 먼저 실행된 스크립트(사이트 별 우회, 특화 기능 추가 등)들에 의해 언제든지 override될 수 있다.
     // 실수로라도 override된 함수들을 다시 덮어씌워 버리지 않기 위해 이미 함수가 정의되어 있는지 매 정의 시마다 검사를 수행한다.
 
-    if (!___gameInProgress___) {
-        ___gameInProgress___ = function () {
-            let s = ___getElementsByClassName___.call(document, 'GameBox Product')[0]?.style;
-            return s != undefined && (s?.display ? s.display != 'none' : s.height != '');
-        }
-    }
-
-
     if (!___getGameMode___) {
         ___getGameMode___ = function () {
             let s = ___getElementsByClassName___.call(document, 'room-head-mode')[0]?.textContent?.split('/')[0]?.trim();
@@ -105,6 +97,44 @@
         }
     }
 
+    if (!___getChatBox___) {
+        ___getChatBox___ = function () {
+            if (!___chatBox___)
+                ___chatBox___ = ___querySelector___.call(document, '[id=\"Talk\"]');
+            return ___chatBox___;
+        }
+    }
+
+    if (!___getTurnIndex___) {
+        ___getTurnIndex___ = function () {
+            return Array.from(___querySelectorAll___.call(document, 'div.game-body>div')).indexOf(___querySelector___.call(document, '.game-user-current'))
+        }
+    }
+
+    if (!___getUserId___) {
+        ___getUserId___ = function () {
+            let myUserName = ___getElementsByClassName___.call(document, 'my-stat-name')[0]?.textContent;
+            if (myUserName) {
+                let key = Array.from(___querySelectorAll___.call(document, 'div.UserListBox.Product>div>div>div.users-name.ellipse')).find(t => t.textContent == myUserName);
+                if (key) {
+                    return key.parentElement.id.substring(11); // 'users-item-'.length
+                }
+            }
+            return null; // Not found
+        }
+    }
+
+    if (!___getGameSeq___) {
+        ___getGameSeq___ = function () {
+            let gameBoxStyle = ___getElementsByClassName___.call(document, 'GameBox Product')[0]?.style;
+            if (gameBoxStyle?.display ? gameBoxStyle.display != 'none' : gameBoxStyle?.height != '') // GameBox shown
+            {
+                return Array.from(___getElementsByClassName___.call(document, 'game-user')).map(t => t.id.substring(10)); // 'game-user-'.length
+            }
+            return []
+        }
+    }
+
     if (!___sendKeyEvents___) {
         ___sendKeyEvents___ = function (key, shift, hangul, upDelay) {
             function evt(type, param) {
@@ -140,14 +170,6 @@
                 }
                 evt('up', { 'key': key, 'shiftKey': shift, 'keyCode': kc });
             }, upDelay);
-        }
-    }
-
-    if (!___getChatBox___) {
-        ___getChatBox___ = function () {
-            if (!___chatBox___)
-                ___chatBox___ = ___querySelector___.call(document, '[id=\"Talk\"]');
-            return ___chatBox___;
         }
     }
 

@@ -13,11 +13,6 @@ public enum CommonNameRegistry
 	InjectionNamespace = 2023,
 
 	/// <summary>
-	/// 게임이 진행 중인지 상태를 반환하는 전역 JavaScript 함수 이름
-	/// </summary>
-	GameInProgress,
-
-	/// <summary>
 	/// 채팅 내용을 업데이트하는 전역 JavaScript 함수 이름
 	/// </summary>
 	UpdateChat,
@@ -216,5 +211,11 @@ public enum CommonNameRegistry
 
 	ShiftState,
 
-	FocusChat
+	FocusChat,
+
+	GetTurnIndex,
+
+	GetUserId,
+
+	GetGameSeq,
 }

@@ -36,28 +36,32 @@ public class RoundChangeEventArgs : EventArgs
 
 public class UnsupportedWordEventArgs : EventArgs
 {
+	public GameSessionState Session;
 	public string Word { get; }
 	public bool IsExistingWord { get; }
 	public bool IsEndWord { get; }
-	public bool IsMyTurn { get; }
-	public UnsupportedWordEventArgs(string word, bool isExistingWord, bool isEndWord, bool isMyTurn)
+	public UnsupportedWordEventArgs(GameSessionState gameSession, string word, bool isExistingWord, bool isEndWord)
 	{
+		Session = gameSession;
 		Word = word;
 		IsExistingWord = isExistingWord;
 		IsEndWord = isEndWord;
-		IsMyTurn = isMyTurn;
 	}
 }
 
 public class WordConditionPresentEventArgs : EventArgs
 {
 	public WordCondition Condition { get; }
-	public bool IsMyTurn { get; }
-	public WordConditionPresentEventArgs(WordCondition condition, bool isMyTurn)
+	public WordConditionPresentEventArgs(WordCondition condition)
 	{
 		Condition = condition;
-		IsMyTurn = isMyTurn;
 	}
+}
+
+public class TurnStartEventArgs : WordConditionPresentEventArgs
+{
+	public GameSessionState Session { get; }
+	public TurnStartEventArgs(GameSessionState session, WordCondition condition) : base(condition) => Session = session;
 }
 
 public class PreviousUserTurnEndedEventArgs : EventArgs
@@ -104,4 +108,15 @@ public class WordPresentEventArgs : EventArgs
 {
 	public string Word { get; }
 	public WordPresentEventArgs(string word) => Word = word;
+}
+
+public class TurnEndEventArgs : EventArgs
+{
+	public GameSessionState Session { get; }
+	public string Value { get; }
+	public TurnEndEventArgs(GameSessionState session, string value)
+	{
+		Session = session;
+		Value = value;
+	}
 }

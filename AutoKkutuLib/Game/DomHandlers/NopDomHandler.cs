@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Properties;
-using Serilog;
+using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Game.DomHandlers;
 
@@ -14,15 +13,13 @@ public sealed class NopDomHandler : IDomHandler
 	public NopDomHandler(BrowserBase browser) => Browser = browser;
 
 	#region Handler implementation
-	public ValueTask<bool> GetIsGameInProgress() => ValueTask.FromResult(false);
-
 	public ValueTask<bool> GetIsMyTurn() => ValueTask.FromResult(false);
 
-	public ValueTask<string?> GetPresentedWord() => ValueTask.FromResult<string?>("");
+	public ValueTask<string> GetPresentedWord() => ValueTask.FromResult<string>("");
 
 	public ValueTask<int> GetRoundIndex() => ValueTask.FromResult(0);
 
-	public ValueTask<string?> GetUnsupportedWord() => ValueTask.FromResult<string?>("");
+	public ValueTask<string> GetUnsupportedWord() => ValueTask.FromResult<string>("");
 
 	public ValueTask<GameMode> GetGameMode() => ValueTask.FromResult(GameMode.LastAndFirst);
 
@@ -30,18 +27,33 @@ public sealed class NopDomHandler : IDomHandler
 
 	public ValueTask<float> GetRoundTime() => ValueTask.FromResult(300f);
 
-	public ValueTask<string?> GetExampleWord() => ValueTask.FromResult<string?>("");
+	public ValueTask<string> GetExampleWord() => ValueTask.FromResult<string>("");
 
-	public ValueTask<string?> GetMissionChar() => ValueTask.FromResult<string?>("");
+	public ValueTask<string> GetMissionChar() => ValueTask.FromResult<string>("");
 
-	public ValueTask<IList<string>?> GetWordInHistories() => ValueTask.FromResult<IList<string>?>(null);
+	public ValueTask<IImmutableList<string>> GetWordInHistories() => ValueTask.FromResult<IImmutableList<string>>(ImmutableList<string>.Empty);
+	public ValueTask<int> GetTurnIndex() => ValueTask.FromResult(-1);
+	public ValueTask<string> GetUserId() => ValueTask.FromResult("");
+	public ValueTask<IImmutableList<string>> GetGameSeq() => ValueTask.FromResult<IImmutableList<string>>(ImmutableList<string>.Empty);
 
-	public void UpdateChat(string input) { }
+	public void UpdateChat(string input)
+	{
+		// nop
+	}
 
-	public void ClickSubmit() { }
+	public void ClickSubmit()
+	{
+		// nop
+	}
 
-	public void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay) { }
-	public void FocusChat() { }
+	public void AppendChat(string textUpdate, bool sendEvents, char key, bool shift, bool hangul, int upDelay)
+	{
+		// nop
+	}
+	public void FocusChat()
+	{
+		// nop
+	}
 	#endregion
 
 	public ValueTask RegisterInGameFunctions(ISet<int> alreadyRegistered) => ValueTask.CompletedTask;

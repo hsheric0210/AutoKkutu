@@ -28,7 +28,7 @@ public class PathFinder
 	public void FindPath(GameMode gameMode, PathDetails param, WordPreference preference)
 	{
 		// TODO: This check could be moved to caller site
-		if (gameMode == GameMode.TypingBattle && !param.HasFlag(PathFlags.ManualSearch))
+		if (gameMode == GameMode.TypingBattle && !param.HasFlag(PathFlags.DoNotAutoEnter))
 			return;
 
 		// TODO: This implementation could be moved to caller site

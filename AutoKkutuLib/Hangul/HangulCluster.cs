@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Hangul;
 

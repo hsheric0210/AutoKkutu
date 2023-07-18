@@ -26,7 +26,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="database.config" />
         <None Remove="Fonts\NanumBarunGothic.ttf" />
         <None Remove="Fonts\NanumBarunGothicBold.ttf" />
         <None Remove="Fonts\NanumBarunGothicLight.ttf" />
@@ -53,9 +52,6 @@
 
     <ItemGroup>
         <AdditionalFiles Include="..\.sonarlint\hsheric0210_autokkutu\CSharp\SonarLint.xml" Link="SonarLint.xml" />
-        <Content Include="database.config">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
         <Content Include="jjoriping.ico" />
     </ItemGroup>
 
@@ -164,18 +160,15 @@
     </Choose>
 
     <ItemGroup>
-        <Compile Update="ColorManagement.xaml.cs">
-            <SubType>Code</SubType>
-        </Compile>
         <Compile Update="GuiI18n.Designer.cs">
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
             <DependentUpon>GuiI18n.resx</DependentUpon>
         </Compile>
         <Compile Update="Properties\GuiResources.Designer.cs">
-          <DesignTime>True</DesignTime>
-          <AutoGen>True</AutoGen>
-          <DependentUpon>GuiResources.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>GuiResources.resx</DependentUpon>
         </Compile>
         <Compile Update="Settings.Designer.cs">
             <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -190,8 +183,8 @@
             <LastGenOutput>GuiI18n.Designer.cs</LastGenOutput>
         </EmbeddedResource>
         <EmbeddedResource Update="Properties\GuiResources.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>GuiResources.Designer.cs</LastGenOutput>
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>GuiResources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
 
@@ -200,19 +193,12 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Update="Resources\Servers.xml">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="Settings.settings">
             <Generator>SettingsSingleFileGenerator</Generator>
             <LastGenOutput>Settings.Designer.cs</LastGenOutput>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Page Update="ColorManagement.xaml">
-            <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-            <SubType>Designer</SubType>
-        </Page>
     </ItemGroup>
 
     <ItemGroup>

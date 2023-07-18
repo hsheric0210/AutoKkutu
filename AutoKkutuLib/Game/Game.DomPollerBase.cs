@@ -83,7 +83,7 @@ public partial class Game
 			action,
 			null,
 			ex => Log.Error(ex, "Game DomPoller '{0}' exception", watchdogName),
-			() => IsGameInProgress,
+			() => Session.AmIGaming,
 			interval,
 			idleInterval,
 			cancelToken);
@@ -95,7 +95,7 @@ public partial class Game
 			action,
 			action,
 			ex => Log.Error(ex, "Condition-less DomPoller '{0}' exception.", watchdogName),
-			() => IsGameInProgress,
+			() => Session.AmIGaming,
 			interval,
 			idleInterval,
 			cancelToken);

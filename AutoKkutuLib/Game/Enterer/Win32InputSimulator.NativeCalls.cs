@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
@@ -17,6 +16,10 @@ public partial class Win32InputSimulator
 	private const ushort VK_LCTRL = 0xa2;
 
 	private const uint MAPVK_VK_TO_VSC = 0;
+
+	private const uint WM_IME_CONTROL = 643;
+
+	private const uint IMC_GETOPENSTATUS = 0x5;
 
 	static Win32InputSimulator()
 	{
@@ -97,6 +100,9 @@ public partial class Win32InputSimulator
 	[DllImport("imm32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	private static extern bool ImmGetConversionStatus(IntPtr himc, ref int lpdw, ref int lpdw2);
+
+	[DllImport("imm32.dll")]
+	private static extern IntPtr ImmGetDefaultIMEWnd(IntPtr hWnd);
 
 	[DllImport("user32.dll", CharSet = CharSet.Auto)]
 	private static extern ushort MapVirtualKeyEx([In] int uCode, [In] uint uMapType, IntPtr dwhkl);

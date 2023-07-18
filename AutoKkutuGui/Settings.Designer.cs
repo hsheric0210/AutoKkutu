@@ -537,5 +537,41 @@ namespace AutoKkutuGui {
                 this["AutoEnterMode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool OnlySearchOnMyTurn {
+            get {
+                return ((bool)(this["OnlySearchOnMyTurn"]));
+            }
+            set {
+                this["OnlySearchOnMyTurn"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("COM7")]
+        public string ArduinoPort {
+            get {
+                return ((string)(this["ArduinoPort"]));
+            }
+            set {
+                this["ArduinoPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("115200")]
+        public int ArduinoBaudrate {
+            get {
+                return ((int)(this["ArduinoBaudrate"]));
+            }
+            set {
+                this["ArduinoBaudrate"] = value;
+            }
+        }
     }
 }

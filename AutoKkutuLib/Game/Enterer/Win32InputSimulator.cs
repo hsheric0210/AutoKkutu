@@ -34,14 +34,17 @@ public partial class Win32InputSimulator : InputSimulatorBase
 		// 참고: 입력 도중에 사용자가 임의로 한영 키를 전환하는 것에 대해서는 대응이 불가능합니다
 
 		//https://m.blog.naver.com/gostarst/220627552770
-		//hangulImeState = SendMessage(game.Browser.GetWindowHandle(), WM_IME_CONTROL, new IntPtr(0x5), new IntPtr(0)).ToInt32() != 0;
+		var state1 = SendMessage(ImmGetDefaultIMEWnd(game.Browser.GetWindowHandle()), WM_IME_CONTROL, new IntPtr(IMC_GETOPENSTATUS), new IntPtr(0)).ToInt32() != 0;
+		Log.Debug("Initial Hangul IME state (WM_IME_CONTROL.IMC_GETOPENSTATUS): {state}", hangulImeState);
 
 		//https://kdsoft-zeros.tistory.com/160
 		var imeHandle = ImmGetContext(game.Browser.GetWindowHandle());
 		int dwConversion = 0, dwSentence = 0;
 		ImmGetConversionStatus(imeHandle, ref dwConversion, ref dwSentence);
-		hangulImeState = dwConversion != 0;
-		Log.Debug("Initial Hangul IME state: {state}", hangulImeState);
+		var state2 = dwConversion != 0;
+		Log.Debug("Initial Hangul IME state (ImmGetConversionStatus): {state}", hangulImeState);
+
+		hangulImeState = state1 || state2;
 	}
 
 	protected async override ValueTask AppendAsync(EnterOptions options, InputCommand input)
@@ -91,16 +94,21 @@ public partial class Win32InputSimulator : InputSimulatorBase
 			Log.Debug("IME state changed to Korean.");
 		}
 
-		SetFocus();
 		KeyDown(vkCode);
+		if (options.GetMaxDelayPerChar() > 0)
+		{
+			SetFocus();
+			FlushInputBuffer();
+		}
 
 		await Task.Delay(options.DelayBeforeKeyUp);
 
-		SetFocus();
 		KeyUp(vkCode);
-
 		if (options.GetMaxDelayPerChar() > 0)
+		{
+			SetFocus();
 			FlushInputBuffer();
+		}
 	}
 
 	protected override async ValueTask SimulationFinished()

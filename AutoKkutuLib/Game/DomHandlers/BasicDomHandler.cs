@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Properties;
 using Serilog;
+using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Game.DomHandlers;
 
@@ -19,7 +20,6 @@ public class BasicDomHandler : IDomHandler
 
 		// functions
 		var names = BrowserRandomNameMapping.BaseJs(browser);
-		names.GenerateScriptType("___gameInProgress___", CommonNameRegistry.GameInProgress);
 		names.GenerateScriptType("___getGameMode___", CommonNameRegistry.GameMode);
 		names.GenerateScriptType("___getPresentWord___", CommonNameRegistry.PresentedWord);
 		names.GenerateScriptType("___isMyTurn___", CommonNameRegistry.IsMyTurn);
@@ -30,10 +30,13 @@ public class BasicDomHandler : IDomHandler
 		names.GenerateScriptType("___getTurnHint___", CommonNameRegistry.TurnHint);
 		names.GenerateScriptType("___getMissionChar___", CommonNameRegistry.MissionChar);
 		names.GenerateScriptType("___getWordHistory___", CommonNameRegistry.WordHistory);
+		names.GenerateScriptType("___getChatBox___", CommonNameRegistry.GetChatBox);
+		names.GenerateScriptType("___getTurnIndex___", CommonNameRegistry.GetTurnIndex);
+		names.GenerateScriptType("___getUserId___", CommonNameRegistry.GetUserId);
+		names.GenerateScriptType("___getGameSeq___", CommonNameRegistry.GetGameSeq);
 		names.GenerateScriptType("___sendKeyEvents___", CommonNameRegistry.SendKeyEvents);
 		names.GenerateScriptType("___updateChat___", CommonNameRegistry.UpdateChat);
 		names.GenerateScriptType("___clickSubmit___", CommonNameRegistry.ClickSubmit);
-		names.GenerateScriptType("___getChatBox___", CommonNameRegistry.GetChatBox);
 		names.GenerateScriptType("___appendChat___", CommonNameRegistry.AppendChat);
 		names.GenerateScriptType("___focusChat___", CommonNameRegistry.FocusChat);
 		names.GenerateScriptType("___funcRegistered___", CommonNameRegistry.FunctionsRegistered);
@@ -54,15 +57,13 @@ public class BasicDomHandler : IDomHandler
 	}
 
 	#region Handler implementation
-	public virtual async ValueTask<bool> GetIsGameInProgress() => await Browser.EvaluateJavaScriptBoolAsync(GetScriptNoArgFunctionName(CommonNameRegistry.GameInProgress), errorMessage: nameof(GetIsGameInProgress));
-
 	public virtual async ValueTask<bool> GetIsMyTurn() => await Browser.EvaluateJavaScriptBoolAsync(GetScriptNoArgFunctionName(CommonNameRegistry.IsMyTurn), errorMessage: nameof(GetIsMyTurn));
 
-	public virtual async ValueTask<string?> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
+	public virtual async ValueTask<string> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
 
 	public virtual async ValueTask<int> GetRoundIndex() => await Browser.EvaluateJavaScriptIntAsync(GetScriptNoArgFunctionName(CommonNameRegistry.RoundIndex), errorPrefix: nameof(GetRoundIndex));
 
-	public virtual async ValueTask<string?> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.TurnError), errorPrefix: nameof(GetUnsupportedWord));
+	public virtual async ValueTask<string> GetUnsupportedWord() => await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.TurnError), errorPrefix: nameof(GetUnsupportedWord));
 
 	public virtual async ValueTask<GameMode> GetGameMode()
 	{
@@ -110,11 +111,17 @@ public class BasicDomHandler : IDomHandler
 
 	public virtual async ValueTask<float> GetRoundTime() => float.TryParse(await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.RoundTime), errorPrefix: nameof(GetRoundTime)), out var time) && time > 0 ? time : 150;
 
-	public virtual async ValueTask<string?> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.TurnHint), errorPrefix: nameof(GetExampleWord)))?.Trim();
+	public virtual async ValueTask<string> GetExampleWord() => (await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.TurnHint), errorPrefix: nameof(GetExampleWord))).Trim();
 
-	public virtual async ValueTask<string?> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar)))?.Trim();
+	public virtual async ValueTask<string> GetMissionChar() => (await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.MissionChar), errorPrefix: nameof(GetMissionChar))).Trim();
 
-	public virtual async ValueTask<IList<string>?> GetWordInHistories() => await Browser.EvaluateJavaScriptArrayAsync($"{GetScriptNoArgFunctionName(CommonNameRegistry.WordHistory)}", "", errorPrefix: nameof(GetWordInHistories));
+	public virtual async ValueTask<IImmutableList<string>> GetWordInHistories() => await Browser.EvaluateJavaScriptArrayAsync(GetScriptNoArgFunctionName(CommonNameRegistry.WordHistory), "", errorPrefix: nameof(GetWordInHistories));
+
+	public virtual async ValueTask<int> GetTurnIndex() => await Browser.EvaluateJavaScriptIntAsync(GetScriptNoArgFunctionName(CommonNameRegistry.GetTurnIndex), errorPrefix: nameof(GetTurnIndex));
+
+	public virtual async ValueTask<string> GetUserId() => await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.GetUserId), errorPrefix: nameof(GetUserId));
+
+	public virtual async ValueTask<IImmutableList<string>> GetGameSeq() => await Browser.EvaluateJavaScriptArrayAsync(GetScriptNoArgFunctionName(CommonNameRegistry.GetGameSeq), "", nameof(GetGameSeq));
 
 	public virtual void UpdateChat(string input) => Browser.ExecuteJavaScript($"{Browser.GetScriptTypeName(CommonNameRegistry.UpdateChat)}('{input}')", errorMessage: nameof(UpdateChat));
 

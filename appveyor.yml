@@ -1,6 +1,8 @@
-﻿version: 1.0 b{build}
+﻿version: 1.2 b{build}
 image: Visual Studio 2022
-configuration: Release
+configuration:
+- ReleaseCefSharp
+- ReleaseSelenium
 environment:
   sonarcloud_apikey:
     secure: yvB8aN0TIdgxBpIu4otx4bAAOFTXvf4lCvabOeU7Z4eck6xzqlVfB99dQmT3bc+9

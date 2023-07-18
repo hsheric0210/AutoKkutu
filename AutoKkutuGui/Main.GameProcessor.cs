@@ -37,21 +37,32 @@ public partial class Main
 	private void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 	{
 		Log.Verbose(I18n.Main_PathUpdateReceived);
-		if (!args.HasFlag(PathFlags.ManualSearch))
+		if (!args.HasFlag(PathFlags.DoNotAutoEnter))
 			autoPathFindCache = args;
+
 		if (args.HasFlag(PathFlags.PreSearch))
+		{
+			// 내 턴이 이미 시작한 상태에서 Pre-search 결과 입력을 시작할 경우, 매우 높은 확률로 레이스 컨디션이 발생해 2개의 자동입력이 동시에 진행됨 -> (특히 입력 시뮬레이션 시) 꼬임
+			if (AutoKkutu.Game.Session.IsMyTurn() && AutoKkutu.Game.Session.IsTurnInProgress)
+			{
+				preSearch = null;
+				Log.Debug("Pre-search result received but my turn is started. Dropping pre-search result.");
+				return;
+			}
+
 			preSearch = args;
+		}
 
-		var autoEnter = Preference.AutoEnterEnabled && !args.HasFlag(PathFlags.ManualSearch) /*&& !args.HasFlag(PathFinderFlags.PreSearch)*/;
+		var autoEnter = Preference.AutoEnterEnabled && !args.HasFlag(PathFlags.DoNotAutoEnter) /*&& !args.HasFlag(PathFinderFlags.PreSearch)*/;
 
-		if (args.Result == PathFindResultType.NotFound && !args.HasFlag(PathFlags.ManualSearch))
+		if (args.Result == PathFindResultType.NotFound && !args.HasFlag(PathFlags.DoNotAutoEnter))
 			UpdateStatusMessage(StatusMessage.NotFound); // Not found
 		else if (args.Result == PathFindResultType.Error)
 			UpdateStatusMessage(StatusMessage.Error); // Error occurred
 		else if (!autoEnter)
 			UpdateStatusMessage(StatusMessage.Normal);
 
-		if (AutoKkutu?.Game?.RescanIfPathExpired(args.Details.WithoutFlags(PathFlags.PreSearch)) == true)
+		if (AutoKkutu.Game.RequestRescanIfPathExpired(args.Details))
 		{
 			Log.Warning("Expired word condition {path} rejected. Rescanning...", args.Details.Condition);
 			return;
@@ -113,7 +124,7 @@ public partial class Main
 	private void OnGameEnded(object? sender, EventArgs e)
 	{
 		UpdateSearchState(null, false);
-		AutoKkutu.PathFilter.UnsupportedPaths.Clear();
+		AutoKkutu.PathFilter.UnsupportedPaths.Clear(); // todo: move this to lib
 		if (Preference.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
@@ -147,7 +158,7 @@ public partial class Main
 
 	private void OnMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 	{
-		if (!args.IsMyTurn)
+		if (!args.Session.IsMyTurn())
 			return;
 
 		if (autoPathFindCache is null)
@@ -184,15 +195,10 @@ public partial class Main
 		}
 	}
 
-	private void OnMyTurnEnded(object? sender, EventArgs e)
+	private void OnTurnStarted(object? sender, TurnStartEventArgs args)
 	{
-		Log.Debug(I18n.Main_WordIndexReset);
-		wordIndex = 0;
-	}
-
-	private void OnMyTurnStarted(object? sender, WordConditionPresentEventArgs args)
-	{
-		if (Preference.AutoEnterEnabled)
+		var isMyTurn = args.Session.IsMyTurn();
+		if (isMyTurn && Preference.AutoEnterEnabled)
 		{
 			if (preSearch?.Details.Condition.IsSimilar(args.Condition) == true)
 			{
@@ -207,26 +213,57 @@ public partial class Main
 				Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Details.Condition, args.Condition);
 		}
 
-		AutoKkutu.PathFinder.FindPath(
-			AutoKkutu.Game.CurrentGameMode,
-			new PathDetails(args.Condition, SetupPathFinderFlags(), Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
-			Preference.ActiveWordPreference);
+		if (!Preference.OnlySearchOnMyTurn || isMyTurn)
+		{
+			StartPathScan(
+				args.Session.GameMode,
+				args.Condition,
+				isMyTurn ? PathFlags.None : PathFlags.DoNotAutoEnter);  // 다른 사람 턴에 검색된 단어는 자동입력하면 안됨
+		}
 	}
 
-	private void OnPreviousUserTurnEnded(object? sender, PreviousUserTurnEndedEventArgs args)
+	private void OnPathRescanRequested(object? sender, WordConditionPresentEventArgs args) => StartPathScan(AutoKkutu.Game.Session.GameMode, args.Condition);
+
+	private void OnTurnEnded(object? sender, TurnEndEventArgs args)
 	{
-		if (args.Presearch != PreviousUserTurnEndedEventArgs.PresearchAvailability.Available || args.Condition is null)
+		var turn = args.Session.GetRelativeTurn();
+
+		if (args.Session.IsMyTurn())
 		{
-			Log.Verbose("Pre-search result flushed. Reason: {availability}", args.Presearch);
-			preSearch = null;
+			Log.Debug(I18n.Main_WordIndexReset);
+			wordIndex = 0;
 			return;
 		}
 
-		Log.Verbose("Performing pre-search on: {condition}", args.Condition);
+		// Pre-search
+		if (turn < 0 || turn != args.Session.GetMyPreviousUserTurn() || string.IsNullOrEmpty(args.Value))
+			return;
+
+		var missionChar = args.Session.PreviousTurnMission;
+		if (!string.IsNullOrEmpty(missionChar) && args.Value.Contains(missionChar, StringComparison.OrdinalIgnoreCase))
+		{
+			Log.Information("Unable to pre-search because previous turn value contains mission char '{char}'.", missionChar);
+			goto presearchFail;
+		}
+
+		var condition = args.Session.GameMode.ConvertWordToCondition(args.Value, args.Session.PreviousTurnMission);
+		if (condition == null)
+		{
+			Log.Information("Unable to pre-search due to the failure of condition extraction from previous turn value.");
+			goto presearchFail;
+		}
+
+		Log.Verbose("Performing pre-search on: {condition}", condition);
 		AutoKkutu.PathFinder.FindPath(
-			AutoKkutu.Game.CurrentGameMode,
-			new PathDetails((WordCondition)args.Condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
+			args.Session.GameMode,
+			new PathDetails((WordCondition)condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
 			Preference.ActiveWordPreference);
+
+		return;
+
+presearchFail:
+		Log.Verbose("Pre-search result flushed.");
+		preSearch = null;
 	}
 
 	private void OnTypingWordPresented(object? sender, WordPresentEventArgs args)
@@ -248,5 +285,5 @@ public partial class Main
 			word));
 	}
 
-	private void OnChatUpdated(object? sender, EventArgs args) => ChatUpdated?.Invoke(null, args);
+	private void OnChatUpdated(object? sender, EventArgs args) => ChatUpdated?.Invoke(this, args);
 }

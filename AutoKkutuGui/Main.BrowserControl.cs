@@ -78,11 +78,11 @@ public partial class Main
 		AutoKkutu.GameEnded += OnGameEnded;
 		AutoKkutu.GameModeChanged += OnGameModeChange;
 		AutoKkutu.GameStarted += OnGameStarted;
-		AutoKkutu.MyTurnEnded += OnMyTurnEnded;
-		AutoKkutu.MyTurnStarted += OnMyTurnStarted;
+		AutoKkutu.TurnStarted += OnTurnStarted;
+		AutoKkutu.PathRescanRequested += OnPathRescanRequested;
+		AutoKkutu.TurnEnded += OnTurnEnded;
 		AutoKkutu.TypingWordPresented += OnTypingWordPresented;
 		AutoKkutu.UnsupportedWordEntered += OnMyPathIsUnsupported;
-		AutoKkutu.PreviousUserTurnEnded += OnPreviousUserTurnEnded;
 		AutoKkutu.RoundChanged += OnRoundChanged;
 		AutoKkutuInitialized?.Invoke(this, new AutoKkutuInitializedEventArgs(AutoKkutu));
 

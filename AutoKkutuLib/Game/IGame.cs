@@ -5,12 +5,8 @@ using AutoKkutuLib.Game.WebSocketHandlers;
 namespace AutoKkutuLib.Game;
 public interface IGame : IDisposable
 {
-	GameMode CurrentGameMode { get; }
-	WordCondition? CurrentWordCondition { get; }
-	bool IsGameInProgress { get; }
-	bool IsMyTurn { get; }
+	GameSessionState Session { get; }
 	BrowserBase Browser { get; }
-	bool ReturnMode { get; set; }
 
 	int GetTurnTimeMillis();
 
@@ -21,9 +17,9 @@ public interface IGame : IDisposable
 	event EventHandler<GameModeChangeEventArgs>? GameModeChanged;
 
 	// Turn events
-	event EventHandler<PreviousUserTurnEndedEventArgs>? PreviousUserTurnEnded;
-	event EventHandler<WordConditionPresentEventArgs>? TurnStarted;
-	event EventHandler? TurnEnded;
+	event EventHandler<TurnStartEventArgs>? TurnStarted;
+	event EventHandler<WordConditionPresentEventArgs>? PathRescanRequested;
+	event EventHandler<TurnEndEventArgs>? TurnEnded;
 	event EventHandler<UnsupportedWordEventArgs>? UnsupportedWordEntered;
 	event EventHandler<WordPresentEventArgs>? HintWordPresented;
 	event EventHandler<WordPresentEventArgs>? TypingWordPresented;
@@ -35,7 +31,7 @@ public interface IGame : IDisposable
 	bool HasSameDomHandler(IDomHandler otherHandler);
 	bool HasSameWebSocketHandler(IWebSocketHandler otherHandler);
 	bool IsPathExpired(PathDetails path);
-	bool RescanIfPathExpired(PathDetails path);
+	bool RequestRescanIfPathExpired(PathDetails path);
 	void Start();
 	void Stop();
 	void UpdateChat(string input);

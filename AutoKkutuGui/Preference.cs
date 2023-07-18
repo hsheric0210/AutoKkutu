@@ -7,7 +7,15 @@ namespace AutoKkutuGui;
 
 public sealed class Preference : IEquatable<Preference?>
 {
+	public static Color DefaultEndWordColor { get; } = Color.FromRgb(0xFF, 0x11, 0x00);
+	public static Color DefaultAttackWordColor { get; } = Color.FromRgb(0xFF, 0x80, 0x00);
+	public static Color DefaultMissionWordColor { get; } = Color.FromRgb(0x40, 0xFF, 0x40);
+	public static Color DefaultEndMissionWordColor { get; } = Color.FromRgb(0x20, 0xC0, 0xA8);
+	public static Color DefaultAttackMissionWordColor { get; } = Color.FromRgb(0xFF, 0xFF, 0x40);
+
 	// 단어 검색
+
+	public bool OnlySearchOnMyTurn { get; set; }
 
 	public bool EndWordEnabled { get; set; }
 
@@ -36,6 +44,10 @@ public sealed class Preference : IEquatable<Preference?>
 	public bool AutoEnterDelayStartAfterWordEnterEnabled { get; set; } = true;
 
 	public bool AutoEnterInputSimulateJavaScriptSendKeys { get; set; } = true;
+
+	public string ArduinoPort { get; set; }
+
+	public int ArduinoBaudrate { get; set; }
 
 	public string AutoEnterMode { get; set; }
 
@@ -77,30 +89,15 @@ public sealed class Preference : IEquatable<Preference?>
 
 	public bool SelfAntiCheat { get; set; }
 
-	public Color EndWordColor
-	{
-		get; set;
-	} = Color.FromRgb(0xFF, 0x11, 0x00);
+	public Color EndWordColor { get; set; }
 
-	public Color AttackWordColor
-	{
-		get; set;
-	} = Color.FromRgb(0xFF, 0x80, 0x00);
+	public Color AttackWordColor { get; set; }
 
-	public Color MissionWordColor
-	{
-		get; set;
-	} = Color.FromRgb(0x40, 0xFF, 0x40);
+	public Color MissionWordColor { get; set; }
 
-	public Color EndMissionWordColor
-	{
-		get; set;
-	} = Color.FromRgb(0x20, 0xC0, 0xA8);
+	public Color EndMissionWordColor { get; set; }
 
-	public Color AttackMissionWordColor
-	{
-		get; set;
-	} = Color.FromRgb(0xFF, 0xFF, 0x40);
+	public Color AttackMissionWordColor { get; set; }
 
 	public WordPreference ActiveWordPreference { get; set; } = new WordPreference(WordPreference.GetDefault());
 
@@ -116,6 +113,7 @@ public sealed class Preference : IEquatable<Preference?>
 		// 2. Regex: /config\.([\w]+) = conf\.([\w]+)/     Replace: $1 = config.$2
 
 		// 단어 검색
+		OnlySearchOnMyTurn = config.OnlySearchOnMyTurn;
 		EndWordEnabled = config.EndWordEnabled;
 		AttackWordEnabled = config.AttackWordEnabled;
 		ReturnModeEnabled = config.ReturnModeEnabled;
@@ -133,6 +131,9 @@ public sealed class Preference : IEquatable<Preference?>
 		AutoEnterMode = config.AutoEnterMode;
 		AutoEnterDelayStartAfterWordEnterEnabled = config.DelayStartAfterWordEnterEnabled;
 		AutoEnterInputSimulateJavaScriptSendKeys = config.AutoEnterInputSimulateJavaScriptSendKeys;
+
+		ArduinoPort = config.ArduinoPort;
+		ArduinoBaudrate = config.ArduinoBaudrate;
 
 		AutoFixEnabled = config.AutoFixEnabled;
 		FixDelayEnabled = config.FixDelayEnabled;
@@ -157,6 +158,7 @@ public sealed class Preference : IEquatable<Preference?>
 		LogChatting = config.LogChatting;
 		SelfAntiCheat = config.SelfAntiCheat;
 
+		// 단어 색
 		EndWordColor = config.EndWordColor.ToMediaColor();
 		AttackWordColor = config.AttackWordColor.ToMediaColor();
 		MissionWordColor = config.MissionWordColor.ToMediaColor();
@@ -169,12 +171,12 @@ public sealed class Preference : IEquatable<Preference?>
 	}
 
 	public override bool Equals(object? obj) => Equals(obj as Preference);
-
-	public bool Equals(Preference? other) => other is not null && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && AutoEnterDelayEnabled == other.AutoEnterDelayEnabled && AutoEnterStartDelay == other.AutoEnterStartDelay && AutoEnterStartDelayRandom == other.AutoEnterStartDelayRandom && AutoEnterDelayPerChar == other.AutoEnterDelayPerChar && AutoEnterDelayPerCharRandom == other.AutoEnterDelayPerCharRandom && AutoEnterDelayStartAfterWordEnterEnabled == other.AutoEnterDelayStartAfterWordEnterEnabled && AutoEnterInputSimulateJavaScriptSendKeys == other.AutoEnterInputSimulateJavaScriptSendKeys && AutoEnterMode == other.AutoEnterMode && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EndWordColor.Equals(other.EndWordColor) && AttackWordColor.Equals(other.AttackWordColor) && MissionWordColor.Equals(other.MissionWordColor) && EndMissionWordColor.Equals(other.EndMissionWordColor) && AttackMissionWordColor.Equals(other.AttackMissionWordColor) && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
+	public bool Equals(Preference? other) => other is not null && OnlySearchOnMyTurn == other.OnlySearchOnMyTurn && EndWordEnabled == other.EndWordEnabled && AttackWordEnabled == other.AttackWordEnabled && ReturnModeEnabled == other.ReturnModeEnabled && MissionAutoDetectionEnabled == other.MissionAutoDetectionEnabled && MaxDisplayedWordCount == other.MaxDisplayedWordCount && AutoEnterEnabled == other.AutoEnterEnabled && AutoEnterDelayEnabled == other.AutoEnterDelayEnabled && AutoEnterStartDelay == other.AutoEnterStartDelay && AutoEnterStartDelayRandom == other.AutoEnterStartDelayRandom && AutoEnterDelayPerChar == other.AutoEnterDelayPerChar && AutoEnterDelayPerCharRandom == other.AutoEnterDelayPerCharRandom && AutoEnterDelayStartAfterWordEnterEnabled == other.AutoEnterDelayStartAfterWordEnterEnabled && AutoEnterInputSimulateJavaScriptSendKeys == other.AutoEnterInputSimulateJavaScriptSendKeys && ArduinoPort == other.ArduinoPort && ArduinoBaudrate == other.ArduinoBaudrate && AutoEnterMode == other.AutoEnterMode && AutoFixEnabled == other.AutoFixEnabled && FixDelayEnabled == other.FixDelayEnabled && FixStartDelay == other.FixStartDelay && FixStartDelayRandom == other.FixStartDelayRandom && FixDelayPerChar == other.FixDelayPerChar && FixDelayPerCharRandom == other.FixDelayPerCharRandom && RandomWordSelection == other.RandomWordSelection && RandomWordSelectionCount == other.RandomWordSelectionCount && AutoDBUpdateEnabled == other.AutoDBUpdateEnabled && AutoDBWordAddEnabled == other.AutoDBWordAddEnabled && AutoDBWordRemoveEnabled == other.AutoDBWordRemoveEnabled && AutoDBAddEndEnabled == other.AutoDBAddEndEnabled && HijackACPackets == other.HijackACPackets && SimulateAntiCheat == other.SimulateAntiCheat && DetectInputLogging == other.DetectInputLogging && LogChatting == other.LogChatting && SelfAntiCheat == other.SelfAntiCheat && EndWordColor.Equals(other.EndWordColor) && AttackWordColor.Equals(other.AttackWordColor) && MissionWordColor.Equals(other.MissionWordColor) && EndMissionWordColor.Equals(other.EndMissionWordColor) && AttackMissionWordColor.Equals(other.AttackMissionWordColor) && EqualityComparer<WordPreference>.Default.Equals(ActiveWordPreference, other.ActiveWordPreference) && EqualityComparer<WordPreference>.Default.Equals(InactiveWordPreference, other.InactiveWordPreference);
 
 	public override int GetHashCode()
 	{
 		var hash = new HashCode();
+		hash.Add(OnlySearchOnMyTurn);
 		hash.Add(EndWordEnabled);
 		hash.Add(AttackWordEnabled);
 		hash.Add(ReturnModeEnabled);
@@ -188,6 +190,8 @@ public sealed class Preference : IEquatable<Preference?>
 		hash.Add(AutoEnterDelayPerCharRandom);
 		hash.Add(AutoEnterDelayStartAfterWordEnterEnabled);
 		hash.Add(AutoEnterInputSimulateJavaScriptSendKeys);
+		hash.Add(ArduinoPort);
+		hash.Add(ArduinoBaudrate);
 		hash.Add(AutoEnterMode);
 		hash.Add(AutoFixEnabled);
 		hash.Add(FixDelayEnabled);
