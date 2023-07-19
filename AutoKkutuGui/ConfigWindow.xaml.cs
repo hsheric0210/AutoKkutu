@@ -21,15 +21,13 @@ public partial class ConfigWindow : Window
 
 	private string GetAutoEnterMode()
 	{
-		if (AutoEnterInstant.IsChecked ?? false)
-			return DelayedInstantEnterer.Name;
 		if (AutoEnterInputSimulateJavaScript.IsChecked ?? false)
 			return JavaScriptInputSimulator.Name;
 		if (AutoEnterInputSimulateWin32.IsChecked ?? false)
 			return Win32InputSimulator.Name;
 		if (AutoEnterInputSimulateArduino.IsChecked ?? false)
 			return "ArduinoInputSimulator";
-		throw new InvalidOperationException("None of the AutoEnter options are selected");
+		return DelayedInstantEnterer.Name; // default
 	}
 
 	private void SetAutoEnterMode(string mode)
@@ -42,9 +40,6 @@ public partial class ConfigWindow : Window
 
 		switch (mode)
 		{
-			case DelayedInstantEnterer.Name:
-				AutoEnterInstant.IsChecked = true;
-				break;
 			case JavaScriptInputSimulator.Name:
 				AutoEnterInputSimulateJavaScript.IsChecked = true;
 				break;
@@ -55,6 +50,7 @@ public partial class ConfigWindow : Window
 				AutoEnterInputSimulateArduino.IsChecked = true;
 				break;
 			default:
+				AutoEnterInstant.IsChecked = true;
 				break;
 		}
 	}

@@ -82,9 +82,6 @@ public class CefConfigDto
 	public bool MultiThreadedMessageLoop { get; set; }
 
 	[XmlElement]
-	public string BrowserSubprocessPath { get; set; }
-
-	[XmlElement]
 	public string CachePath { get; set; }
 
 	[XmlElement]

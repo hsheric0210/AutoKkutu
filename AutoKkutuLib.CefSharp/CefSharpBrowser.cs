@@ -45,7 +45,6 @@ public class CefSharpBrowser : BrowserBase
 		SetIfAvail(config.Locale, s => settings.Locale = s);
 		SetIfAvail(ReplaceCd(config.UserDataPath), s => settings.UserDataPath = s);
 		SetIfAvail(config.CookieableSchemesList, s => settings.CookieableSchemesList = s);
-		SetIfAvail(ReplaceCd(config.BrowserSubprocessPath), s => settings.BrowserSubprocessPath = s);
 		SetIfAvail(ReplaceCd(config.CachePath), s => settings.CachePath = s);
 		SetIfAvail(ReplaceCd(config.RootCachePath), s => settings.RootCachePath = s);
 		settings.LogSeverity = config.LogSeverity;
@@ -109,7 +108,7 @@ public class CefSharpBrowser : BrowserBase
 		var settings = CefConfigToCefSettings(config);
 		try
 		{
-			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
+			if (!Cef.IsInitialized && !Cef.Initialize(settings, false, (IApp?)null))
 				LibLogger.Warn<CefSharpBrowser>("CefSharp initialization failed.");
 		}
 		catch (Exception ex)
