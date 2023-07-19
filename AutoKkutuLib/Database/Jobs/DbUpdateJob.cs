@@ -3,7 +3,7 @@ using AutoKkutuLib.Extension;
 using System.Globalization;
 
 namespace AutoKkutuLib.Database.Jobs;
-public class DbUpdateTask
+public class DbUpdateJob
 {
 	private readonly AbstractDatabaseConnection dbConnection;
 	private readonly NodeManager nodeManager;
@@ -31,20 +31,20 @@ public class DbUpdateTask
 		AddEnd = 1 << 2
 	}
 
-	public DbUpdateTask(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, PathFilter specialPathList)
+	public DbUpdateJob(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, PathFilter specialPathList)
 	{
 		this.dbConnection = dbConnection;
 		this.nodeManager = nodeManager;
 		this.specialPathList = specialPathList;
 	}
 
-	public DbUpdateTask(NodeManager nodeManager, PathFilter specialPathList) : this(nodeManager.DbConnection, nodeManager, specialPathList)
+	public DbUpdateJob(NodeManager nodeManager, PathFilter specialPathList) : this(nodeManager.DbConnection, nodeManager, specialPathList)
 	{
 	}
 
 	public string Execute(DbUpdateCategories categories)
 	{
-		LibLogger.Debug<DbUpdateTask>(I18n.PathFinder_AutoDBUpdate);
+		LibLogger.Debug<DbUpdateJob>(I18n.PathFinder_AutoDBUpdate);
 		int AddQueueCount = 0,
 			RemoveQueueCount = 0,
 			EndNodeQueueCount = 0,
@@ -54,14 +54,14 @@ public class DbUpdateTask
 		if (categories.HasFlag(DbUpdateCategories.Add))
 		{
 			AddQueueCount = specialPathList.NewPaths.Count;
-			LibLogger.Debug<DbUpdateTask>(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);
+			LibLogger.Debug<DbUpdateJob>(I18n.PathFinder_AutoDBUpdate_New, AddQueueCount);
 			AddSuccessfulCount = AddNewPaths(CopyPathList(specialPathList.NewPaths));
 		}
 
 		if (categories.HasFlag(DbUpdateCategories.Remove))
 		{
 			RemoveQueueCount = specialPathList.InexistentPaths.Count;
-			LibLogger.Info<DbUpdateTask>(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
+			LibLogger.Info<DbUpdateJob>(I18n.PathFinder_AutoDBUpdate_Remove, RemoveQueueCount);
 			RemoveSuccessfulCount = RemoveInexistentPaths(CopyPathList(specialPathList.InexistentPaths));
 		}
 
@@ -72,7 +72,7 @@ public class DbUpdateTask
 		}
 
 		var result = string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AutoDBUpdate_Result, AddSuccessfulCount, AddQueueCount, RemoveSuccessfulCount, RemoveQueueCount, EndNodeQueueCount, EndNodeSuccessfulCount);
-		LibLogger.Info<DbUpdateTask>(I18n.PathFinder_AutoDBUpdate_Finished, result);
+		LibLogger.Info<DbUpdateJob>(I18n.PathFinder_AutoDBUpdate_Finished, result);
 		return result;
 	}
 
@@ -93,16 +93,16 @@ public class DbUpdateTask
 
 			try
 			{
-				LibLogger.Debug<DbUpdateTask>(I18n.PathFinder_AddPath, word, flags);
+				LibLogger.Debug<DbUpdateJob>(I18n.PathFinder_AddPath, word, flags);
 				if (query.Execute(word, flags))
 				{
-					LibLogger.Info<DbUpdateTask>(I18n.PathFinder_AddPath_Success, word);
+					LibLogger.Info<DbUpdateJob>(I18n.PathFinder_AddPath_Success, word);
 					count++;
 				}
 			}
 			catch (Exception ex)
 			{
-				LibLogger.Error<DbUpdateTask>(ex, I18n.PathFinder_AddPath_Failed, word);
+				LibLogger.Error<DbUpdateJob>(ex, I18n.PathFinder_AddPath_Failed, word);
 			}
 		}
 
@@ -121,7 +121,7 @@ public class DbUpdateTask
 			}
 			catch (Exception ex)
 			{
-				LibLogger.Error<DbUpdateTask>(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
+				LibLogger.Error<DbUpdateJob>(ex, I18n.PathFinder_RemoveInexistent_Failed, word);
 			}
 		}
 		return count;
@@ -148,21 +148,21 @@ public class DbUpdateTask
 			{
 				try
 				{
-					LibLogger.Debug<DbUpdateTask>("Trying to add {0} end-node {1} to the database.", gm, node);
+					LibLogger.Debug<DbUpdateJob>("Trying to add {0} end-node {1} to the database.", gm, node);
 					if (query.Execute(node))
 					{
-						LibLogger.Info<DbUpdateTask>("Added {0} end-node {1} to the database.", gm, node);
+						LibLogger.Info<DbUpdateJob>("Added {0} end-node {1} to the database.", gm, node);
 						count++;
 					}
 				}
 				catch (Exception ex)
 				{
-					LibLogger.Error<DbUpdateTask>(ex, "Error adding {0} end-node: {1}.", gm, node);
+					LibLogger.Error<DbUpdateJob>(ex, "Error adding {0} end-node: {1}.", gm, node);
 				}
 			}
 		}
 
-		LibLogger.Info<DbUpdateTask>("Added {0} end-nodes.", count);
+		LibLogger.Info<DbUpdateJob>("Added {0} end-nodes.", count);
 
 		return count;
 	}

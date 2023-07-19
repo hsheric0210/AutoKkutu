@@ -128,14 +128,14 @@ public partial class Main
 		if (Preference.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-			var updateTask = new DbUpdateTask(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
-			var opts = DbUpdateTask.DbUpdateCategories.None;
+			var updateTask = new DbUpdateJob(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
+			var opts = DbUpdateJob.DbUpdateCategories.None;
 			if (Preference.AutoDBWordAddEnabled)
-				opts |= DbUpdateTask.DbUpdateCategories.Add;
+				opts |= DbUpdateJob.DbUpdateCategories.Add;
 			if (Preference.AutoDBWordRemoveEnabled)
-				opts |= DbUpdateTask.DbUpdateCategories.Remove;
+				opts |= DbUpdateJob.DbUpdateCategories.Remove;
 			if (Preference.AutoDBAddEndEnabled)
-				opts |= DbUpdateTask.DbUpdateCategories.AddEnd;
+				opts |= DbUpdateJob.DbUpdateCategories.AddEnd;
 			var result = updateTask.Execute(opts);
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheckDone, I18n.Status_AutoUpdate, result);
 		}

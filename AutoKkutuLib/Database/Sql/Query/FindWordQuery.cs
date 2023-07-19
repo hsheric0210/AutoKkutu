@@ -62,12 +62,12 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 		if (Parameter is not PathDetails param)
 			throw new InvalidOperationException(nameof(Parameter) + " not set.");
 
-		LibLogger.Debug<FindWordQuery>(nameof(FindWordQuery) + ": Finding the optimal word list for {0}.", param);
+		LibLogger.Debug<FindWordQuery>("Finding the optimal word list for {0}.", param);
 		var findQuery = CreateQuery(param);
 		var result = new List<PathObject>();
 		try
 		{
-			LibLogger.Debug<FindWordQuery>(nameof(FindWordQuery) + ": Full query string is {0}.", findQuery.Sql);
+			LibLogger.Debug<FindWordQuery>("Full query string is {0}.", findQuery.Sql);
 
 			foreach (var found in Connection.Query<WordModel>(findQuery.Sql, new DynamicParameters(findQuery.Parameters)))
 			{

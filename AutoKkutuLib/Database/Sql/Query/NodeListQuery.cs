@@ -19,7 +19,7 @@ public class NodeListQuery : SqlQuery<ICollection<string>>
 	{
 		if (string.IsNullOrWhiteSpace(TableName))
 			throw new InvalidOperationException("Table name should be filled.");
-		LibLogger.Verbose<NodeListQuery>(nameof(NodeListQuery) + ": Listing the node list of table {0}.", TableName);
+		LibLogger.Verbose<NodeListQuery>("Listing the node list of table {0}.", TableName);
 		return Connection.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM {TableName}").AsList();
 	}
 }

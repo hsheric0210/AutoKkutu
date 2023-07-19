@@ -107,7 +107,7 @@ public partial class DatabaseManagement : Window
 		return type;
 	}
 
-	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DatabaseCheckJob(autoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, autoKkutu.Browser);
+	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DbCheckJob(autoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, autoKkutu.Browser);
 
 	private WordFlags GetBatchAddWordDatabaseAttributes()
 	{

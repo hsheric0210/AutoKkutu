@@ -9,7 +9,7 @@ public class VacuumQuery : SqlQuery<int>
 
 	public override int Execute()
 	{
-		LibLogger.Debug<VacuumQuery>(nameof(VacuumQuery) + ": Running vacuum cleaner on database.");
+		LibLogger.Debug<VacuumQuery>("Running vacuum cleaner on database.");
 		return Connection.Execute("VACUUM;");
 	}
 }
