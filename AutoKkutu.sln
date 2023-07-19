@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.CefSharp", "Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Selenium", "AutoKkutuLib.Selenium\AutoKkutuLib.Selenium.csproj", "{EE454914-8625-4778-90E8-9A05297198EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExamplePlugin", "ExamplePlugin\ExamplePlugin.csproj", "{F61396BC-7C74-4CF5-94E2-9B3AD341E8BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExamplePlugin", "ExamplePlugin\ExamplePlugin.csproj", "{F61396BC-7C74-4CF5-94E2-9B3AD341E8BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -165,8 +165,8 @@ Global
 		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.Debug|x86.Build.0 = Debug|Any CPU
 		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|Any CPU.ActiveCfg = Debug|Any CPU
 		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|Any CPU.Build.0 = Debug|Any CPU
-		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|x64.ActiveCfg = Debug|Any CPU
-		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|x64.Build.0 = Debug|Any CPU
+		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|x64.ActiveCfg = DebugCefSharp|Any CPU
+		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|x64.Build.0 = DebugCefSharp|Any CPU
 		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|x86.ActiveCfg = Debug|Any CPU
 		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugCefSharp|x86.Build.0 = Debug|Any CPU
 		{1058B4D9-EB16-45A5-8E10-9247165F55E5}.DebugSelenium|Any CPU.ActiveCfg = DebugSelenium|Any CPU
@@ -309,6 +309,7 @@ Global
 		{EE454914-8625-4778-90E8-9A05297198EA}.Debug|x86.Build.0 = DebugSelenium|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|Any CPU.ActiveCfg = DebugCefSharp|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|x64.ActiveCfg = DebugCefSharp|Any CPU
+		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|x64.Build.0 = DebugCefSharp|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugCefSharp|x86.ActiveCfg = DebugCefSharp|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugSelenium|Any CPU.ActiveCfg = DebugSelenium|Any CPU
 		{EE454914-8625-4778-90E8-9A05297198EA}.DebugSelenium|Any CPU.Build.0 = DebugSelenium|Any CPU

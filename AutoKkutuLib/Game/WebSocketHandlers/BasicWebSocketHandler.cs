@@ -120,10 +120,12 @@ public class BasicWebSocketHandler : IWebSocketHandler
 	// TODO: 'BFKKUTU'의 '두음법칙 무시' 조건 감지 - RoomHead에 '두음법칙 무시' 단어가 있는지 DOM 파싱해서 확인
 	public virtual async ValueTask<WsClassicTurnEnd> ParseClassicTurnEnd(JsonNode json)
 	{
+		var hintObj = json["hint"];
+		var hint = hintObj is JsonObject val ? val["_id"]?.GetValue<string>() : null;
 		return new(
 			json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"),
 			json["value"]?.GetValue<string>(),
-			json["hint"]?["_id"]?.GetValue<string>());
+			hint);
 	}
 
 	public virtual async ValueTask<WsTurnError> ParseClassicTurnError(JsonNode json)

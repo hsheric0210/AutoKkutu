@@ -66,14 +66,14 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 	private static string? NullIfWhiteSpace(string? str) => string.IsNullOrWhiteSpace(str) ? null : str;
 
-	private static string? ReplaceArgs(string? str) => NullIfWhiteSpace(str)?.Replace("%CURRENTDIR%", Environment.CurrentDirectory);
+	private static string? ReplaceCd(string? str) => NullIfWhiteSpace(str)?.Replace("%CURRENTDIR%", Environment.CurrentDirectory);
 
 	public override async void LoadFrontPage()
 	{
 		var opt = new ChromeOptions() { LeaveBrowserRunning = config.LeaveBrowserRunning };
-		opt.BinaryLocation = ReplaceArgs(config.BinaryLocation);
+		opt.BinaryLocation = ReplaceCd(config.BinaryLocation);
 		opt.DebuggerAddress = NullIfWhiteSpace(config.DebuggerAddress);
-		opt.MinidumpPath = ReplaceArgs(config.MinidumpPath);
+		opt.MinidumpPath = ReplaceCd(config.MinidumpPath);
 
 		if (config.Arguments != null)
 			opt.AddArguments(config.Arguments.ToArray());
@@ -84,7 +84,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 
 		LibLogger.Debug<SeleniumBrowser>("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
 
-		driver = UndetectedChromeDriver.Create(opt, ReplaceArgs(config.UserDataDir), ReplaceArgs(config.DriverExecutable));
+		driver = UndetectedChromeDriver.Create(opt, ReplaceCd(config.UserDataDir), ReplaceCd(config.DriverExecutable));
 		try
 		{
 			mainHwnd = GetHwnd(driver);

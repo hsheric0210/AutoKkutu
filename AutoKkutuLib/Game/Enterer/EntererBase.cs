@@ -90,6 +90,7 @@ public abstract class EntererBase : IEnterer
 		{
 			if (pre)
 			{
+				LibLogger.Debug<EntererBase>("Started pre-input (cond={cond}): {content}", param.PathInfo.Condition, param.Content);
 				lastPreinputPath = param;
 			}
 			else

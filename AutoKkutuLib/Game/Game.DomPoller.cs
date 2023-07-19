@@ -88,9 +88,9 @@ public partial class Game
 		}
 
 		// DOM turn out-of-sync 방지 (특히 WebSocketHandler와 병행하여 사용하면서, 게임 템포가 매우 빠를 때 자주 발생함)
-		if (domTurnIndex != Session.GetRelativeTurn())
+		if (domTurnIndex != -1 && domTurnIndex != Session.GetRelativeTurn())
 		{
-			LibLogger.Debug(gameDomPoller, "DomPoller PollTurn turn out-of-sync detected.");
+			LibLogger.Debug(gameDomPoller, "DomPoller PollTurn turn out-of-sync detected. domTurn={domTurn} sessionTurn={sessTurn}", domTurnIndex, Session.GetRelativeTurn());
 			domTurnIndex = Session.GetRelativeTurn();
 			return;
 		}
@@ -188,7 +188,7 @@ public partial class Game
 		var condition = await domHandler.GetPresentedWord();
 		var missionChar = await domHandler.GetMissionChar();
 
-		if (string.IsNullOrEmpty(condition))
+		if (string.IsNullOrEmpty(condition) || Session.GameMode.IsFreeMode())
 			return WordCondition.Empty;
 
 		string cChar;

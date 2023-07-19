@@ -134,7 +134,7 @@ public sealed class GameSessionState
 	/// 실제로 지금 '몇 번째 플레이어의 턴인지'를 반환합니다.
 	/// 예시로, 플레이어가 3명이고 지금이 63번째 턴이라면 지금은 0번째 사람(첫 번째 사람)의 턴입니다.
 	/// </summary>
-	public int GetRelativeTurn() => (TurnIndex + GameSequence.Count) % GameSequence.Count;
+	public int GetRelativeTurn() => GameSequence.Count == 0 ? -1 : ((TurnIndex + GameSequence.Count) % GameSequence.Count);
 
 	/// <summary>
 	/// 실제로 지금 '몇 번째 플레이어의 턴인지'를 반환합니다.
@@ -152,7 +152,7 @@ public sealed class GameSessionState
 	{
 		if (!AmIGaming)
 			return -1;
-		if (GameSequence != null && myTurnOrdinalCache < 0)
+		if (GameSequence.Count > 0 && myTurnOrdinalCache < 0)
 			myTurnOrdinalCache = GameSequence.IndexOf(MyUserId);
 		return myTurnOrdinalCache;
 	}
@@ -164,7 +164,7 @@ public sealed class GameSessionState
 	public bool IsMyTurn()
 	{
 		var turn = GetRelativeTurn();
-		return turn > 0 && turn == GetMyTurnIndex();
+		return turn >= 0 && turn == GetMyTurnIndex();
 	}
 
 	/// <summary>
@@ -173,7 +173,7 @@ public sealed class GameSessionState
 	/// <remarks>
 	/// 만약 '랜덤턴' 모드가 활성화되었다면 내 바로 이전 사람이 단어 입력을 마치더라도, 다음 턴이 나에게 오지 않을 수 있다는 것에 주의합니다.
 	/// </remarks>
-	public int GetMyPreviousUserTurn() => (GetMyTurnIndex() - 1 + GameSequence.Count) % GameSequence.Count;
+	public int GetMyPreviousUserTurn() => GameSequence.Count == 0 ? -1 : ((GetMyTurnIndex() - 1 + GameSequence.Count) % GameSequence.Count);
 
 	/// <summary>
 	/// 현재 세션이 빈 세션인지의 여부를 반환합니다.

@@ -72,6 +72,12 @@ public static class GameModeExtension
 	public static bool IsFreeMode(this GameMode mode) => mode is GameMode.Free or GameMode.LastAndFirstFree;
 
 	/// <summary>
+	/// 주어진 게임 모드가 사용 단어 조건을 제시하지 않는 모드인지의 여부를 반환합니다.
+	/// </summary>
+	/// <param name="mode">게임 모드</param>
+	public static bool IsConditionlessMode(this GameMode mode) => mode is GameMode.Free or GameMode.All;
+
+	/// <summary>
 	/// 주어진 게임 모드가 표시되는 이름을 반환합니다.
 	/// </summary>
 	/// <param name="gameMode">게임 모드</param>

@@ -65,7 +65,7 @@
     <IgnoreCertificateErrors>false</IgnoreCertificateErrors>
 
     <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
-    <UserDataPath>.\CefUserData</UserDataPath>
+    <UserDataPath>%CURRENTDIR%\CefUserData</UserDataPath>
 
     <CookieableSchemesList></CookieableSchemesList>
 
@@ -89,13 +89,13 @@
     <MultiThreadedMessageLoop>true</MultiThreadedMessageLoop>
 
     <!-- 브라우저 헬퍼 프로세스 'CefSharp.BrowserSubprocess.exe'의 위치를 지정합니다. -->
-    <BrowserSubprocessPath>.\runtimes\win-x64\native\CefSharp.BrowserSubprocess.exe</BrowserSubprocessPath>
+    <BrowserSubprocessPath>%CURRENTDIR%\runtimes\win-x64\native\CefSharp.BrowserSubprocess.exe</BrowserSubprocessPath>
 
     <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
-    <CachePath />
+    <CachePath>%CURRENTDIR%\CefUserData</CachePath>
 
     <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
-    <RootCachePath />
+    <RootCachePath>%CURRENTDIR%\CefUserData</RootCachePath>
 
     <!-- 이 옵션은 항상 false이어야 하며, true일 시 오류가 발생합니다. -->
     <ExternalMessagePump>false</ExternalMessagePump>

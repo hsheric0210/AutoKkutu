@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
+	private const string gameStateNotify = "Game.StateNotify";
+
 	// 모든 상태 필드들은 Thread-safe해야 함.
 	private readonly object sessionLock = new();
 
@@ -31,7 +33,7 @@ public partial class Game
 		{
 			if (string.IsNullOrEmpty(myUserId) || Session.MyUserId.Equals(myUserId, StringComparison.OrdinalIgnoreCase))
 				return;
-			LibLogger.Debug<Game>("New game session detected with UserId: {uid}.", myUserId);
+			LibLogger.Debug(gameStateNotify, "New game session detected with UserId: {uid}.", myUserId);
 			Session = new GameSessionState(myUserId);
 		}
 	}
@@ -47,21 +49,21 @@ public partial class Game
 		if (!Session.UpdateGameSequence(seq))
 			return;
 
-		LibLogger.Debug<Game>("Game-seq changed to: {seq}", string.Join(", ", seq));
+		LibLogger.Debug(gameStateNotify, "Game-seq changed to: {seq}", string.Join(", ", seq));
 
 		if (Session.AmIGaming == prevGamingState)
 			return;
 
-		LibLogger.Debug<Game>("Gaming state changed to: {state}", Session.AmIGaming);
+		LibLogger.Debug(gameStateNotify, "Gaming state changed to: {state}", Session.AmIGaming);
 
 		if (Session.AmIGaming)
 		{
-			LibLogger.Debug<Game>("New game started; Used word history flushed.");
+			LibLogger.Debug(gameStateNotify, "New game started; Used word history flushed.");
 			GameStarted?.Invoke(this, EventArgs.Empty);
 		}
 		else
 		{
-			LibLogger.Debug<Game>("Game ended.");
+			LibLogger.Debug(gameStateNotify, "Game ended.");
 
 			// Clear game-specific caches
 			roundIndexCache = -1;
@@ -87,7 +89,7 @@ public partial class Game
 		if (!Session.UpdateGameMode(gameMode))
 			return;
 
-		LibLogger.Debug<Game>("Game mode change detected : {gameMode} (byDOM: {byDOM})", gameMode.GameModeName(), byDOM);
+		LibLogger.Debug(gameStateNotify, "Game mode change detected : {gameMode} (byDOM: {byDOM})", gameMode.GameModeName(), byDOM);
 		GameModeChanged?.Invoke(this, new GameModeChangeEventArgs(gameMode));
 	}
 
@@ -104,7 +106,7 @@ public partial class Game
 				return;
 
 			turnHintWordCache = hint;
-			LibLogger.Debug<Game>("Path example detected : {word}", hint);
+			LibLogger.Debug(gameStateNotify, "Path example detected : {word}", hint);
 			HintWordPresented?.Invoke(this, new WordPresentEventArgs(hint));
 		}
 	}
@@ -125,7 +127,7 @@ public partial class Game
 	/// <param name="condition">턴의 단어 조건을 나타냅니다.</param>
 	public void NotifyClassicTurnStart(bool isMyTurn, int turnIndex, WordCondition condition)
 	{
-		if (condition.IsEmpty())
+		if (condition.IsEmpty() && !Session.GameMode.IsConditionlessMode())
 			return;
 
 		lock (sessionLock)
@@ -143,20 +145,13 @@ public partial class Game
 			Session.IsTurnInProgress = true;
 			if (!isMyTurn && Session.GetRelativeTurn() == Session.GetMyPreviousUserTurn())
 			{
-				LibLogger.Debug<Game>("Previous user mission character is {char}.", condition.MissionChar);
+				LibLogger.Debug(gameStateNotify, "Previous user mission character is {char}.", condition.MissionChar);
 				Session.PreviousTurnMission = condition.MissionChar;
 			}
 
-			LibLogger.Debug<Game>("Turn #{turnIndex} arrived (isMyTurn: {isMyTurn}), word condition is {word}.", turnIndex, isMyTurn, condition);
-
-			if (Session.GameMode == GameMode.Free)
-			{
-				TurnStarted?.Invoke(this, new TurnStartEventArgs(new GameSessionState(Session), WordCondition.Empty));
-				return;
-			}
+			LibLogger.Debug(gameStateNotify, "Turn #{turnIndex} arrived (isMyTurn: val={isMyTurn} turn={isMyTurnT}), word condition is {word}.", turnIndex, isMyTurn, Session.IsMyTurn(), condition);
 
 			Session.WordCondition = condition;
-
 			TurnStarted?.Invoke(this, new TurnStartEventArgs(new GameSessionState(Session), condition));
 		}
 	}
@@ -173,7 +168,7 @@ public partial class Game
 			if (!Session.AmIGaming || !Session.IsTurnInProgress)
 				return;
 
-			LibLogger.Debug<Game>("Turn #{turnIndex} ended. Value is {value}.", Session.TurnIndex, value);
+			LibLogger.Debug(gameStateNotify, "Turn #{turnIndex} ended. Value is {value}.", Session.TurnIndex, value);
 			Session.IsTurnInProgress = false;
 
 			// Clear turn-specific caches
@@ -206,7 +201,7 @@ public partial class Game
 			wordHistoryCache = null;
 			wordHistoriesCache = ImmutableList<string>.Empty;
 
-			LibLogger.Debug<Game>("Round changed to {round}.", roundIndex);
+			LibLogger.Debug(gameStateNotify, "Round changed to {round}.", roundIndex);
 			RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));
 		}
 	}
@@ -217,7 +212,7 @@ public partial class Game
 		{
 			if (string.Equals(word, turnErrorWordCache, StringComparison.OrdinalIgnoreCase) || word.Contains("T.T", StringComparison.OrdinalIgnoreCase))
 				return;
-			LibLogger.Debug<Game>("NotifyTurnError {word} byDOM={bydom}", word, byDOM);
+			LibLogger.Debug(gameStateNotify, "NotifyTurnError {word} byDOM={bydom}", word, byDOM);
 
 			turnErrorWordCache = word;
 			UnsupportedWordEntered?.Invoke(this, new UnsupportedWordEventArgs(
@@ -239,7 +234,7 @@ public partial class Game
 			{
 				if (!string.IsNullOrWhiteSpace(historyElement) && historyElement != wordHistoryCache /*WebSocket에 의한 단어 수신이 DOM 업데이트보다 더 먼저 일어나기에 이러한 코드가 작동 가능하다.*/ && !wordHistoriesCache.Contains(historyElement))
 				{
-					LibLogger.Debug<Game>("DOM: Found new used word in history : {word}", historyElement);
+					LibLogger.Debug(gameStateNotify, "DOM: Found new used word in history : {word}", historyElement);
 					DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(historyElement));
 				}
 			}
@@ -259,7 +254,7 @@ public partial class Game
 			if (wordHistoryCache?.Equals(newHistoryElement, StringComparison.OrdinalIgnoreCase) == true)
 				return;
 
-			LibLogger.Debug<Game>("WS: Found new used word in history : {word}", newHistoryElement);
+			LibLogger.Debug(gameStateNotify, "WS: Found new used word in history : {word}", newHistoryElement);
 			DiscoverWordHistory?.Invoke(this, new WordHistoryEventArgs(newHistoryElement));
 		}
 	}

@@ -30,23 +30,24 @@ public class CefSharpBrowser : BrowserBase
 			setter(value!);
 	}
 
+	private static string? ReplaceCd(string? str) => str?.Replace("%CURRENTDIR%", Environment.CurrentDirectory);
+
 	private static CefSettings CefConfigToCefSettings(CefConfigDto config)
 	{
 		var settings = new CefSettings();
-		SetIfAvail(config.ResourcesDirPath, s => settings.ResourcesDirPath = s);
-		SetIfAvail(config.LogFile, s => settings.LogFile = s);
-		SetIfAvail(config.LogFile, s => settings.LogFile = s);
+		SetIfAvail(ReplaceCd(config.ResourcesDirPath), s => settings.ResourcesDirPath = s);
+		SetIfAvail(ReplaceCd(config.LogFile), s => settings.LogFile = s);
 		SetIfAvail(config.JavascriptFlags, s => settings.JavascriptFlags = s);
 		SetIfAvail(config.UserAgentProduct, s => settings.UserAgentProduct = s);
-		SetIfAvail(config.LocalesDirPath, s => settings.LocalesDirPath = s);
+		SetIfAvail(ReplaceCd(config.LocalesDirPath), s => settings.LocalesDirPath = s);
 		SetIfAvail(config.UserAgent, s => settings.UserAgent = s);
 		SetIfAvail(config.AcceptLanguageList, s => settings.AcceptLanguageList = s);
 		SetIfAvail(config.Locale, s => settings.Locale = s);
-		SetIfAvail(config.UserDataPath, s => settings.UserDataPath = s);
+		SetIfAvail(ReplaceCd(config.UserDataPath), s => settings.UserDataPath = s);
 		SetIfAvail(config.CookieableSchemesList, s => settings.CookieableSchemesList = s);
-		SetIfAvail(config.BrowserSubprocessPath, s => settings.BrowserSubprocessPath = s);
-		SetIfAvail(config.CachePath, s => settings.CachePath = s);
-		SetIfAvail(config.RootCachePath, s => settings.RootCachePath = s);
+		SetIfAvail(ReplaceCd(config.BrowserSubprocessPath), s => settings.BrowserSubprocessPath = s);
+		SetIfAvail(ReplaceCd(config.CachePath), s => settings.CachePath = s);
+		SetIfAvail(ReplaceCd(config.RootCachePath), s => settings.RootCachePath = s);
 		settings.LogSeverity = config.LogSeverity;
 		settings.PackLoadingDisabled = config.PackLoadingDisabled;
 		settings.RemoteDebuggingPort = config.RemoteDebuggingPort;
