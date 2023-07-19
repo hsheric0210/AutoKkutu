@@ -1,6 +1,4 @@
-﻿using Serilog;
-
-namespace AutoKkutuLib.Database.Jobs.Node;
+﻿namespace AutoKkutuLib.Database.Jobs.Node;
 public sealed class NodeAdditionJob : NodeJob
 {
 	private readonly NodeTypes nodeTypes;
@@ -27,7 +25,7 @@ public sealed class NodeAdditionJob : NodeJob
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Exception on node addition: {node} for {flags}'", node, nodeTypes);
+			LibLogger.Error< NodeAdditionJob>(ex, "Exception on node addition: {node} for {flags}'", node, nodeTypes);
 			Result.IncrementError();
 		}
 	}

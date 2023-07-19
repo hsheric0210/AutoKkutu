@@ -1,6 +1,4 @@
-﻿using Serilog;
-
-namespace AutoKkutuLib.Database.Jobs.Node;
+﻿namespace AutoKkutuLib.Database.Jobs.Node;
 public sealed class NodeDeletionJob : NodeJob
 {
 	private readonly NodeTypes nodeTypes;
@@ -27,7 +25,7 @@ public sealed class NodeDeletionJob : NodeJob
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Exception on node deletion: {node} for {flags}'", node, nodeTypes);
+			LibLogger.Error<NodeDeletionJob>(ex, "Exception on node deletion: {node} for {flags}'", node, nodeTypes);
 			Result.IncrementError();
 		}
 	}

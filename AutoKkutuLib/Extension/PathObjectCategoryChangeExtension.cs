@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Database;
-using Serilog;
 
 namespace AutoKkutuLib.Extension;
 
@@ -16,9 +15,9 @@ public static class PathObjectCategoryChangeExtension
 		var node = pathObject.ToNode(mode);
 		connection.Query.DeleteNode(mode.GetEndWordListTableName()).Execute(node);
 		if (connection.Query.AddNode(mode.GetAttackWordListTableName()).Execute(node))
-			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
+			LibLogger.Info(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_Success, node, I18n.PathMark_Attack, mode);
 		else
-			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
+			LibLogger.Warn(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
 	}
 
 	public static void MakeEnd(this AbstractDatabaseConnection connection, PathObject pathObject, GameMode mode)
@@ -29,9 +28,9 @@ public static class PathObjectCategoryChangeExtension
 		var node = pathObject.ToNode(mode);
 		connection.Query.DeleteNode(mode.GetAttackWordListTableName()).Execute(node);
 		if (connection.Query.AddNode(mode.GetEndWordListTableName()).Execute(node))
-			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_End, mode);
+			LibLogger.Info(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_Success, node, I18n.PathMark_End, mode);
 		else
-			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
+			LibLogger.Warn(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
 	}
 
 	public static void MakeNormal(this AbstractDatabaseConnection connection, PathObject pathObject, GameMode mode)
@@ -43,9 +42,9 @@ public static class PathObjectCategoryChangeExtension
 		var endWord = connection.Query.DeleteNode(mode.GetEndWordListTableName()).Execute(node) > 0;
 		var attackWord = connection.Query.DeleteNode(mode.GetAttackWordListTableName()).Execute(node) > 0;
 		if (endWord || attackWord)
-			Log.Information(I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
+			LibLogger.Info(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_Success, node, I18n.PathMark_Normal, mode);
 		else
-			Log.Warning(I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
+			LibLogger.Warn(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_AlreadyDone, node, I18n.PathMark_Normal, mode);
 	}
 
 	// TODO: Move to other class

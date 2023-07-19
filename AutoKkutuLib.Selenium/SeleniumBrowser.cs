@@ -1,6 +1,5 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using Serilog;
 using System.Collections.ObjectModel;
 using SeleniumUndetectedChromeDriver;
 using System.Xml.Serialization;
@@ -11,7 +10,6 @@ using System.Net.Sockets;
 using AutoKkutuLib.Browser;
 using System.Reflection;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable
@@ -37,40 +35,23 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		var wsAddrClient = "ws://" + new IPEndPoint(IPAddress.Loopback, wsPort).ToString();
 		LocalWebSocketServer.MessageReceived += OnWebSocketMessage;
 		WsServer = LocalWebSocketServer.Start(wsPort);
-		Log.Information("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
+		LibLogger.Info<SeleniumBrowser>("Browser-side event listener WebSocket will connect to {addr}", wsAddrClient);
 
-		var serializer = new XmlSerializer(typeof(SeleniumConfigDto));
 
-		// Default config
-		config = new SeleniumConfigDto()
+		try
 		{
-			MainPage = "https://kkutu.pink/",
-			DriverExecutable = "chromedriver.exe"
-		};
+			// Write default config
+			if (!File.Exists(ConfigFile))
+				File.WriteAllText(ConfigFile, SeleniumResources.Selenium);
 
-		if (File.Exists(ConfigFile))
-		{
-			try
-			{
-				using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-				config = (SeleniumConfigDto?)serializer.Deserialize(stream)!;
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "Failed to read Selenium config.");
-			}
+			using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+			var serializer = new XmlSerializer(typeof(SeleniumConfigDto));
+			config = (SeleniumConfigDto?)serializer.Deserialize(stream)!;
 		}
-		else
+		catch (Exception ex)
 		{
-			try
-			{
-				using var stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-				serializer.Serialize(stream, config);
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "Failed to write default Selenium config.");
-			}
+			LibLogger.Error<SeleniumBrowser>(ex, "Failed to read Selenium config.");
+			throw new IOException("Selenium configuration file load exception", ex);
 		}
 
 		JavaScriptBaseNamespace = config.JavaScriptInjectionBaseNamespace;
@@ -83,15 +64,16 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		nameRandom.Add("___wsAddr___", wsAddrClient);
 	}
 
+	private static string? NullIfWhiteSpace(string? str) => string.IsNullOrWhiteSpace(str) ? null : str;
+
+	private static string? ReplaceArgs(string? str) => NullIfWhiteSpace(str)?.Replace("%CURRENTDIR%", Environment.CurrentDirectory);
+
 	public override async void LoadFrontPage()
 	{
-		var opt = new ChromeOptions()
-		{
-			BinaryLocation = config.BinaryLocation,
-			LeaveBrowserRunning = config.LeaveBrowserRunning,
-			DebuggerAddress = config.DebuggerAddress,
-			MinidumpPath = config.MinidumpPath
-		};
+		var opt = new ChromeOptions() { LeaveBrowserRunning = config.LeaveBrowserRunning };
+		opt.BinaryLocation = ReplaceArgs(config.BinaryLocation);
+		opt.DebuggerAddress = NullIfWhiteSpace(config.DebuggerAddress);
+		opt.MinidumpPath = ReplaceArgs(config.MinidumpPath);
 
 		if (config.Arguments != null)
 			opt.AddArguments(config.Arguments.ToArray());
@@ -100,22 +82,22 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		if (config.EncodedExtensions != null)
 			opt.AddEncodedExtensions(config.EncodedExtensions.ToArray());
 
-		Log.Debug("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
+		LibLogger.Debug<SeleniumBrowser>("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
 
-		driver = UndetectedChromeDriver.Create(opt, config.UserDataDir, config.DriverExecutable, config.BrowserExecutable);
+		driver = UndetectedChromeDriver.Create(opt, ReplaceArgs(config.UserDataDir), ReplaceArgs(config.DriverExecutable));
 		try
 		{
 			mainHwnd = GetHwnd(driver);
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Failed to get HWND of the Chrome window.");
+			LibLogger.Error<SeleniumBrowser>(ex, "Failed to get HWND of the Chrome window.");
 		}
 		driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>()
 		{
 			["source"] = nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + LibResources.mainHelperJs + ';' + SeleniumResources.communicatorJs)
 		});
-		Log.Verbose("Injected pre-load scripts.");
+		LibLogger.Verbose<SeleniumBrowser>("Injected pre-load scripts.");
 		driver.Url = config.MainPage;
 		PageLoaded?.Invoke(this, new PageLoadedEventArgs(driver.Url));
 	}
@@ -150,7 +132,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, errorMessage ?? "JavaScript execution error");
+			LibLogger.Error<SeleniumBrowser>(ex, errorMessage ?? "JavaScript execution error");
 		}
 	}
 
@@ -177,7 +159,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected");
+			LibLogger.Warn<SeleniumBrowser>("Alert window detected");
 			return null;
 		}
 	}
@@ -194,7 +176,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected");
+			LibLogger.Warn<SeleniumBrowser>("Alert window detected");
 			return emptyWebElements;
 		}
 	}
@@ -211,7 +193,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected");
+			LibLogger.Warn<SeleniumBrowser>("Alert window detected");
 			return null;
 		}
 	}
@@ -228,7 +210,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected");
+			LibLogger.Warn<SeleniumBrowser>("Alert window detected");
 			return emptyWebElements;
 		}
 	}
@@ -245,7 +227,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		}
 		catch (UnhandledAlertException)
 		{
-			Log.Warning("Alert window detected");
+			LibLogger.Warn<SeleniumBrowser>("Alert window detected");
 			return null;
 		}
 	}
@@ -282,7 +264,7 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		if (val == null)
 			throw new FieldAccessException("Browser process field is not set yet.");
 		var process = (Process)val;
-		Log.Debug("Got browser process: module={module} pid={pid} handle={handle}", process.MainModule?.FileName, process.Handle, process.MainWindowHandle);
+		LibLogger.Debug<SeleniumBrowser>("Got browser process: module={module} pid={pid} handle={handle}", process.MainModule?.FileName, process.Handle, process.MainWindowHandle);
 		return process.MainWindowHandle;
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 using System.Data;
 
 namespace AutoKkutuLib.Database.Sql;
@@ -13,7 +12,7 @@ public static class DbConnectionExtension
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "SQL execution error of query {query}.", query);
+			LibLogger.Error(nameof(DbConnectionExtension), ex, "SQL execution error of query {query}.", query);
 		}
 		return 0;
 	}
@@ -26,7 +25,7 @@ public static class DbConnectionExtension
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "SQL scalar-execution error of query {query}.", query);
+			LibLogger.Error(nameof(DbConnectionExtension), ex, "SQL scalar-execution error of query {query}.", query);
 		}
 		return default;
 	}

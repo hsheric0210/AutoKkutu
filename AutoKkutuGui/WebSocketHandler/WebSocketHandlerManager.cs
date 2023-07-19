@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Game.DomHandlers;
-using AutoKkutuLib.Game.WebSocketHandlers;
+﻿using AutoKkutuLib.Game.WebSocketHandlers;
 using System;
 using System.Collections.Immutable;
 

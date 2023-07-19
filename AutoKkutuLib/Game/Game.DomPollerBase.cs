@@ -1,8 +1,8 @@
-﻿using Serilog;
-
-namespace AutoKkutuLib.Game;
+﻿namespace AutoKkutuLib.Game;
 public partial class Game
 {
+	private const string gameDomPollerBase = "Game.DomPollerBase";
+
 	/// <summary>
 	/// DomPoller들이 사용할 Task의 기본 기틀
 	/// </summary>
@@ -63,7 +63,7 @@ public partial class Game
 		await BaseDomPoller(
 			action,
 			null,
-			ex => Log.Error(ex, "Slow DomPoller '{0}' exception.", watchdogName),
+			ex => LibLogger.Error(gameDomPollerBase, ex, "Slow DomPoller '{0}' exception.", watchdogName),
 			() => true,
 			idleInterval,
 			idleInterval,
@@ -82,7 +82,7 @@ public partial class Game
 		await BaseDomPoller(
 			action,
 			null,
-			ex => Log.Error(ex, "Game DomPoller '{0}' exception", watchdogName),
+			ex => LibLogger.Error(gameDomPollerBase, ex, "Game DomPoller '{0}' exception", watchdogName),
 			() => Session.AmIGaming,
 			interval,
 			idleInterval,
@@ -94,7 +94,7 @@ public partial class Game
 		await BaseDomPoller(
 			action,
 			action,
-			ex => Log.Error(ex, "Condition-less DomPoller '{0}' exception.", watchdogName),
+			ex => LibLogger.Error(gameDomPollerBase, ex, "Condition-less DomPoller '{0}' exception.", watchdogName),
 			() => Session.AmIGaming,
 			interval,
 			idleInterval,

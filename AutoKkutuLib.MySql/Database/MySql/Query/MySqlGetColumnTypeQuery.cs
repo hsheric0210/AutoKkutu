@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class MySqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
@@ -21,7 +20,7 @@ public class MySqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
+			LibLogger.Error<MySqlGetColumnTypeQuery>(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
 		}
 		return "";
 	}

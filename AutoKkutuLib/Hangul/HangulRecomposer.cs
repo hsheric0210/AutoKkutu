@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Hangul;
 
@@ -15,7 +14,7 @@ public sealed class HangulRecomposer
 	{
 		this.layout = layout;
 		this.pieces = pieces;
-		Log.Debug("pieces: {pieces}", string.Join(',', pieces));
+		LibLogger.Debug<HangulRecomposer>("Recomposing pieces: {pieces}", string.Join(',', pieces));
 	}
 
 	// TODO: make private
@@ -131,7 +130,7 @@ public sealed class HangulRecomposer
 				(var prevSplitNew, var newSplit, var input) = Append(prevSplit, lastInput, type, ch);
 				prevSplit = prevSplitNew;
 
-				Log.Verbose("Composition simuation of appending {type} char {ch} -> {prev: {prev}, new: {new}, input: {input}}", type, ch, prevSplitNew, newSplit, input);
+				LibLogger.Verbose<HangulRecomposer>("Composition simuation of appending {type} char {ch} -> {prev: {prev}, new: {new}, input: {input}}", type, ch, prevSplitNew, newSplit, input);
 
 				if (newSplit is HangulSplit newSplitNonNull)
 					prevSplit = newSplitNonNull;

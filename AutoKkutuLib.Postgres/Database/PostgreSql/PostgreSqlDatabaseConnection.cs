@@ -3,7 +3,6 @@ using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
 using AutoKkutuLib.Postgres.Properties;
 using Npgsql;
-using Serilog;
 
 namespace AutoKkutuLib.Database.PostgreSql;
 
@@ -26,7 +25,7 @@ public sealed class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
 		try
 		{
 			// Open the connection
-			Log.Information("Opening database connection...");
+			LibLogger.Info<PostgreSqlDatabaseConnection>("Opening database connection...");
 			var nativeConnection = new NpgsqlConnection(connectionString);
 			nativeConnection.Open();
 			var connection = new PostgreSqlDatabaseConnection(nativeConnection);
@@ -43,13 +42,13 @@ public sealed class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
 			// Check the database tables
 			connection.CheckTable();
 
-			Log.Information("Successfully established database connection.");
+			LibLogger.Info<PostgreSqlDatabaseConnection>("Successfully established database connection.");
 
 			return connection;
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorConnect);
+			LibLogger.Error<PostgreSqlDatabaseConnection>(ex, DatabaseConstants.ErrorConnect);
 			DatabaseEvents.TriggerDatabaseError();
 		}
 

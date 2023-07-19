@@ -1,12 +1,13 @@
 ﻿using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
-using Serilog;
 
 namespace AutoKkutuLib;
 
 public partial class AutoKkutu
 {
+	private const string autoKkutuMediator = "AutoKkutu.Mediator";
+
 	private void RegisterInterconnections(IGame game)
 	{
 		game.DiscoverWordHistory += HandleDiscoverWordHistory;
@@ -46,7 +47,7 @@ public partial class AutoKkutu
 		if (isInexistent)
 		{
 			list = PathFilter.InexistentPaths;
-			Log.Warning(I18n.Main_UnsupportedWord_Inexistent, word);
+			LibLogger.Warn(autoKkutuMediator, I18n.Main_UnsupportedWord_Inexistent, word);
 		}
 		else
 		{
@@ -57,11 +58,11 @@ public partial class AutoKkutu
 				var node = gm.ConvertWordToTailNode(word);
 				if (!string.IsNullOrWhiteSpace(node))
 				{
-					Log.Debug("New end node: {node}", node);
+					LibLogger.Debug(autoKkutuMediator, "New end node: {node}", node);
 					PathFilter.NewEndPaths.Add((gm, node));
 				}
 			}
-			Log.Warning(I18n.Main_UnsupportedWord_Existent, word);
+			LibLogger.Warn(autoKkutuMediator, I18n.Main_UnsupportedWord_Existent, word);
 		}
 		list.Add(word);
 	}

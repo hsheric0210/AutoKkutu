@@ -1,5 +1,4 @@
 using AutoKkutuLib.Extension;
-using Serilog;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
@@ -43,8 +42,8 @@ public class PathFinder
 			WordCondition condition = param;
 			if (nodeManager.GetEndNodeForMode(gameMode).Contains(condition.Char) && (!condition.SubAvailable || nodeManager.GetEndNodeForMode(gameMode).Contains(condition.SubChar!)))
 			{
-				Log.Warning("End node: {node1}, {node2}", condition.Char, condition.SubChar);
-				Log.Warning(I18n.PathFinderFailed_Endword);
+				LibLogger.Warn<PathFinder>("End node: {node1}, {node2}", condition.Char, condition.SubChar);
+				LibLogger.Warn<PathFinder>(I18n.PathFinderFailed_Endword);
 				// AutoKkutuMain.ResetPathList();
 				//AutoKkutuMain.UpdateSearchState(null, true);
 				//AutoKkutuMain.UpdateStatusMessage(StatusMessage.EndWord);
@@ -55,9 +54,9 @@ public class PathFinder
 				FindStateChanged?.Invoke(this, new PathFinderStateEventArgs(PathFinderState.Finding));
 
 				if (condition.SubAvailable)
-					Log.Information(I18n.PathFinder_FindPath_Substituation, condition.Char, condition.SubChar);
+					LibLogger.Info<PathFinder>(I18n.PathFinder_FindPath_Substituation, condition.Char, condition.SubChar);
 				else
-					Log.Information(I18n.PathFinder_FindPath, condition.Char);
+					LibLogger.Info<PathFinder>(I18n.PathFinder_FindPath, condition.Char);
 
 				// Enqueue search
 				Task.Run(() => FindPathInternal(gameMode, param, preference));
@@ -65,7 +64,7 @@ public class PathFinder
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, I18n.PathFinderFailed_Exception);
+			LibLogger.Error<PathFinder>(ex, I18n.PathFinderFailed_Exception);
 		}
 	}
 
@@ -79,12 +78,12 @@ public class PathFinder
 		try
 		{
 			totalWordList = nodeManager.DbConnection.Query.FindWord(mode, preference).Execute(parameter);
-			Log.Information(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.HasFlag(PathFlags.UseAttackWord), parameter.HasFlag(PathFlags.UseEndWord));
+			LibLogger.Info<PathFinder>(I18n.PathFinder_FoundPath, totalWordList.Count, parameter.HasFlag(PathFlags.UseAttackWord), parameter.HasFlag(PathFlags.UseEndWord));
 		}
 		catch (Exception e)
 		{
 			stopWatch.Stop();
-			Log.Error(e, I18n.PathFinder_FindPath_Error);
+			LibLogger.Error<PathFinder>(e, I18n.PathFinder_FindPath_Error);
 			NotifyUpdate(new PathUpdateEventArgs(parameter, PathFindResultType.Error, ImmutableList<PathObject>.Empty, ImmutableList<PathObject>.Empty, 0));
 			return;
 		}
@@ -95,13 +94,13 @@ public class PathFinder
 		// If there's no word found (or all words was filtered out)
 		if (availableWordList.Count == 0)
 		{
-			Log.Warning(I18n.PathFinder_FindPath_NotFound);
+			LibLogger.Warn<PathFinder>(I18n.PathFinder_FindPath_NotFound);
 			NotifyUpdate(new PathUpdateEventArgs(parameter, PathFindResultType.NotFound, totalWordList, ImmutableList<PathObject>.Empty, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
 			return;
 		}
 
 		// Update final lists
-		Log.Information(I18n.PathFinder_FoundPath_Ready, totalWordList.Count, stopWatch.ElapsedMilliseconds);
+		LibLogger.Info<PathFinder>(I18n.PathFinder_FoundPath_Ready, totalWordList.Count, stopWatch.ElapsedMilliseconds);
 		NotifyUpdate(new PathUpdateEventArgs(parameter, PathFindResultType.Found, totalWordList, availableWordList, Convert.ToInt32(stopWatch.ElapsedMilliseconds)));
 	}
 

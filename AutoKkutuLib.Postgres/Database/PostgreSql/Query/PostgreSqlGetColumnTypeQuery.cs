@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class PostgreSqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
@@ -18,7 +17,7 @@ public class PostgreSqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
+			LibLogger.Error<PostgreSqlGetColumnTypeQuery>(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
 		}
 		return "";
 	}

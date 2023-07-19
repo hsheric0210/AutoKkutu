@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Browser;
-using Serilog;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -7,6 +6,8 @@ using System.Text.Json.Nodes;
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
+	private const string gameWebSocketSniffer = "Game.WebSocketSniffer";
+
 	private IDictionary<GameImplMode, IDictionary<string, Func<JsonNode, Task>>>? specializedSniffers;
 	private IDictionary<string, Func<JsonNode, Task>>? baseSniffers;
 	private readonly JsonSerializerOptions unescapeUnicodeJso = new()
@@ -29,12 +30,12 @@ public partial class Game
 				}
 				catch (Exception ex)
 				{
-					Log.Error(ex, "Error processing {messageType} message.", messageType);
+					LibLogger.Error(gameWebSocketSniffer, ex, "Error processing {messageType} message.", messageType);
 				}
 			};
 		}
 
-		Log.Information("WebSocket Handler initialized.");
+		LibLogger.Info(gameWebSocketSniffer, "WebSocket Handler initialized.");
 
 		baseSniffers = new Dictionary<string, Func<JsonNode, Task>>
 		{
@@ -67,7 +68,7 @@ public partial class Game
 
 		Browser.WebSocketMessage -= OnWebSocketMessage;
 		specializedSniffers = null;
-		Log.Information("WebSocket Sniffer uninitialized.");
+		LibLogger.Info(gameWebSocketSniffer, "WebSocket Sniffer uninitialized.");
 	}
 
 	/// <summary>
@@ -89,7 +90,7 @@ public partial class Game
 	private void OnWebSocketMessage(object? sender, WebSocketMessageEventArgs args)
 	{
 		webSocketHandler?.OnWebSocketMessage(args.Json);
-		Log.Verbose("WebSocket Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
+		LibLogger.Verbose(gameWebSocketSniffer, "WebSocket Message (type: {type}) - {json}", args.Type, args.Json.ToJsonString(unescapeUnicodeJso));
 		if (specializedSniffers != null && specializedSniffers.TryGetValue(Session.GameMode.ToGameImplMode(), out var snifferTable) && snifferTable.TryGetValue(args.Type, out var mySpecialSniffer))
 			Task.Run(async () => await mySpecialSniffer(args.Json));
 		else if (baseSniffers?.TryGetValue(args.Type, out var myBaseSniffer) ?? false)
@@ -101,28 +102,28 @@ public partial class Game
 		if (webSocketHandler == null)
 			return;
 
-		Log.Debug("WebSocket Handler detected game session: {userId: '{userId}'}", data.UserId);
+		LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected game session: {userId: '{userId}'}", data.UserId);
 		NotifyGameSession(data.UserId);
 	}
 
 	private void OnWsRoom(WsRoom data)
 	{
 		if (data.Mode == GameMode.None)
-			Log.Warning("Unknown or unsupported game mode: {mode}", data.ModeString);
+			LibLogger.Warn(gameWebSocketSniffer, "Unknown or unsupported game mode: {mode}", data.ModeString);
 
 		if (data.Gaming)
 		{
-			Log.Debug("WebSocket Handler detected gameSeq: seq=[{seq}]", string.Join(", ", data.GameSequence));
+			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected gameSeq: seq=[{seq}]", string.Join(", ", data.GameSequence));
 			NotifyGameSequence(data.GameSequence);
 		}
 
-		Log.Debug("WebSocket Handler detected game mode change: mode={mode} modeName='{modeName}'", data.Mode, data.ModeString);
+		LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected game mode change: mode={mode} modeName='{modeName}'", data.Mode, data.ModeString);
 		NotifyGameMode(data.Mode);
 	}
 
 	private void OnWsClassicTurnStart(WsClassicTurnStart data)
 	{
-		Log.Debug("WebSocket Handler detected turn start: turn={turn} condition={condition}", data.Turn, data.Condition);
+		LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn start: turn={turn} condition={condition}", data.Turn, data.Condition);
 		NotifyClassicTurnStart(false, data.Turn, data.Condition);
 	}
 
@@ -130,7 +131,7 @@ public partial class Game
 	{
 		if (data.Ok)
 		{
-			Log.Debug("WebSocket Handler detected turn end (ok): value='{value}'", data.Value);
+			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn end (ok): value='{value}'", data.Value);
 			NotifyClassicTurnEnd(data.Value ?? "");
 
 			if (!string.IsNullOrWhiteSpace(data.Value))
@@ -139,7 +140,7 @@ public partial class Game
 
 		if (!string.IsNullOrWhiteSpace(data.Hint))
 		{
-			Log.Debug("WebSocket Handler detected turn end (hint): hint='{hint}'", data.Hint);
+			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn end (hint): hint='{hint}'", data.Hint);
 			NotifyWordHint(data.Hint);
 		}
 	}
@@ -148,7 +149,7 @@ public partial class Game
 	{
 		if (!string.IsNullOrWhiteSpace(data.Value))
 		{
-			Log.Debug("WebSocket Handler detected turn error: value='{value}' errorCode={code}", data.Value, data.ErrorCode);
+			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn error: value='{value}' errorCode={code}", data.Value, data.ErrorCode);
 			NotifyTurnError(data.Value, data.ErrorCode, false);
 		}
 	}

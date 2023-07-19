@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Properties;
-using Serilog;
 using System.Collections.Immutable;
 using System.Text.Json.Nodes;
 
@@ -35,7 +34,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 		helperNames.GenerateScriptType("___roomMode2GameMode___", CommonNameRegistry.RoomModeToGameMode);
 		helperNames.GenerateScriptType("___ruleKeys___", CommonNameRegistry.RuleKeys);
 		helperNames.GenerateScriptType("___helperRegistered___", CommonNameRegistry.WebSocketHelperRegistered);
-		Log.Debug("WebSocket Handler Helper name mapping: {nameRandom}", helperNames);
+		LibLogger.Debug<BasicWebSocketHandler>("WebSocket Handler Helper name mapping: {nameRandom}", helperNames);
 		helperMapping = helperNames;
 	}
 
@@ -44,7 +43,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.WebSocketHelperRegistered)))
 		{
 			var script = helperMapping.ApplyTo(LibResources.baseWebSocketHelperJs);
-			Log.Warning("WebSocket Helper injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
+			LibLogger.Warn<BasicWebSocketHandler>("WebSocket Helper injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
 		}
 	}
 

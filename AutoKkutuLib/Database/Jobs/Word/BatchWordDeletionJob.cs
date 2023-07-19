@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Database.Sql.Query;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Jobs.Word;
 public sealed class BatchWordDeletionJob : BatchWordJob
@@ -28,7 +27,7 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Failed to commit word addition queries to the database.");
+			LibLogger.Error<BatchWordDeletionJob>(ex, "Failed to commit word addition queries to the database.");
 		}
 
 		return count;
@@ -45,7 +44,7 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Exception on removing word: {word}", word);
+			LibLogger.Error<BatchWordDeletionJob>(ex, "Exception on removing word: {word}", word);
 			return false;
 		}
 	}

@@ -1,6 +1,5 @@
 ﻿using MySqlConnector;
 using AutoKkutuLib.MySql.Database.MySql.Query;
-using Serilog;
 using AutoKkutuLib.Database.Sql;
 using AutoKkutuLib.MySql.Properties;
 using AutoKkutuLib.Database.Sql.Query;
@@ -28,10 +27,10 @@ public sealed class MySqlDatabaseConnection : AbstractDatabaseConnection
 			var databaseNameIndex = connectionString.IndexOf("database", StringComparison.InvariantCultureIgnoreCase) + 9;
 			var databaseNameIndexEnd = connectionString.IndexOf(';', databaseNameIndex) - databaseNameIndex;
 			var databaseName = connectionString.Substring(databaseNameIndex, databaseNameIndexEnd);
-			Log.Information("MySQL database name is {databaseName}.", databaseName);
+			LibLogger.Info<MySqlDatabaseConnection>("MySQL database name is {databaseName}.", databaseName);
 
 			// Open the raw connection and wrap
-			Log.Information("Opening database connection...");
+			LibLogger.Info<MySqlDatabaseConnection>("Opening database connection...");
 			var nativeConnection = new MySqlConnection(connectionString);
 			nativeConnection.Open();
 			var connection = new MySqlDatabaseConnection(nativeConnection);
@@ -48,13 +47,13 @@ public sealed class MySqlDatabaseConnection : AbstractDatabaseConnection
 			// Check the database tables
 			connection.CheckTable();
 
-			Log.Information("Successfully established database connection.");
+			LibLogger.Info<MySqlDatabaseConnection>("Successfully established database connection.");
 
 			return connection;
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorConnect);
+			LibLogger.Error<MySqlDatabaseConnection>(ex, DatabaseConstants.ErrorConnect);
 			DatabaseEvents.TriggerDatabaseError();
 		}
 

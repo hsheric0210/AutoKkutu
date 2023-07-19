@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class SqliteIsTableExistsQuery : AbstractIsTableExistsQuery
@@ -17,7 +16,7 @@ public class SqliteIsTableExistsQuery : AbstractIsTableExistsQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorIsTableExists, TableName);
+			LibLogger.Error<SqliteIsTableExistsQuery>(ex, DatabaseConstants.ErrorIsTableExists, TableName);
 			return false;
 		}
 	}

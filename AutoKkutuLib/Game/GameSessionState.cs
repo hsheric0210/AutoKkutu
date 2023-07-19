@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Game;
 public sealed class GameSessionState
@@ -112,7 +111,7 @@ public sealed class GameSessionState
 				IsTurnInProgress = false;
 				WordCondition = WordCondition.Empty;
 				ReturnMode = false;
-				Log.Verbose("Flushed game-specific caches.");
+				LibLogger.Verbose<GameSessionState>("Flushed game-specific caches.");
 			}
 
 			AmIGaming = imGaming;

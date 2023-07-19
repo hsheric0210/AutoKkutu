@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Extension;
-using Serilog;
 using System.Globalization;
 
 namespace AutoKkutuLib.Database.Path;
@@ -64,7 +63,7 @@ public class NodeManager
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, I18n.PathFinder_Init_Error);
+			LibLogger.Error<NodeManager>(ex, I18n.PathFinder_Init_Error);
 			DatabaseEvents.TriggerDatabaseError();
 			throw;
 		}
@@ -261,7 +260,7 @@ public class NodeManager
 			if (nodeType != null)
 				DbConnection.Query.AddNode((NodeTypes)nodeType).Execute(node);
 			count.Increment(targetFlag, 1);
-			Log.Information(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, targetFlag, node));
+			LibLogger.Info<NodeManager>(string.Format(CultureInfo.CurrentCulture, I18n.PathFinder_AddNode, targetFlag, node));
 		}
 	}
 	#endregion

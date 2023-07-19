@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Properties;
-using Serilog;
 using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Game.DomHandlers;
@@ -51,7 +50,7 @@ public class BasicDomHandler : IDomHandler
 		names.GenerateScriptType("___chatBtn___", CommonNameRegistry.ChatBtnCache);
 		names.GenerateScriptType("___shiftState___", CommonNameRegistry.ShiftState);
 
-		Log.Debug("baseHandler name mapping: {nameRandom}", names);
+		LibLogger.Debug<BasicDomHandler>("baseHandler name mapping: {nameRandom}", names);
 
 		mapping = names;
 	}
@@ -100,7 +99,7 @@ public class BasicDomHandler : IDomHandler
 					return GameMode.TypingBattle;
 
 				default:
-					Log.Warning("Unsupported game mode: {gameMode}", gameMode);
+					LibLogger.Warn<BasicDomHandler>("Unsupported game mode: {gameMode}", gameMode);
 					break;
 			}
 		}
@@ -140,7 +139,7 @@ public class BasicDomHandler : IDomHandler
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.FunctionsRegistered)))
 		{
 			var script = mapping.ApplyTo(LibResources.baseDomHandlerJs);
-			Log.Warning("baseHandler injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
+			LibLogger.Warn<BasicDomHandler>("baseHandler injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
 		}
 	}
 }

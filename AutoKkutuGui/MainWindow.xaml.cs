@@ -325,8 +325,8 @@ public partial class MainWindow : Window
 
 	private void OnSubmitURLClick(object? sender, RoutedEventArgs e)
 	{
-		mainInstance.Browser.Load(CurrentURL.Text);
 		mainInstance.NewFrameLoaded();
+		mainInstance.Browser.Load(CurrentURL.Text);
 	}
 
 	private void OnWindowClose(object? sender, CancelEventArgs e)

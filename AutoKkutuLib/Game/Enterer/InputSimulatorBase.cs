@@ -1,7 +1,5 @@
 ﻿using AutoKkutuLib.Hangul;
-using Serilog;
 using System.Collections.Immutable;
-using System.Threading;
 
 namespace AutoKkutuLib.Game.Enterer;
 public abstract class InputSimulatorBase : EntererBase
@@ -21,7 +19,7 @@ public abstract class InputSimulatorBase : EntererBase
 		if (semaphore.CurrentCount == 0)
 		{
 			// 최후의 보루: Semaphore 사용해서 여러 입력 작업 동시 진행 방지
-			Log.Warning("Semaphore prevented duplicate entering.");
+			LibLogger.Warn<InputSimulatorBase>("Semaphore prevented duplicate entering.");
 			return;
 		}
 
@@ -47,15 +45,15 @@ public abstract class InputSimulatorBase : EntererBase
 			var inputList = recomp.Recompose();
 
 			var startDelay = info.Options.GetStartDelay();
-			await Task.Delay(startDelay);
+			await Task.Delay(startDelay, CancelToken);
 
-			Log.Information(I18n.Main_InputSimulating, content);
+			LibLogger.Info<InputSimulatorBase>(I18n.Main_InputSimulating, content);
 			game.UpdateChat("");
 
 			foreach (var input in inputList)
 			{
-				Log.Debug("Input requested: {ipt}", input);
-				if (!CanPerformAutoEnterNow(info.PathInfo, !IsPreinputSimInProg))
+				LibLogger.Debug<InputSimulatorBase>("Input requested: {ipt}", input);
+				if (!CanPerformAutoEnterNow(info.PathInfo, !IsPreinputSimInProg) || CancelToken.IsCancellationRequested)
 				{
 					valid = false; // Abort
 					break;
@@ -63,7 +61,7 @@ public abstract class InputSimulatorBase : EntererBase
 
 				var delay = info.Options.GetDelayPerChar();
 				await AppendAsync(info.Options, input);
-				await Task.Delay(delay);
+				await Task.Delay(delay, CancelToken);
 			}
 
 			await SimulationFinished();
@@ -76,6 +74,10 @@ public abstract class InputSimulatorBase : EntererBase
 			}
 
 			TrySubmitInput(valid);
+		}
+		catch (TaskCanceledException)
+		{
+			// ignored
 		}
 		finally
 		{

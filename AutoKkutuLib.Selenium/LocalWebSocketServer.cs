@@ -1,6 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
 using NetCoreServer;
-using Serilog;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -19,12 +18,12 @@ internal static class LocalWebSocketServer
 
 		public override void OnWsConnected(HttpRequest request)
 		{
-			Log.Information($"WebSocket session {Id} initiated.");
+			LibLogger.Info(nameof(LocalWebSocketServer), $"WebSocket session {Id} initiated.");
 		}
 
 		public override void OnWsDisconnected()
 		{
-			Log.Warning($"WebSocket session {Id} disconnected.");
+			LibLogger.Warn(nameof(LocalWebSocketServer), $"WebSocket session {Id} disconnected.");
 		}
 
 		public override void OnWsReceived(byte[] buffer, long offset, long size)
@@ -40,7 +39,7 @@ internal static class LocalWebSocketServer
 				}
 				catch (Exception ex)
 				{
-					Log.Error(ex, "Error handling WebSocket event listener WebSocket.");
+					LibLogger.Error(nameof(LocalWebSocketServer), ex, "Error handling WebSocket event listener WebSocket.");
 				}
 			}
 			base.OnWsReceived(buffer, offset, size);
@@ -59,12 +58,12 @@ internal static class LocalWebSocketServer
 			return session;
 		}
 
-		protected override void OnError(SocketError error) => Log.Error("WebSocket error: {err}", error);
+		protected override void OnError(SocketError error) => LibLogger.Error(nameof(LocalWebSocketServer), "WebSocket error: {err}", error);
 	}
 
 	public static IDisposable Start(int port)
 	{
-		Log.Information("Event listener WebSocket running on port {port}", port);
+		LibLogger.Info(nameof(LocalWebSocketServer), "Event listener WebSocket running on port {port}", port);
 
 		var server = new TheServer(IPAddress.Any, port);
 		server.Start();

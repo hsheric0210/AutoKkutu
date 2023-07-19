@@ -1,6 +1,4 @@
-﻿using Serilog;
-
-namespace AutoKkutuLib.Browser;
+﻿namespace AutoKkutuLib.Browser;
 
 // TODO: 사전 검색 기능 싹 다갈아엎고 DomHandler.cs, Game.cs에 직접적으로 추가하여 엄연한 하나의 공식 기능으로 만들기.
 public static class OnlineDictionaryCheckExtension
@@ -22,7 +20,7 @@ public static class OnlineDictionaryCheckExtension
 	/// <returns>True if existence is verified, false otherwise.</returns>
 	public static bool VerifyWordOnline(this BrowserBase browser, string word)
 	{
-		Log.Information(I18n.BatchJob_CheckOnline, word);
+		LibLogger.Info(nameof(OnlineDictionaryCheckExtension), I18n.BatchJob_CheckOnline, word);
 
 		// Enter the word to dictionary search field
 		browser.EvaluateJavaScript($"document.getElementById('dict-input').value = '{word}'");
@@ -35,20 +33,20 @@ public static class OnlineDictionaryCheckExtension
 
 		// Query the response
 		var result = browser.EvaluateJavaScript("document.getElementById('dict-output').innerHTML");
-		Log.Information(I18n.BatchJob_CheckOnline_Response, result);
+		LibLogger.Info(nameof(OnlineDictionaryCheckExtension), I18n.BatchJob_CheckOnline_Response, result);
 		if (string.IsNullOrWhiteSpace(result) || string.Equals(result, "404: 유효하지 않은 단어입니다.", StringComparison.OrdinalIgnoreCase))
 		{
-			Log.Warning(I18n.BatchJob_CheckOnline_NotFound, word);
+			LibLogger.Warn(nameof(OnlineDictionaryCheckExtension), I18n.BatchJob_CheckOnline_NotFound, word);
 			return false;
 		}
 		else if (string.Equals(result, "검색 중", StringComparison.OrdinalIgnoreCase))
 		{
-			Log.Warning(I18n.BatchJob_CheckOnline_InvalidResponse);
+			LibLogger.Warn(nameof(OnlineDictionaryCheckExtension), I18n.BatchJob_CheckOnline_InvalidResponse);
 			return browser.VerifyWordOnline(word); // retry
 		}
 		else
 		{
-			Log.Information(I18n.BatchJob_CheckOnline_Found, word);
+			LibLogger.Info(nameof(OnlineDictionaryCheckExtension), I18n.BatchJob_CheckOnline_Found, word);
 			return true;
 		}
 	}

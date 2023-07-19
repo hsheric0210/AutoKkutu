@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Selenium xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <!-- 기본적으로 모든 스크립트를 주입할 JavaScript 네임스페이스를 선택합니다. -->
+    <JavaScriptInjectionBaseNamespace>window</JavaScriptInjectionBaseNamespace>
+
+    <!-- 프로그램을 시작할 때 로드할 사이트 주소를 지정합니다. -->
+    <MainPage>https://kkutu.pink/</MainPage>
+
+    <!-- 크롬 바이너리(chrome.exe)가 위치한 경로를 지정합니다. 빈 문자열일 경우 기본값이 사용됩니다. -->
+    <BinaryLocation></BinaryLocation>
+
+    <!-- 프로그램 종료 후에도 브라우저 실행 상태를 유지할지의 여부를 나타냅니다. -->
+    <LeaveBrowserRunning>false</LeaveBrowserRunning>
+
+    <!-- 이미 열려 있는 디버깅 세션에 연결하려 할 때 사용할 포트입니다. 빈 문자열일 경우 이미 열려있는 디버깅 세션에 접속하는 대신 새로운 세션을 생성합니다. -->
+    <DebuggerAddress></DebuggerAddress>
+
+    <!-- 브라우저 크래시 시 덤프 파일을 저장할 장소를 지정합니다. 빈 문자열일 경우 기본값이 사용됩니다. -->
+    <MinidumpPath></MinidumpPath>
+
+    <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
+    <UserDataDir>%CURRENTDIR%\SeleniumUserData</UserDataDir>
+
+    <!-- 웹드라이버 'chromedriver.exe'의 경로를 지정합니다. -->
+    <DriverExecutable>chromedriver.exe</DriverExecutable>
+
+    <!-- 브라우저에 넘길 추가적인 커맨드 라인 스위치와 변수들을 지정합니다. -->
+    <!--
+    <Arguments>
+        <Argument></Argument>
+        <Argument></Argument>
+    </Arguments>
+    -->
+
+    <!-- 브라우저의 커맨드 라인 스위치와 변수들 중 제외할 것들을 지정합니다. -->
+    <!--
+    <ExcludedArguments>
+        <ExcludedArgument></ExcludedArgument>
+    </ExcludedArguments>
+    -->
+
+    <!-- 브라우저에 로드할 BASE64 인코딩된 .crx 확장 프로그램들을 지정합니다. -->
+    <!--
+    <EncodedExtensions>
+        <EncodedExtension></EncodedExtension>
+    </EncodedExtensions>
+    -->
+</Selenium>

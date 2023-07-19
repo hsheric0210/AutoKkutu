@@ -86,5 +86,25 @@ namespace AutoKkutuLib.Selenium.Properties {
                 return ResourceManager.GetString("communicatorJs", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+        ///&lt;Selenium xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///    &lt;!-- 기본적으로 모든 스크립트를 주입할 JavaScript 네임스페이스를 선택합니다. --&gt;
+        ///    &lt;JavaScriptInjectionBaseNamespace&gt;window&lt;/JavaScriptInjectionBaseNamespace&gt;
+        ///
+        ///    &lt;!-- 프로그램을 시작할 때 로드할 사이트 주소를 지정합니다. --&gt;
+        ///    &lt;MainPage&gt;https://kkutu.pink/&lt;/MainPage&gt;
+        ///
+        ///    &lt;!-- 크롬 바이너리(chrome.exe)가 위치한 경로를 지정합니다. 빈 문자열일 경우 기본값이 사용됩니다. --&gt;
+        ///    &lt;BinaryLocation&gt;&lt;/BinaryLocation&gt;
+        ///
+        ///    &lt;!-- 프로그 [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Selenium {
+            get {
+                return ResourceManager.GetString("Selenium", resourceCulture);
+            }
+        }
     }
 }

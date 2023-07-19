@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class SqliteIsColumnExistsQuery : AbstractIsColumnExistsQuery
@@ -18,7 +17,7 @@ public class SqliteIsColumnExistsQuery : AbstractIsColumnExistsQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorIsColumnExists, ColumnName, TableName);
+			LibLogger.Error<SqliteIsColumnExistsQuery>(ex, DatabaseConstants.ErrorIsColumnExists, ColumnName, TableName);
 			return false;
 		}
 	}

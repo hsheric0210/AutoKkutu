@@ -11,7 +11,7 @@ namespace AutoKkutuGui;
 public partial class App : Application
 {
 	private const int MaxSizeBytes = 8388608; // 64 MB
-	private const string LoggingTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.ffff} [{Level:u3}] <Thread#{ThreadId}> {Message:lj}{NewLine}{Exception}";
+	private const string LoggingTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.ffff} [{Level:u3}] <Thread#{ThreadId}> [{Module:l}] {Message:lj}{NewLine}{Exception}";
 	private readonly TimeSpan FlushPeriod = TimeSpan.FromSeconds(1);
 
 	public App()

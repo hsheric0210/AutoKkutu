@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Game.Enterer;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace AutoKkutuGui.Enterer;
 

@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class PostgreSqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
@@ -18,7 +17,7 @@ public class PostgreSqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorIsColumnExists, ColumnName, TableName);
+			LibLogger.Error<PostgreSqlIsColumnExistsQuery>(ex, DatabaseConstants.ErrorIsColumnExists, ColumnName, TableName);
 			return false;
 		}
 	}

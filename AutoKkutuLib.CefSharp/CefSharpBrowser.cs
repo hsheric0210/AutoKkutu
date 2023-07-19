@@ -4,7 +4,6 @@ using AutoKkutuLib.Properties;
 using CefSharp;
 using CefSharp.Wpf;
 using CefSharp.Wpf.Experimental;
-using Serilog;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -24,41 +23,6 @@ public class CefSharpBrowser : BrowserBase
 	public override object? BrowserControl => browser;
 
 	public override string JavaScriptBaseNamespace { get; }
-
-	private static CefConfigDto GetDefaultCefConfig()
-	{
-		var dflt = new CefSettings();
-		return new CefConfigDto()
-		{
-			MainPage = "https://kkutu.pink/",
-			ResourcesDirPath = dflt.ResourcesDirPath,
-			LogFile = "CefSharp.log",
-			LogSeverity = LogSeverity.Default,
-			JavascriptFlags = dflt.JavascriptFlags,
-			PackLoadingDisabled = dflt.PackLoadingDisabled,
-			UserAgentProduct = dflt.UserAgentProduct,
-			UserAgent = dflt.UserAgent,
-			LocalesDirPath = dflt.LocalesDirPath,
-			RemoteDebuggingPort = dflt.RemoteDebuggingPort,
-			WindowlessRenderingEnabled = dflt.WindowlessRenderingEnabled,
-			PersistSessionCookies = dflt.PersistSessionCookies,
-			PersistUserPreferences = dflt.PersistUserPreferences,
-			AcceptLanguageList = dflt.AcceptLanguageList,
-			BackgroundColor = dflt.BackgroundColor,
-			UncaughtExceptionStackSize = dflt.UncaughtExceptionStackSize,
-			Locale = dflt.Locale,
-			IgnoreCertificateErrors = dflt.IgnoreCertificateErrors,
-			UserDataPath = Environment.CurrentDirectory + "\\CefUser",
-			CookieableSchemesList = dflt.CookieableSchemesList,
-			ChromeRuntime = dflt.ChromeRuntime,
-			MultiThreadedMessageLoop = dflt.MultiThreadedMessageLoop,
-			BrowserSubprocessPath = dflt.BrowserSubprocessPath,
-			CachePath = dflt.CachePath,
-			RootCachePath = dflt.RootCachePath,
-			ExternalMessagePump = dflt.ExternalMessagePump,
-			CookieableSchemesExcludeDefaults = dflt.CookieableSchemesExcludeDefaults,
-		};
-	}
 
 	private static void SetIfAvail(string? value, Action<string> setter)
 	{
@@ -105,11 +69,11 @@ public class CefSharpBrowser : BrowserBase
 				{
 					var pieces = arg.Split('=', 2);
 					settings.CefCommandLineArgs?.Add(pieces[0], pieces[1]);
-					Log.Debug("Cef command-line argument added: {switch} = {value}", pieces[0], pieces[1]);
+					LibLogger.Debug<CefSharpBrowser>("Cef command-line argument added: {switch} = {value}", pieces[0], pieces[1]);
 				}
 				else
 				{
-					Log.Debug("Cef command-line switch added: {switch}", arg);
+					LibLogger.Debug<CefSharpBrowser>("Cef command-line switch added: {switch}", arg);
 					settings.CefCommandLineArgs?.Add(arg);
 				}
 			}
@@ -119,29 +83,24 @@ public class CefSharpBrowser : BrowserBase
 
 	public CefSharpBrowser()
 	{
-		var serializer = new XmlSerializer(typeof(CefConfigDto));
-
 		jsbGlobalObjectName = GenerateRandomString(1677243);
 		jsbObjectName = GenerateRandomString(1677244);
 
-		config = GetDefaultCefConfig();
 		try
 		{
-			if (File.Exists(ConfigFile))
-			{
-				using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-				config = (CefConfigDto?)serializer.Deserialize(stream)!;
-			}
-			else
-			{
-				using var stream = File.Open(ConfigFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-				serializer.Serialize(stream, config);
-			}
+			if (!File.Exists(ConfigFile))
+				File.WriteAllText(ConfigFile, CefSharpResources.CefSharp);
+
+			var serializer = new XmlSerializer(typeof(CefConfigDto));
+			using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+			config = (CefConfigDto?)serializer.Deserialize(stream)!;
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Failed to reading/writiting default CefSharp config.");
+			LibLogger.Error<CefSharpBrowser>(ex, "Failed to reading/writing default CefSharp config.");
+			throw new IOException("CefSharp configuration file load exception", ex);
 		}
+
 		JavaScriptBaseNamespace = config.JavaScriptInjectionBaseNamespace;
 		if (string.IsNullOrWhiteSpace(JavaScriptBaseNamespace))
 			JavaScriptBaseNamespace = "window";
@@ -150,24 +109,24 @@ public class CefSharpBrowser : BrowserBase
 		try
 		{
 			if (!Cef.IsInitialized && !Cef.Initialize(settings, true, (IApp?)null))
-				Log.Warning("CefSharp initialization failed.");
+				LibLogger.Warn<CefSharpBrowser>("CefSharp initialization failed.");
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "CefSharp initialization exception.");
+			LibLogger.Error<CefSharpBrowser>(ex, "CefSharp initialization exception.");
 		}
 
-		Log.Verbose("Cef settings applied.");
+		LibLogger.Verbose<CefSharpBrowser>("Cef settings applied.");
 
 		nameRandom = BrowserRandomNameMapping.MainHelperJs(this);
 		nameRandom.Add("___jsbGlobal___", jsbGlobalObjectName);
 		nameRandom.Add("___jsbObj___", jsbObjectName);
-		Log.Debug("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
+		LibLogger.Debug<CefSharpBrowser>("communicatorJs + mainHelperJs name mapping: {nameRandom}", nameRandom);
 	}
 
 	public override void LoadFrontPage()
 	{
-		Log.Verbose("Initializing CefSharp");
+		LibLogger.Verbose<CefSharpBrowser>("Initializing CefSharp");
 
 		browser = new ChromiumWebBrowser();
 		// Prevent getting detected by 'window.CefSharp' property existence checks
@@ -183,7 +142,7 @@ public class CefSharpBrowser : BrowserBase
 
 		browser.IsBrowserInitializedChanged += OnInitialized;
 
-		Log.Verbose("ChromiumWebBrowser instance created.");
+		LibLogger.Verbose<CefSharpBrowser>("ChromiumWebBrowser instance created.");
 	}
 
 	private void OnInitialized(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
@@ -200,7 +159,7 @@ public class CefSharpBrowser : BrowserBase
 		browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + CefSharpResources.communicatorJs + ';' + LibResources.mainHelperJs));
 		// browser.GetDevToolsClient().Page.AddScriptToEvaluateOnNewDocumentAsync(nameRandom.ApplyTo(LibResources.namespaceInitJs + ';' + LibResources.mainHelperJs + ';' + CefSharpResources.communicatorJs)); // TODO: try this.
 
-		Log.Information("ChromiumWebBrowser initialized.");
+		LibLogger.Info<CefSharpBrowser>("ChromiumWebBrowser initialized.");
 	}
 
 	public void OnWebSocketSend(object? sender, JavaScriptBindingObject.WebSocketJsonMessageEventArgs args)
@@ -213,7 +172,7 @@ public class CefSharpBrowser : BrowserBase
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Handling WebSocket send event error. Message: {msg}", args.Json);
+				LibLogger.Error<CefSharpBrowser>(ex, "Handling WebSocket send event error. Message: {msg}", args.Json);
 			}
 		});
 	}
@@ -228,14 +187,14 @@ public class CefSharpBrowser : BrowserBase
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Handling WebSocket receive event error. Message: {msg}", args.Json);
+				LibLogger.Error<CefSharpBrowser>(ex, "Handling WebSocket receive event error. Message: {msg}", args.Json);
 			}
 		});
 	}
 
 	public void OnFrameLoadEnd(object? sender, FrameLoadEndEventArgs args)
 	{
-		Log.Verbose("CefSharp frame loaded: {url}", args.Url);
+		LibLogger.Verbose<CefSharpBrowser>("CefSharp frame loaded: {url}", args.Url);
 		PageLoaded?.Invoke(sender, new PageLoadedEventArgs(args.Url));
 	}
 
@@ -257,7 +216,7 @@ public class CefSharpBrowser : BrowserBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, errorMessage ?? "JavaScript execution error");
+			LibLogger.Error<CefSharpBrowser>(ex, errorMessage ?? "JavaScript execution error");
 		}
 	}
 
@@ -265,7 +224,7 @@ public class CefSharpBrowser : BrowserBase
 	{
 		if (!browser.CanExecuteJavascriptInMainFrame)
 		{
-			Log.Warning("Trying to execute JavaScript before mainframe initialization finished.");
+			LibLogger.Warn<CefSharpBrowser>("Trying to execute JavaScript before mainframe initialization finished.");
 			return null;
 		}
 

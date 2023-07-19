@@ -1,7 +1,6 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Game.WebSocketHandlers;
-using Serilog;
 
 namespace AutoKkutuLib.Game;
 
@@ -96,7 +95,7 @@ public partial class Game : IGame
 	{
 		if (IsPathExpired(path) && !Session.WordCondition.IsEmpty())
 		{
-			Log.Warning("Path is expired. Requesting re-scan. old={opath} new={npath}", path.Condition, Session.WordCondition);
+			LibLogger.Warn<Game>("Path is expired. Requesting re-scan. old={opath} new={npath}", path.Condition, Session.WordCondition);
 			PathRescanRequested?.Invoke(this, new WordConditionPresentEventArgs(Session.WordCondition)); // Request re-scan
 			return true;
 		}

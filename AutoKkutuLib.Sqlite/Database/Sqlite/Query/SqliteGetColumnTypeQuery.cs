@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class SqliteGetColumnTypeQuery : AbstractGetColumnTypeQuery
@@ -18,7 +17,7 @@ public class SqliteGetColumnTypeQuery : AbstractGetColumnTypeQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
+			LibLogger.Error<SqliteGetColumnTypeQuery>(ex, DatabaseConstants.ErrorGetColumnType, ColumnName, TableName);
 		}
 		return "";
 	}

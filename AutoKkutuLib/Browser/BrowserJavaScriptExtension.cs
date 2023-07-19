@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Globalization;
 
 namespace AutoKkutuLib.Browser;
@@ -27,7 +26,7 @@ public static class BrowserJavaScriptExtension
 		}
 		catch (Exception ex)
 		{
-			Log.Warning(ex, errorPrefix ?? "JavaScript execution error");
+			LibLogger.Warn(nameof(BrowserJavaScriptExtension), ex, errorPrefix ?? "JavaScript execution error");
 		}
 
 		return ImmutableList<T>.Empty;
@@ -52,7 +51,7 @@ public static class BrowserJavaScriptExtension
 		}
 		catch (Exception ex)
 		{
-			Log.Warning(ex, errorPrefix ?? "JavaScript execution error");
+			LibLogger.Warn(nameof(BrowserJavaScriptExtension), ex, errorPrefix ?? "JavaScript execution error");
 			return defaultResult;
 		}
 	}
@@ -89,7 +88,7 @@ public static class BrowserJavaScriptExtension
 		}
 		catch (Exception ex)
 		{
-			Log.Warning(ex, errorPrefix ?? "Failed to run script on site.");
+			LibLogger.Warn(nameof(BrowserJavaScriptExtension), ex, errorPrefix ?? "Failed to run script on site.");
 			return defaultResult;
 		}
 	}
@@ -125,7 +124,7 @@ public static class BrowserJavaScriptExtension
 		}
 		catch (Exception ex)
 		{
-			Log.Warning(ex, errorMessage ?? "Failed to run script on site.");
+			LibLogger.Warn(nameof(BrowserJavaScriptExtension), ex, errorMessage ?? "Failed to run script on site.");
 			return defaultResult;
 		}
 	}

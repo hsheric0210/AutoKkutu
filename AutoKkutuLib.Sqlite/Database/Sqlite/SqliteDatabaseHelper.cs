@@ -1,5 +1,4 @@
-﻿using Serilog;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using Dapper;
 using System.ComponentModel.DataAnnotations.Schema;
 using AutoKkutuLib.Database.Sql;
@@ -24,7 +23,7 @@ public static class SqliteDatabaseHelper
 			{
 				var connection = SqliteDatabaseConnection.Create(externalSQLiteFilePath);
 				if (connection == null)
-					Log.Error("Failed to open SQLite connection");
+					LibLogger.Error(nameof(SqliteDatabaseHelper), "Failed to open SQLite connection");
 
 				var args = new SQLiteImportArgs { destination = targetDatabase, source = connection };
 				var WordCount = LogImportProcess("Import words", () => ImportWordsFromExternalSQLite(args));
@@ -41,7 +40,7 @@ public static class SqliteDatabaseHelper
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Failed to import external database.");
+				LibLogger.Error(nameof(SqliteDatabaseHelper), ex, "Failed to import external database.");
 			}
 		});
 	}
@@ -49,11 +48,11 @@ public static class SqliteDatabaseHelper
 	private static int LogImportProcess(string taskName, Func<int> task)
 	{
 		var sw = new Stopwatch();
-		Log.Information("Beginning {task}", taskName);
+		LibLogger.Info(nameof(SqliteDatabaseHelper), "Beginning {task}", taskName);
 		sw.Start();
 		var affected = task();
 		sw.Stop();
-		Log.Information("Task {task} took {time}ms and {count} elements affected.", taskName, sw.ElapsedMilliseconds, affected);
+		LibLogger.Info(nameof(SqliteDatabaseHelper), "Task {task} took {time}ms and {count} elements affected.", taskName, sw.ElapsedMilliseconds, affected);
 		return affected;
 	}
 
@@ -68,7 +67,7 @@ public static class SqliteDatabaseHelper
 	{
 		if (!args.destination.Query.IsTableExists(tableName).Execute())
 		{
-			Log.Warning("External SQLite Database doesn't contain node list table {tableName}.", tableName);
+			LibLogger.Warn(nameof(SqliteDatabaseHelper), "External SQLite Database doesn't contain node list table {tableName}.", tableName);
 			return 0;
 		}
 
@@ -78,7 +77,7 @@ public static class SqliteDatabaseHelper
 		foreach (var wordIndex in args.source.Query<string>($"SELECT {DatabaseConstants.WordIndexColumnName} FROM {tableName}"))
 		{
 			if (!args.destination.Query.AddNode(tableName).Execute(wordIndex))
-				Log.Warning("{node} in {tableName} already exists in database.", wordIndex, tableName);
+				LibLogger.Warn(nameof(SqliteDatabaseHelper), "{node} in {tableName} already exists in database.", wordIndex, tableName);
 			counter++;
 		}
 		return counter;
@@ -87,7 +86,7 @@ public static class SqliteDatabaseHelper
 	private static void ImportSingleWord(this AbstractDatabaseConnection destination, string word, int flags)
 	{
 		if (!destination.Query.AddWord().Execute(word, (WordFlags)flags))
-			Log.Warning("Word {word} already exists in database.", word);
+			LibLogger.Warn(nameof(SqliteDatabaseHelper), "Word {word} already exists in database.", word);
 	}
 
 	private static void ImportSingleWordLegacy(this AbstractDatabaseConnection destination, string word, int isEndWordInt)
@@ -95,14 +94,14 @@ public static class SqliteDatabaseHelper
 		// Legacy support
 		var isEndWord = Convert.ToBoolean(isEndWordInt);
 		if (!destination.Query.AddWord().Execute(word, isEndWord ? WordFlags.EndWord : WordFlags.None))
-			Log.Warning("(Legacy) Word {word} already exists in database.", word);
+			LibLogger.Warn(nameof(SqliteDatabaseHelper), "(Legacy) Word {word} already exists in database.", word);
 	}
 
 	private static int ImportWordsFromExternalSQLite(SQLiteImportArgs args)
 	{
 		if (!args.source.Query.IsTableExists(DatabaseConstants.WordTableName).Execute())
 		{
-			Log.Information($"External SQLite Database doesn't contain word list table {DatabaseConstants.WordTableName}");
+			LibLogger.Info(nameof(SqliteDatabaseHelper), $"External SQLite Database doesn't contain word list table {DatabaseConstants.WordTableName}");
 			return 0;
 		}
 

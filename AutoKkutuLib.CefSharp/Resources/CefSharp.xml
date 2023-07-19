@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CefSharp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <!-- 기본적으로 모든 스크립트를 주입할 JavaScript 네임스페이스를 선택합니다. -->
+    <JavaScriptInjectionBaseNamespace>window</JavaScriptInjectionBaseNamespace>
+
+    <!-- 프로그램을 시작할 때 로드할 사이트 주소를 지정합니다. -->
+    <MainPage>https://kkutu.pink/</MainPage>
+
+    <!-- 리소스 파일들(cef.pak, devtools_resources.pak)이 위치한 폴더를 지정합니다. 빈 문자열로 둘 시 기본값이 사용됩니다. -->
+    <!-- https://cefsharp.github.io/api/81.3.x/html/P_CefSharp_CefSettingsBase_ResourcesDirPath.htm -->
+    <ResourcesDirPath></ResourcesDirPath>
+
+    <!-- CefSharp의 기본 로그 파일명을 지정합니다. -->
+    <LogFile>CefSharp.log</LogFile>
+
+    <!-- CefSharp의 기본 로그 심각도를 지정합니다. 사용 가능한 값은 다음과 같습니다: Default, Verbose, Info, Warning, Error, Fatal, Disable -->
+    <LogSeverity>Default</LogSeverity>
+
+    <!-- V8 자바스크립트 엔진을 초기화할 때 지정할 사용자 지정 플래그들을 지정합니다. -->
+    <!-- https://cefsharp.github.io/api/63.0.0/html/P_CefSharp_CefSettings_JavascriptFlags.htm -->
+    <JavascriptFlags></JavascriptFlags>
+
+    <!-- 리소스 및 언어 패키지 파일들의 로딩을 비활성화할 지의 여부입니다. -->
+    <!-- https://cefsharp.github.io/api/83.4.x/html/P_CefSharp_CefSettingsBase_PackLoadingDisabled.htm -->
+    <!-- 기본적으로 사용자 지정 리소스 번들 핸들러를 로딩하는 것은 지원되지 않기에, 이 값을 true로 바꾸는 것은 오류를 발생시킵니다 -->
+    <PackLoadingDisabled>false</PackLoadingDisabled>
+
+    <!-- https://cefsharp.github.io/api/91.1.x/html/P_CefSharp_CefSettingsBase_UserAgentProduct.htm -->
+    <!-- UserAgent를 지정할 시 이 값은 무시됩니다 -->
+    <UserAgentProduct></UserAgentProduct>
+
+    <!-- Chromium의 'locales' 폴더의 경로를 지정합니다. 빈 문자열로 둘 시 기본값이 사용됩니다. -->
+    <LocalesDirPath></LocalesDirPath>
+
+    <!-- 지정된 포트를 통해 브라우저를 디버깅할 수 있도록 합니다. 포트의 범위는 1024-65535 내에 있어야 합니다. -->
+    <!-- https://cefsharp.github.io/api/79.1.x/html/P_CefSharp_AbstractCefSettings_RemoteDebuggingPort.htm -->
+    <RemoteDebuggingPort>0</RemoteDebuggingPort>
+
+    <!-- User-Agent를 사용자가 직접 지정합니다. -->
+    <UserAgent></UserAgent>
+
+    <!-- CefSharp가 프레임 내에 임베드되어 렌더링할 수 있도록 합니다. 이 값은 항상 true이어야 하며, false이면 브라우저가 로드되지 않습니다. -->
+    <WindowlessRenderingEnabled>true</WindowlessRenderingEnabled>
+
+    <!-- 세션 쿠키들을 보존할지의 여부를 지정합니다. -->
+    <!-- https://cefsharp.github.io/api/96.0.x/html/P_CefSharp_CefSettingsBase_PersistSessionCookies.htm -->
+    <PersistSessionCookies>false</PersistSessionCookies>
+
+    <!-- 사용자 설정을 캐시 폴더 내에 JSON 파일의 형태로 저장할지의 여부입니다. -->
+    <PersistUserPreferences>false</PersistUserPreferences>
+
+    <!-- 'Accept-Language' HTTP 헤더에 적용될 언어 목록을 지정합니다. -->
+    <!-- https://cefsharp.github.io/api/63.0.0/html/P_CefSharp_BrowserSettings_AcceptLanguageList.htm -->
+    <AcceptLanguageList>en-US,en,ko-KR,ko</AcceptLanguageList>
+
+    <!-- 웹사이트가 로딩되기 전, 브라우저의 배경 화면 색을 지정합니다. 색상은 RGB hex color를 int형으로 변환한 결과이어야 합니다. (예시: rgb(64, 128, 192) = #4080c0 = 4227264) -->
+    <BackgroundColor>0</BackgroundColor>
+
+    <UncaughtExceptionStackSize>0</UncaughtExceptionStackSize>
+
+    <!-- 브라우저의 UI 언어를 지정합니다. -->
+    <Locale>ko</Locale>
+
+    <!-- 사이트의 인증서 오류를 무시할지의 여부를 지정합니다. -->
+    <IgnoreCertificateErrors>false</IgnoreCertificateErrors>
+
+    <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
+    <UserDataPath>.\CefUserData</UserDataPath>
+
+    <CookieableSchemesList></CookieableSchemesList>
+
+    <!-- CEF에서 크롬 런타임을 사용할지의 여부를 지정합니다. -->
+    <!-- https://cefsharp.github.io/api/96.0.x/html/P_CefSharp_CefSettingsBase_ChromeRuntime.htm -->
+    <ChromeRuntime>false</ChromeRuntime>
+
+    <!-- 브라우저에 커맨드 라인 스위치들과 변수들을 넘기는 막을지 말지 여부를 지정합니다. -->
+    <CommandLineArgsDisabled>false</CommandLineArgsDisabled>
+
+    <!-- 브라우저에 넘길 추가적인 커맨드 라인 스위치와 변수들을 지정합니다. -->
+    <!--
+    <CommandLineArguments>
+        <Argument>-testSwitch</Argument>
+        <Argument>-testParameter=example123</Argument>
+    </CommandLineArguments>
+    -->
+
+    <!-- CEF의 메세지 처리 스레드와 프로그램의 메세지 처리 스레드를 분리합니다. 이 옵션은 항상 true이어야 하며, false일 시 오류가 발생합니다. -->
+    <!-- https://cefsharp.github.io/api/91.1.x/html/P_CefSharp_CefSettingsBase_MultiThreadedMessageLoop.htm -->
+    <MultiThreadedMessageLoop>true</MultiThreadedMessageLoop>
+
+    <!-- 브라우저 헬퍼 프로세스 'CefSharp.BrowserSubprocess.exe'의 위치를 지정합니다. -->
+    <BrowserSubprocessPath>.\runtimes\win-x64\native\CefSharp.BrowserSubprocess.exe</BrowserSubprocessPath>
+
+    <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
+    <CachePath />
+
+    <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
+    <RootCachePath />
+
+    <!-- 이 옵션은 항상 false이어야 하며, true일 시 오류가 발생합니다. -->
+    <ExternalMessagePump>false</ExternalMessagePump>
+
+    <CookieableSchemesExcludeDefaults>false</CookieableSchemesExcludeDefaults>
+</CefSharp>

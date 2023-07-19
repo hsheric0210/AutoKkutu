@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class NodeDeletionQuery : SqlQuery<int>
@@ -26,7 +25,7 @@ public class NodeDeletionQuery : SqlQuery<int>
 			throw new InvalidOperationException(nameof(Node) + " not set.");
 
 		var count = Connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new { Node });
-		Log.Debug(nameof(NodeDeletionQuery) + ": Deleted {0} of node {1} from database.", count, Node);
+		LibLogger.Debug<NodeDeletionQuery>("Deleted {0} of node {1} from database.", count, Node);
 		return count;
 	}
 }

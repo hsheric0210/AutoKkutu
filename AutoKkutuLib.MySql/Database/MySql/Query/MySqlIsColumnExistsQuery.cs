@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class MySqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
@@ -21,7 +20,7 @@ public class MySqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorIsColumnExists, ColumnName, TableName);
+			LibLogger.Error<MySqlIsColumnExistsQuery>(ex, DatabaseConstants.ErrorIsColumnExists, ColumnName, TableName);
 			return false;
 		}
 	}

@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class DeduplicationQuery : SqlQuery<int>
@@ -11,7 +10,7 @@ public class DeduplicationQuery : SqlQuery<int>
 	// https://wiki.postgresql.org/wiki/Deleting_duplicates
 	public override int Execute()
 	{
-		Log.Debug($"{nameof(DeduplicationQuery)}: Deduplicating the table {DatabaseConstants.WordTableName}.");
+		LibLogger.Debug<DeduplicationQuery>($"{nameof(DeduplicationQuery)}: Deduplicating the table {DatabaseConstants.WordTableName}.");
 		return Connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE seq IN (SELECT seq FROM (SELECT seq, ROW_NUMBER() OVER w as rnum FROM {DatabaseConstants.WordTableName} WINDOW w AS (PARTITION BY word ORDER BY seq)) t WHERE t.rnum > 1);");
 	}
 }

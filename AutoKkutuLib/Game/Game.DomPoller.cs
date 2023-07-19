@@ -1,9 +1,10 @@
 ﻿using AutoKkutuLib.Extension;
-using Serilog;
 
 namespace AutoKkutuLib.Game;
 public partial class Game
 {
+	private const string gameDomPoller = "Game.DomPoller";
+
 	private Task? mainPoller;
 	private CancellationTokenSource? pollerCancel;
 
@@ -11,7 +12,6 @@ public partial class Game
 	// They should be called and modified only within a single thread.
 	private bool domIsMyTurn;
 	private int domTurnIndex = -1;
-	private GameSessionState? domSession;
 	private string domUserId = "";
 
 	private void StartPollers()
@@ -25,7 +25,7 @@ public partial class Game
 		Task.Run(async () => await BaseDomPoller(
 			PollWordHistory,
 			null,
-			(ex) => Log.Error(ex, "'Word Histories' poller exception"),
+			(ex) => LibLogger.Error(gameDomPoller, ex, "'Word Histories' poller exception"),
 			() => Session.AmIGaming && !Session.GameMode.IsFreeMode(),
 			intenseInterval,
 			idleInterval,
@@ -33,7 +33,7 @@ public partial class Game
 		Task.Run(async () => await BaseDomPoller(
 			PollTypingWord,
 			null,
-			(ex) => Log.Error(ex, "Typing-battle word poller exception"),
+			(ex) => LibLogger.Error(gameDomPoller, ex, "Typing-battle word poller exception"),
 			() => Session.AmIGaming && Session.GameMode == GameMode.TypingBattle,
 			intenseInterval,
 			idleInterval,
@@ -45,12 +45,12 @@ public partial class Game
 		Task.Run(async () => await GameDomPoller(PollWordHint, token, "Word hint poller", looseInterval));
 		Task.Run(async () => await SlowDomPoller(PollGameMode, token, "Gamemode poller"));
 		Task.Run(async () => await ConditionlessDomPoller(PollUserId, token, "User-ID poller", looseInterval));
-		Log.Debug("DOM pollers are now active.");
+		LibLogger.Debug(gameDomPoller, "DOM pollers are now active.");
 	}
 
 	private void StopPollers()
 	{
-		Log.Debug("Shutting down DOM pollers...");
+		LibLogger.Debug(gameDomPoller, "Shutting down DOM pollers...");
 		pollerCancel?.Cancel();
 		mainPoller?.Wait(); // await to be terminated
 	}
@@ -82,13 +82,18 @@ public partial class Game
 				return;
 			domIsMyTurn = true;
 
-			Log.Verbose("DOM Handler detected my turn start.");
+			LibLogger.Verbose(gameDomPoller, "DOM Handler detected my turn start.");
 			NotifyClassicTurnStart(true, -1, await PollWordCondition());
 			return;
 		}
 
-		if (domTurnIndex != Session.GetRelativeTurn()) // Failsafe for DOM out-of-sync (Often occurred when using both DomHandler and WebSocketHandler, with very fast game tempo)
+		// DOM turn out-of-sync 방지 (특히 WebSocketHandler와 병행하여 사용하면서, 게임 템포가 매우 빠를 때 자주 발생함)
+		if (domTurnIndex != Session.GetRelativeTurn())
+		{
+			LibLogger.Debug(gameDomPoller, "DomPoller PollTurn turn out-of-sync detected.");
 			domTurnIndex = Session.GetRelativeTurn();
+			return;
+		}
 
 		// Use slow but accurate method to determine my turn *END* and other player turn changes
 		var turnIndexNow = await domHandler.GetTurnIndex();
@@ -96,14 +101,14 @@ public partial class Game
 		{
 			if (domTurnIndex != -1) // turnEnd: prev != -1
 			{
-				Log.Verbose("DOM Handler detected turn end (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
+				LibLogger.Verbose(gameDomPoller, "DOM Handler detected turn end (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
 				NotifyClassicTurnEnd("");
 				domIsMyTurn = false;
 			}
 
 			if (turnIndexNow != -1) // turnStart: now != -1
 			{
-				Log.Verbose("DOM Handler detected other user turn start (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
+				LibLogger.Verbose(gameDomPoller, "DOM Handler detected other user turn start (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
 				NotifyClassicTurnStart(false, turnIndexNow, await PollWordCondition());
 			}
 
@@ -166,7 +171,7 @@ public partial class Game
 			return;
 		typingWordCache = word;
 		currentPresentedWordCacheTime = Environment.TickCount64;
-		Log.Verbose("Word detected : {word} (delay: {delta})", word, tDelta);
+		LibLogger.Verbose(gameDomPoller, "Word detected : {word} (delay: {delta})", word, tDelta);
 		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));
 	}
 
@@ -206,7 +211,7 @@ public partial class Game
 			var converted = Session.GameMode.ConvertWordToCondition(condition, missionChar);
 			if (converted == null)
 			{
-				Log.Error("Failed to convert word {word} to condition. (missionChar: {missionChar})", condition, missionChar);
+				LibLogger.Error(gameDomPoller, "Failed to convert word {word} to condition. (missionChar: {missionChar})", condition, missionChar);
 				return WordCondition.Empty;
 			}
 

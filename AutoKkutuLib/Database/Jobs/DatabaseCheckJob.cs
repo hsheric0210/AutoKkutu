@@ -2,7 +2,6 @@
 using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using Dapper;
-using Serilog;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -36,7 +35,7 @@ public class DatabaseCheckJob
 				var watch = new Stopwatch();
 
 				var totalElementCount = DbConnection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}");
-				Log.Information("Database has Total {0} elements.", totalElementCount);
+				LibLogger.Info<DatabaseCheckJob>("Database has Total {0} elements.", totalElementCount);
 
 				int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
 
@@ -51,18 +50,18 @@ public class DatabaseCheckJob
 				RefreshNodeLists();
 
 				// Check for errorsd
-				Log.Information("Searching problems...");
+				LibLogger.Info<DatabaseCheckJob>("Searching problems...");
 				watch.Start();
 				foreach (var element in DbConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 				{
 					currentElementIndex++;
 					var word = element.Word;
-					//Log.Information("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
+					//LibLogger.Info("Total {0} of {1} ({2})", totalElementCount, currentElementIndex, word);
 
 					// Check word validity
 					if (IsInvalid(word))
 					{
-						Log.Information("Invalid word {word}, will be removed.", word);
+						LibLogger.Info<DatabaseCheckJob>("Invalid word {word}, will be removed.", word);
 						deletionList.Add(word);
 						continue;
 					}
@@ -87,7 +86,7 @@ public class DatabaseCheckJob
 					VerifyWordFlags(word, element.Flags, flagCorrection);
 				}
 				watch.Stop();
-				Log.Information("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
+				LibLogger.Info<DatabaseCheckJob>("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
 				watch.Restart();
 
@@ -102,17 +101,17 @@ public class DatabaseCheckJob
 				transaction.Commit();
 
 				watch.Stop();
-				Log.Information("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
+				LibLogger.Info<DatabaseCheckJob>("Done fixing problems. Took {0}ms.", watch.ElapsedMilliseconds);
 
 				ExecuteVacuum();
 
-				Log.Information("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
+				LibLogger.Info<DatabaseCheckJob>("Database check completed: Total {0} / Removed {1} / Deduplicated {2} / Fixed {3}.", totalElementCount, RemovedCount, DeduplicatedCount, FixedCount);
 
 				new DataBaseIntegrityCheckDoneEventArgs($"{RemovedCount + DeduplicatedCount} 개 항목 제거됨 / {FixedCount} 개 항목 수정됨").TriggerDatabaseIntegrityCheckDone();
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, "Exception while checking database");
+				LibLogger.Error<DatabaseCheckJob>(ex, "Exception while checking database");
 			}
 		});
 	}
@@ -125,7 +124,7 @@ public class DatabaseCheckJob
 		var correctFlagsInt = (int)correctFlags;
 		if (correctFlagsInt != currentFlags)
 		{
-			Log.Debug("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, correctFlags);
+			LibLogger.Debug<DatabaseCheckJob>("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, correctFlags);
 			correction.Add(word, correctFlagsInt);
 		}
 	}
@@ -135,7 +134,7 @@ public class DatabaseCheckJob
 		var correctWordIndex = wordIndexSupplier(word);
 		if (correctWordIndex != currentWordIndex)
 		{
-			Log.Debug("Invaild {wordIndexName} column {currentWordIndex}, will be fixed to {correctWordIndex}.", wordIndexName, currentWordIndex, correctWordIndex);
+			LibLogger.Debug<DatabaseCheckJob>("Invaild {wordIndexName} column {currentWordIndex}, will be fixed to {correctWordIndex}.", wordIndexName, currentWordIndex, correctWordIndex);
 			correction.Add(word, correctWordIndex);
 		}
 	}
@@ -177,7 +176,7 @@ public class DatabaseCheckJob
 
 			if (affected > 0)
 			{
-				Log.Debug("Reset flags of {word} to {to}.", pair.Key, (WordFlags)pair.Value);
+				LibLogger.Debug<DatabaseCheckJob>("Reset flags of {word} to {to}.", pair.Key, (WordFlags)pair.Value);
 				Counter += affected;
 			}
 		}
@@ -196,7 +195,7 @@ public class DatabaseCheckJob
 			});
 			if (affected > 0)
 			{
-				Log.Debug("Reset {column} of {word} to {to}.", indexColumnName, pair.Key, pair.Value);
+				LibLogger.Debug<DatabaseCheckJob>("Reset {column} of {word} to {to}.", indexColumnName, pair.Key, pair.Value);
 				counter += affected;
 			}
 		}
@@ -214,7 +213,7 @@ public class DatabaseCheckJob
 			});
 			if (affected > 0)
 			{
-				Log.Debug("Removed {word} from database.", word);
+				LibLogger.Debug<DatabaseCheckJob>("Removed {word} from database.", word);
 				counter += affected;
 			}
 		}
@@ -229,11 +228,11 @@ public class DatabaseCheckJob
 	private void ExecuteVacuum()
 	{
 		var watch = new Stopwatch();
-		Log.Information("Executing vacuum...");
+		LibLogger.Info<DatabaseCheckJob>("Executing vacuum...");
 		watch.Restart();
 		DbConnection.Query.Vacuum().Execute();
 		watch.Stop();
-		Log.Information("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
+		LibLogger.Info<DatabaseCheckJob>("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 	}
 
 	/// <summary>
@@ -243,16 +242,16 @@ public class DatabaseCheckJob
 	{
 		var watch = new Stopwatch();
 		watch.Start();
-		Log.Information("Updating node lists...");
+		LibLogger.Info<DatabaseCheckJob>("Updating node lists...");
 		try
 		{
 			nodeManager.LoadNodeLists(DbConnection);
 			watch.Stop();
-			Log.Information("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
+			LibLogger.Info<DatabaseCheckJob>("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Failed to refresh node lists");
+			LibLogger.Error<DatabaseCheckJob>(ex, "Failed to refresh node lists");
 		}
 	}
 
@@ -261,16 +260,16 @@ public class DatabaseCheckJob
 		var count = 0;
 		var watch = new Stopwatch();
 		watch.Start();
-		Log.Information("Deduplicating entries...");
+		LibLogger.Info<DatabaseCheckJob>("Deduplicating entries...");
 		try
 		{
 			count = DbConnection.Query.Deduplicate().Execute();
 			watch.Stop();
-			Log.Information("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
+			LibLogger.Info<DatabaseCheckJob>("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Deduplication failed");
+			LibLogger.Error<DatabaseCheckJob>(ex, "Deduplication failed");
 		}
 		return count;
 	}

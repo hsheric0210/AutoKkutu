@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Hangul;
-using Serilog;
 using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
@@ -35,14 +34,14 @@ public partial class Win32InputSimulator : InputSimulatorBase
 
 		//https://m.blog.naver.com/gostarst/220627552770
 		var state1 = SendMessage(ImmGetDefaultIMEWnd(game.Browser.GetWindowHandle()), WM_IME_CONTROL, new IntPtr(IMC_GETOPENSTATUS), new IntPtr(0)).ToInt32() != 0;
-		Log.Debug("Initial Hangul IME state (WM_IME_CONTROL.IMC_GETOPENSTATUS): {state}", hangulImeState);
+		LibLogger.Debug<Win32InputSimulator>("Initial Hangul IME state (WM_IME_CONTROL.IMC_GETOPENSTATUS): {state}", hangulImeState);
 
 		//https://kdsoft-zeros.tistory.com/160
 		var imeHandle = ImmGetContext(game.Browser.GetWindowHandle());
 		int dwConversion = 0, dwSentence = 0;
 		ImmGetConversionStatus(imeHandle, ref dwConversion, ref dwSentence);
 		var state2 = dwConversion != 0;
-		Log.Debug("Initial Hangul IME state (ImmGetConversionStatus): {state}", hangulImeState);
+		LibLogger.Debug<Win32InputSimulator>("Initial Hangul IME state (ImmGetConversionStatus): {state}", hangulImeState);
 
 		hangulImeState = state1 || state2;
 	}
@@ -60,7 +59,7 @@ public partial class Win32InputSimulator : InputSimulatorBase
 		}
 		else
 		{
-			Log.Warning("Win32-InputSimulator: VkCode not found for character {char}", input.Key);
+			LibLogger.Warn<Win32InputSimulator>("Win32-InputSimulator: VkCode not found for character {char}", input.Key);
 			return;
 		}
 
@@ -69,13 +68,13 @@ public partial class Win32InputSimulator : InputSimulatorBase
 		{
 			KeyUp(VK_RSHIFT);
 			shiftState = false;
-			Log.Debug("Shift released.");
+			LibLogger.Debug<Win32InputSimulator>("Shift released.");
 		}
 		else if (!shiftState && input.ShiftState == ShiftState.Press)
 		{
 			KeyDown(VK_RSHIFT);
 			shiftState = true;
-			Log.Debug("Shift pressed.");
+			LibLogger.Debug<Win32InputSimulator>("Shift pressed.");
 		}
 
 		// IME 상태 업데이트
@@ -84,14 +83,14 @@ public partial class Win32InputSimulator : InputSimulatorBase
 			KeyDown(VK_HANGUL);
 			KeyUp(VK_HANGUL);
 			hangulImeState = false;
-			Log.Debug("IME state changed to English.");
+			LibLogger.Debug<Win32InputSimulator>("IME state changed to English.");
 		}
 		else if (!hangulImeState && input.ImeState == ImeState.Korean)
 		{
 			KeyDown(VK_HANGUL);
 			KeyUp(VK_HANGUL);
 			hangulImeState = true;
-			Log.Debug("IME state changed to Korean.");
+			LibLogger.Debug<Win32InputSimulator>("IME state changed to Korean.");
 		}
 
 		KeyDown(vkCode);
@@ -115,7 +114,7 @@ public partial class Win32InputSimulator : InputSimulatorBase
 	{
 		if (shiftState)
 		{
-			Log.Verbose("Released shift key as the input simulation finished.");
+			LibLogger.Verbose<Win32InputSimulator>("Released shift key as the input simulation finished.");
 			KeyUp(VK_RSHIFT); // Release shift key
 		}
 
@@ -127,7 +126,7 @@ public partial class Win32InputSimulator : InputSimulatorBase
 		if (inputList.Count > 0)
 		{
 			if (SendInput((uint)inputList.Count, inputList.ToArray(), Marshal.SizeOf(typeof(INPUT))) == 0)
-				Log.Error("SendInput is blocked by other thread.");
+				LibLogger.Error<Win32InputSimulator>("SendInput is blocked by other thread.");
 			inputList.Clear();
 			//await Task.Delay(30); // todo: make end-delay configurable
 		}

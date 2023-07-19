@@ -28,9 +28,6 @@ public class SeleniumConfigDto
 	[XmlElement]
 	public string DriverExecutable { get; set; }
 
-	[XmlElement]
-	public string BrowserExecutable { get; set; }
-
 	[XmlArray("Arguments")]
 	[XmlArrayItem("Argument")]
 	public List<string> Arguments { get; set; }

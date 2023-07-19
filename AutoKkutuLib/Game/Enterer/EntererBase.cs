@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace AutoKkutuLib.Game.Enterer;
 public abstract class EntererBase : IEnterer
@@ -60,6 +59,9 @@ public abstract class EntererBase : IEnterer
 	/// </remarks>
 	protected PathDetails lastPreinputPath = PathDetails.Empty;
 
+	protected CancellationTokenSource CancelTokenSrc { get; private set; } = new CancellationTokenSource();
+
+	protected CancellationToken CancelToken => CancelTokenSrc.Token;
 
 	protected EntererBase(string name, IGame game)
 	{
@@ -81,14 +83,7 @@ public abstract class EntererBase : IEnterer
 		if (string.IsNullOrWhiteSpace(param.Content)) // TODO: Make AutoEnterInfo.content always non-null-able
 			throw new ArgumentException("Content to auto-enter is not provided", nameof(param));
 
-		Log.Verbose("Enter request received: {request}", param);
-
-		if (IsInputInProgress)
-		{
-			// 여러 입력 작업 동시 진행 방지 (높은 확률로 입력이 꼬임, 특히 입력 시뮬레이션일 때)
-			Log.Warning("Rejected enter request as other entering is in progress.");
-			return;
-		}
+		LibLogger.Verbose<EntererBase>("Enter request received: {request}", param);
 
 		var pre = param.HasFlag(PathFlags.PreSearch);
 		if (param.Options.DelayEnabled)
@@ -104,6 +99,7 @@ public abstract class EntererBase : IEnterer
 				{
 					if (isPreinputFinished == 1) // Pre-search 입력 시뮬레이션 완료 시
 					{
+						LibLogger.Debug<EntererBase>("Just pressing the send button as the pre-input is already finished.");
 						TrySubmitInput(CanPerformAutoEnterNow(param)); // 자동으로 전송
 						Interlocked.CompareExchange(ref isPreinputSimInProg, 0, 1);
 						Interlocked.CompareExchange(ref isPreinputFinished, 0, 1);
@@ -111,11 +107,34 @@ public abstract class EntererBase : IEnterer
 					}
 					if (isInputInProgress == 1 && isPreinputSimInProg == 1) // Pre-search 입력 시뮬레이션 진행 중일 시
 					{
+						LibLogger.Debug<EntererBase>("Promoting the ongoing pre-input to formal input.");
 						Interlocked.CompareExchange(ref isPreinputSimInProg, 0, 1); // 현재 진행 중인 이른 자동 입력을 정규 자동 입력으로 승격. 이를 통해 해당 이른 자동 입력 완료 시 자동 전송 기능 활성화됨.
 						return; // 현재 새로 요청된 입력 시뮬레이션은 취소시킴
 					}
 				}
+				else
+				{
+					// 만약 Pre-input 중이던/완료한 내용과 새로 입력하려는 내용의 조건이 다를 경우 -> 현재 진행 중인 입력 중단, 새로 입력 시작
+					LibLogger.Debug<EntererBase>("Restarting enter as the condition is mismatched between pre-input and formal-input. PreInput={preInput} FormalInput={formalInput}", lastPreinputPath, param.PathInfo);
+
+					// 진행 중이던 입력 중단 요청
+					CancelTokenSrc.Cancel();
+
+					// 입력 진행 상황 관련 상태 리셋
+					Interlocked.CompareExchange(ref isInputInProgress, 0, 1);
+					Interlocked.CompareExchange(ref isPreinputSimInProg, 0, 1);
+					Interlocked.CompareExchange(ref isPreinputFinished, 0, 1);
+				}
 			}
+
+			if (IsInputInProgress)
+			{
+				// 여러 입력 작업 동시 진행 방지 (높은 확률로 입력이 꼬임, 특히 입력 시뮬레이션일 때)
+				LibLogger.Warn<EntererBase>("Rejected enter request as other entering is in progress.");
+				return;
+			}
+
+			CancelTokenSrc = new CancellationTokenSource(); // CancellationTokenSource can't be reused - https://stackoverflow.com/a/6168534
 
 			Interlocked.CompareExchange(ref isInputInProgress, 1, 0);
 			Task.Run(async () =>
@@ -150,12 +169,12 @@ public abstract class EntererBase : IEnterer
 		if (valid)
 		{
 			SubmitInput();
-			Log.Information(I18n.Main_InputSimulationFinished); // TODO: Rename those
+			LibLogger.Info<EntererBase>(I18n.Main_InputSimulationFinished); // TODO: Rename those
 		}
 		else
 		{
 			ClearInput();
-			Log.Warning(I18n.Main_InputSimulationAborted); // TODO: Rename those
+			LibLogger.Warn<EntererBase>(I18n.Main_InputSimulationAborted); // TODO: Rename those
 		}
 	}
 
@@ -196,7 +215,7 @@ public abstract class EntererBase : IEnterer
 		if (!CanPerformAutoEnterNow(path))
 			return;
 
-		Log.Information(I18n.Main_AutoEnter, content);
+		LibLogger.Info<EntererBase>(I18n.Main_AutoEnter, content);
 		game.UpdateChat(content);
 		game.ClickSubmitButton();
 		InputStopwatch.Restart();

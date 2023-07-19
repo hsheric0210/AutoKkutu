@@ -3,7 +3,6 @@ using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
 using Dapper;
 using Microsoft.Data.Sqlite;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sqlite;
 
@@ -40,13 +39,13 @@ public sealed class SqliteDatabaseConnection : AbstractDatabaseConnection
 			// Check the database tables
 			connection.CheckTable();
 
-			Log.Information("Established SQLite connection.");
+			LibLogger.Info<SqliteDatabaseConnection>("Established SQLite connection.");
 
 			return connection;
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorConnect);
+			LibLogger.Error<SqliteDatabaseConnection>(ex, DatabaseConstants.ErrorConnect);
 			DatabaseEvents.TriggerDatabaseError();
 		}
 

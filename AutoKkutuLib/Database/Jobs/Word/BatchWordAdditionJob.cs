@@ -1,7 +1,6 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Database.Sql.Query;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Jobs.Word;
 public sealed class BatchWordAdditionJob : BatchWordJob
@@ -35,7 +34,7 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 			// Check word length
 			if (word.Length <= 1)
 			{
-				Log.Warning("Word {word} is too short to add!", word);
+				LibLogger.Warn<BatchWordAdditionJob>("Word {word} is too short to add!", word);
 				count.IncrementError();
 				continue;
 			}
@@ -50,7 +49,7 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Failed to commit word addition queries to the database.");
+			LibLogger.Error<BatchWordAdditionJob>(ex, "Failed to commit word addition queries to the database.");
 		}
 		return count;
 	}
@@ -61,13 +60,13 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 		{
 			nodeManager.UpdateNodeListsByWord(word, ref flags);
 
-			Log.Verbose("Adding {word} into database... (flags: {flags})", word, flags);
+			LibLogger.Verbose<BatchWordAdditionJob>("Adding {word} into database... (flags: {flags})", word, flags);
 			if (query.Execute(word, flags))
 				wordCount.Increment(flags, 1);
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Exception on word addition: {word}.", word);
+			LibLogger.Error<BatchWordAdditionJob>(ex, "Exception on word addition: {word}.", word);
 			wordCount.IncrementError();
 		}
 	}

@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Serilog;
 
 namespace AutoKkutuLib.Database.Sql.Query;
 public class PostgreSqlIsTableExistsQuery : AbstractIsTableExistsQuery
@@ -17,7 +16,7 @@ public class PostgreSqlIsTableExistsQuery : AbstractIsTableExistsQuery
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, DatabaseConstants.ErrorIsTableExists, TableName);
+			LibLogger.Error<PostgreSqlIsTableExistsQuery>(ex, DatabaseConstants.ErrorIsTableExists, TableName);
 			return false;
 		}
 	}
