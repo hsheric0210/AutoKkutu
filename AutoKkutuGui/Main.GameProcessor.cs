@@ -20,7 +20,7 @@ public partial class Main
 	/// <remarks>
 	/// 턴이 시작될 때, 만약 이 검색 결과가 턴 조건과 일치한다면, 새로운 검색을 시작하는 대신 이 검색 결과를 사용함으로서 지연을 줄일 수 있습니다.
 	/// </remarks>
-	private PathUpdateEventArgs? preSearch;
+	private PathList? preSearch;
 
 	/// <summary>
 	/// 마지막으로 자동 검색된 단어 목록을 나타냅니다.
@@ -28,7 +28,7 @@ public partial class Main
 	/// <remarks>
 	/// 오답 자동 수정을 위해서 사용될 목적으로 설계되었습니다.
 	/// </remarks>
-	private PathUpdateEventArgs? autoPathFindCache;
+	private PathList? autoPathFindCache;
 
 	// TODO: 내가 이번 턴에 패배했고, 라운드가 끝났을 경우
 	// 다음 라운드 시작 단어에 대해 미리 Pre-search 및 입력 수행.
@@ -36,9 +36,16 @@ public partial class Main
 
 	private void OnPathUpdated(object? sender, PathUpdateEventArgs args)
 	{
+		// TryAutoEnter에서는 Enter요청 넣은 직후에 해당 단어를 사용 가능한 목록에서 삭제해 버리기 때문에
+		// Pre-input하다가 턴 시작되서 입력 완료하려 할 때, 단어를 찾을 수 없다는 메시지를 띄움.
+		// 이는 'preSearch' 단어 목록과 지금 입력하려는 단어 목록을 서로 격리함으로서 해결 가능.
+		// 한편, 참고로 랜덤 단어 선택 켜져있을 때 Pre-input하려는 단어와 턴 시작되서 입력하려는 단어가 다를 수 있음에도 어떻게 Pre-input한 결과를 정상적으로 입력 완료하냐면
+		// 단어 전체를 확인하는 것이 아닌, 단순히 단어 조건이 현재 조건과 맞는지만 검사하기 때문임. (일종의 부속 효과)
+		var pathListCopy = new PathList(args.FilteredWordList, args.Details);
+
 		Log.Verbose(I18n.Main_PathUpdateReceived);
 		if (!args.HasFlag(PathFlags.DoNotAutoEnter))
-			autoPathFindCache = args;
+			autoPathFindCache = pathListCopy;
 
 		if (args.HasFlag(PathFlags.PreSearch))
 		{
@@ -50,7 +57,7 @@ public partial class Main
 				return;
 			}
 
-			preSearch = args;
+			preSearch = args.FilteredWordList;
 		}
 
 		var autoEnter = Preference.AutoEnterEnabled && !args.HasFlag(PathFlags.DoNotAutoEnter) /*&& !args.HasFlag(PathFinderFlags.PreSearch)*/;
@@ -74,11 +81,11 @@ public partial class Main
 		if (autoEnter)
 		{
 			Log.Verbose("Auto-entering on path update...");
-			TryAutoEnter(args);
+			TryAutoEnter(pathListCopy);
 		}
 	}
 
-	private void TryAutoEnter(PathUpdateEventArgs args, bool usedPresearchResult = false)
+	private void TryAutoEnter(PathList list, bool usedPresearchResult = false)
 	{
 		if (!EntererManager.TryGetEnterer(AutoKkutu.Game, Preference.AutoEnterMode, out var enterer))
 		{
@@ -86,36 +93,30 @@ public partial class Main
 			return;
 		}
 
-		if (args.Result == PathFindResultType.NotFound)
+		var opt = new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom, 1, 0, GetEnterCustomParameter());
+		var time = AutoKkutu.Game.GetTurnTimeMillis();
+		var bestPath = list.ChooseBestWord(opt, time, Preference.RandomWordSelection ? Preference.RandomWordSelectionCount : 1);
+		if (!bestPath.Available)
 		{
-			Log.Warning(I18n.Auto_NoMorePathAvailable);
-			UpdateStatusMessage(StatusMessage.NotFound);
-		}
-		else
-		{
-			var opt = new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterDelayStartAfterWordEnterEnabled, Preference.AutoEnterInputSimulateJavaScriptSendKeys, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom);
-			var time = AutoKkutu.Game.GetTurnTimeMillis();
-			(var wordToEnter, var timeover) = args.FilteredWordList.ChooseBestWord(opt, time);
-			if (string.IsNullOrEmpty(wordToEnter))
+			if (bestPath.AllTimeFilteredOut)
 			{
-				if (timeover)
-				{
-					Log.Warning(I18n.Auto_TimeOver);
-					UpdateStatusMessage(StatusMessage.AllWordTimeOver, time);
-				}
-				else
-				{
-					Log.Warning(I18n.Auto_NoMorePathAvailable);
-					UpdateStatusMessage(StatusMessage.NotFound);
-				}
+				Log.Warning(I18n.Auto_TimeOver);
+				UpdateStatusMessage(StatusMessage.AllWordTimeOver, time);
 			}
 			else
 			{
-				var param = args.Details;
-				if (usedPresearchResult)
-					param = param.WithoutFlags(PathFlags.PreSearch); // Fixme: 이런 번거로운 방법 대신 더 나은 방법 생각해보기
-				enterer.RequestSend(new EnterInfo(opt, param, wordToEnter));
+				Log.Warning(I18n.Auto_NoMorePathAvailable);
+				UpdateStatusMessage(StatusMessage.NotFound);
 			}
+		}
+		else
+		{
+			var param = list.Details;
+			if (usedPresearchResult)
+				param = param.WithoutFlags(PathFlags.PreSearch); // Fixme: 이런 번거로운 방법 대신 더 나은 방법 생각해보기
+
+			enterer.RequestSend(new EnterInfo(opt, param, bestPath.Object.Content));
+			list.PushUsed(bestPath);
 		}
 	}
 
@@ -145,23 +146,14 @@ public partial class Main
 		}
 	}
 
-	private int wordIndex;
-
 	private void OnGameModeChange(object? sender, GameModeChangeEventArgs args) => Log.Information(I18n.Main_GameModeUpdated, ConfigEnums.GetGameModeName(args.GameMode));
-
-	private void OnGameStarted(object? sender, EventArgs e)
-	{
-		Log.Debug("WordIndex reset on game start.");
-		UpdateStatusMessage(StatusMessage.Normal);
-		wordIndex = 0;
-	}
 
 	private void OnMyPathIsUnsupported(object? sender, UnsupportedWordEventArgs args)
 	{
 		if (!args.Session.IsMyTurn())
 			return;
 
-		if (autoPathFindCache is null)
+		if (autoPathFindCache is not PathList prevAutoEnter)
 		{
 			Log.Warning("이전에 수행한 단어 검색 결과를 찾을 수 없습니다!");
 			return;
@@ -180,18 +172,19 @@ public partial class Main
 			}
 
 			var parameter = new EnterInfo(
-							new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterDelayStartAfterWordEnterEnabled, Preference.AutoEnterInputSimulateJavaScriptSendKeys, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom),
-							autoPathFindCache.Details.WithoutFlags(PathFlags.PreSearch));
+							new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom, 1, 0, GetEnterCustomParameter()),
+							prevAutoEnter.Details.WithoutFlags(PathFlags.PreSearch));
 
-			(var content, var _) = autoPathFindCache.FilteredWordList.ChooseBestWord(parameter.Options, AutoKkutu.Game.GetTurnTimeMillis(), ++wordIndex);
-			if (string.IsNullOrEmpty(content))
+			var bestPath = prevAutoEnter.ChooseBestWord(parameter.Options, AutoKkutu.Game.GetTurnTimeMillis(), Preference.RandomWordSelection ? Preference.RandomWordSelectionCount : 1);
+			if (!bestPath.Available)
 			{
 				Log.Warning(I18n.Main_NoMorePathAvailable);
 				//TODO: NoPathAvailable?.Invoke(this, new NoPathAvailableEventArgs(timeover, AutoKkutu.Game.GetTurnTimeMillis()));
 				return;
 			}
 
-			enterer.RequestSend(parameter with { Content = content });
+			enterer.RequestSend(parameter with { Content = bestPath.Object.Content });
+			prevAutoEnter.PushUsed(bestPath);
 		}
 	}
 
@@ -200,17 +193,22 @@ public partial class Main
 		var isMyTurn = args.Session.IsMyTurn();
 		if (isMyTurn && Preference.AutoEnterEnabled)
 		{
-			if (preSearch?.Details.Condition.IsSimilar(args.Condition) == true)
+			if (preSearch is PathList list)
 			{
-				Log.Debug("Using the pre-search result for: {condition}", preSearch.Details.Condition);
-				TryAutoEnter(preSearch, usedPresearchResult: true);
-				return;
+				if (list.Details.Condition.IsSimilar(args.Condition))
+				{
+					Log.Debug("Using the pre-search result for: {condition}", list.Details.Condition);
+					TryAutoEnter(list, usedPresearchResult: true);
+					return;
+				}
+
+				Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", list.Details.Condition, args.Condition);
+			}
+			else
+			{
+				Log.Debug("Pre-search data not available. Starting the search.");
 			}
 
-			if (preSearch == null)
-				Log.Debug("Pre-search data not available. Starting the search.");
-			else
-				Log.Warning("Pre-search path is expired! Presearch: {pre}, Search: {now}", preSearch.Details.Condition, args.Condition);
 		}
 
 		if (!Preference.OnlySearchOnMyTurn || isMyTurn)
@@ -230,8 +228,6 @@ public partial class Main
 
 		if (args.Session.IsMyTurn())
 		{
-			Log.Debug(I18n.Main_WordIndexReset);
-			wordIndex = 0;
 			return;
 		}
 
@@ -280,7 +276,7 @@ presearchFail:
 		}
 
 		enterer.RequestSend(new EnterInfo(
-			new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterDelayStartAfterWordEnterEnabled, Preference.AutoEnterInputSimulateJavaScriptSendKeys, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom),
+			new EnterOptions(Preference.AutoEnterDelayEnabled, Preference.AutoEnterStartDelay, Preference.AutoEnterStartDelayRandom, Preference.AutoEnterDelayPerChar, Preference.AutoEnterDelayPerCharRandom, 1, 0, GetEnterCustomParameter()),
 			PathDetails.Empty.WithFlags(PathFlags.DoNotCheckExpired),
 			word));
 	}

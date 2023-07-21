@@ -117,14 +117,27 @@ public partial class Main
 
 		var opt = new EnterOptions(
 			Preference.AutoEnterDelayEnabled,
-			Preference.AutoEnterDelayStartAfterWordEnterEnabled,
-			Preference.AutoEnterInputSimulateJavaScriptSendKeys,
 			0 /* Prefs.StartDelay */,
 			0 /*Prefs.StartDelayRandom*/,
 			Preference.AutoEnterDelayPerChar,
-			Preference.AutoEnterDelayPerCharRandom);
+			Preference.AutoEnterDelayPerCharRandom,
+			1,
+			0,
+			GetEnterCustomParameter());
 		var inf = new EnterInfo(opt, PathDetails.Empty.WithFlags(PathFlags.DoNotCheckExpired), message);
 		enterer.RequestSend(inf);
+	}
+
+	private object? GetEnterCustomParameter()
+	{
+		switch (Preference.AutoEnterMode)
+		{
+			case DelayedInstantEnterer.Name:
+				return new DelayedInstantEnterer.Parameter(Preference.AutoEnterDelayStartAfterWordEnterEnabled);
+			case JavaScriptInputSimulator.Name:
+				return new JavaScriptInputSimulator.Parameter(Preference.AutoEnterInputSimulateJavaScriptSendKeys);
+		}
+		return null;
 	}
 
 	public void ToggleFeature(Func<Preference, bool> toggleFunc, StatusMessage displayStatus)

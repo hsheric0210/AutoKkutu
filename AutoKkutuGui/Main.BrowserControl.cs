@@ -77,7 +77,6 @@ public partial class Main
 		AutoKkutu.PathFinder.PathUpdated += OnPathUpdated;
 		AutoKkutu.GameEnded += OnGameEnded;
 		AutoKkutu.GameModeChanged += OnGameModeChange;
-		AutoKkutu.GameStarted += OnGameStarted;
 		AutoKkutu.TurnStarted += OnTurnStarted;
 		AutoKkutu.PathRescanRequested += OnPathRescanRequested;
 		AutoKkutu.TurnEnded += OnTurnEnded;

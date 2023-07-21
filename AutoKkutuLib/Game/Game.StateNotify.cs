@@ -1,4 +1,5 @@
 ﻿using AutoKkutuLib.Extension;
+using Serilog;
 using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Game;
@@ -128,7 +129,10 @@ public partial class Game
 	public void NotifyClassicTurnStart(bool isMyTurn, int turnIndex, WordCondition condition)
 	{
 		if (condition.IsEmpty() && !Session.GameMode.IsConditionlessMode())
+		{
+			Log.Debug("Ignoring turn start request as condition is empty.");
 			return;
+		}
 
 		lock (sessionLock)
 		{
@@ -200,6 +204,13 @@ public partial class Game
 			typingWordCache = null;
 			wordHistoryCache = null;
 			wordHistoriesCache = ImmutableList<string>.Empty;
+
+			lock (sessionLock)
+			{
+				// Reset turn if round is changed
+				Session.TurnIndex = -1;
+				Session.IsTurnInProgress = false;
+			}
 
 			LibLogger.Debug(gameStateNotify, "Round changed to {round}.", roundIndex);
 			RoundChanged?.Invoke(this, new RoundChangeEventArgs(roundIndex));

@@ -59,7 +59,7 @@ public abstract class InputSimulatorBase : EntererBase
 					break;
 				}
 
-				var delay = info.Options.GetDelayPerChar();
+				var delay = info.Options.GetDelayBeforeNextChar();
 				await AppendAsync(info.Options, input);
 				await Task.Delay(delay, CancelToken);
 			}

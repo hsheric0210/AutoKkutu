@@ -377,12 +377,12 @@ public partial class MainWindow : Window
 		var ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.TimeMillis);
 		if (arg.Result == PathFindResultType.Found)
 		{
-			FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.TotalWordCount, arg.FilteredWordCount);
+			FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.FoundWordList.Count, arg.FilteredWordList.Count);
 		}
 		else
 		{
 			FindResult = arg.Result == PathFindResultType.NotFound
-				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.TotalWordCount)
+				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.FoundWordList.Count)
 				: I18n.PathFinderError;
 		}
 		if (parameter.HasFlag(PathFlags.UseEndWord))

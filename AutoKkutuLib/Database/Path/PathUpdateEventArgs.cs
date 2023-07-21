@@ -7,16 +7,14 @@ public class PathUpdateEventArgs : EventArgs
 	public PathFindResultType Result { get; }
 	public PathDetails Details { get; }
 	public int TimeMillis { get; }
-	public IImmutableList<PathObject> FoundWordList { get; }
-	public int TotalWordCount => FoundWordList.Count;
-	public IImmutableList<PathObject> FilteredWordList { get; }
-	public int FilteredWordCount => FilteredWordList.Count;
+	public PathList FoundWordList { get; }
+	public PathList FilteredWordList { get; }
 	public PathUpdateEventArgs(PathDetails details, PathFindResultType result, IImmutableList<PathObject> found, IImmutableList<PathObject> filtered, int timeElapsed = 0)
 	{
 		Details = details;
 		Result = result;
-		FoundWordList = found;
-		FilteredWordList = filtered;
+		FoundWordList = new PathList(found, details);
+		FilteredWordList = new PathList(filtered, details);
 		TimeMillis = timeElapsed;
 	}
 

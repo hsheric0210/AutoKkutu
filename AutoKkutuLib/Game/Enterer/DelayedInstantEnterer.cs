@@ -9,10 +9,14 @@ public class DelayedInstantEnterer : EntererBase
 
 	protected override async ValueTask SendAsync(EnterInfo info)
 	{
+		var delayStartAfterCharInput = false;
+		if (info.Options.CustomParameters is Parameter param)
+			delayStartAfterCharInput = param.DelayStartAfterCharEnterEnabled;
+
 		try
 		{
 			var totalDelay = info.GetTotalDelay();
-			if (info.Options.DelayStartAfterCharEnterEnabled)
+			if (delayStartAfterCharInput)
 			{
 				if (InputStopwatch.ElapsedMilliseconds < totalDelay)
 				{
@@ -33,5 +37,20 @@ public class DelayedInstantEnterer : EntererBase
 		{
 			// ignored
 		}
+	}
+
+	public readonly struct Parameter : IEquatable<Parameter>
+	{
+		public readonly bool DelayStartAfterCharEnterEnabled { get; }
+		public Parameter(bool delayStartAfterCharEnterEnabled) => DelayStartAfterCharEnterEnabled = delayStartAfterCharEnterEnabled;
+
+		public override string ToString() => $"{{{nameof(DelayStartAfterCharEnterEnabled)}: {DelayStartAfterCharEnterEnabled}}}";
+
+		public override bool Equals(object? obj) => obj is Parameter parameter && Equals(parameter);
+		public bool Equals(Parameter other) => DelayStartAfterCharEnterEnabled == other.DelayStartAfterCharEnterEnabled;
+		public override int GetHashCode() => HashCode.Combine(DelayStartAfterCharEnterEnabled);
+
+		public static bool operator ==(Parameter left, Parameter right) => left.Equals(right);
+		public static bool operator !=(Parameter left, Parameter right) => !(left == right);
 	}
 }

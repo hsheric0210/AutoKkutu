@@ -94,16 +94,16 @@ public partial class Win32InputSimulator : InputSimulatorBase
 		}
 
 		KeyDown(vkCode);
-		if (options.GetMaxDelayPerChar() > 0)
+		if (options.GetMaxDelayBeforeNextChar() > 0)
 		{
 			SetFocus();
 			FlushInputBuffer();
 		}
 
-		await Task.Delay(options.DelayBeforeKeyUp);
+		await Task.Delay(options.GetDelayBeforeKeyUp());
 
 		KeyUp(vkCode);
-		if (options.GetMaxDelayPerChar() > 0)
+		if (options.GetMaxDelayBeforeNextChar() > 0)
 		{
 			SetFocus();
 			FlushInputBuffer();
