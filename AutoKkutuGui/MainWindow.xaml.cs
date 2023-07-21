@@ -446,7 +446,7 @@ public partial class MainWindow : Window
 
 			mainInstance.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
 				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "")),
-				mainInstance.SetupPathFinderFlags(PathFlags.DoNotAutoEnter),
+				mainInstance.SetupPathFinderFlags(PathFlags.DoNotAutoEnter | PathFlags.DoNotCheckExpired),
 				mainInstance.Preference.ReturnModeEnabled,
 				mainInstance.Preference.MaxDisplayedWordCount), mainInstance.Preference.ActiveWordPreference);
 			SearchField.Text = "";
