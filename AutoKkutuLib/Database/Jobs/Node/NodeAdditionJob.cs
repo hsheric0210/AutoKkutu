@@ -5,7 +5,7 @@ public sealed class NodeAdditionJob : NodeJob
 
 	public NodeCount Result { get; private set; }
 
-	public NodeAdditionJob(AbstractDatabaseConnection dbConnection, NodeTypes nodeTypes) : base(dbConnection) => this.nodeTypes = nodeTypes;
+	public NodeAdditionJob(DbConnectionBase dbConnection, NodeTypes nodeTypes) : base(dbConnection) => this.nodeTypes = nodeTypes;
 
 	public void Add(string node)
 	{

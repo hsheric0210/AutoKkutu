@@ -67,7 +67,7 @@ public partial class Main
 	/// <summary>
 	/// 데이터베이스 설정을 로드하고, 데이터베이스 연결을 초기화한 후 서비스 제공자 인터페이스를 리턴합니다.
 	/// </summary>
-	private AbstractDatabaseConnection? InitializeDatabase(string serverHost)
+	private DbConnectionBase? InitializeDatabase(string serverHost)
 	{
 		try
 		{

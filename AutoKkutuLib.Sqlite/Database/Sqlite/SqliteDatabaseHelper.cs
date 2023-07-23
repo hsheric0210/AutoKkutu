@@ -10,7 +10,7 @@ public static class SqliteDatabaseHelper
 {
 	static SqliteDatabaseHelper() => typeof(CompatibleWordModel).RegisterMapping();
 
-	public static void LoadFromExternalSQLite(AbstractDatabaseConnection targetDatabase, string externalSQLiteFilePath)
+	public static void LoadFromExternalSQLite(DbConnectionBase targetDatabase, string externalSQLiteFilePath)
 	{
 		if (!new FileInfo(externalSQLiteFilePath).Exists)
 			return;
@@ -83,13 +83,13 @@ public static class SqliteDatabaseHelper
 		return counter;
 	}
 
-	private static void ImportSingleWord(this AbstractDatabaseConnection destination, string word, int flags)
+	private static void ImportSingleWord(this DbConnectionBase destination, string word, int flags)
 	{
 		if (!destination.Query.AddWord().Execute(word, (WordFlags)flags))
 			LibLogger.Warn(nameof(SqliteDatabaseHelper), "Word {word} already exists in database.", word);
 	}
 
-	private static void ImportSingleWordLegacy(this AbstractDatabaseConnection destination, string word, int isEndWordInt)
+	private static void ImportSingleWordLegacy(this DbConnectionBase destination, string word, int isEndWordInt)
 	{
 		// Legacy support
 		var isEndWord = Convert.ToBoolean(isEndWordInt);
@@ -148,7 +148,7 @@ public static class SqliteDatabaseHelper
 
 	private struct SQLiteImportArgs
 	{
-		public AbstractDatabaseConnection source;
-		public AbstractDatabaseConnection destination;
+		public DbConnectionBase source;
+		public DbConnectionBase destination;
 	}
 }

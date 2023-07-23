@@ -5,7 +5,7 @@ public class WordDeletionQuery : SqlQuery<int>
 {
 	public string? Word { get; set; }
 
-	internal WordDeletionQuery(AbstractDatabaseConnection connection) : base(connection) { }
+	internal WordDeletionQuery(DbConnectionBase connection) : base(connection) { }
 
 	public int Execute(string word)
 	{

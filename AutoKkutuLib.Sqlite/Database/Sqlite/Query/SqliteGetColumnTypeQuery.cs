@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class SqliteGetColumnTypeQuery : AbstractGetColumnTypeQuery
 {
-	internal SqliteGetColumnTypeQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
+	internal SqliteGetColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 
 	public override string Execute()
 	{

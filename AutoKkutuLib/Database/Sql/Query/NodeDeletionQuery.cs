@@ -6,7 +6,7 @@ public class NodeDeletionQuery : SqlQuery<int>
 	private readonly string tableName;
 	public string? Node { get; set; }
 
-	internal NodeDeletionQuery(AbstractDatabaseConnection connection, string tableName) : base(connection)
+	internal NodeDeletionQuery(DbConnectionBase connection, string tableName) : base(connection)
 	{
 		if (string.IsNullOrWhiteSpace(tableName))
 			throw new ArgumentException("Table name should be filled.", nameof(tableName));

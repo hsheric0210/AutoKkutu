@@ -5,7 +5,7 @@ namespace AutoKkutuLib.Database.Path;
 
 public class NodeManager
 {
-	public AbstractDatabaseConnection DbConnection
+	public DbConnectionBase DbConnection
 	{
 		get;
 	}
@@ -53,7 +53,7 @@ public class NodeManager
 	#endregion
 
 	#region Constructor & Initialization
-	public NodeManager(AbstractDatabaseConnection dbConnection)
+	public NodeManager(DbConnectionBase dbConnection)
 	{
 		DbConnection = dbConnection;
 
@@ -69,7 +69,7 @@ public class NodeManager
 		}
 	}
 
-	public void LoadNodeLists(AbstractDatabaseConnection connection)
+	public void LoadNodeLists(DbConnectionBase connection)
 	{
 		var query = connection.Query.ListNode();
 		AttackNodes = query.Execute(DatabaseConstants.AttackNodeIndexTableName);

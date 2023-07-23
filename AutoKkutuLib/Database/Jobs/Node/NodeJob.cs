@@ -2,7 +2,7 @@
 
 public abstract class NodeJob
 {
-	protected AbstractDatabaseConnection DbConnection { get; }
+	protected DbConnectionBase DbConnection { get; }
 
-	protected NodeJob(AbstractDatabaseConnection dbConnection) => DbConnection = dbConnection;
+	protected NodeJob(DbConnectionBase dbConnection) => DbConnection = dbConnection;
 }

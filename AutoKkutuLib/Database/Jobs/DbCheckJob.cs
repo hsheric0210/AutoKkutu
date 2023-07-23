@@ -10,7 +10,7 @@ namespace AutoKkutuLib.Database.Jobs;
 public class DbCheckJob
 {
 	private readonly NodeManager nodeManager;
-	private AbstractDatabaseConnection DbConnection => nodeManager.DbConnection;
+	private DbConnectionBase DbConnection => nodeManager.DbConnection;
 
 	public DbCheckJob(NodeManager nodeManager) => this.nodeManager = nodeManager;
 

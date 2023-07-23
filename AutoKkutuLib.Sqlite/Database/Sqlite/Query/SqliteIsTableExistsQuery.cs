@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class SqliteIsTableExistsQuery : AbstractIsTableExistsQuery
 {
-	internal SqliteIsTableExistsQuery(AbstractDatabaseConnection connection, string tableName) : base(connection, tableName) { }
+	internal SqliteIsTableExistsQuery(DbConnectionBase connection, string tableName) : base(connection, tableName) { }
 
 	public override bool Execute()
 	{

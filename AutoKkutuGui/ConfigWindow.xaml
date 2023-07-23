@@ -306,142 +306,143 @@
                                 <Label Grid.Row="0" Grid.Column="2" Content="{Binding ElementName=AutoEnter, Path=ToolTip}" />
                             </Grid>
                             <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox Name="RandomWordSelection" Grid.Row="0" Grid.Column="0" Content="단어 랜덤 선택" IsChecked="False" ToolTip="자동 입력 시 단어 목록에서 위에서부터 N개의 단어들 중 사용할 단어를 랜덤하게 선택합니다." />
+                                <Separator Grid.Row="0" Grid.Column="1" />
+                                <TextBox Name="RandomWordSelectionCount" Grid.Row="0" Grid.RowSpan="1" Grid.Column="2" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="5" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="개" />
+                                <Separator Grid.Row="0" Grid.Column="3" Margin="5,15,5,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+                                <Label Grid.Row="0" Grid.Column="4" Content="{Binding ElementName=RandomWordSelection, Path=ToolTip}" />
+                            </Grid>
+
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Grid.Row="1" Header="단어 입력 방법">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton Name="AutoEnterInstant" Grid.Column="0" Content="우회 미사용" GroupName="InputSimulateBypass" ToolTip="입력 시뮬레이션을 사용하지 않고, 모든 내용을 즉시 입력합니다." />
+                                    <Separator Grid.Column="1" Margin="5,0,5,0" />
+                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInstant, Path=ToolTip}" />
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="30,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Name="DelayStartAfterWordEnter" Grid.Column="0" Content="단어 입력 후부터 시작" IsChecked="False" ToolTip="딜레이의 시작 지점을 내 턴의 시작 시간이 아닌, 이전 단어의 입력의 끝 시간으로 합니다." />
+                                    <Separator Grid.Column="1" />
+                                    <Label Grid.Column="2" Content="{Binding ElementName=DelayStartAfterWordEnter, Path=ToolTip}" ToolTip="예시로 딜레이가 800ms이고 마지막 단어를 친 후 다음 내 턴이 500ms 후에 왔다면 마지막 단어를 친 지 이미 500ms가 지났기에 300ms만 대기 후 단어를 입력합니다." />
+                                </Grid>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton Name="AutoEnterInputSimulateJavaScript" Grid.Column="0" Content="입력 시뮬레이션, JavaScript 기반" GroupName="InputSimulateBypass" IsChecked="True" ToolTip="JavaScript를 기반으로 입력 시뮬레이션을 수행합니다." />
+                                    <Separator Grid.Column="1" Margin="5,0,5,0" />
+                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateJavaScript, Path=ToolTip}" />
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="30,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Name="AutoEnterInputSimulateJavaScriptSendKeys" Grid.Column="0" Content="키 입력 이벤트 전송" IsChecked="True" ToolTip="단어 입력 시 사이트 측에 JavaScript 키보드 키 다운/업 이벤트를 전송합니다." />
+                                    <Separator Grid.Column="1" />
+                                    <Label Grid.Column="2" Content="{Binding ElementName=AutoEnterInputSimulateJavaScriptSendKeys, Path=ToolTip}" ToolTip="입력 시 JavaScript 'keydown', 'keyup' 이벤트 발생을 시뮬레이트합니다. *기본* 입력 로깅 구현에 대해 우회 가능하나, 'input' 이벤트에 대한 로깅은 우회할 수 없습니다." />
+                                </Grid>
+                            </Grid>
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <RadioButton Name="AutoEnterInputSimulateWin32" Grid.Column="0" Content="입력 시뮬레이션, Win32 메시지 기반" GroupName="InputSimulateBypass" ToolTip="Windows OS단에서 SendInput() 함수를 사용하여 키보드 입력 메시지를 브라우저에 직접 전달합니다." />
+                                <Separator Grid.Column="1" Margin="5,0,5,0" />
+                                <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateWin32, Path=ToolTip}" ToolTip="잠재적인 모든 '이상 입력' 감지 메커니즘을 우회할 수 있으나, 실행 시 입력할 때 자동으로 브라우저 창, 채팅창이 포커스됩니다. AutoHotKey 등 여러 매크로가 사용하는 방식과 동일합니다." />
+                            </Grid>
+                            <Grid Grid.Row="3">
+                                <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid Grid.Row="0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <RadioButton Name="AutoEnterInstant" Grid.Column="0" Content="우회 미사용" GroupName="InputSimulateBypass" ToolTip="입력 시뮬레이션을 사용하지 않고, 모든 내용을 즉시 입력합니다." />
-                                        <Separator Grid.Column="1" Margin="5,0,5,0" />
-                                        <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInstant, Path=ToolTip}" />
-                                    </Grid>
-                                    <Grid Grid.Row="1" Margin="30,0,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox Name="DelayStartAfterWordEnter" Grid.Column="0" Content="단어 입력 후부터 시작" IsChecked="False" ToolTip="딜레이의 시작 지점을 내 턴의 시작 시간이 아닌, 이전 단어의 입력의 끝 시간으로 합니다." />
-                                        <Separator Grid.Column="1" />
-                                        <Label Grid.Column="2" Content="{Binding ElementName=DelayStartAfterWordEnter, Path=ToolTip}" ToolTip="예시로 딜레이가 800ms이고 마지막 단어를 친 후 다음 내 턴이 500ms 후에 왔다면 마지막 단어를 친 지 이미 500ms가 지났기에 300ms만 대기 후 단어를 입력합니다." />
-                                    </Grid>
-                                </Grid>
-                                <Grid Grid.Row="1">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid Grid.Row="0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <RadioButton Name="AutoEnterInputSimulateJavaScript" Grid.Column="0" Content="입력 시뮬레이션, JavaScript 기반" GroupName="InputSimulateBypass" IsChecked="True" ToolTip="JavaScript를 기반으로 입력 시뮬레이션을 수행합니다." />
-                                        <Separator Grid.Column="1" Margin="5,0,5,0" />
-                                        <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateJavaScript, Path=ToolTip}" />
-                                    </Grid>
-                                    <Grid Grid.Row="1" Margin="30,0,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox Name="AutoEnterInputSimulateJavaScriptSendKeys" Grid.Column="0" Content="키 입력 이벤트 전송" IsChecked="True" ToolTip="단어 입력 시 사이트 측에 JavaScript 키보드 키 다운/업 이벤트를 전송합니다." />
-                                        <Separator Grid.Column="1" />
-                                        <Label Grid.Column="2" Content="{Binding ElementName=AutoEnterInputSimulateJavaScriptSendKeys, Path=ToolTip}" ToolTip="입력 시 JavaScript 'keydown', 'keyup' 이벤트 발생을 시뮬레이트합니다. *기본* 입력 로깅 구현에 대해 우회 가능하나, 'input' 이벤트에 대한 로깅은 우회할 수 없습니다." />
-                                    </Grid>
-                                </Grid>
-                                <Grid Grid.Row="2">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <RadioButton Name="AutoEnterInputSimulateWin32" Grid.Column="0" Content="입력 시뮬레이션, Win32 메시지 기반" GroupName="InputSimulateBypass" ToolTip="Windows OS단에서 SendInput() 함수를 사용하여 키보드 입력 메시지를 브라우저에 직접 전달합니다." />
+                                    <RadioButton Name="AutoEnterInputSimulateArduino" Grid.Column="0" Content="입력 시뮬레이션, 아두이노 기반" GroupName="InputSimulateBypass" ToolTip="아두이노의 USB 키보드 지원을 이용하여 키보드 입력을 시뮬레이트합니다." />
                                     <Separator Grid.Column="1" Margin="5,0,5,0" />
-                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateWin32, Path=ToolTip}" ToolTip="잠재적인 모든 '이상 입력' 감지 메커니즘을 우회할 수 있으나, 실행 시 입력할 때 자동으로 브라우저 창, 채팅창이 포커스됩니다. AutoHotKey 등 여러 매크로가 사용하는 방식과 동일합니다." />
+                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateArduino, Path=ToolTip}" ToolTip="Arduion Micro / Arduion Leonardo 와 같은 Keyboard 라이브러리를 지원하는 아두이노 (또는 호환 보드)가 필요합니다. 지원 보드 목록: https://www.arduino.cc/reference/en/libraries/keyboard/" />
                                 </Grid>
-                                <Grid Grid.Row="3">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid Grid.Row="0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <RadioButton Name="AutoEnterInputSimulateArduino" Grid.Column="0" Content="입력 시뮬레이션, 아두이노 기반" GroupName="InputSimulateBypass" ToolTip="아두이노의 USB 키보드 지원을 이용하여 키보드 입력을 시뮬레이트합니다." />
-                                        <Separator Grid.Column="1" Margin="5,0,5,0" />
-                                        <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateArduino, Path=ToolTip}" ToolTip="Arduion Micro / Arduion Leonardo 와 같은 Keyboard 라이브러리를 지원하는 아두이노 (또는 호환 보드)가 필요합니다. 지원 보드 목록: https://www.arduino.cc/reference/en/libraries/keyboard/" />
-                                    </Grid>
-                                    <Grid Grid.Row="1" Margin="30,0,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Style="{StaticResource SettingTextBlockStyle}" Text="포트" />
-                                        <TextBox Name="ArduinoPort" Grid.Column="1" MinWidth="80" MinHeight="25" Style="{StaticResource SettingBaseTextBoxStyle}" Text="COM7" ToolTip="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." />
-                                        <Separator Grid.Column="2" />
-                                        <TextBlock Grid.Column="3" Style="{StaticResource SettingTextBlockStyle}" Text="보드레이트" />
-                                        <TextBox Name="ArduinoBaudrate" Grid.Column="4" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="115200" ToolTip="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." />
-                                        <TextBlock Grid.Column="4" Style="{StaticResource SettingTextBlockStyle}" Text="bps" />
-                                        <Separator Grid.Column="5" />
-                                        <Label Grid.Column="6" Content="아두이노 설정" />
-                                    </Grid>
-                                    <Grid Grid.Row="2" Margin="30,0,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Label Grid.Column="0" Content="사용하기 위해서는 프로그램 폴더에 있는 'arduino__keyboard.ino' 파일을 아두이노에 업로드해야 하고, 아두이노가 컴퓨터에 연결되어 있어야 합니다." />
-                                        <Separator Grid.Column="1" />
-                                        <Label Grid.Column="2">
-                                            <Hyperlink NavigateUri="https://www.arduino.cc/reference/en/libraries/keyboard/" RequestNavigate="Hyperlink_RequestNavigate">호환되는 보드 목록</Hyperlink>
-                                        </Label>
-                                    </Grid>
+                                <Grid Grid.Row="1" Margin="30,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource SettingTextBlockStyle}" Text="포트" />
+                                    <TextBox Name="ArduinoPort" Grid.Column="1" MinWidth="80" MinHeight="25" Style="{StaticResource SettingBaseTextBoxStyle}" Text="COM7" ToolTip="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." />
+                                    <Separator Grid.Column="2" />
+                                    <TextBlock Grid.Column="3" Style="{StaticResource SettingTextBlockStyle}" Text="보드레이트" />
+                                    <TextBox Name="ArduinoBaudrate" Grid.Column="4" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="115200" ToolTip="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." />
+                                    <TextBlock Grid.Column="4" Style="{StaticResource SettingTextBlockStyle}" Text="bps" />
+                                    <Separator Grid.Column="5" />
+                                    <Label Grid.Column="6" Content="아두이노 설정" />
+                                </Grid>
+                                <Grid Grid.Row="2" Margin="30,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="사용하기 위해서는 프로그램 폴더에 있는 'arduino__keyboard.ino' 파일을 아두이노에 업로드해야 하고, 아두이노가 컴퓨터에 연결되어 있어야 합니다." />
+                                    <Separator Grid.Column="1" />
+                                    <Label Grid.Column="2">
+                                        <Hyperlink NavigateUri="https://www.arduino.cc/reference/en/libraries/keyboard/" RequestNavigate="Hyperlink_RequestNavigate">호환되는 보드 목록</Hyperlink>
+                                    </Label>
                                 </Grid>
                             </Grid>
-                        </Grid>
-                    </GroupBox>
-                    <GroupBox Grid.Row="1" Header="단어 랜덤 선택">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox Name="RandomWordSelection" Grid.Row="0" Grid.Column="0" Content="단어 랜덤 선택" IsChecked="False" ToolTip="단어 목록에서 위에서부터 N개의 단어들 중 사용할 단어를 랜덤하게 선택합니다." />
-                            <Separator Grid.Row="0" Grid.Column="1" />
-                            <TextBox Name="RandomWordSelectionCount" Grid.Row="0" Grid.RowSpan="1" Grid.Column="2" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="5" />
-                            <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="개" />
-                            <Separator Grid.Row="0" Grid.Column="3" Margin="5,15,5,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
-                            <Label Grid.Row="0" Grid.Column="4" Content="{Binding ElementName=RandomWordSelection, Path=ToolTip}" />
                         </Grid>
                     </GroupBox>
                 </Grid>

@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Jobs.Word;
 public sealed class BatchWordDeletionJob : BatchWordJob
 {
-	public BatchWordDeletionJob(AbstractDatabaseConnection dbConnection) : base(dbConnection)
+	public BatchWordDeletionJob(DbConnectionBase dbConnection) : base(dbConnection)
 	{
 	}
 

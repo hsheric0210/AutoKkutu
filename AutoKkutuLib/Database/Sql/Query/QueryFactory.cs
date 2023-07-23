@@ -1,9 +1,9 @@
 ﻿namespace AutoKkutuLib.Database.Sql.Query;
 public abstract class QueryFactory
 {
-	protected AbstractDatabaseConnection Connection { get; }
+	protected DbConnectionBase Connection { get; }
 
-	protected QueryFactory(AbstractDatabaseConnection connection) => Connection = connection;
+	protected QueryFactory(DbConnectionBase connection) => Connection = connection;
 
 	#region Abstract methods
 	public abstract AbstractAddWordListSequenceColumnQuery AddWordListSequenceColumn();

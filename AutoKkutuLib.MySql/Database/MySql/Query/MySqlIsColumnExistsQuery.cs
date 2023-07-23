@@ -5,7 +5,7 @@ public class MySqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
 {
 	private readonly string dbName;
 
-	internal MySqlIsColumnExistsQuery(AbstractDatabaseConnection connection, string dbName, string tableName, string columnName) : base(connection, tableName, columnName) => this.dbName = dbName;
+	internal MySqlIsColumnExistsQuery(DbConnectionBase connection, string dbName, string tableName, string columnName) : base(connection, tableName, columnName) => this.dbName = dbName;
 
 	public override bool Execute()
 	{

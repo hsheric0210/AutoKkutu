@@ -14,7 +14,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 
 	public PathDetails? Parameter { get; set; }
 
-	internal FindWordQuery(AbstractDatabaseConnection connection, GameMode mode, WordPreference preference) : base(connection)
+	internal FindWordQuery(DbConnectionBase connection, GameMode mode, WordPreference preference) : base(connection)
 	{
 		this.mode = mode;
 		this.preference = preference;

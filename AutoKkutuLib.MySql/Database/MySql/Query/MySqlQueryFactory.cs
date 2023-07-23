@@ -6,7 +6,7 @@ public class MySqlQueryFactory : QueryFactory
 {
 	private readonly string dbName;
 
-	public MySqlQueryFactory(AbstractDatabaseConnection connection, string dbName) : base(connection) => this.dbName = dbName;
+	public MySqlQueryFactory(DbConnectionBase connection, string dbName) : base(connection) => this.dbName = dbName;
 
 	public override AbstractAddWordListSequenceColumnQuery AddWordListSequenceColumn() => new MySqlAddWordListSequenceColumnQuery(Connection);
 	public override AbstractChangeWordListColumnTypeQuery ChangeWordListColumnType(string tableName, string columnName, string newType) => new MySqlChangeWordListColumnTypeQuery(Connection, tableName, columnName, newType);

@@ -7,7 +7,7 @@ public class NodeAdditionQuery : SqlQuery<bool>
 	public string? Node { get; set; }
 	public bool CheckExistence { get; set; } = true;
 
-	internal NodeAdditionQuery(AbstractDatabaseConnection connection, string tableName) : base(connection)
+	internal NodeAdditionQuery(DbConnectionBase connection, string tableName) : base(connection)
 	{
 		if (string.IsNullOrWhiteSpace(tableName))
 			throw new ArgumentException("Table name should be filled.", nameof(tableName));

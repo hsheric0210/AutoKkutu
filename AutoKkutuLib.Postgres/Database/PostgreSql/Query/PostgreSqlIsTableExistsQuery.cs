@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class PostgreSqlIsTableExistsQuery : AbstractIsTableExistsQuery
 {
-	internal PostgreSqlIsTableExistsQuery(AbstractDatabaseConnection connection, string tableName) : base(connection, tableName) { }
+	internal PostgreSqlIsTableExistsQuery(DbConnectionBase connection, string tableName) : base(connection, tableName) { }
 
 	public override bool Execute()
 	{

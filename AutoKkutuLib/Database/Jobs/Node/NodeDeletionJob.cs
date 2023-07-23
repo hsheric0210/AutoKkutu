@@ -5,7 +5,7 @@ public sealed class NodeDeletionJob : NodeJob
 
 	public NodeCount Result { get; private set; }
 
-	public NodeDeletionJob(AbstractDatabaseConnection dbConnection, NodeTypes nodeTypes) : base(dbConnection) => this.nodeTypes = nodeTypes;
+	public NodeDeletionJob(DbConnectionBase dbConnection, NodeTypes nodeTypes) : base(dbConnection) => this.nodeTypes = nodeTypes;
 
 	public void Delete(string node)
 	{

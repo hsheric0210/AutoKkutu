@@ -4,7 +4,7 @@ namespace AutoKkutuLib.Database.Sql.Query;
 public class MySqlIsTableExistsQuery : AbstractIsTableExistsQuery
 {
 	private readonly string dbName;
-	internal MySqlIsTableExistsQuery(AbstractDatabaseConnection connection, string dbName, string tableName) : base(connection, tableName) => this.dbName = dbName;
+	internal MySqlIsTableExistsQuery(DbConnectionBase connection, string dbName, string tableName) : base(connection, tableName) => this.dbName = dbName;
 
 	public override bool Execute()
 	{

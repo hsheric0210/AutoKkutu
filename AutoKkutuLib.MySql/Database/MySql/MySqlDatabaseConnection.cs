@@ -6,7 +6,7 @@ using AutoKkutuLib.Database.Sql.Query;
 
 namespace AutoKkutuLib.Database.MySql;
 
-public sealed class MySqlDatabaseConnection : AbstractDatabaseConnection
+public sealed class MySqlDatabaseConnection : DbConnectionBase
 {
 	private QueryFactory query = null!; // It's always initialized by factory method
 	public override QueryFactory Query => query;

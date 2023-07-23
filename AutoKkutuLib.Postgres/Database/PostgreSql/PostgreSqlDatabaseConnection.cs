@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace AutoKkutuLib.Database.PostgreSql;
 
-public sealed class PostgreSqlDatabaseConnection : AbstractDatabaseConnection
+public sealed class PostgreSqlDatabaseConnection : DbConnectionBase
 {
 	private QueryFactory query = null!; // It's always initialized by factory method
 	public override QueryFactory Query => query;

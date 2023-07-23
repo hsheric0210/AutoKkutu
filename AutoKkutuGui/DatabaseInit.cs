@@ -7,7 +7,7 @@ namespace AutoKkutuGui;
 
 public static class DatabaseInit
 {
-	public static AbstractDatabaseConnection? Connect(string type, string connString)
+	public static DbConnectionBase? Connect(string type, string connString)
 	{
 		switch (type.ToUpperInvariant())
 		{

@@ -6,7 +6,7 @@ public class IndexCreationQuery : SqlQuery<int>
 	private readonly string tableName;
 	private readonly string columnName;
 
-	public IndexCreationQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection)
+	public IndexCreationQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection)
 	{
 		this.tableName = tableName;
 		this.columnName = columnName;

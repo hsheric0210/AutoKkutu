@@ -5,7 +5,7 @@ using System.Globalization;
 namespace AutoKkutuLib.Database.Jobs;
 public class DbUpdateJob
 {
-	private readonly AbstractDatabaseConnection dbConnection;
+	private readonly DbConnectionBase dbConnection;
 	private readonly NodeManager nodeManager;
 	private readonly PathFilter specialPathList;
 
@@ -31,7 +31,7 @@ public class DbUpdateJob
 		AddEnd = 1 << 2
 	}
 
-	public DbUpdateJob(AbstractDatabaseConnection dbConnection, NodeManager nodeManager, PathFilter specialPathList)
+	public DbUpdateJob(DbConnectionBase dbConnection, NodeManager nodeManager, PathFilter specialPathList)
 	{
 		this.dbConnection = dbConnection;
 		this.nodeManager = nodeManager;

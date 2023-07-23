@@ -5,7 +5,7 @@ public class NodeListQuery : SqlQuery<ICollection<string>>
 {
 	public string? TableName { get; set; }
 
-	internal NodeListQuery(AbstractDatabaseConnection connection) : base(connection)
+	internal NodeListQuery(DbConnectionBase connection) : base(connection)
 	{
 	}
 

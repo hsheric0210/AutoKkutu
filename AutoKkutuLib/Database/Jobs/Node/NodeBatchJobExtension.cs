@@ -1,7 +1,7 @@
 ﻿namespace AutoKkutuLib.Database.Jobs.Node;
 public static class NodeBatchJobExtension
 {
-	public static NodeCount? BatchAddNode(this AbstractDatabaseConnection dbConnection, string nodes, NodeTypes nodeTypes)
+	public static NodeCount? BatchAddNode(this DbConnectionBase dbConnection, string nodes, NodeTypes nodeTypes)
 	{
 		if (string.IsNullOrWhiteSpace(nodes))
 			return null;
@@ -23,7 +23,7 @@ public static class NodeBatchJobExtension
 		return job.Result;
 	}
 
-	public static NodeCount? BatchRemoveNode(this AbstractDatabaseConnection dbConnection, string nodes, NodeTypes nodeTypes)
+	public static NodeCount? BatchRemoveNode(this DbConnectionBase dbConnection, string nodes, NodeTypes nodeTypes)
 	{
 		if (string.IsNullOrWhiteSpace(nodes))
 			return null;

@@ -3,7 +3,7 @@
 namespace AutoKkutuLib.Database.Sql.Query;
 public class PostgreSqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
 {
-	internal PostgreSqlGetColumnTypeQuery(AbstractDatabaseConnection connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
+	internal PostgreSqlGetColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 
 	public override string Execute()
 	{

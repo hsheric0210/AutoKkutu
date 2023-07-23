@@ -12,7 +12,7 @@ public partial class AutoKkutu : IDisposable
 	private string serverHost;
 
 	#region Facade implementation - Module exposure
-	public AbstractDatabaseConnection Database { get; }
+	public DbConnectionBase Database { get; }
 	public IGame Game { get; }
 
 	public PathFilter PathFilter { get; }
@@ -32,7 +32,7 @@ public partial class AutoKkutu : IDisposable
 	/// <param name="serverHost">대상으로 하는 서버의 호스트 주소</param>
 	/// <param name="dbConnection">데이터베이스 연결 인스턴스</param>
 	/// <param name="game">게임 핸들러 인스턴스</param>
-	public AutoKkutu(string serverHost, AbstractDatabaseConnection dbConnection, IGame game)
+	public AutoKkutu(string serverHost, DbConnectionBase dbConnection, IGame game)
 	{
 		this.serverHost = serverHost;
 

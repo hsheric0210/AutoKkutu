@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AutoKkutuLib.Database.Sqlite;
 
-public sealed class SqliteDatabaseConnection : AbstractDatabaseConnection
+public sealed class SqliteDatabaseConnection : DbConnectionBase
 {
 	private QueryFactory query = null!;
 	public override QueryFactory Query => query;

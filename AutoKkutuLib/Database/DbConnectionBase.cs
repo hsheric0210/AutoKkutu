@@ -4,9 +4,9 @@ using System.Data;
 
 namespace AutoKkutuLib.Database;
 
-public abstract class AbstractDatabaseConnection : IDbConnection
+public abstract class DbConnectionBase : IDbConnection
 {
-	static AbstractDatabaseConnection() => typeof(WordModel).RegisterMapping();
+	static DbConnectionBase() => typeof(WordModel).RegisterMapping();
 
 	private IDbConnection Connection { get; }
 
@@ -26,7 +26,7 @@ public abstract class AbstractDatabaseConnection : IDbConnection
 
 	public ConnectionState State => Connection.State;
 
-	protected AbstractDatabaseConnection(IDbConnection connection) => Connection = connection;
+	protected DbConnectionBase(IDbConnection connection) => Connection = connection;
 
 	protected virtual void Dispose(bool disposing)
 	{

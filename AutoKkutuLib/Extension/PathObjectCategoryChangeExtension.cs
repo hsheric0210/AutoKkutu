@@ -7,7 +7,7 @@ namespace AutoKkutuLib.Extension;
 /// </summary>
 public static class PathObjectCategoryChangeExtension
 {
-	public static void MakeAttack(this AbstractDatabaseConnection connection, PathObject pathObject, GameMode mode)
+	public static void MakeAttack(this DbConnectionBase connection, PathObject pathObject, GameMode mode)
 	{
 		if (pathObject.Categories.HasFlag(WordCategories.AttackWord))
 			return;
@@ -20,7 +20,7 @@ public static class PathObjectCategoryChangeExtension
 			LibLogger.Warn(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_AlreadyDone, node, I18n.PathMark_Attack, mode);
 	}
 
-	public static void MakeEnd(this AbstractDatabaseConnection connection, PathObject pathObject, GameMode mode)
+	public static void MakeEnd(this DbConnectionBase connection, PathObject pathObject, GameMode mode)
 	{
 		if (pathObject.Categories.HasFlag(WordCategories.EndWord))
 			return;
@@ -33,7 +33,7 @@ public static class PathObjectCategoryChangeExtension
 			LibLogger.Warn(nameof(PathObjectCategoryChangeExtension), I18n.PathMark_AlreadyDone, node, I18n.PathMark_End, mode);
 	}
 
-	public static void MakeNormal(this AbstractDatabaseConnection connection, PathObject pathObject, GameMode mode)
+	public static void MakeNormal(this DbConnectionBase connection, PathObject pathObject, GameMode mode)
 	{
 		if (!pathObject.Categories.HasFlag(WordCategories.EndWord) && !pathObject.Categories.HasFlag(WordCategories.AttackWord))
 			return;

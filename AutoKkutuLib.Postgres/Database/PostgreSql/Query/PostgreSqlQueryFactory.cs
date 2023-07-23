@@ -4,7 +4,7 @@ using AutoKkutuLib.Database.Sql.Query;
 namespace AutoKkutuLib.Postgres.Database.PostgreSql.Query;
 internal class PostgreSqlQueryFactory : QueryFactory
 {
-	public PostgreSqlQueryFactory(AbstractDatabaseConnection connection) : base(connection) { }
+	public PostgreSqlQueryFactory(DbConnectionBase connection) : base(connection) { }
 
 	public override AbstractAddWordListSequenceColumnQuery AddWordListSequenceColumn() => new PostgreSqlAddWordListSequenceColumnQuery(Connection);
 	public override AbstractChangeWordListColumnTypeQuery ChangeWordListColumnType(string tableName, string columnName, string newType) => new PostgreSqlChangeWordListColumnTypeQuery(Connection, tableName, columnName, newType);

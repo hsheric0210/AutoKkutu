@@ -2,9 +2,9 @@
 
 public abstract class BatchWordJob
 {
-	protected AbstractDatabaseConnection DbConnection { get; }
+	protected DbConnectionBase DbConnection { get; }
 
-	public BatchWordJob(AbstractDatabaseConnection dbConnection) => DbConnection = dbConnection;
+	public BatchWordJob(DbConnectionBase dbConnection) => DbConnection = dbConnection;
 
 	public abstract WordCount Execute(string[] wordList);
 }

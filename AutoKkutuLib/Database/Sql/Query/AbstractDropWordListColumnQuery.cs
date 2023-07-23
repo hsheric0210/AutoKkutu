@@ -3,5 +3,5 @@ public abstract class AbstractDropWordListColumnQuery : SqlQuery<int>
 {
 	protected string ColumnName { get; }
 
-	protected AbstractDropWordListColumnQuery(AbstractDatabaseConnection connection, string columnName) : base(connection) => ColumnName = columnName;
+	protected AbstractDropWordListColumnQuery(DbConnectionBase connection, string columnName) : base(connection) => ColumnName = columnName;
 }

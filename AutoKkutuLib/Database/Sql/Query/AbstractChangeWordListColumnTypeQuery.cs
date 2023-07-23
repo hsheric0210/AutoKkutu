@@ -5,7 +5,7 @@ public abstract class AbstractChangeWordListColumnTypeQuery : SqlQuery<bool>
 	protected string ColumnName { get; }
 	protected string NewType { get; }
 
-	protected AbstractChangeWordListColumnTypeQuery(AbstractDatabaseConnection connection, string tableName, string columnName, string newType) : base(connection)
+	protected AbstractChangeWordListColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName, string newType) : base(connection)
 	{
 		TableName = tableName;
 		ColumnName = columnName;

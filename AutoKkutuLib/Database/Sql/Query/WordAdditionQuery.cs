@@ -7,7 +7,7 @@ public class WordAdditionQuery : SqlQuery<bool>
 	public string? Word { get; set; }
 	public WordFlags? WordFlags { get; set; }
 
-	internal WordAdditionQuery(AbstractDatabaseConnection connection) : base(connection) { }
+	internal WordAdditionQuery(DbConnectionBase connection) : base(connection) { }
 
 	public bool Execute(string word, WordFlags wordFlags)
 	{

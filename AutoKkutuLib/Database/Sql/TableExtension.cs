@@ -1,10 +1,11 @@
-﻿using Dapper;
+﻿using AutoKkutuLib.Database.Sql.Migrations;
+using Dapper;
 
 namespace AutoKkutuLib.Database.Sql;
 
 public static class TableExtension
 {
-	public static void CheckTable(this AbstractDatabaseConnection connection)
+	public static void CheckTable(this DbConnectionBase connection)
 	{
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
@@ -19,15 +20,16 @@ public static class TableExtension
 		// Create word list table
 		if (!connection.Query.IsTableExists(DatabaseConstants.WordTableName).Execute())
 			connection.MakeTable(DatabaseConstants.WordTableName);
-		else
-			connection.CheckBackwardCompatibility();
+
+		if (MigrationRegistry.RunMigrations(connection))
+			connection.Query.Vacuum().Execute();
 
 		// Create indexes
 		foreach (var columnName in new string[] { DatabaseConstants.WordIndexColumnName, DatabaseConstants.ReverseWordIndexColumnName, DatabaseConstants.KkutuWordIndexColumnName })
 			connection.Query.CreateIndex(DatabaseConstants.WordTableName, columnName).Execute();
 	}
 
-	public static void MakeTable(this AbstractDatabaseConnection connection, string tablename)
+	public static void MakeTable(this DbConnectionBase connection, string tablename)
 	{
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
@@ -41,7 +43,7 @@ public static class TableExtension
 		connection.Execute($"CREATE TABLE {tablename} ({columnOptions});");
 	}
 
-	public static void MakeTableIfNotExists(this AbstractDatabaseConnection connection, string tableName, Action? callback = null)
+	public static void MakeTableIfNotExists(this DbConnectionBase connection, string tableName, Action? callback = null)
 	{
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));

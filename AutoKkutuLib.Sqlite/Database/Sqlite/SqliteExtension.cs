@@ -5,7 +5,7 @@ using Dapper;
 namespace AutoKkutuLib.Sqlite.Database.Sqlite;
 public static class SqliteExtension
 {
-	public static void RebuildWordList(this AbstractDatabaseConnection connection)
+	public static void RebuildWordList(this DbConnectionBase connection)
 	{
 		connection.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} RENAME TO _{DatabaseConstants.WordTableName};");
 		connection.MakeTable(DatabaseConstants.WordTableName);
