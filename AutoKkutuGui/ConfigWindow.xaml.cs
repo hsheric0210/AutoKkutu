@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using static AutoKkutuGui.GuiUtils;
 
 namespace AutoKkutuGui;
 
@@ -72,11 +73,7 @@ public partial class ConfigWindow : Window
 
 		// 자동 단어 입력
 		AutoEnter.IsChecked = config.AutoEnterEnabled;
-		Delay.IsChecked = config.AutoEnterDelayEnabled;
-		StartDelayNumber.Text = config.AutoEnterStartDelay.ToString(CultureInfo.InvariantCulture);
-		StartDelayRandomNumber.Text = config.AutoEnterStartDelayRandom.ToString(CultureInfo.InvariantCulture);
-		DelayPerCharNumber.Text = config.AutoEnterDelayPerChar.ToString(CultureInfo.InvariantCulture);
-		DelayPerCharRandomNumber.Text = config.AutoEnterDelayPerCharRandom.ToString(CultureInfo.InvariantCulture);
+		EnterDelay.SetConfig(new EnterDelayConfig(config.AutoEnterDelayEnabled, config.AutoEnterStartDelay, config.AutoEnterStartDelayRandom, config.AutoEnterDelayPerChar, config.AutoEnterDelayPerCharRandom));
 
 		SetAutoEnterMode(config.AutoEnterMode);
 		DelayStartAfterWordEnter.IsChecked = config.AutoEnterDelayStartAfterWordEnterEnabled;
@@ -86,11 +83,7 @@ public partial class ConfigWindow : Window
 		ArduinoBaudrate.Text = config.ArduinoBaudrate.ToString(CultureInfo.InvariantCulture);
 
 		AutoFix.IsChecked = config.AutoFixEnabled;
-		FixDelay.IsChecked = config.FixDelayEnabled;
-		FixStartDelayNumber.Text = config.FixStartDelay.ToString(CultureInfo.InvariantCulture);
-		FixStartDelayRandomNumber.Text = config.FixStartDelayRandom.ToString(CultureInfo.InvariantCulture);
-		FixDelayPerCharNumber.Text = config.FixDelayPerChar.ToString(CultureInfo.InvariantCulture);
-		FixDelayPerCharRandomNumber.Text = config.FixDelayPerCharRandom.ToString(CultureInfo.InvariantCulture);
+		EnterDelay.SetConfig(new EnterDelayConfig(config.FixDelayEnabled, config.FixStartDelay, config.FixStartDelayRandom, config.FixDelayPerChar, config.FixDelayPerCharRandom));
 
 		RandomWordSelection.IsChecked = config.RandomWordSelection;
 		RandomWordSelectionCount.Text = config.RandomWordSelectionCount.ToString(CultureInfo.InvariantCulture);
@@ -130,30 +123,15 @@ public partial class ConfigWindow : Window
 		}
 	}
 
-	private static int Parse(string elementName, string valueString, int defaultValue)
-	{
-		if (int.TryParse(valueString, out var _delay))
-			return _delay;
-
-		Log.Warning("Can't parse {elemName} value {string}, will be reset to {default:l}.", elementName, valueString, defaultValue);
-		return defaultValue;
-	}
-
 	private void OnApply(object sender, RoutedEventArgs e)
 	{
 		var maxWordCount = Parse("max word count", MaxWordCount.Text, 20);
 
-		var startDelay = Parse("start delay", StartDelayNumber.Text, 10);
-		var startDelayRandom = Parse("start delay randomization", StartDelayRandomNumber.Text, 10);
-		var delayPerChar = Parse("delay per char", DelayPerCharNumber.Text, 10);
-		var delayPerCharRandom = Parse("delay per char randomization", DelayPerCharRandomNumber.Text, 10);
+		var enterDelay = EnterDelay.GetConfig();
 
 		var arduinoBaudrate = Parse("arduino baudrate", ArduinoBaudrate.Text, 115200);
 
-		var fixStartDelay = Parse("fix start delay", FixStartDelayNumber.Text, 10);
-		var fixStartDelayRandom = Parse("fix start delay randomization", FixStartDelayRandomNumber.Text, 10);
-		var fixDelayPerChar = Parse("fix delay per char", FixDelayPerCharNumber.Text, 10);
-		var fixDelayPerCharRandom = Parse("fix delay per char randomization", FixDelayPerCharRandomNumber.Text, 10);
+		var fixDelay = FixDelay.GetConfig();
 
 		var rwsSelect = Parse("random word selection", RandomWordSelectionCount.Text, 5);
 
@@ -169,11 +147,11 @@ public partial class ConfigWindow : Window
 
 			// 자동 단어 입력
 			AutoEnterEnabled = AutoEnter.IsChecked ?? false,
-			AutoEnterDelayEnabled = Delay.IsChecked ?? false,
-			AutoEnterStartDelay = startDelay,
-			AutoEnterStartDelayRandom = startDelayRandom,
-			AutoEnterDelayPerChar = delayPerChar,
-			AutoEnterDelayPerCharRandom = delayPerCharRandom,
+			AutoEnterDelayEnabled = enterDelay.IsEnabled,
+			AutoEnterStartDelay = enterDelay.StartDelay,
+			AutoEnterStartDelayRandom = enterDelay.StartDelayRandom,
+			AutoEnterDelayPerChar = enterDelay.DelayPerChar,
+			AutoEnterDelayPerCharRandom = enterDelay.DelayPerCharRandom,
 
 			AutoEnterMode = GetAutoEnterMode(),
 			AutoEnterDelayStartAfterWordEnterEnabled = DelayStartAfterWordEnter.IsChecked ?? false,
@@ -183,11 +161,11 @@ public partial class ConfigWindow : Window
 			ArduinoBaudrate = arduinoBaudrate,
 
 			AutoFixEnabled = AutoFix.IsChecked ?? false,
-			FixDelayPerChar = fixDelayPerChar,
-			FixDelayEnabled = FixDelay.IsChecked ?? false,
-			FixStartDelay = fixStartDelay,
-			FixStartDelayRandom = fixStartDelayRandom,
-			FixDelayPerCharRandom = fixDelayPerCharRandom,
+			FixDelayEnabled = fixDelay.IsEnabled,
+			FixStartDelay = fixDelay.StartDelay,
+			FixStartDelayRandom = fixDelay.StartDelayRandom,
+			FixDelayPerChar = fixDelay.DelayPerChar,
+			FixDelayPerCharRandom = fixDelay.DelayPerCharRandom,
 
 			RandomWordSelection = RandomWordSelection.IsChecked ?? false,
 			RandomWordSelectionCount = rwsSelect,

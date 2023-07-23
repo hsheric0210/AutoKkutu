@@ -1,0 +1,169 @@
+﻿<Grid x:Class="AutoKkutuGui.EnterDelayControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:AutoKkutuGui" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:DesignHeight="450" d:DesignWidth="800" mc:Ignorable="d">
+    <Grid.Resources>
+        <Style x:Key="SettingBaseTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Margin" Value="5,0,5,0" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="Background" Value="#333337" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style x:Key="SettingTextBoxStyle" BasedOn="{StaticResource SettingBaseTextBoxStyle}" TargetType="{x:Type TextBox}">
+            <Setter Property="Margin" Value="5,0,25,0" />
+        </Style>
+        <Style x:Key="SettingTextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <local:DelayToStringConverter x:Key="DelayToStringConverter" />
+        <local:DelayToCharPerSecondConverter x:Key="DelayToCharPerSecondConverter" />
+        <local:DelayToCharPerMinuteConverter x:Key="DelayToCharPerMinuteConverter" />
+    </Grid.Resources>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Row="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <CheckBox Name="Delay" Grid.Row="0" Grid.Column="0" Content="딜레이" IsChecked="True" ToolTip="단어를 입력하기 전에 의도적인 지연을 둡니다." />
+        <Separator Grid.Row="0" Grid.Column="1" />
+        <Label Grid.Row="0" Grid.Column="2" Content="{Binding ElementName=Delay, Path=ToolTip}" />
+    </Grid>
+    <GroupBox Grid.Row="1" Header="입력 시작 딜레이">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource SettingTextBlockStyle}" Text="입력 시작 딜레이" />
+                <Separator Grid.Column="1" />
+                <TextBox Name="StartDelayNumber" Grid.Column="2" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="10" ToolTip="단어 입력 시작 지연(밀리초 단위)입니다." />
+                <TextBlock Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="ms" />
+                <Separator Grid.Column="3" />
+                <Label Grid.Column="4" Content="{Binding ElementName=StartDelayNumber, Path=ToolTip}" />
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource SettingTextBlockStyle}" Text="랜덤" />
+                <Separator Grid.Column="1" />
+                <TextBox Name="StartDelayRandomNumber" Grid.Column="2" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="10" ToolTip="단어 입력 시작 지연 랜덤 비율 (% 단위)." />
+                <TextBlock Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="%" />
+                <Separator Grid.Column="3" />
+                <Label Grid.Column="4" Content="{Binding ElementName=StartDelayRandomNumber, Path=ToolTip}" />
+            </Grid>
+            <Label Grid.Row="2">
+                <Label.Content>
+                    <MultiBinding Converter="{StaticResource DelayToStringConverter}" ConverterParameter="시작 딜레이 {0}-{1}ms">
+                        <Binding ElementName="StartDelayNumber" Mode="OneWay" Path="Text" />
+                        <Binding ElementName="StartDelayRandomNumber" Mode="OneWay" Path="Text" />
+                    </MultiBinding>
+                </Label.Content>
+            </Label>
+        </Grid>
+    </GroupBox>
+    <GroupBox Grid.Row="2" Header="입력 단어 간 딜레이">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource SettingTextBlockStyle}" Text="글자 당 딜레이" />
+                <Separator Grid.Column="1" />
+                <TextBox Name="DelayPerCharNumber" Grid.Column="2" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="10" ToolTip="단어 한 글자 당 입력 지연 시간(밀리초 단위)입니다." />
+                <TextBlock Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="ms" />
+                <Separator Grid.Column="3" />
+                <Label Grid.Column="4" Content="{Binding ElementName=DelayPerCharNumber, Path=ToolTip}" />
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource SettingTextBlockStyle}" Text="랜덤" />
+                <Separator Grid.Column="1" />
+                <TextBox Name="DelayPerCharRandomNumber" Grid.Column="2" MinWidth="80" MinHeight="25" Style="{StaticResource SettingTextBoxStyle}" Text="10" ToolTip="단어 한 글자 당 입력 지연 시간 랜덤 비율 (% 단위)." />
+                <TextBlock Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="%" />
+                <Separator Grid.Column="3" />
+                <Label Grid.Column="4" Content="{Binding ElementName=DelayPerCharRandomNumber, Path=ToolTip}" />
+            </Grid>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">
+                    <Label.Content>
+                        <MultiBinding Converter="{StaticResource DelayToStringConverter}" ConverterParameter="글자 간 딜레이 {0}-{1}ms">
+                            <Binding ElementName="DelayPerCharNumber" Mode="OneWay" Path="Text" />
+                            <Binding ElementName="DelayPerCharRandomNumber" Mode="OneWay" Path="Text" />
+                        </MultiBinding>
+                    </Label.Content>
+                </Label>
+                <Separator Grid.Column="1" />
+                <Label Grid.Column="2">
+                    <Label.Content>
+                        <MultiBinding Converter="{StaticResource DelayToCharPerSecondConverter}" ConverterParameter="초당 {0}-{1}타">
+                            <Binding ElementName="DelayPerCharNumber" Mode="OneWay" Path="Text" />
+                            <Binding ElementName="DelayPerCharRandomNumber" Mode="OneWay" Path="Text" />
+                        </MultiBinding>
+                    </Label.Content>
+                </Label>
+                <Separator Grid.Column="3" />
+                <Label Grid.Column="4">
+                    <Label.Content>
+                        <MultiBinding Converter="{StaticResource DelayToCharPerMinuteConverter}" ConverterParameter="분당 {0}-{1}타">
+                            <Binding ElementName="DelayPerCharNumber" Mode="OneWay" Path="Text" />
+                            <Binding ElementName="DelayPerCharRandomNumber" Mode="OneWay" Path="Text" />
+                        </MultiBinding>
+                    </Label.Content>
+                </Label>
+            </Grid>
+        </Grid>
+    </GroupBox>
+</Grid>
