@@ -9,10 +9,10 @@ internal class AddWordListReverseWordIndexColumn : MigrationBase
 	{
 	}
 
-	public override bool ConditionMet() => !DbConnection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName).Execute();
+	public override bool ConditionMet() => !Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName).Execute();
 	public override void Execute()
 	{
-		DbConnection.TryExecute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.ReverseWordIndexColumnName} CHAR(1) NOT NULL DEFAULT ' '");
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ReverseWordIndexColumnName, "CHAR(1) NOT NULL DEFAULT ' '").Execute();
 		LibLogger.Warn<AddWordListReverseWordIndexColumn>($"Added {DatabaseConstants.ReverseWordIndexColumnName} column.");
 	}
 }

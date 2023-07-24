@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class SqliteIsColumnExistsQuery : AbstractIsColumnExistsQuery
+public class SqliteIsColumnExistsQuery : IsColumnExistQueryBase
 {
 	internal SqliteIsColumnExistsQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 

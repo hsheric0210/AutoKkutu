@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class MySqlChangeWordListColumnTypeQuery : AbstractChangeWordListColumnTypeQuery
+public class MySqlChangeWordListColumnTypeQuery : ChangeWordListColumnTypeQueryBase
 {
 	internal MySqlChangeWordListColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName, string newType) : base(connection, tableName, columnName, newType) { }
 

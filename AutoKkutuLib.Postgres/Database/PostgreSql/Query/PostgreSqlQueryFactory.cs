@@ -6,12 +6,12 @@ internal class PostgreSqlQueryFactory : QueryFactory
 {
 	public PostgreSqlQueryFactory(DbConnectionBase connection) : base(connection) { }
 
-	public override AbstractAddWordListSequenceColumnQuery AddWordListSequenceColumn() => new PostgreSqlAddWordListSequenceColumnQuery(Connection);
-	public override AbstractChangeWordListColumnTypeQuery ChangeWordListColumnType(string tableName, string columnName, string newType) => new PostgreSqlChangeWordListColumnTypeQuery(Connection, tableName, columnName, newType);
-	public override AbstractDropWordListColumnQuery DropWordListColumn(string columnName) => new PostgreSqlDropWordListColumnQuery(Connection, columnName);
-	public override AbstractGetColumnTypeQuery GetColumnType(string tableName, string columnName) => new PostgreSqlGetColumnTypeQuery(Connection, tableName, columnName);
-	public override AbstractIsColumnExistsQuery IsColumnExists(string tableName, string columnName) => new PostgreSqlIsColumnExistsQuery(Connection, tableName, columnName);
-	public override AbstractIsTableExistsQuery IsTableExists(string tableName) => new PostgreSqlIsTableExistsQuery(Connection, tableName);
+	public override AddWordListSequenceColumnQueryBase AddWordListSequenceColumn() => new PostgreSqlAddWordListSequenceColumnQuery(Db);
+	public override ChangeWordListColumnTypeQueryBase ChangeWordListColumnType(string tableName, string columnName, string newType) => new PostgreSqlChangeWordListColumnTypeQuery(Db, tableName, columnName, newType);
+	public override DropWordListColumnQueryBase DropWordListColumn(string columnName) => new PostgreSqlDropWordListColumnQuery(Db, columnName);
+	public override GetColumnTypeQueryBase GetColumnType(string tableName, string columnName) => new PostgreSqlGetColumnTypeQuery(Db, tableName, columnName);
+	public override IsColumnExistQueryBase IsColumnExists(string tableName, string columnName) => new PostgreSqlIsColumnExistsQuery(Db, tableName, columnName);
+	public override IsTableExistQueryBase IsTableExists(string tableName) => new PostgreSqlIsTableExistsQuery(Db, tableName);
 
-	public override VacuumQuery Vacuum() => new PostgreSqlVacuumFullQuery(Connection);
+	public override VacuumQuery Vacuum() => new PostgreSqlVacuumFullQuery(Db);
 }

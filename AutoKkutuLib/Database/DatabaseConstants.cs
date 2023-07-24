@@ -74,9 +74,32 @@ public static class DatabaseConstants
 	public const string ReverseWordIndexColumnName = "reverse_word_index";
 
 	/// <summary>
-	/// 끄투 단어인덱스 열 이름
+	/// 끄투 단어 인덱스 열 이름
 	/// </summary>
 	public const string KkutuWordIndexColumnName = "kkutu_index";
+
+	/// <summary>
+	/// 단어 종류(명사, 부사, 감탄사, ...) 열 이름
+	/// </summary>
+	public const string TypeColumnName = "type";
+
+	/// <summary>
+	/// 단어 주제(일반, 교통, 음식, ...) 열 이름
+	/// </summary>
+	public const string ThemeColumn1Name = "theme_1";
+	public const string ThemeColumn2Name = "theme_2";
+	public const string ThemeColumn3Name = "theme_3";
+	public const string ThemeColumn4Name = "theme_4";
+
+	/// <summary>
+	/// 단어 초성 열 이름
+	/// </summary>
+	public const string ChoseongColumnName = "choseong";
+
+	/// <summary>
+	/// 단어 뜻 열 이름
+	/// </summary>
+	public const string MeaningColumnName = "meaning";
 
 	/// <summary>
 	/// 단어 속성(플래그) 열 이름

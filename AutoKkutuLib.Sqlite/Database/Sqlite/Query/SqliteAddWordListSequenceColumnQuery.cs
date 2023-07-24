@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Sqlite.Database.Sqlite;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class SqliteAddWordListSequenceColumnQuery : AbstractAddWordListSequenceColumnQuery
+public class SqliteAddWordListSequenceColumnQuery : AddWordListSequenceColumnQueryBase
 {
 	internal SqliteAddWordListSequenceColumnQuery(DbConnectionBase connection) : base(connection) { }
 

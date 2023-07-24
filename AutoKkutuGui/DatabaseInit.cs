@@ -13,15 +13,15 @@ public static class DatabaseInit
 		{
 			case "MARIADB":
 			case "MYSQL":
-				return MySqlDatabaseConnection.Create(connString);
+				return MySqlDbConnection.Create(connString);
 
 			case "POSTGRESQL":
 			case "POSTGRES":
 			case "POSTGRE":
 			case "PGSQL":
-				return PostgreSqlDatabaseConnection.Create(connString);
+				return PostgreSqlDbConnection.Create(connString);
 		}
 
-		return SqliteDatabaseConnection.Create(connString);
+		return SqliteDbConnection.Create(connString);
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Sqlite.Database.Sqlite;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class SqliteChangeWordListColumnTypeQuery : AbstractChangeWordListColumnTypeQuery
+public class SqliteChangeWordListColumnTypeQuery : ChangeWordListColumnTypeQueryBase
 {
 	internal SqliteChangeWordListColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName, string newType) : base(connection, tableName, columnName, newType) { }
 

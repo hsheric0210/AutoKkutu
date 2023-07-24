@@ -8,10 +8,10 @@ internal class AddWordListSequenceColumn : MigrationBase
 	{
 	}
 
-	public override bool ConditionMet() => !DbConnection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.SequenceColumnName).Execute();
+	public override bool ConditionMet() => !Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.SequenceColumnName).Execute();
 	public override void Execute()
 	{
-		DbConnection.Query.AddWordListSequenceColumn().Execute();
+		Db.Query.AddWordListSequenceColumn().Execute();
 		LibLogger.Warn<AddWordListSequenceColumn>("Added sequence column.");
 	}
 }

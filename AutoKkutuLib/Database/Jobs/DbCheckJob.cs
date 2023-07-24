@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
+using AutoKkutuLib.Hangul;
 using Dapper;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -10,7 +11,7 @@ namespace AutoKkutuLib.Database.Jobs;
 public class DbCheckJob
 {
 	private readonly NodeManager nodeManager;
-	private DbConnectionBase DbConnection => nodeManager.DbConnection;
+	private DbConnectionBase Db => nodeManager.DbConnection;
 
 	public DbCheckJob(NodeManager nodeManager) => this.nodeManager = nodeManager;
 
@@ -34,13 +35,16 @@ public class DbCheckJob
 			{
 				var watch = new Stopwatch();
 
-				var totalElementCount = DbConnection.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}");
+				var totalElementCount = Db.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}");
 				LibLogger.Info<DbCheckJob>("Database has Total {0} elements.", totalElementCount);
 
 				int currentElementIndex = 0, DeduplicatedCount = 0, RemovedCount = 0, FixedCount = 0;
 
 				var deletionList = new List<string>();
-				Dictionary<string, string> wordFixList = new(), wordIndexCorrection = new(), reverseWordIndexCorrection = new(), kkutuIndexCorrection = new();
+				Dictionary<string, string> wordIndexCorrection = new(),
+					reverseWordIndexCorrection = new(),
+					kkutuIndexCorrection = new(),
+					choseongCorrection = new();
 				var flagCorrection = new Dictionary<string, int>();
 
 				// Deduplicate
@@ -52,7 +56,7 @@ public class DbCheckJob
 				// Check for errorsd
 				LibLogger.Info<DbCheckJob>("Searching problems...");
 				watch.Start();
-				foreach (var element in DbConnection.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
+				foreach (var element in Db.Query<WordModel>($"SELECT * FROM {DatabaseConstants.WordTableName} ORDER BY({DatabaseConstants.WordColumnName}) DESC"))
 				{
 					currentElementIndex++;
 					var word = element.Word;
@@ -84,6 +88,8 @@ public class DbCheckJob
 
 					// Check Flags
 					VerifyWordFlags(word, element.Flags, flagCorrection);
+
+					VerifyChoseong(word, element.Choseong, choseongCorrection);
 				}
 				watch.Stop();
 				LibLogger.Info<DbCheckJob>("Done searching problems. Took {0}ms.", watch.ElapsedMilliseconds);
@@ -91,13 +97,13 @@ public class DbCheckJob
 				watch.Restart();
 
 				// Start fixing
-				var transaction = DbConnection.BeginTransaction(); // Speed optimization, especially on SQLite.
+				var transaction = Db.BeginTransaction(); // Speed optimization, especially on SQLite.
 				RemovedCount += DeleteWordRange(deletionList);
-				FixedCount += ResetWordIndex(wordFixList, DatabaseConstants.WordColumnName);
-				FixedCount += ResetWordIndex(wordIndexCorrection, DatabaseConstants.WordIndexColumnName);
-				FixedCount += ResetWordIndex(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName);
-				FixedCount += ResetWordIndex(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName);
-				FixedCount += ResetWordFlag(flagCorrection);
+				FixedCount += UpdateWordColumn(wordIndexCorrection, DatabaseConstants.WordIndexColumnName);
+				FixedCount += UpdateWordColumn(reverseWordIndexCorrection, DatabaseConstants.ReverseWordIndexColumnName);
+				FixedCount += UpdateWordColumn(kkutuIndexCorrection, DatabaseConstants.KkutuWordIndexColumnName);
+				FixedCount += UpdateWordColumn(choseongCorrection, DatabaseConstants.ChoseongColumnName);
+				FixedCount += UpdateWordFlagColumn(flagCorrection);
 				transaction.Commit();
 
 				watch.Stop();
@@ -139,6 +145,16 @@ public class DbCheckJob
 		}
 	}
 
+	private void VerifyChoseong(string word, string wordChoseong, IDictionary<string, string> correction)
+	{
+		var newCho = word.GetChoseong();
+		if (!string.Equals(newCho, wordChoseong))
+		{
+			LibLogger.Debug<DbCheckJob>("Invalid choseong '{cho}' for word '{word}' will be fixed to '{newcho}'", wordChoseong, word, newCho);
+			correction.Add(word, newCho);
+		}
+	}
+
 	/// <summary>
 	/// 단어가 올바른 단어인지, 유효하지 않은 문자를 포함하고 있진 않은지 검사합니다.
 	/// </summary>
@@ -162,13 +178,13 @@ public class DbCheckJob
 	#endregion
 
 	#region Database fixings
-	private int ResetWordFlag(IDictionary<string, int> correction)
+	private int UpdateWordFlagColumn(IDictionary<string, int> correction)
 	{
 		var Counter = 0;
 
 		foreach (var pair in correction)
 		{
-			var affected = DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET flags = @Flags WHERE {DatabaseConstants.WordColumnName} = @Word;", new
+			var affected = Db.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = @Flags WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{
 				Flags = pair.Value,
 				Word = pair.Key
@@ -183,12 +199,12 @@ public class DbCheckJob
 		return Counter;
 	}
 
-	private int ResetWordIndex(IDictionary<string, string> correction, string indexColumnName)
+	private int UpdateWordColumn(IDictionary<string, string> correction, string indexColumnName)
 	{
 		var counter = 0;
 		foreach (var pair in correction)
 		{
-			var affected = DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
+			var affected = Db.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{
 				WordIndex = pair.Value,
 				Word = pair.Key
@@ -207,7 +223,7 @@ public class DbCheckJob
 		var counter = 0;
 		foreach (var word in range)
 		{
-			var affected = DbConnection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new
+			var affected = Db.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} = @Word", new
 			{
 				Word = word
 			});
@@ -230,7 +246,7 @@ public class DbCheckJob
 		var watch = new Stopwatch();
 		LibLogger.Info<DbCheckJob>("Executing vacuum...");
 		watch.Restart();
-		DbConnection.Query.Vacuum().Execute();
+		Db.Query.Vacuum().Execute();
 		watch.Stop();
 		LibLogger.Info<DbCheckJob>("Vacuum took {0}ms.", watch.ElapsedMilliseconds);
 	}
@@ -245,7 +261,7 @@ public class DbCheckJob
 		LibLogger.Info<DbCheckJob>("Updating node lists...");
 		try
 		{
-			nodeManager.LoadNodeLists(DbConnection);
+			nodeManager.LoadNodeLists(Db);
 			watch.Stop();
 			LibLogger.Info<DbCheckJob>("Done refreshing node lists. Took {0}ms.", watch.ElapsedMilliseconds);
 		}
@@ -263,7 +279,7 @@ public class DbCheckJob
 		LibLogger.Info<DbCheckJob>("Deduplicating entries...");
 		try
 		{
-			count = DbConnection.Query.Deduplicate().Execute();
+			count = Db.Query.Deduplicate().Execute();
 			watch.Stop();
 			LibLogger.Info<DbCheckJob>("Removed {0} duplicate entries. Took {1}ms.", count, watch.ElapsedMilliseconds);
 		}

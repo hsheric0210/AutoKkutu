@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class MySqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
+public class MySqlGetColumnTypeQuery : GetColumnTypeQueryBase
 {
 	private readonly string dbName;
 

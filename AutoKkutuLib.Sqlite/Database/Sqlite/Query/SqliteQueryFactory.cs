@@ -6,10 +6,10 @@ internal class SqliteQueryFactory : QueryFactory
 {
 	public SqliteQueryFactory(DbConnectionBase connection) : base(connection) { }
 
-	public override AbstractAddWordListSequenceColumnQuery AddWordListSequenceColumn() => new SqliteAddWordListSequenceColumnQuery(Connection);
-	public override AbstractChangeWordListColumnTypeQuery ChangeWordListColumnType(string tableName, string columnName, string newType) => new SqliteChangeWordListColumnTypeQuery(Connection, tableName, columnName, newType);
-	public override AbstractDropWordListColumnQuery DropWordListColumn(string columnName) => new SqliteDropWordListColumnQuery(Connection, columnName);
-	public override AbstractGetColumnTypeQuery GetColumnType(string tableName, string columnName) => new SqliteGetColumnTypeQuery(Connection, tableName, columnName);
-	public override AbstractIsColumnExistsQuery IsColumnExists(string tableName, string columnName) => new SqliteIsColumnExistsQuery(Connection, tableName, columnName);
-	public override AbstractIsTableExistsQuery IsTableExists(string tableName) => new SqliteIsTableExistsQuery(Connection, tableName);
+	public override AddWordListSequenceColumnQueryBase AddWordListSequenceColumn() => new SqliteAddWordListSequenceColumnQuery(Db);
+	public override ChangeWordListColumnTypeQueryBase ChangeWordListColumnType(string tableName, string columnName, string newType) => new SqliteChangeWordListColumnTypeQuery(Db, tableName, columnName, newType);
+	public override DropWordListColumnQueryBase DropWordListColumn(string columnName) => new SqliteDropWordListColumnQuery(Db, columnName);
+	public override GetColumnTypeQueryBase GetColumnType(string tableName, string columnName) => new SqliteGetColumnTypeQuery(Db, tableName, columnName);
+	public override IsColumnExistQueryBase IsColumnExists(string tableName, string columnName) => new SqliteIsColumnExistsQuery(Db, tableName, columnName);
+	public override IsTableExistQueryBase IsTableExists(string tableName) => new SqliteIsTableExistsQuery(Db, tableName);
 }

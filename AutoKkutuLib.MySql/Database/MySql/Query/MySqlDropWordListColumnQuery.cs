@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class MySqlDropWordListColumnQuery : AbstractDropWordListColumnQuery
+public class MySqlDropWordListColumnQuery : DropWordListColumnQueryBase
 {
 	internal MySqlDropWordListColumnQuery(DbConnectionBase connection, string columnName) : base(connection, columnName) { }
 

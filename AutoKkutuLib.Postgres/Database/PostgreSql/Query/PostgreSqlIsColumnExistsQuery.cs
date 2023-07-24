@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreSqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
+public class PostgreSqlIsColumnExistsQuery : IsColumnExistQueryBase
 {
 	internal PostgreSqlIsColumnExistsQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 

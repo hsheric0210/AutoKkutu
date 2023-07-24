@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class MySqlIsTableExistsQuery : AbstractIsTableExistsQuery
+public class MySqlIsTableExistsQuery : IsTableExistQueryBase
 {
 	private readonly string dbName;
 	internal MySqlIsTableExistsQuery(DbConnectionBase connection, string dbName, string tableName) : base(connection, tableName) => this.dbName = dbName;

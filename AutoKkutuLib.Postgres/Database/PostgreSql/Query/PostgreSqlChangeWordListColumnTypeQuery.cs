@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreSqlChangeWordListColumnTypeQuery : AbstractChangeWordListColumnTypeQuery
+public class PostgreSqlChangeWordListColumnTypeQuery : ChangeWordListColumnTypeQueryBase
 {
 	internal PostgreSqlChangeWordListColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName, string newType) : base(connection, tableName, columnName, newType) { }
 

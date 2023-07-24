@@ -11,6 +11,11 @@ internal static class MigrationRegistry
 		builder.Add(new AddWordListSequenceColumn(connection));
 		builder.Add(new ChangeWordListKkutuWordIndexColumnType(connection));
 		builder.Add(new ConvertWordListEndWordColumnToFlags(connection));
+		builder.Add(new AddWordListChoseongColumn(connection));
+		builder.Add(new AddWordListMeaningColumn(connection));
+		builder.Add(new AddWordListTypeColumn(connection));
+		builder.Add(new AddWordListThemeColumns(connection));
+		builder.Add(new EnlargeWordListFlagsColumnType(connection));
 		return builder.ToImmutable();
 	}
 

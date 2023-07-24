@@ -9,10 +9,10 @@ internal class AddWordListKkutuWordIndexColumn : MigrationBase
 	{
 	}
 
-	public override bool ConditionMet() => !DbConnection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute();
+	public override bool ConditionMet() => !Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute();
 	public override void Execute()
 	{
-		DbConnection.TryExecute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.KkutuWordIndexColumnName} CHAR(2) NOT NULL DEFAULT ' '");
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, "VARCHAR(2) NOT NULL").Execute();
 		LibLogger.Warn<AddWordListKkutuWordIndexColumn>($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
 	}
 }

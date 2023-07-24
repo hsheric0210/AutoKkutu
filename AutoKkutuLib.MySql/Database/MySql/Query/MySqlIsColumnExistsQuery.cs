@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class MySqlIsColumnExistsQuery : AbstractIsColumnExistsQuery
+public class MySqlIsColumnExistsQuery : IsColumnExistQueryBase
 {
 	private readonly string dbName;
 

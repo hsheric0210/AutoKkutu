@@ -10,17 +10,17 @@ internal class ConvertWordListEndWordColumnToFlags : MigrationBase
 	{
 	}
 
-	public override bool ConditionMet() => DbConnection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName).Execute();
+	public override bool ConditionMet() => Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.IsEndwordColumnName).Execute();
 	public override void Execute()
 	{
-		if (!DbConnection.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.FlagsColumnName).Execute())
+		if (!Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.FlagsColumnName).Execute())
 		{
-			DbConnection.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0;");
-			DbConnection.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT);");
+			Db.Execute($"ALTER TABLE {DatabaseConstants.WordTableName} ADD COLUMN {DatabaseConstants.FlagsColumnName} SMALLINT NOT NULL DEFAULT 0;");
+			Db.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {DatabaseConstants.FlagsColumnName} = CAST({DatabaseConstants.IsEndwordColumnName} AS SMALLINT);");
 			LibLogger.Warn<ConvertWordListEndWordColumnToFlags>($"Converted '{DatabaseConstants.IsEndwordColumnName}' into {DatabaseConstants.FlagsColumnName} column.");
 		}
 
-		DbConnection.Query.DropWordListColumn(DatabaseConstants.IsEndwordColumnName).Execute();
+		Db.Query.DropWordListColumn(DatabaseConstants.IsEndwordColumnName).Execute();
 		LibLogger.Warn<ConvertWordListEndWordColumnToFlags>($"Dropped {DatabaseConstants.IsEndwordColumnName} column as it is no longer used.");
 	}
 }

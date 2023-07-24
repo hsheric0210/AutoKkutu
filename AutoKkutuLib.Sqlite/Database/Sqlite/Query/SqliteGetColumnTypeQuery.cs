@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class SqliteGetColumnTypeQuery : AbstractGetColumnTypeQuery
+public class SqliteGetColumnTypeQuery : GetColumnTypeQueryBase
 {
 	internal SqliteGetColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 

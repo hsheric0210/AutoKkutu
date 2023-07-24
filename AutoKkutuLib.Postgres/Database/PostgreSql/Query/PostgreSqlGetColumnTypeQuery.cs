@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreSqlGetColumnTypeQuery : AbstractGetColumnTypeQuery
+public class PostgreSqlGetColumnTypeQuery : GetColumnTypeQueryBase
 {
 	internal PostgreSqlGetColumnTypeQuery(DbConnectionBase connection, string tableName, string columnName) : base(connection, tableName, columnName) { }
 

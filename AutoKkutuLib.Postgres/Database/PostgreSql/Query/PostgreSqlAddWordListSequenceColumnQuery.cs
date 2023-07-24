@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreSqlAddWordListSequenceColumnQuery : AbstractAddWordListSequenceColumnQuery
+public class PostgreSqlAddWordListSequenceColumnQuery : AddWordListSequenceColumnQueryBase
 {
 	internal PostgreSqlAddWordListSequenceColumnQuery(DbConnectionBase connection) : base(connection) { }
 

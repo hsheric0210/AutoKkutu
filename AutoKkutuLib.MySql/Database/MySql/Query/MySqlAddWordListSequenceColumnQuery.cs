@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class MySqlAddWordListSequenceColumnQuery : AbstractAddWordListSequenceColumnQuery
+public class MySqlAddWordListSequenceColumnQuery : AddWordListSequenceColumnQueryBase
 {
 	internal MySqlAddWordListSequenceColumnQuery(DbConnectionBase connection) : base(connection) { }
 

@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Query;
-public class PostgreSqlDropWordListColumnQuery : AbstractDropWordListColumnQuery
+public class PostgreSqlDropWordListColumnQuery : DropWordListColumnQueryBase
 {
 	internal PostgreSqlDropWordListColumnQuery(DbConnectionBase connection, string columnName) : base(connection, columnName) { }
 

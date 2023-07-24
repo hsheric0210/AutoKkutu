@@ -10,13 +10,13 @@ internal class ChangeWordListKkutuWordIndexColumnType : MigrationBase
 
 	public override bool ConditionMet()
 	{
-		var kkutuindextype = DbConnection.Query.GetColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute();
+		var kkutuindextype = Db.Query.GetColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute();
 		return kkutuindextype != null && (kkutuindextype.Equals("CHAR(2)", StringComparison.OrdinalIgnoreCase) || kkutuindextype.Equals("character", StringComparison.OrdinalIgnoreCase));
 	}
 
 	public override void Execute()
 	{
-		DbConnection.Query.ChangeWordListColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)").Execute();
+		Db.Query.ChangeWordListColumnType(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, newType: "VARCHAR(2)").Execute();
 		LibLogger.Warn<ChangeWordListKkutuWordIndexColumnType>($"Changed type of '{DatabaseConstants.KkutuWordIndexColumnName}' from CHAR(2) to VARCHAR(2).");
 	}
 }

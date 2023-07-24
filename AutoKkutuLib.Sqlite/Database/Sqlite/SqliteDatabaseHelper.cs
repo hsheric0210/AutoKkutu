@@ -21,7 +21,7 @@ public static class SqliteDatabaseHelper
 		{
 			try
 			{
-				var connection = SqliteDatabaseConnection.Create(externalSQLiteFilePath);
+				var connection = SqliteDbConnection.Create(externalSQLiteFilePath);
 				if (connection == null)
 					LibLogger.Error(nameof(SqliteDatabaseHelper), "Failed to open SQLite connection");
 
