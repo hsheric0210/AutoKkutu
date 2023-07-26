@@ -90,68 +90,66 @@ public class NodeManager
 		_ => EndNodes,
 	};
 
+
 	#region Node list access/update
 	/// <summary>
 	/// Calculate the word flags by node lists
 	/// (nodeLists -> word)
 	/// </summary>
-	public WordFlags CalcWordFlags(string word)
+	public WordFlags GetWordNodeFlags(string word, WordFlags flags = WordFlags.None)
 	{
 		if (string.IsNullOrEmpty(word))
 			throw new ArgumentException(null, nameof(word));
 
-		var flags = WordFlags.None;
+		var wordLength = word.Length;
 
 		// 한방 노드
-		CalcWordFlagsInternal(word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags);
+		GetWordNodeFlagsInternal(word.GetLaFTailNode(), EndNodes, WordFlags.EndWord, ref flags);
 
 		// 공격 노드
-		CalcWordFlagsInternal(word.GetLaFTailNode(), AttackNodes, WordFlags.AttackWord, ref flags);
+		GetWordNodeFlagsInternal(word.GetLaFTailNode(), AttackNodes, WordFlags.AttackWord, ref flags);
 
 		// 앞말잇기 한방 노드
-		CalcWordFlagsInternal(word.GetFaLTailNode(), ReverseEndNodes, WordFlags.ReverseEndWord, ref flags);
+		GetWordNodeFlagsInternal(word.GetFaLTailNode(), ReverseEndNodes, WordFlags.ReverseEndWord, ref flags);
 
 		// 앞말잇기 공격 노드
-		CalcWordFlagsInternal(word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags);
+		GetWordNodeFlagsInternal(word.GetFaLTailNode(), ReverseAttackNodes, WordFlags.ReverseAttackWord, ref flags);
 
-		var wordLength = word.Length;
-		if (wordLength == 2)
-			flags |= WordFlags.KKT2;
-		if (wordLength > 2)
+
+		if (flags.HasFlag(WordFlags.KKT2) || flags.HasFlag(WordFlags.KKT3))
+		{
+			// 쿵쿵따 한방 노드
+			GetWordNodeFlagsInternal(word.GetLaFTailNode(), KKTEndNodes, WordFlags.KKTEndWord, ref flags);
+
+			// 쿵쿵따 공격 노드
+			GetWordNodeFlagsInternal(word.GetLaFTailNode(), KKTAttackNodes, WordFlags.KKTAttackWord, ref flags);
+		}
+
+		if (wordLength > 2 && wordLength % 2 == 1)
+		{
+			// 가운뎃말잇기 한방 노드
+			GetWordNodeFlagsInternal(word.GetMaFTailNode(), EndNodes, WordFlags.MiddleEndWord, ref flags);
+
+			// 가운뎃말잇기 공격 노드
+			GetWordNodeFlagsInternal(word.GetMaFTailNode(), AttackNodes, WordFlags.MiddleAttackWord, ref flags);
+		}
+
+		if (wordLength >= 4)
 		{
 			// 끄투 한방 노드
-			CalcWordFlagsInternal(word.GetKkutuTailNode(), KkutuEndNodes, WordFlags.KkutuEndWord, ref flags);
+			GetWordNodeFlagsInternal(word.GetKkutuTailNode(), KkutuEndNodes, WordFlags.KkutuEndWord, ref flags);
 
 			// 끄투 공격 노드
-			CalcWordFlagsInternal(word.GetKkutuTailNode(), KkutuAttackNodes, WordFlags.KkutuAttackWord, ref flags);
-
-			if (wordLength == 3)
-			{
-				flags |= WordFlags.KKT3;
-
-				// 쿵쿵따 한방 노드
-				CalcWordFlagsInternal(word.GetLaFTailNode(), KKTEndNodes, WordFlags.KKTEndWord, ref flags);
-
-				// 쿵쿵따 공격 노드
-				CalcWordFlagsInternal(word.GetLaFTailNode(), KKTAttackNodes, WordFlags.KKTAttackWord, ref flags);
-			}
-
-			if (wordLength % 2 == 1)
-			{
-				// 가운뎃말잇기 한방 노드
-				CalcWordFlagsInternal(word.GetMaFTailNode(), EndNodes, WordFlags.MiddleEndWord, ref flags);
-
-				// 가운뎃말잇기 공격 노드
-				CalcWordFlagsInternal(word.GetMaFTailNode(), AttackNodes, WordFlags.MiddleAttackWord, ref flags);
-			}
+			GetWordNodeFlagsInternal(word.GetKkutuTailNode(), KkutuAttackNodes, WordFlags.KkutuAttackWord, ref flags);
 		}
+
 		return flags;
 	}
 
 	/// <summary>
 	/// nodeList -> node
 	/// </summary>
-	private static void CalcWordFlagsInternal(string node, ICollection<string> nodeList, WordFlags targetFlag, ref WordFlags flagsOut)
+	private static void GetWordNodeFlagsInternal(string node, ICollection<string> nodeList, WordFlags targetFlag, ref WordFlags flagsOut)
 	{
 		if (string.IsNullOrWhiteSpace(node))
 			return;

@@ -11,7 +11,7 @@ public static class TableExtension
 			throw new ArgumentNullException(nameof(connection));
 
 		// Create node tables
-		foreach (var tableName in new string[] { DatabaseConstants.EndNodeIndexTableName, DatabaseConstants.AttackNodeIndexTableName, DatabaseConstants.ReverseEndNodeIndexTableName, DatabaseConstants.ReverseAttackNodeIndexTableName, DatabaseConstants.KkutuEndNodeIndexTableName, DatabaseConstants.KkutuAttackNodeIndexTableName })
+		foreach (var tableName in new string[] { DatabaseConstants.EndNodeIndexTableName, DatabaseConstants.AttackNodeIndexTableName, DatabaseConstants.ReverseEndNodeIndexTableName, DatabaseConstants.ReverseAttackNodeIndexTableName, DatabaseConstants.KkutuEndNodeIndexTableName, DatabaseConstants.KkutuAttackNodeIndexTableName, DatabaseConstants.ThemeTableName })
 			connection.MakeTableIfNotExists(tableName);
 
 		connection.MakeTableIfNotExists(DatabaseConstants.KKTEndNodeIndexTableName, () => connection.Execute($"INSERT INTO {DatabaseConstants.KKTEndNodeIndexTableName} SELECT * FROM {DatabaseConstants.EndNodeIndexTableName};"));
@@ -29,18 +29,19 @@ public static class TableExtension
 			connection.Query.CreateIndex(DatabaseConstants.WordTableName, columnName).Execute();
 	}
 
-	public static void MakeTable(this DbConnectionBase connection, string tablename)
+	public static void MakeTable(this DbConnectionBase connection, string tableName)
 	{
 		if (connection == null)
 			throw new ArgumentNullException(nameof(connection));
 
-		var columnOptions = tablename switch
+		var columns = tableName switch
 		{
 			DatabaseConstants.WordTableName => connection.GetWordListColumnOptions(),
+			DatabaseConstants.ThemeTableName => $"{DatabaseConstants.ThemeNameColumnName} VARCHAR(64) NOT NULL, {DatabaseConstants.BitmaskOrdinalColumnName} TINYINT NOT NULL, {DatabaseConstants.BitmaskIndexColumnName} TINYINT NOT NULL",
 			DatabaseConstants.KkutuEndNodeIndexTableName => $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL",
 			_ => $"{DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL",
 		};
-		connection.Execute($"CREATE TABLE {tablename} ({columnOptions});");
+		connection.Query.CreateTable(tableName, columns);
 	}
 
 	public static void MakeTableIfNotExists(this DbConnectionBase connection, string tableName, Action? callback = null)

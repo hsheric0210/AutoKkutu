@@ -87,9 +87,10 @@ public class DbUpdateJob
 	{
 		var count = 0;
 		var query = dbConnection.Query.AddWord();
+		var recalc = new WordFlagsRecalculator(nodeManager, null!); // fixme: 내가 보기에 분명 언젠가 이거 null 제거하는 것 잊어먹고 NPE 발생시키는 날이 온다 진짜
 		foreach (var word in paths)
 		{
-			var flags = nodeManager.CalcWordFlags(word);
+			var flags = recalc.GetWordFlags(word);
 
 			try
 			{

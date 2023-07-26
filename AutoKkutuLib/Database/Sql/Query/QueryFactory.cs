@@ -31,5 +31,6 @@ public abstract class QueryFactory
 	public virtual WordAdditionQuery AddWord() => new(Db);
 	public virtual WordDeletionQuery DeleteWord() => new(Db);
 	public virtual AddColumnQuery AddColumn(string tableName, string columnName, string columnType) => new(Db, tableName, columnName, columnType);
+	public virtual CreateTableQuery CreateTable(string tableName, string columns) => new(Db, tableName, columns);
 	#endregion
 }

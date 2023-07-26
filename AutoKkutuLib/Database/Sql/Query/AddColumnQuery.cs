@@ -16,7 +16,7 @@ public class AddColumnQuery : SqlQuery<int>
 
 	public override int Execute()
 	{
-		LibLogger.Verbose<AddColumnQuery>("Creating the column {name} on table {table} with type '{type};.", columnName, tableName, columnType);
+		LibLogger.Verbose<AddColumnQuery>("Creating {type} column {name} on table {table}.", columnType, columnName, tableName);
 		return Connection.Execute($"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnType}");
 	}
 }

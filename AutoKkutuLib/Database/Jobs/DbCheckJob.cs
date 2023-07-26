@@ -33,6 +33,8 @@ public class DbCheckJob
 		{
 			try
 			{
+				var recalc = new WordFlagsRecalculator(nodeManager, null!); // fixme: add themeManager field
+
 				var watch = new Stopwatch();
 
 				var totalElementCount = Db.ExecuteScalar<int>($"SELECT COUNT(*) FROM {DatabaseConstants.WordTableName}");
@@ -87,7 +89,7 @@ public class DbCheckJob
 					VerifyWordIndexes(DatabaseConstants.KkutuWordIndexColumnName, word, element.KkutuWordIndex, WordToNodeExtension.GetKkutuHeadNode, kkutuIndexCorrection);
 
 					// Check Flags
-					VerifyWordFlags(word, element.Flags, flagCorrection);
+					VerifyWordFlags(recalc, word, element.Flags, flagCorrection);
 
 					VerifyChoseong(word, element.Choseong, choseongCorrection);
 				}
@@ -124,14 +126,16 @@ public class DbCheckJob
 	#endregion
 
 	#region Database checkings
-	private void VerifyWordFlags(string word, int currentFlags, IDictionary<string, int> correction)
+	private void VerifyWordFlags(WordFlagsRecalculator recalc, string word, int currentFlags, IDictionary<string, int> correction)
 	{
-		var correctFlags = nodeManager.CalcWordFlags(word);
-		var correctFlagsInt = (int)correctFlags;
-		if (correctFlagsInt != currentFlags)
+		const int keepFlags = (int)(WordFlags.LoanWord | WordFlags.Dialect | WordFlags.DeadLang | WordFlags.Munhwa);
+		var keptFlags = currentFlags & keepFlags;
+
+		var correctFlags = (int)recalc.GetWordFlags(word) | keptFlags;
+		if (correctFlags != currentFlags)
 		{
-			LibLogger.Debug<DbCheckJob>("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, correctFlags);
-			correction.Add(word, correctFlagsInt);
+			LibLogger.Debug<DbCheckJob>("Word {word} has invaild flags {currentFlags}, will be fixed to {correctFlags}.", word, (WordFlags)currentFlags, (WordFlags)correctFlags);
+			correction.Add(word, correctFlags);
 		}
 	}
 

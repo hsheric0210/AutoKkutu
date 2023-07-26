@@ -51,6 +51,8 @@ public static class DatabaseConstants
 	/// </summary>
 	public const string KKTAttackNodeIndexTableName = "kkt_attackword_list";
 
+	public const string ThemeTableName = "theme";
+
 	// Column names
 
 	/// <summary>
@@ -87,8 +89,20 @@ public static class DatabaseConstants
 	/// 단어 주제(일반, 교통, 음식, ...) 열 이름
 	/// </summary>
 	public const string ThemeColumn1Name = "theme_1";
+
+	/// <summary>
+	/// 단어 주제(일반, 교통, 음식, ...) 열 이름
+	/// </summary>
 	public const string ThemeColumn2Name = "theme_2";
+
+	/// <summary>
+	/// 단어 주제(일반, 교통, 음식, ...) 열 이름
+	/// </summary>
 	public const string ThemeColumn3Name = "theme_3";
+
+	/// <summary>
+	/// 단어 주제(일반, 교통, 음식, ...) 열 이름
+	/// </summary>
 	public const string ThemeColumn4Name = "theme_4";
 
 	/// <summary>
@@ -111,6 +125,12 @@ public static class DatabaseConstants
 	/// @deprecated: 단어 속성으로 대체됨
 	/// </summary>
 	public const string IsEndwordColumnName = "is_endword";
+
+	public const string ThemeNameColumnName = "theme_name";
+
+	public const string BitmaskOrdinalColumnName = "bitmask_ordinal";
+
+	public const string BitmaskIndexColumnName = "bitmask_index";
 
 	// FIXME: Move to resources
 	public const string LoadFromLocalSQLite = "SQLite 데이터베이스 불러오기";

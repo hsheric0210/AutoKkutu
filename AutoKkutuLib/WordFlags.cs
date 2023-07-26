@@ -64,7 +64,58 @@ public enum WordFlags
 	KKTEndWord = 1 << 10,
 
 	/// <summary>
+	/// 한국어 단어
+	/// </summary>
+	Korean = 1 << 11,
+
+	/// <summary>
+	/// 영어 단어
+	/// </summary>
+	English = 1 << 12,
+
+	/// <summary>
 	/// 쿵쿵따 공격 단어
 	/// </summary>
-	KKTAttackWord = 1 << 11
+	KKTAttackWord = 1 << 13,
+
+	/// <summary>
+	/// 외래어
+	/// </summary>
+	/// <remarks>
+	/// 주의: 이 플래그는 데이터베이스 검증 작업을 통해 갱신되지 않습니다.
+	/// 단어 추가 당시에 직접 지정해 주거나, 국어 사전 가져오기 기능 등을 통해서만 갱신이 가능합니다.
+	/// </remarks>
+	LoanWord = 1 << 14,
+
+	/// <summary>
+	/// 어인정 단어
+	/// </summary>
+	Injeong = 1 << 15,
+
+	/// <summary>
+	/// 방언
+	/// </summary>
+	/// <remarks>
+	/// 주의: 이 플래그는 데이터베이스 검증 작업을 통해 갱신되지 않습니다.
+	/// 단어 추가 당시에 직접 지정해 주거나, 국어 사전 가져오기 기능 등을 통해서만 갱신이 가능합니다.
+	/// </remarks>
+	Dialect = 1 << 16,
+
+	/// <summary>
+	/// 옛말
+	/// </summary>
+	/// <remarks>
+	/// 주의: 이 플래그는 데이터베이스 검증 작업을 통해 갱신되지 않습니다.
+	/// 단어 추가 당시에 직접 지정해 주거나, 국어 사전 가져오기 기능 등을 통해서만 갱신이 가능합니다.
+	/// </remarks>
+	DeadLang = 1 << 17,
+
+	/// <summary>
+	/// 문화어
+	/// </summary>
+	/// <remarks>
+	/// 주의: 이 플래그는 데이터베이스 검증 작업을 통해 갱신되지 않습니다.
+	/// 단어 추가 당시에 직접 지정해 주거나, 국어 사전 가져오기 기능 등을 통해서만 갱신이 가능합니다.
+	/// </remarks>
+	Munhwa = 1 << 18
 }
