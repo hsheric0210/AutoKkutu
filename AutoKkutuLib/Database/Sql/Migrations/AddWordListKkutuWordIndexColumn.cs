@@ -12,7 +12,7 @@ internal class AddWordListKkutuWordIndexColumn : MigrationBase
 	public override bool ConditionMet() => !Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName).Execute();
 	public override void Execute()
 	{
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, "VARCHAR(2) NOT NULL").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.KkutuWordIndexColumnName, "VARCHAR(2) NOT NULL DEFAULT ''").Execute();
 		LibLogger.Warn<AddWordListKkutuWordIndexColumn>($"Added {DatabaseConstants.KkutuWordIndexColumnName} column.");
 	}
 }

@@ -11,7 +11,7 @@ internal class AddWordListMeaningColumn : MigrationBase
 	public override bool ConditionMet() => !Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.MeaningColumnName).Execute();
 	public override void Execute()
 	{
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.MeaningColumnName, "TEXT NOT NULL").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.MeaningColumnName, "TEXT NOT NULL DEFAULT ''").Execute();
 		LibLogger.Warn<AddWordListMeaningColumn>("Added meaning column.");
 	}
 }

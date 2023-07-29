@@ -10,13 +10,22 @@ public static class NodeBatchJobExtension
 		var job = new NodeAdditionJob(dbConnection, nodeTypes);
 
 		LibLogger.Info(nameof(NodeBatchJobExtension), "Queued {0} elements to add.", nodeList.Length);
-		foreach (var node in nodeList)
+		try
 		{
-			if (!string.IsNullOrWhiteSpace(node))
+			using var transaction = dbConnection.BeginTransaction();
+			foreach (var node in nodeList)
 			{
-				LibLogger.Info(nameof(NodeBatchJobExtension), "Processing {0}.", node);
-				job.Add(node);
+				if (!string.IsNullOrWhiteSpace(node))
+				{
+					LibLogger.Info(nameof(NodeBatchJobExtension), "Processing {0}.", node);
+					job.Add(node);
+				}
 			}
+			transaction.Commit();
+		}
+		catch (Exception ex)
+		{
+			LibLogger.Error(nameof(NodeBatchJobExtension), ex, "Failed to perform batch node addition.");
 		}
 
 		LibLogger.Info(nameof(NodeBatchJobExtension), "{0} nodes affected. {1} errors occurred.", job.Result.TotalCount, job.Result.TotalError);
@@ -32,13 +41,22 @@ public static class NodeBatchJobExtension
 		var job = new NodeDeletionJob(dbConnection, nodeTypes);
 
 		LibLogger.Info(nameof(NodeBatchJobExtension), "Queued {0} elements to remove.", nodeList.Length);
-		foreach (var node in nodeList)
+		try
 		{
-			if (!string.IsNullOrWhiteSpace(node))
+			using var transaction = dbConnection.BeginTransaction();
+			foreach (var node in nodeList)
 			{
-				LibLogger.Info(nameof(NodeBatchJobExtension), "Processing {0}.", node);
-				job.Delete(node);
+				if (!string.IsNullOrWhiteSpace(node))
+				{
+					LibLogger.Info(nameof(NodeBatchJobExtension), "Processing {0}.", node);
+					job.Delete(node);
+				}
 			}
+			transaction.Commit();
+		}
+		catch (Exception ex)
+		{
+			LibLogger.Error(nameof(NodeBatchJobExtension), ex, "Failed to perform batch node addition.");
 		}
 
 		LibLogger.Info(nameof(NodeBatchJobExtension), "{0} nodes affected. {1} errors occurred.", job.Result.TotalCount, job.Result.TotalError);

@@ -208,9 +208,9 @@ public class DbCheckJob
 		var counter = 0;
 		foreach (var pair in correction)
 		{
-			var affected = Db.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Index WHERE {DatabaseConstants.WordColumnName} = @Word;", new
+			var affected = Db.Execute($"UPDATE {DatabaseConstants.WordTableName} SET {indexColumnName} = @Value WHERE {DatabaseConstants.WordColumnName} = @Word;", new
 			{
-				WordIndex = pair.Value,
+				Value = pair.Value,
 				Word = pair.Key
 			});
 			if (affected > 0)

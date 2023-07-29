@@ -27,7 +27,6 @@
         <server>
             <url>https://kkutu.co.kr</url>
             <domHandler>BasicBypassDomHandler</domHandler>
-            <webSocketHandler>BasicDecodeHandler</webSocketHandler>
         </server>
         <server>
             <url>https://kkutu.io</url>

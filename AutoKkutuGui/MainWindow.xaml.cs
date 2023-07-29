@@ -127,6 +127,8 @@ public partial class MainWindow : Window
 			img.BeginInit();
 			img.UriSource = new Uri($@"Images\{args.Instance.Database.DbType}.png", UriKind.Relative);
 			img.EndInit();
+
+			DBManager.IsEnabled = true;
 			DBLogo.Source = img;
 		});
 	}

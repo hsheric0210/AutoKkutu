@@ -24,32 +24,32 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 			throw new ArgumentNullException(nameof(wordList));
 
 		var count = new WordCount();
-		using var transaction = DbConnection.BeginTransaction(); // This will increase addition speed, especially on SQLite
-		var query = DbConnection.Query.AddWord();
-		foreach (var word in wordList)
-		{
-			if (string.IsNullOrWhiteSpace(word))
-				continue;
-
-			// Check word length
-			if (word.Length <= 1)
-			{
-				LibLogger.Warn<BatchWordAdditionJob>("Word {word} is too short to add!", word);
-				count.IncrementError();
-				continue;
-			}
-
-			if (!verifyOnline || browser?.VerifyWordOnline(word) != false)
-				AddSingleWord(query, word, wordFlags, ref count);
-		}
-
 		try
 		{
+			using var transaction = DbConnection.BeginTransaction(); // This will increase addition speed, especially on SQLite
+			var query = DbConnection.Query.AddWord();
+			foreach (var word in wordList)
+			{
+				if (string.IsNullOrWhiteSpace(word))
+					continue;
+
+				// Check word length
+				if (word.Length <= 1)
+				{
+					LibLogger.Warn<BatchWordAdditionJob>("Word {word} is too short to add!", word);
+					count.IncrementError();
+					continue;
+				}
+
+				if (!verifyOnline || browser?.VerifyWordOnline(word) != false)
+					AddSingleWord(query, word, wordFlags, ref count);
+			}
+
 			transaction.Commit();
 		}
 		catch (Exception ex)
 		{
-			LibLogger.Error<BatchWordAdditionJob>(ex, "Failed to commit word addition queries to the database.");
+			LibLogger.Error<BatchWordAdditionJob>(ex, "Failed to perform batch word addition.");
 		}
 		return count;
 	}
@@ -60,7 +60,7 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 		{
 			nodeManager.UpdateNodeListsByWord(word, ref flags);
 
-			LibLogger.Verbose<BatchWordAdditionJob>("Adding {word} into database... (flags: {flags})", word, flags);
+			LibLogger.Info<BatchWordAdditionJob>("Adding {word} into database... (flags: {flags})", word, flags);
 			if (query.Execute(word, flags))
 				wordCount.Increment(flags, 1);
 		}

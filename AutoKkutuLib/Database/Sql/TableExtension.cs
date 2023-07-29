@@ -41,7 +41,7 @@ public static class TableExtension
 			DatabaseConstants.KkutuEndNodeIndexTableName => $"{DatabaseConstants.WordIndexColumnName} VARCHAR(2) NOT NULL",
 			_ => $"{DatabaseConstants.WordIndexColumnName} CHAR(1) NOT NULL",
 		};
-		connection.Query.CreateTable(tableName, columns);
+		connection.Query.CreateTable(tableName, columns).Execute();
 	}
 
 	public static void MakeTableIfNotExists(this DbConnectionBase connection, string tableName, Action? callback = null)

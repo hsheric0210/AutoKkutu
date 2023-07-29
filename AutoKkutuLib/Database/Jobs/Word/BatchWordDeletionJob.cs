@@ -13,16 +13,17 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 			throw new ArgumentNullException(nameof(wordList));
 
 		var count = new WordCount();
-		var transaction = DbConnection.BeginTransaction();
-		var query = DbConnection.Query.DeleteWord();
-		foreach (var word in wordList)
-		{
-			if (RemoveSingleWord(query, word))
-				count.Increment(WordFlags.None, 1);
-		}
 
 		try
 		{
+			var transaction = DbConnection.BeginTransaction();
+			var query = DbConnection.Query.DeleteWord();
+			foreach (var word in wordList)
+			{
+				if (RemoveSingleWord(query, word))
+					count.Increment(WordFlags.None, 1);
+			}
+
 			transaction.Commit();
 		}
 		catch (Exception ex)
@@ -40,6 +41,7 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 
 		try
 		{
+			LibLogger.Info<BatchWordAdditionJob>("Removing {word} from database...", word);
 			return query.Execute(word) > 0;
 		}
 		catch (Exception ex)
