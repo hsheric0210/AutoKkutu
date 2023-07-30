@@ -23,6 +23,12 @@ public partial class Main
 		var serverHost = new Uri(args.Url).Host; // What a worst solution
 		Log.Verbose("Browser Page Load: {host}", serverHost);
 
+		if (!ServerConfig.TryGetServer(serverHost, out var serverInfo))
+		{
+			Log.Warning(I18n.Main_UnsupportedURL, serverHost);
+			return;
+		}
+
 		var prevInstance = AutoKkutu;
 		if (prevInstance != null)
 		{
@@ -36,12 +42,6 @@ public partial class Main
 			// 이전 AutoKkutu 파사드 제거
 			prevInstance.Dispose();
 			Log.Information("Disposed previous facade.");
-		}
-
-		if (!ServerConfig.TryGetServer(serverHost, out var serverInfo))
-		{
-			Log.Warning(I18n.Main_UnsupportedURL, serverHost);
-			return;
 		}
 
 		// 서버에 대해 적절한 DOM Handler 탐색
@@ -91,8 +91,6 @@ public partial class Main
 
 	private void Browser_PageError(object? sender, PageErrorEventArgs args)
 	{
-		Log.Error("Browser load error!");
-		Log.Error("Error: {error}", args.ErrorText);
+		Log.Error("Browser load error: {error}", args.ErrorText);
 	}
-
 }

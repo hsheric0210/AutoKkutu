@@ -3,9 +3,9 @@
 namespace AutoKkutuLib.Database.Sql.Migrations;
 internal static class MigrationRegistry
 {
-	internal static IImmutableSet<IMigration> GetMigrations(DbConnectionBase connection)
+	internal static IImmutableList<IMigration> GetMigrations(DbConnectionBase connection)
 	{
-		var builder = ImmutableSortedSet.CreateBuilder(new MigrationComparer());
+		var builder = ImmutableList.CreateBuilder<IMigration>();
 		builder.Add(new AddWordListKkutuWordIndexColumn(connection));
 		builder.Add(new AddWordListReverseWordIndexColumn(connection));
 		builder.Add(new AddWordListSequenceColumn(connection));
@@ -16,6 +16,8 @@ internal static class MigrationRegistry
 		builder.Add(new AddWordListTypeColumn(connection));
 		builder.Add(new AddWordListThemeColumns(connection));
 		builder.Add(new EnlargeWordListFlagsColumnType(connection));
+
+		builder.Sort(new MigrationComparer());
 		return builder.ToImmutable();
 	}
 

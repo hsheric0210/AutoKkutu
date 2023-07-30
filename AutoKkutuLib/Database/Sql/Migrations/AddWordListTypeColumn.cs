@@ -11,7 +11,7 @@ internal class AddWordListTypeColumn : MigrationBase
 	public override bool ConditionMet() => !Db.Query.IsColumnExists(DatabaseConstants.WordTableName, DatabaseConstants.TypeColumnName).Execute();
 	public override void Execute()
 	{
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.TypeColumnName, "INT NOT NULL").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.TypeColumnName, "INT NOT NULL DEFAULT 0").Execute();
 		LibLogger.Warn<AddWordListTypeColumn>("Added type column.");
 	}
 }

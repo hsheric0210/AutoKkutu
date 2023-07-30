@@ -12,10 +12,10 @@ internal class AddWordListThemeColumns : MigrationBase
 	public override void Execute()
 	{
 		// 64-bit * 4 -> total 256-bit bitmask
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn1Name, "BIGINT NOT NULL").Execute();
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn2Name, "BIGINT NOT NULL").Execute();
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn3Name, "BIGINT NOT NULL").Execute();
-		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn4Name, "BIGINT NOT NULL").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn1Name, "BIGINT NOT NULL DEFAULT 0").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn2Name, "BIGINT NOT NULL DEFAULT 0").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn3Name, "BIGINT NOT NULL DEFAULT 0").Execute();
+		Db.Query.AddColumn(DatabaseConstants.WordTableName, DatabaseConstants.ThemeColumn4Name, "BIGINT NOT NULL DEFAULT 0").Execute();
 		LibLogger.Warn<AddWordListThemeColumns>("Added theme columns.");
 	}
 }

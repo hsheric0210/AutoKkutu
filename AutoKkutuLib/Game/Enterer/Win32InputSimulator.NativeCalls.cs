@@ -28,6 +28,7 @@ public partial class Win32InputSimulator
 		vkBuilder.Add('\b', 0x08);
 		vkBuilder.Add('\t', 0x09);
 		vkBuilder.Add('\n', 0x0d);
+		vkBuilder.Add(' ', 0x20);
 		vkBuilder.Add('0', 0x30);
 		vkBuilder.Add('1', 0x31);
 		vkBuilder.Add('2', 0x32);
