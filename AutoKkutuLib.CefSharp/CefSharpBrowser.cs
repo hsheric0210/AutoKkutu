@@ -43,7 +43,6 @@ public class CefSharpBrowser : BrowserBase
 		SetIfAvail(config.UserAgent, s => settings.UserAgent = s);
 		SetIfAvail(config.AcceptLanguageList, s => settings.AcceptLanguageList = s);
 		SetIfAvail(config.Locale, s => settings.Locale = s);
-		SetIfAvail(ReplaceCd(config.UserDataPath), s => settings.UserDataPath = s);
 		SetIfAvail(config.CookieableSchemesList, s => settings.CookieableSchemesList = s);
 		SetIfAvail(ReplaceCd(config.CachePath), s => settings.CachePath = s);
 		SetIfAvail(ReplaceCd(config.RootCachePath), s => settings.RootCachePath = s);

@@ -63,9 +63,6 @@ public class CefConfigDto
 	public bool IgnoreCertificateErrors { get; set; }
 
 	[XmlElement]
-	public string UserDataPath { get; set; }
-
-	[XmlElement]
 	public string CookieableSchemesList { get; set; }
 
 	[XmlElement]

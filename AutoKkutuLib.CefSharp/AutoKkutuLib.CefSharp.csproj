@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CefSharp.Common.NETCore" Version="114.2.120" />
-        <PackageReference Include="CefSharp.Wpf.NETCore" Version="114.2.120" />
+        <PackageReference Include="CefSharp.Common.NETCore" Version="118.6.80" />
+        <PackageReference Include="CefSharp.Wpf.NETCore" Version="118.6.80" />
     </ItemGroup>
 
     <ItemGroup>

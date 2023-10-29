@@ -64,9 +64,6 @@
     <!-- 사이트의 인증서 오류를 무시할지의 여부를 지정합니다. -->
     <IgnoreCertificateErrors>false</IgnoreCertificateErrors>
 
-    <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
-    <UserDataPath>%CURRENTDIR%\CefUserData</UserDataPath>
-
     <CookieableSchemesList></CookieableSchemesList>
 
     <!-- CEF에서 크롬 런타임을 사용할지의 여부를 지정합니다. -->
@@ -91,7 +88,7 @@
     <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
     <CachePath>%CURRENTDIR%\CefUserData</CachePath>
 
-    <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
+    <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
     <RootCachePath>%CURRENTDIR%\CefUserData</RootCachePath>
 
     <!-- 이 옵션은 항상 false이어야 하며, true일 시 오류가 발생합니다. -->
