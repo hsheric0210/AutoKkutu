@@ -1,5 +1,5 @@
 # AutoKkutu - KKutu-Helper 기반 끄투 단어 추천 및 자동 입력기
-[![Build status](https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4/branch/main?svg=true)](https://ci.appveyor.com/project/hsheric0210/autokkutu/branch/main)
+[![Build status](https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4?svg=true)](https://ci.appveyor.com/project/hsheric0210/autokkutu)
 [![Issues](https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg)](https://github.com/hsheric0210/AutoKkutu/issues)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/hsheric0210/AutoKkutu)
 ![GitHub repo size](https://img.shields.io/github/repo-size/hsheric0210/autokkutu)
