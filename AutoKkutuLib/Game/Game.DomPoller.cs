@@ -182,7 +182,6 @@ public partial class Game
 			NotifyGameMode(gameMode, true);
 	}
 
-	// TODO: Return nothing when the current gamemode is 'Free'
 	private async ValueTask<WordCondition> PollWordCondition()
 	{
 		var condition = await domHandler.GetPresentedWord();

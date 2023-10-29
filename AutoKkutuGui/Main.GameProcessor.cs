@@ -125,7 +125,6 @@ public partial class Main
 	private void OnGameEnded(object? sender, EventArgs e)
 	{
 		UpdateSearchState(null, false);
-		AutoKkutu.PathFilter.UnsupportedPaths.Clear(); // todo: move this to lib
 		if (Preference.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);

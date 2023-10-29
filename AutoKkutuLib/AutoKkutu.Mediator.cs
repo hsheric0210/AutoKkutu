@@ -13,6 +13,7 @@ public partial class AutoKkutu
 		game.DiscoverWordHistory += HandleDiscoverWordHistory;
 		game.HintWordPresented += HandleExampleWordPresented;
 		game.RoundChanged += HandleRoundChanged;
+		game.GameEnded += HandleGameEnded;
 		game.UnsupportedWordEntered += HandleUnsupportedWordEntered;
 	}
 
@@ -21,6 +22,7 @@ public partial class AutoKkutu
 		game.DiscoverWordHistory -= HandleDiscoverWordHistory;
 		game.HintWordPresented -= HandleExampleWordPresented;
 		game.RoundChanged -= HandleRoundChanged;
+		game.GameEnded -= HandleGameEnded;
 		game.UnsupportedWordEntered -= HandleUnsupportedWordEntered;
 	}
 
@@ -38,6 +40,12 @@ public partial class AutoKkutu
 	}
 
 	private void HandleRoundChanged(object? sender, EventArgs args) => PathFilter.PreviousPaths.Clear();
+
+	private void HandleGameEnded(object? sender, EventArgs args)
+	{
+		PathFilter.PreviousPaths.Clear();
+		PathFilter.UnsupportedPaths.Clear();
+	}
 
 	private void HandleUnsupportedWordEntered(object? sender, UnsupportedWordEventArgs args)
 	{

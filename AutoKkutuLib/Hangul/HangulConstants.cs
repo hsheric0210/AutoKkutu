@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 
 namespace AutoKkutuLib.Hangul;
 
-// TODO: 중세 자음, 모음 지원
 internal static class HangulConstants
 {
 	/// <summary>

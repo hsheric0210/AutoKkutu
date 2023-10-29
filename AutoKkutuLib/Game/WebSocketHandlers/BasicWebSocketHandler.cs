@@ -5,7 +5,6 @@ using System.Text.Json.Nodes;
 
 namespace AutoKkutuLib.Game.WebSocketHandlers;
 
-// TODO: Move to specialized class library project 'AutoKkutuLib.WsHandlers.JavaScript'
 /// <summary>
 /// '클래식' 모드(끝말잇기, 가운뎃말잇기, 앞말잇기 등)에 대한 쪼리핑의 원 통신 프로토콜에 따른 메세지를 파싱하는 클래스입니다.
 /// 만약 특정 사이트가 이와는 다른 프로토콜을 사용한다면, 이 클래스를하여 속성이나 함수를 수정해 주세요.
@@ -116,7 +115,6 @@ public class BasicWebSocketHandler : IWebSocketHandler
 				json["mission"]?.GetValue<string>() ?? ""));
 	}
 
-	// TODO: 내 바로 이전 사람 턴이 끝남을 감지하고, 그 사람이 입력한 단어에서 내가 입력해야 할 단어의 조건 노드 파싱하기 (두음법칙 적용해서)
 	// TODO: 'BFKKUTU'의 '두음법칙 무시' 조건 감지 - RoomHead에 '두음법칙 무시' 단어가 있는지 DOM 파싱해서 확인
 	public virtual async ValueTask<WsClassicTurnEnd> ParseClassicTurnEnd(JsonNode json)
 	{

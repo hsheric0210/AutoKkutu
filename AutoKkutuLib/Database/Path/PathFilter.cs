@@ -13,7 +13,6 @@ public class PathFilter
 	/// </summary>
 	public ICollection<string> InexistentPaths { get; } = new ConcurrentHashSet<string>();
 
-	// TODO: Move to other class
 	public ICollection<string> NewPaths { get; } = new ConcurrentHashSet<string>();
 
 	public ICollection<(GameMode, string)> NewEndPaths { get; } = new ConcurrentHashSet<(GameMode, string)>();

@@ -156,18 +156,18 @@ public partial class Game
 
 	private void OnWsTypingBattleRoundReady(WsTypingBattleRoundReady data)
 	{
-		// TODO
+		// TODO: Implement Typing-battle websocket handling
 	}
 
 
 	private void OnWsTypingBattleTurnStart(WsTypingBattleTurnStart data)
 	{
-		// TODO
+		// TODO: Implement Typing-battle websocket handling
 	}
 
 
 	private void OnWsTypingBattleTurnEnd(WsTypingBattleTurnEnd data)
 	{
-		// TODO
+		// TODO: Implement Typing-battle websocket handling
 	}
 }

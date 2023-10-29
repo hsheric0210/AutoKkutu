@@ -255,7 +255,6 @@ public partial class MainWindow : Window
 		mainInstance.AutoKkutu.Database.MakeNormal(path.Underlying, mainInstance.AutoKkutu.Game.Session.GameMode);
 	}
 
-	// TODO: Move these duplicate path list writes to Lib.SpecialPathList
 	private void OnPathListQueueExcludedClick(object? sender, RoutedEventArgs e)
 	{
 		var currentSelected = PathList.SelectedItem;

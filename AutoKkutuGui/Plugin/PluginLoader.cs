@@ -32,9 +32,9 @@ internal sealed class PluginLoader
 			{
 				try
 				{
-					// TODO: Is there any security issues?
+					// TODO: Add AMSI scan support to prevent malicious plugins
 					var assembly = Assembly.Load(assemblyFile); // If any error occurs, use LoadFrom() instead.
-					var plg = (IPlugin?)assembly.CreateInstance("Plugin", false);
+					var plg = (IPlugin?)assembly.CreateInstance("PluginMain", false);
 					if (plg == null)
 						throw new FileLoadException($"Plugin instance creation failure - File {assemblyFile} type 'Plugin'");
 

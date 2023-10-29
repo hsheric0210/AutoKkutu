@@ -80,7 +80,7 @@ public abstract class EntererBase : IEnterer
 	// TODO: Rename to 'Send'
 	public void RequestSend(EnterInfo param)
 	{
-		if (string.IsNullOrWhiteSpace(param.Content)) // TODO: Make AutoEnterInfo.content always non-null-able
+		if (string.IsNullOrWhiteSpace(param.Content))
 			throw new ArgumentException("Content to auto-enter is not provided", nameof(param));
 
 		LibLogger.Verbose<EntererBase>("Enter request received: {request}", param);
@@ -170,12 +170,12 @@ public abstract class EntererBase : IEnterer
 		if (valid)
 		{
 			SubmitInput();
-			LibLogger.Info<EntererBase>(I18n.Main_InputSimulationFinished); // TODO: Rename those
+			LibLogger.Info<EntererBase>(I18n.Main_InputSimulationFinished); // TODO: Rename those irrelevent I18n name
 		}
 		else
 		{
 			ClearInput();
-			LibLogger.Warn<EntererBase>(I18n.Main_InputSimulationAborted); // TODO: Rename those
+			LibLogger.Warn<EntererBase>(I18n.Main_InputSimulationAborted); // TODO: Rename those irrelevent I18n name
 		}
 	}
 

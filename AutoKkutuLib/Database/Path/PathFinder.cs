@@ -27,7 +27,7 @@ public class PathFinder
 	public void FindPath(GameMode gameMode, PathDetails param, WordPreference preference)
 	{
 		// TODO: This check could be moved to caller site
-		if (gameMode == GameMode.TypingBattle && !param.HasFlag(PathFlags.DoNotAutoEnter))
+		if (gameMode == GameMode.TypingBattle && !param.HasFlag(PathFlags.DoNotAutoEnter)) // 타자 대결 모드에서는 단어 검색 수행 X (단, 수동 검색의 경우는 제외)
 			return;
 
 		// TODO: This implementation could be moved to caller site

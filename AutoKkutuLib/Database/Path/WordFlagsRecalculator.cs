@@ -36,10 +36,11 @@ internal sealed class WordFlagsRecalculator
 			LibLogger.Warn<NodeManager>(ex, "GetWordFlags: Korean/English matcher timed out.");
 		}
 
-		/* TODO
-		if (themeManager.IsWordInjeong(word))
-			flags |= WordFlags.Injeong;
-		 */
+		// TODO: 어인정 단어
+		//
+		//if (themeManager.IsWordInjeong(word))
+		//	flags |= WordFlags.Injeong;
+		//
 
 		return nodeManager.GetWordNodeFlags(word, flags);
 	}

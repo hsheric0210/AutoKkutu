@@ -17,7 +17,6 @@ public sealed class HangulRecomposer
 		LibLogger.Debug<HangulRecomposer>("Recomposing pieces: {pieces}", string.Join(',', pieces));
 	}
 
-	// TODO: make private
 	// return (<prevSplitModified>, <newSplitGenerated>, <newInputGenerated>)
 	private (HangulSplit, HangulSplit?, InputCommand) Append(HangulSplit prevSplit, InputCommand? lastInput, JamoType jamo, char ch)
 	{
