@@ -22,13 +22,6 @@ AutoKkutu는 끄투 헬퍼 V (KKutu-Helper V) Release v5.6.8500 버전을 개조
 * 사용중인 운영 체제에 맞는 버전(32비트 또는 64비트)를 다운로드 후, 압축을 풀고, AutoKkutuGui.exe 파일을 실행시키면 됩니다.
   * .NET Framework가 설치되어 있지 않을 경우, 이에 대한 설치 요구 메세지가 뜰 수 있습니다.
 
-## 메인 창
-![Idle](Images/MainWindow.idle.drawio.png)
-![InGame](Images/MainWindow.ingame.drawio.png)
-
-## 설정 창
-![ConfigWindow](Images/Configuration.drawio.png)
-
 ## 지원 기능
 
 * 내 턴에 단어 자동 검색
@@ -104,9 +97,35 @@ AutoKkutu는 끄투 헬퍼 V (KKutu-Helper V) Release v5.6.8500 버전을 개조
 * [이름 없는 끄투](https://kkutu.org/)
 * [핑크끄투](https://kkutu.pink/)
 * [BF 끄투](https://bfkkutu.kr/)
-* [끄투코리아](https://kkutu.co.kr/)
+* [끄투코리아](https://kkutu.co.kr/) - 자동 입력 사용 시 단어 입력 방법을 '우회 미사용'으로 설정 시 'game_input' 검사에 의해 감지될 수 있습니다. (참고: https://gitlab.com/-/snippets/2548135)
 * [뮤직끄투](https://musickkutu.xyz/)
-* <s>[끄투리오](https://kkutu.io)</s> - 안티 치트 바이패스 실패
+* [끄투리오](https://kkutu.io) - 자동 입력 사용 시 단어 입력 방법을 반드시 '입력 시뮬레이션, Win32 메시지 기반'으로 설정하실 것을 추천합니다. (참고: https://gitlab.com/-/snippets/2554781)
+
+## 프로그램 실행 모습
+
+### 메인 창
+
+![Idle](Images/MainWindow.idle.drawio.png)
+
+![InGame](Images/MainWindow.ingame.drawio.png)
+
+### 설정 창
+
+![ConfigWindow-Search](Images/Configuration.Search.png)
+
+![ConfigWindow-Priority](Images/Configuration.Priority.drawio.png)
+
+![ConfigWindow-AutoInput](Images/Configuration.AutoInput.png)
+
+![ConfigWindow-AutoInputDelay](Images/Configuration.AutoInputDelay.png)
+
+![ConfigWindow-AutoFix](Images/Configuration.AutoFix.png)
+
+![ConfigWindow-DbAutoUpdate](Images/Configuration.DbAutoUpdate.png)
+
+![ConfigWindow-Bypass](Images/Configuration.Bypass.png)
+
+![ConfigWindow-Color](Images/Configuration.Color.png)
 
 ## 아이콘 출처
 
