@@ -625,7 +625,7 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <Label Grid.Row="1" Grid.Column="0" Content="설정을 초기화하시려면 '%LocalAppdata%\AutoKkutu' 폴더를 삭제해주세요" FontSize="13" />
+        <Label Grid.Row="1" Grid.Column="0" Content="설정을 초기화하시려면 '%LocalAppdata%\AutoKkutuGui' 폴더를 삭제해주세요" FontSize="13" />
         <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,15,15" HorizontalAlignment="Right" Orientation="Horizontal">
             <Button Name="Cancel" Margin="0,0,0,0" Click="OnCancel" Content="취소" IsCancel="True" />
             <Button Name="Submit" Margin="20,0,0,0" Click="OnApply" Content="적용" IsDefault="True" />

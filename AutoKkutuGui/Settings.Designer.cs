@@ -12,7 +12,7 @@ namespace AutoKkutuGui {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.4.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.7.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -528,18 +528,6 @@ namespace AutoKkutuGui {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Win32InputSimulator")]
-        public string AutoEnterMode {
-            get {
-                return ((string)(this["AutoEnterMode"]));
-            }
-            set {
-                this["AutoEnterMode"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool OnlySearchOnMyTurn {
             get {
@@ -571,6 +559,18 @@ namespace AutoKkutuGui {
             }
             set {
                 this["ArduinoBaudrate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Win32InputSimulate")]
+        public string AutoEnterMode {
+            get {
+                return ((string)(this["AutoEnterMode"]));
+            }
+            set {
+                this["AutoEnterMode"] = value;
             }
         }
     }

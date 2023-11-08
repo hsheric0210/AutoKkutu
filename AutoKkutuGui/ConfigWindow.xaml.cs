@@ -83,7 +83,7 @@ public partial class ConfigWindow : Window
 		ArduinoBaudrate.Text = config.ArduinoBaudrate.ToString(CultureInfo.InvariantCulture);
 
 		AutoFix.IsChecked = config.AutoFixEnabled;
-		EnterDelay.SetConfig(new EnterDelayConfig(config.FixDelayEnabled, config.FixStartDelay, config.FixStartDelayRandom, config.FixDelayPerChar, config.FixDelayPerCharRandom));
+		FixDelay.SetConfig(new EnterDelayConfig(config.FixDelayEnabled, config.FixStartDelay, config.FixStartDelayRandom, config.FixDelayPerChar, config.FixDelayPerCharRandom));
 
 		RandomWordSelection.IsChecked = config.RandomWordSelection;
 		RandomWordSelectionCount.Text = config.RandomWordSelectionCount.ToString(CultureInfo.InvariantCulture);
