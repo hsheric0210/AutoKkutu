@@ -1,9 +1,11 @@
 ﻿using AutoKkutuLib.Database.Sql;
 using AutoKkutuLib.Database.Sql.Query;
 using AutoKkutuLib.Postgres.Database.PostgreSql.Query;
+using AutoKkutuLib.Sqlite.Properties;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AutoKkutuLib.Database.Sqlite;
 
@@ -12,6 +14,7 @@ public sealed class SqliteDbConnection : DbConnectionBase
 	private QueryFactory query = null!;
 	public override QueryFactory Query => query;
 	public override string DbType => "SQLite";
+	private const string regexpFileName = "regexp.dll";
 
 	private SqliteDbConnection(SqliteConnection connection) : base(connection) { }
 
@@ -42,11 +45,15 @@ public sealed class SqliteDbConnection : DbConnectionBase
 	{
 		try
 		{
+			if (!File.Exists(regexpFileName))
+				File.WriteAllBytes(regexpFileName, Resources.sqlean_regexp_library);
+
 			// Open the connection
 			var nativeConnection = SqliteDatabaseHelper.OpenConnection(connectionString);
 			var connection = new SqliteDbConnection(nativeConnection);
 			connection.query = new SqliteQueryFactory(connection);
 
+			nativeConnection.LoadExtension(regexpFileName); // 'regexp_like' 명령을 사용하기 위해서 필수적인 라이브러리
 			nativeConnection.CreateFunction<int, int, int, int, int, int, int>(connection.GetWordPriorityFuncName(), WordPriorityFunc, true);
 			nativeConnection.CreateFunction<string, int, string, int, int, int, int, int, int, int, int, int>(connection.GetMissionWordPriorityFuncName(), MissionWordPriorityFunc, true);
 

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
-public partial class Win32InputSimulator
+public partial class NativeInputSimulator
 {
 
 	private static readonly IImmutableDictionary<char, ushort> vkCodeMapping;
@@ -21,7 +21,7 @@ public partial class Win32InputSimulator
 
 	private const uint IMC_GETOPENSTATUS = 0x5;
 
-	static Win32InputSimulator()
+	static NativeInputSimulator()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 		var vkBuilder = ImmutableDictionary.CreateBuilder<char, ushort>();
@@ -113,9 +113,6 @@ public partial class Win32InputSimulator
 
 	[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 	static extern IntPtr SendMessage([In] IntPtr hWnd, [In] uint Msg, [In] IntPtr wParam, [In] IntPtr IParam);
-
-	[DllImport("user32.dll", SetLastError = true)]
-	private static extern uint SendInput(uint numberOfInputs, INPUT[] inputs, int sizeOfInputStructure);
 
 	[DllImport("user32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]

@@ -53,6 +53,25 @@ public struct NodeCount : IEquatable<NodeCount>
 		TotalAttackCount += attack;
 	}
 
+	public NodeCount Combine(NodeCount other)
+	{
+		return new NodeCount()
+		{
+			TotalCount = TotalCount + other.TotalCount,
+			TotalError = TotalError + other.TotalError,
+			TotalEndCount = TotalEndCount + other.TotalEndCount,
+			TotalAttackCount = TotalAttackCount + other.TotalAttackCount,
+			EndCount = EndCount + other.EndCount,
+			AttackCount = AttackCount + other.AttackCount,
+			ReverseEndCount = ReverseEndCount + other.ReverseEndCount,
+			ReverseAttackCount = ReverseAttackCount + other.ReverseAttackCount,
+			KkutuEndCount = KkutuEndCount + other.KkutuEndCount,
+			KkutuAttackCount = KkutuAttackCount + other.KkutuAttackCount,
+			KKTEndCount = KKTEndCount + other.KKTEndCount,
+			KKTAttackCount = KKTAttackCount + other.KKTAttackCount
+		};
+	}
+
 	public override bool Equals(object? obj) => obj is NodeCount count && Equals(count);
 	public bool Equals(NodeCount other) => TotalCount == other.TotalCount
 		&& TotalError == other.TotalError
@@ -87,4 +106,5 @@ public struct NodeCount : IEquatable<NodeCount>
 
 	public static bool operator ==(NodeCount left, NodeCount right) => left.Equals(right);
 	public static bool operator !=(NodeCount left, NodeCount right) => !(left == right);
+	public static NodeCount operator +(NodeCount left, NodeCount right) => left.Combine(right);
 }

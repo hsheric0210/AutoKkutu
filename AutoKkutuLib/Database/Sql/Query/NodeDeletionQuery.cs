@@ -5,6 +5,7 @@ public class NodeDeletionQuery : SqlQuery<int>
 {
 	private readonly string tableName;
 	public string? Node { get; set; }
+	public bool Regexp { get; set; }
 
 	internal NodeDeletionQuery(DbConnectionBase connection, string tableName) : base(connection)
 	{
@@ -13,9 +14,10 @@ public class NodeDeletionQuery : SqlQuery<int>
 		this.tableName = tableName;
 	}
 
-	public int Execute(string node)
+	public int Execute(string node, bool regexp = false)
 	{
 		Node = node;
+		Regexp = regexp;
 		return Execute();
 	}
 
@@ -24,7 +26,18 @@ public class NodeDeletionQuery : SqlQuery<int>
 		if (string.IsNullOrWhiteSpace(Node))
 			throw new InvalidOperationException(nameof(Node) + " not set.");
 
-		var count = Connection.Execute($"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;", new { Node });
+		string query;
+		if (Regexp)
+		{
+			Node = "(?i)" + Node; // Case-insensitive match
+			query = $"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} REGEXP @Node;";
+		}
+		else
+		{
+			query = $"DELETE FROM {tableName} WHERE {DatabaseConstants.WordIndexColumnName} = @Node;";
+		}
+
+		var count = Connection.Execute(query, new { Node });
 		LibLogger.Debug<NodeDeletionQuery>("Deleted {0} of node {1} from database.", count, Node);
 		return count;
 	}

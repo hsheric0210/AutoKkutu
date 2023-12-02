@@ -143,15 +143,31 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 		{
 			var word = parameter.Condition;
 			var wordIndexColumn = GetIndexColumnName(word);
-			param.Add("@PrimaryWord", word.Char);
-			if (word.SubAvailable)
+			if (word.Regexp)
 			{
-				filter = $" WHERE ({wordIndexColumn} = @PrimaryWord OR {wordIndexColumn} = @SecondaryWord)";
-				param.Add("@SecondaryWord", word.SubChar!);
+				// 정규 표현식 검색
+				param.Add("@PrimaryWord", "(?i)" + word.Char); // '(?i) for Case-insensitive match - https://stackoverflow.com/a/43636
+
+				// SQLite: https://github.com/nalgeon/sqlean/blob/main/docs/regexp.md
+				// PostgreSQL: https://www.postgresql.org/docs/current/functions-matching.html
+				// MySQL: https://dev.mysql.com/doc/refman/8.0/en/regexp.html
+				// MariaDB: https://mariadb.com/kb/en/regexp/
+				filter = $" WHERE ({wordIndexColumn} REGEXP @PrimaryWord)";
 			}
 			else
 			{
-				filter = $" WHERE ({wordIndexColumn} = @PrimaryWord)";
+				// 일반적인 검색
+				param.Add("@PrimaryWord", word.Char);
+
+				if (word.SubAvailable)
+				{
+					filter = $" WHERE ({wordIndexColumn} = @PrimaryWord OR {wordIndexColumn} = @SecondaryWord)";
+					param.Add("@SecondaryWord", word.SubChar!);
+				}
+				else
+				{
+					filter = $" WHERE ({wordIndexColumn} = @PrimaryWord)";
+				}
 			}
 
 			// Use end-words?

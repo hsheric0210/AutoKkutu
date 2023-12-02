@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
-public partial class Win32InputSimulator
+public partial class NativeInputSimulator
 {
 	// Sending Keystrokes to Other Apps with Windows API and C# 
 	// ; https://dzone.com/articles/sending-keys-other-apps

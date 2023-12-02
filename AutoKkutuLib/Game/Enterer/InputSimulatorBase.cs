@@ -19,7 +19,7 @@ public abstract class InputSimulatorBase : EntererBase
 		if (semaphore.CurrentCount == 0)
 		{
 			// 최후의 보루: Semaphore 사용해서 여러 입력 작업 동시 진행 방지
-			LibLogger.Warn<InputSimulatorBase>("Semaphore prevented duplicate entering.");
+			LibLogger.Warn(EntererName, "Semaphore prevented duplicate entering.");
 			return;
 		}
 
@@ -47,12 +47,12 @@ public abstract class InputSimulatorBase : EntererBase
 			var startDelay = info.Options.GetStartDelay();
 			await Task.Delay(startDelay, CancelToken);
 
-			LibLogger.Info<InputSimulatorBase>(I18n.Main_InputSimulating, content);
+			LibLogger.Info(EntererName, I18n.Main_InputSimulating, content);
 			game.UpdateChat("");
 
 			foreach (var input in inputList)
 			{
-				LibLogger.Debug<InputSimulatorBase>("Input requested: {ipt}", input);
+				LibLogger.Debug(EntererName, "Input requested: {ipt}", input);
 				if (!CanPerformAutoEnterNow(info.PathInfo, !IsPreinputSimInProg) || CancelToken.IsCancellationRequested)
 				{
 					valid = false; // Abort

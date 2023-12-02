@@ -1,6 +1,4 @@
-﻿using AutoKkutuLib.Database.Sql;
-
-namespace AutoKkutuLib.Database.Sql.Migrations;
+﻿namespace AutoKkutuLib.Database.Sql.Migrations;
 internal class AddWordListKkutuWordIndexColumn : MigrationBase
 {
 	public override string Name => "Add kkutuWordIndex column to word_list";

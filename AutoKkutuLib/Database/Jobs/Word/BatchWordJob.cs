@@ -6,5 +6,5 @@ public abstract class BatchWordJob
 
 	public BatchWordJob(DbConnectionBase dbConnection) => DbConnection = dbConnection;
 
-	public abstract WordCount Execute(string[] wordList);
+	public abstract WordCount Execute(IEnumerable<string> wordList);
 }

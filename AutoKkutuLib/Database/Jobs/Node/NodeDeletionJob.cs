@@ -7,7 +7,7 @@ public sealed class NodeDeletionJob : NodeJob
 
 	public NodeDeletionJob(DbConnectionBase dbConnection, NodeTypes nodeTypes) : base(dbConnection) => this.nodeTypes = nodeTypes;
 
-	public void Delete(string node)
+	public override void Execute(string node)
 	{
 		if (string.IsNullOrWhiteSpace(node))
 			return;

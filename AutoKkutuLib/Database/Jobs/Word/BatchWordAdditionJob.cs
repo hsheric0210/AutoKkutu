@@ -18,7 +18,7 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 		this.verifyOnline = verifyOnline;
 	}
 
-	public override WordCount Execute(string[] wordList)
+	public override WordCount Execute(IEnumerable<string> wordList)
 	{
 		if (wordList == null)
 			throw new ArgumentNullException(nameof(wordList));

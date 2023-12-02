@@ -18,7 +18,7 @@ public static class NodeBatchJobExtension
 				if (!string.IsNullOrWhiteSpace(node))
 				{
 					LibLogger.Info(nameof(NodeBatchJobExtension), "Processing {0}.", node);
-					job.Add(node);
+					job.Execute(node);
 				}
 			}
 			transaction.Commit();
@@ -49,7 +49,7 @@ public static class NodeBatchJobExtension
 				if (!string.IsNullOrWhiteSpace(node))
 				{
 					LibLogger.Info(nameof(NodeBatchJobExtension), "Processing {0}.", node);
-					job.Delete(node);
+					job.Execute(node);
 				}
 			}
 			transaction.Commit();

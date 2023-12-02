@@ -1,5 +1,4 @@
-﻿using AutoKkutuLib.Database.Sql;
-using Dapper;
+﻿using Dapper;
 
 namespace AutoKkutuLib.Database.Sql.Migrations;
 internal class ConvertWordListEndWordColumnToFlags : MigrationBase

@@ -30,16 +30,23 @@ public readonly struct WordCondition
 	/// </summary>
 	public string MissionChar { get; }
 
-	public WordCondition(string content, string substitution = "", string missionChar = "")
+	/// <summary>
+	/// 단어 검색 조건이 정규 표현식을 포함하는지의 여부를 나타냅니다.
+	/// </summary>
+	public bool Regexp { get; }
+
+	public WordCondition(string content, string substitution = "", string missionChar = "", bool regexp = false)
 	{
 		Char = content;
 		SubChar = substitution;
 		MissionChar = missionChar;
+		Regexp = regexp;
 	}
 
 	public override bool Equals(object? obj) => obj is WordCondition other
 		&& string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
 		&& string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase)
+		&& Regexp == other.Regexp
 		&& (!SubAvailable || string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
 
 	/// <summary>
@@ -58,10 +65,11 @@ public readonly struct WordCondition
 		if (IsEmpty() || other.IsEmpty())
 			return false;
 		return MissionChar == other.MissionChar
-		&& (string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
-			|| SubAvailable && string.Equals(SubChar, other.Char, StringComparison.OrdinalIgnoreCase)
-			|| other.SubAvailable && string.Equals(Char, other.SubChar, StringComparison.OrdinalIgnoreCase)
-			|| SubAvailable && other.SubAvailable && string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
+			&& Regexp == other.Regexp
+			&& (string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
+				|| SubAvailable && string.Equals(SubChar, other.Char, StringComparison.OrdinalIgnoreCase)
+				|| other.SubAvailable && string.Equals(Char, other.SubChar, StringComparison.OrdinalIgnoreCase)
+				|| SubAvailable && other.SubAvailable && string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>
@@ -69,12 +77,15 @@ public readonly struct WordCondition
 	/// </summary>
 	public bool IsEmpty() => string.IsNullOrEmpty(Char);
 
-	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar);
+	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar, Regexp);
 
 	public override string ToString()
 	{
 		var builder = new StringBuilder();
-		builder.Append("WordCondition{Char: ").Append(Char);
+		builder.Append("WordCondition");
+		if (Regexp)
+			builder.Append("(regex)");
+		builder.Append("{Char: ").Append(Char);
 		if (SubAvailable)
 			builder.Append(", SubChar: ").Append(SubChar);
 		if (!string.IsNullOrEmpty(MissionChar))
