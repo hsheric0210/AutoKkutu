@@ -331,6 +331,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0">
                                 <Grid.RowDefinitions>
@@ -381,7 +382,7 @@
                                     </Grid.ColumnDefinitions>
                                     <CheckBox Name="AutoEnterInputSimulateJavaScriptSendKeys" Grid.Column="0" Content="키 입력 이벤트 전송" IsChecked="True" ToolTip="단어 입력 시 사이트 측에 JavaScript 키보드 키 다운/업 이벤트를 전송합니다." />
                                     <Separator Grid.Column="1" />
-                                    <Label Grid.Column="2" Content="{Binding ElementName=AutoEnterInputSimulateJavaScriptSendKeys, Path=ToolTip}" ToolTip="입력 시 JavaScript 'keydown', 'keyup' 이벤트 발생을 시뮬레이트합니다. *기본* 입력 로깅 구현에 대해 우회 가능하나, 'input' 이벤트에 대한 로깅은 우회할 수 없습니다." />
+                                    <Label Grid.Column="2" Content="{Binding ElementName=AutoEnterInputSimulateJavaScriptSendKeys, Path=ToolTip}" ToolTip="입력 시 JavaScript 'keydown', 'keyup' 이벤트 발생을 시뮬레이트합니다.&#xD;&#xA;쪼리핑의 원본 끄투의 입력 로깅 알고리즘은 우회 가능하나, JavaScript 'input' 이벤트에 대한 로깅은 우회할 수 없습니다." />
                                 </Grid>
                             </Grid>
                             <Grid Grid.Row="2">
@@ -390,9 +391,9 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <RadioButton Name="AutoEnterInputSimulateWin32" Grid.Column="0" Content="입력 시뮬레이션, Win32 메시지 기반" GroupName="InputSimulateBypass" ToolTip="Windows OS단에서 SendInput() 함수를 사용하여 키보드 입력 메시지를 브라우저에 직접 전달합니다." />
+                                <RadioButton Name="AutoEnterInputSimulateWin32" Grid.Column="0" Content="입력 시뮬레이션, Windows 유저 모드, SendInput 기반" GroupName="InputSimulateBypass" ToolTip="Windows OS단에서 SendInput() 함수를 사용하여 키보드 입력 메시지를 브라우저에 직접 전달합니다." />
                                 <Separator Grid.Column="1" Margin="5,0,5,0" />
-                                <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateWin32, Path=ToolTip}" ToolTip="잠재적인 모든 '이상 입력' 감지 메커니즘을 우회할 수 있으나, 실행 시 입력할 때 자동으로 브라우저 창, 채팅창이 포커스됩니다. AutoHotKey 등 여러 매크로가 사용하는 방식과 동일합니다." />
+                                <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateWin32, Path=ToolTip}" ToolTip="브라우저 단의 모든 '이상 입력' 감지 메커니즘을 우회할 수 있습니다.&#xD;&#xA;실행 시 입력할 때 자동으로 브라우저 창, 채팅창이 포커스됩니다.&#xD;&#xA;AutoHotKey, AutoIt 등 여러 매크로가 사용하는 방식과 동일합니다." />
                             </Grid>
                             <Grid Grid.Row="3">
                                 <Grid.RowDefinitions>
@@ -407,9 +408,43 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <RadioButton Name="AutoEnterInputSimulateArduino" Grid.Column="0" Content="입력 시뮬레이션, 아두이노 기반" GroupName="InputSimulateBypass" ToolTip="아두이노의 USB 키보드 지원을 이용하여 키보드 입력을 시뮬레이트합니다." />
+                                    <RadioButton Name="AutoEnterInputSimulateInterception" Grid.Column="0" Content="입력 시뮬레이션, Windows 커널 모드, Interception 드라이버 기반" GroupName="InputSimulateBypass" ToolTip="Windows OS 커널 단에서 Inteception 드라이버를 사용하여 키보드 입력 신호를 발생시킵니다." />
                                     <Separator Grid.Column="1" Margin="5,0,5,0" />
-                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateArduino, Path=ToolTip}" ToolTip="Arduion Micro / Arduion Leonardo 와 같은 Keyboard 라이브러리를 지원하는 아두이노 (또는 호환 보드)가 필요합니다. 지원 보드 목록: https://www.arduino.cc/reference/en/libraries/keyboard/" />
+                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateInterception, Path=ToolTip}" ToolTip="브라우저 단의 모든 '이상 입력' 감지 메커니즘과 몇몇 유저 모드 단의 안티 치트 등을 우회할 수 있습니다.&#xD;&#xA;실행 시 입력할 때 자동으로 브라우저 창, 채팅창이 포커스됩니다.&#xD;&#xA;해당 드라이버는 BattlEye, EasyAC와 같은 몇몇 온라인 게임 안티 치트와 충돌을 일으킬 수 있으며, 그럴 경우 해당 드라이버를 삭제하시면 됩니다." />
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="30,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Name="InstallInterception" Grid.Column="0" MinWidth="80" MinHeight="25" Margin="10,0,10,0" Padding="10,0,10,0" Content="Interception 설치" ToolTip="Interception 드라이버를 설치합니다." />
+                                    <Separator Grid.Column="1" />
+                                    <TextBlock Grid.Column="2" Style="{StaticResource SettingTextBlockStyle}" Text="키보드 #" />
+                                    <TextBox Name="InterceptionKeyboardId" Grid.Column="3" MinWidth="40" MinHeight="25" Style="{StaticResource SettingBaseTextBoxStyle}" Text="1" ToolTip="추천 단어 목록에 출력되는 단어의 최대 갯수를 조정합니다." />
+                                    <Separator Grid.Column="4" />
+                                    <Label Grid.Column="5" Content="Interception 설정" />
+                                </Grid>
+                            </Grid>
+                            <Grid Grid.Row="4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton Name="AutoEnterInputSimulateArduino" Grid.Column="0" Content="입력 시뮬레이션, 아두이노 기반" GroupName="InputSimulateBypass" ToolTip="아두이노를 통한 USB 키보드 에뮬레이션을 이용하여 키보드 입력을 시뮬레이트합니다." />
+                                    <Separator Grid.Column="1" Margin="5,0,5,0" />
+                                    <Label Grid.Column="3" Content="{Binding ElementName=AutoEnterInputSimulateArduino, Path=ToolTip}" ToolTip="이론적으로 절대 감지 불가능한 방식입니다.&#xD;&#xA;Arduino Micro / Arduino Leonardo 와 같은 Keyboard 라이브러리를 지원하는 아두이노 (또는 호환 보드)가 필요합니다.&#xD;&#xA;지원 보드 목록: https://www.arduino.cc/reference/en/libraries/keyboard/" />
                                 </Grid>
                                 <Grid Grid.Row="1" Margin="30,0,0,0">
                                     <Grid.ColumnDefinitions>

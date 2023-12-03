@@ -86,7 +86,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Label Grid.Row="0" Content="데이터베이스 관리" FontSize="20" Style="{StaticResource BaseLabelStyle}" />
-            <Label Grid.Row="1" Content="데이터베이스 작업 중에는 단어 검색과 같은 다른 작업을 수행할 수 없습니다." Style="{StaticResource BaseLabelStyle}" />
+            <Label Grid.Row="1" Content="데이터베이스 작업 중에는 단어 검색과 같은 다른 작업들을 수행할 수 없습니다." Style="{StaticResource BaseLabelStyle}" />
             <Grid Grid.Row="2" Margin="5,5,5,5" Background="#2d2d30">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -210,7 +210,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Content="노드 일괄 추가/제거" FontSize="18" Foreground="#FFFFFFFF" Style="{StaticResource BaseLabelStyle}" />
-                <Label Grid.Row="1" Content="경고: 수동 추가는 검증 절차를 걸치지 않습니다&#xD;&#xA;추가를 끝내고 밑의 검증 버튼을 꼭 눌러주세요" Style="{StaticResource BaseLabelStyle}" />
+                <Label Grid.Row="1" Content="경고: 추가 또는 제거된 노드가 실제로 적용되려면 데이터베이스 검증 작업이 필수적입니다.&#xD;&#xA;추가 또는 제거 작업을 끝내고 밑의 검증 버튼을 꼭 눌러주세요" Style="{StaticResource BaseLabelStyle}" />
                 <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -291,7 +291,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="데이터베이스 검증" FontSize="18" Style="{StaticResource BaseLabelStyle}" />
-                <Label Grid.Row="1" Grid.Column="0" Content="데이터베이스의 모든 단어를 다시 검증합니다." Style="{StaticResource BaseLabelStyle}" />
+                <Label Grid.Row="1" Grid.Column="0" Content="데이터베이스의 모든 단어 및 노드들을 다시 검증하고&#xD;&#xA;찾은 문제점들을 자동으로 수정합니다." Style="{StaticResource BaseLabelStyle}" />
                 <Button Name="CheckDB_Start" Grid.Row="1" Grid.Column="1" Click="CheckDB_Start_Click" Content="검증" Style="{StaticResource BaseButtonStyle}" />
                 <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource GroupGridStyle}">
                     <Grid.ColumnDefinitions>
@@ -302,7 +302,7 @@
                     <CheckBox Name="Use_OnlineDic" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Content="온라인 검증" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" Foreground="#FFFFFFFF" IsEnabled="False" Style="{StaticResource GroupCheckboxStyle}" />
                 </Grid>
             </Grid>
-            <Label Grid.Row="2" Content="SQLite 데이터베이스 사용 시, 기본 데이터베이스 파일 이름은 'path.sqlite'로,&#xD;&#xA;프로그램 실행 파일과 동일한 폴더에 저장됩니다." FontSize="10" Foreground="#808080" Style="{StaticResource BaseLabelStyle}" />
+            <Label Grid.Row="2" Content="SQLite 데이터베이스 사용 시, 기본 데이터베이스 파일 이름은 'path.sqlite'로,&#xD;&#xA;프로그램 실행 파일과 동일한 폴더에 저장됩니다.&#xD;&#xA;데이터베이스 연결 문자열 및 서버별 데이터베이스 설정은 Servers.xml에서 하실 수 있습니다." FontSize="10" Foreground="#808080" Style="{StaticResource BaseLabelStyle}" />
         </Grid>
     </Grid>
 </Window>
