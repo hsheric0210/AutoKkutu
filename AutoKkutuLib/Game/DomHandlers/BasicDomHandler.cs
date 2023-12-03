@@ -139,7 +139,7 @@ public class BasicDomHandler : IDomHandler
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.FunctionsRegistered)))
 		{
 			var script = mapping.ApplyTo(LibResources.baseDomHandlerJs);
-			LibLogger.Warn<BasicDomHandler>("baseHandler injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
+			LibLogger.Debug<BasicDomHandler>("baseHandler injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
 		}
 	}
 }

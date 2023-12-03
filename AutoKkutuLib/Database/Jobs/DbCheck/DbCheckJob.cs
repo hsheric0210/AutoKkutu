@@ -32,8 +32,9 @@ public class DbCheckJob
 			{
 				new DeduplicateWordTableJob(Db),
 				new RefreshNodeListJob(nodeManager),
-				new WordTableCheck(nodeManager),
 				new InvalidEndNodeCheck(Db),
+				new RefreshNodeListJob(nodeManager),
+				new WordTableCheck(nodeManager),
 				new RunVacuumJob(Db)
 			};
 			try

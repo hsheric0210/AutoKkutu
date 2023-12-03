@@ -8,14 +8,7 @@ internal class RefreshNodeListJob : DbCheckSubtaskBase
 
 	protected override int RunCore()
 	{
-		try
-		{
-			nodeManager.LoadNodeLists(Db);
-		}
-		catch (Exception ex)
-		{
-			LibLogger.Error<DbCheckJob>(ex, "Failed to refresh node lists");
-		}
+		nodeManager.LoadNodeLists(Db);
 		return 0;
 	}
 

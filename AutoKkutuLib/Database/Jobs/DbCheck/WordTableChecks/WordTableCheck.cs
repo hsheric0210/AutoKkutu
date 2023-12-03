@@ -42,7 +42,7 @@ internal class WordTableCheck : DbCheckSubtaskBase
 			count += innerCount;
 		}
 		transaction.Commit();
-		return 0;
+		return count;
 	}
 
 	public override void BriefResult()

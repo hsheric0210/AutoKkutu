@@ -12,7 +12,7 @@ internal class DeduplicateWordTableJob : DbCheckSubtaskBase
 		try
 		{
 			removed = Db.Query.Deduplicate().Execute();
-			LibLogger.Info(CheckName, "Removed {0} duplicate word entries.", removed);
+			LibLogger.Debug(CheckName, "Removed {0} duplicate word entries.", removed);
 		}
 		catch (Exception ex)
 		{

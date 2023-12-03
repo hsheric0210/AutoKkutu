@@ -1,6 +1,7 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Database.Sql.Query;
+using System.Data;
 
 namespace AutoKkutuLib.Database.Jobs.Word;
 public sealed class BatchWordAdditionJob : BatchWordJob
@@ -9,13 +10,15 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 	private readonly BrowserBase? browser;
 	private readonly WordFlags wordFlags;
 	private readonly bool verifyOnline;
+	private readonly bool transactioned;
 
-	public BatchWordAdditionJob(NodeManager nodeManager, BrowserBase? browser, WordFlags wordFlags, bool verifyOnline) : base(nodeManager.DbConnection)
+	public BatchWordAdditionJob(NodeManager nodeManager, BrowserBase? browser, WordFlags wordFlags, bool verifyOnline, bool transactioned = true) : base(nodeManager.DbConnection)
 	{
 		this.nodeManager = nodeManager;
 		this.browser = browser;
 		this.wordFlags = wordFlags;
 		this.verifyOnline = verifyOnline;
+		this.transactioned = transactioned;
 	}
 
 	public override WordCount Execute(IEnumerable<string> wordList)
@@ -24,9 +27,11 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 			throw new ArgumentNullException(nameof(wordList));
 
 		var count = new WordCount();
+		IDbTransaction? transaction = null;
 		try
 		{
-			using var transaction = DbConnection.BeginTransaction(); // This will increase addition speed, especially on SQLite
+			if (transactioned)
+				transaction = DbConnection.BeginTransaction(); // This will increase addition speed, especially on SQLite
 			var query = DbConnection.Query.AddWord();
 			foreach (var word in wordList)
 			{
@@ -45,11 +50,15 @@ public sealed class BatchWordAdditionJob : BatchWordJob
 					AddSingleWord(query, word, wordFlags, ref count);
 			}
 
-			transaction.Commit();
+			transaction?.Commit();
 		}
 		catch (Exception ex)
 		{
 			LibLogger.Error<BatchWordAdditionJob>(ex, "Failed to perform batch word addition.");
+		}
+		finally
+		{
+			transaction?.Dispose();
 		}
 		return count;
 	}

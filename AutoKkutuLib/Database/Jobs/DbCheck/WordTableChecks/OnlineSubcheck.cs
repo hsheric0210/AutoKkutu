@@ -24,7 +24,7 @@ internal class OnlineSubcheck : IWordTableSubcheck
 
 	public int Fix(DbConnectionBase db)
 	{
-		var job = new BatchWordDeletionJob(db);
+		var job = new BatchWordDeletionJob(db, false);
 		return job.Execute(inexistentList).TotalCount;
 	}
 }

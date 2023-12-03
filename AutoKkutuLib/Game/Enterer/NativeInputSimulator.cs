@@ -43,31 +43,16 @@ public abstract partial class NativeInputSimulator : InputSimulatorBase
 
 	protected async override ValueTask AppendAsync(EnterOptions options, InputCommand input)
 	{
-		ushort vkCode;
-		if (input.Type == InputCommandType.ImeCompositionTermination)
-		{
-			vkCode = VK_RIGHT;
-		}
-		else if (vkCodeMapping.TryGetValue(input.Key, out var vk))
-		{
-			vkCode = vk;
-		}
-		else
-		{
-			LibLogger.Warn(EntererName, "VkCode not found for character {char}", input.Key);
-			return;
-		}
-
 		// Shift키
 		if (shiftState && input.ShiftState == ShiftState.Release)
 		{
-			KeyUp(VK_RSHIFT);
+			KeyPress(SPECIAL_RSHIFT);
 			shiftState = false;
 			LibLogger.Debug(EntererName, "Shift released.");
 		}
 		else if (!shiftState && input.ShiftState == ShiftState.Press)
 		{
-			KeyDown(VK_RSHIFT);
+			KeyDown(SPECIAL_RSHIFT);
 			shiftState = true;
 			LibLogger.Debug(EntererName, "Shift pressed.");
 		}
@@ -75,20 +60,19 @@ public abstract partial class NativeInputSimulator : InputSimulatorBase
 		// IME 상태 업데이트
 		if (hangulImeState && input.ImeState == ImeState.English)
 		{
-			KeyDown(VK_HANGUL);
-			KeyUp(VK_HANGUL);
+			KeyPress(SPECIAL_HANGUL);
 			hangulImeState = false;
 			LibLogger.Debug(EntererName, "IME state changed to English.");
 		}
 		else if (!hangulImeState && input.ImeState == ImeState.Korean)
 		{
-			KeyDown(VK_HANGUL);
-			KeyUp(VK_HANGUL);
+			KeyPress(SPECIAL_HANGUL);
 			hangulImeState = true;
 			LibLogger.Debug(EntererName, "IME state changed to Korean.");
 		}
 
-		KeyDown(vkCode);
+		var ch = input.Type == InputCommandType.ImeCompositionTermination ? SPECIAL_RIGHT : input.Key;
+		KeyDown(ch);
 		if (options.GetMaxDelayBeforeNextChar() > 0)
 		{
 			SetFocus();
@@ -97,7 +81,7 @@ public abstract partial class NativeInputSimulator : InputSimulatorBase
 
 		await Task.Delay(options.GetDelayBeforeKeyUp());
 
-		KeyUp(vkCode);
+		KeyUp(ch);
 		if (options.GetMaxDelayBeforeNextChar() > 0)
 		{
 			SetFocus();

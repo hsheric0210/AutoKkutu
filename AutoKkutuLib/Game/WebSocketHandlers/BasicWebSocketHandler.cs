@@ -42,7 +42,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 		if (!await Browser.EvaluateJavaScriptBoolAsync(Browser.GetScriptTypeName(CommonNameRegistry.WebSocketHelperRegistered)))
 		{
 			var script = helperMapping.ApplyTo(LibResources.baseWebSocketHelperJs);
-			LibLogger.Warn<BasicWebSocketHandler>("WebSocket Helper injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
+			LibLogger.Debug<BasicWebSocketHandler>("WebSocket Helper injection result: {result}", await Browser.EvaluateJavaScriptRawAsync(script));
 		}
 	}
 

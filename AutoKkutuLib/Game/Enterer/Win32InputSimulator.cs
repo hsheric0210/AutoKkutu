@@ -1,12 +1,13 @@
 ﻿using AutoKkutuLib.Hangul;
 using System.Runtime.InteropServices;
+using static AutoKkutuLib.Game.Enterer.NativeInputSimulator;
 
 namespace AutoKkutuLib.Game.Enterer;
-public class Win32InputSimulator : NativeInputSimulator
+public partial class Win32InputSimulator : NativeInputSimulator
 {
 	public const string Name = "Win32InputSimulate";
 
-	private IList<INPUT> inputList = new List<INPUT>();
+	private readonly IList<INPUT> inputList = new List<INPUT>();
 
 	public Win32InputSimulator(IGame game) : base(Name, game)
 	{
@@ -29,57 +30,34 @@ public class Win32InputSimulator : NativeInputSimulator
 		}
 	}
 
-	protected override void SubmitInput()
+	private void AddInput(char ch, uint flags)
 	{
-		KeyPress(vkCodeMapping['\n']);
-		FlushInputBuffer();
-	}
-
-	protected override void ClearInput()
-	{
-		// Select all (CTRL+A)
-		KeyDown(VK_LCTRL);
-		KeyPress(vkCodeMapping['a']);
-		KeyUp(VK_LCTRL);
-
-		// Delete
-		KeyPress(vkCodeMapping['\b']);
-		FlushInputBuffer();
-	}
-
-	private void KeyPress(ushort vkCode)
-	{
-		KeyDown(vkCode);
-		KeyUp(vkCode);
-	}
-
-	private void KeyDown(ushort vkCode)
-	{
-		var input = new INPUT { Type = 1 };
-		input.Data.Keyboard = new KEYBDINPUT
+		if (vkCodeMapping.TryGetValue(ch, out var vkCode))
 		{
-			Vk = vkCode,
-			Scan = GetScanCode(vkCode),
-			Flags = 0,
-			Time = 0,
-			ExtraInfo = IntPtr.Zero
-		};
+			var input = new INPUT { Type = 1 };
+			input.Data.Keyboard = new KEYBDINPUT
+			{
+				Vk = vkCode,
+				Scan = GetScanCode(vkCode),
+				Flags = flags, // 0 to down, 2 to up
+				Time = 0,
+				ExtraInfo = IntPtr.Zero
+			};
 
-		inputList.Add(input);
+			inputList.Add(input);
+			return;
+		}
+
+		LibLogger.Warn(EntererName, "VkCode not found for character {char}", ch);
 	}
 
-	private void KeyUp(ushort vkCode)
+	protected override void KeyPress(char ch)
 	{
-		var input = new INPUT { Type = 1 };
-		input.Data.Keyboard = new KEYBDINPUT
-		{
-			Vk = vkCode,
-			Scan = GetScanCode(vkCode),
-			Flags = 2,
-			Time = 0,
-			ExtraInfo = IntPtr.Zero
-		};
-
-		inputList.Add(input);
+		KeyDown(ch);
+		KeyUp(ch);
 	}
+
+	protected override void KeyUp(char ch) => AddInput(ch, 2);
+
+	protected override void KeyDown(char ch) => AddInput(ch, 0);
 }

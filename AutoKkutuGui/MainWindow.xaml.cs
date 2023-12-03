@@ -446,11 +446,13 @@ public partial class MainWindow : Window
 				missionChar = mainInstance.AutoKkutu.Game.Session.WordCondition.MissionChar;
 
 			mainInstance.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
-				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "")),
+				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "", regexp: RegexpSearch.IsChecked ?? false)),
 				mainInstance.SetupPathFinderFlags(PathFlags.DoNotAutoEnter | PathFlags.DoNotCheckExpired),
 				mainInstance.Preference.ReturnModeEnabled,
 				mainInstance.Preference.MaxDisplayedWordCount), mainInstance.Preference.ActiveWordPreference);
-			SearchField.Text = "";
+
+			if (!(RegexpSearch.IsChecked ?? false)) // 힘들게 적은 정규표현식을 지워버리는 것 만큼 빡치는 일도 없음
+				SearchField.Text = "";
 		}
 	}
 }

@@ -152,7 +152,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 				// PostgreSQL: https://www.postgresql.org/docs/current/functions-matching.html
 				// MySQL: https://dev.mysql.com/doc/refman/8.0/en/regexp.html
 				// MariaDB: https://mariadb.com/kb/en/regexp/
-				filter = $" WHERE ({wordIndexColumn} REGEXP @PrimaryWord)";
+				filter = $" WHERE ({DatabaseConstants.WordColumnName} REGEXP @PrimaryWord)";
 			}
 			else
 			{

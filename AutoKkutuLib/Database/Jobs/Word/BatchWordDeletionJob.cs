@@ -1,11 +1,12 @@
 ﻿using AutoKkutuLib.Database.Sql.Query;
+using System.Data;
 
 namespace AutoKkutuLib.Database.Jobs.Word;
 public sealed class BatchWordDeletionJob : BatchWordJob
 {
-	public BatchWordDeletionJob(DbConnectionBase dbConnection) : base(dbConnection)
-	{
-	}
+	private readonly bool transactioned;
+
+	public BatchWordDeletionJob(DbConnectionBase dbConnection, bool transactioned = true) : base(dbConnection) => this.transactioned = transactioned;
 
 	public override WordCount Execute(IEnumerable<string> wordList)
 	{
@@ -14,9 +15,11 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 
 		var count = new WordCount();
 
+		IDbTransaction? transaction = null;
 		try
 		{
-			var transaction = DbConnection.BeginTransaction();
+			if (transactioned)
+				transaction = DbConnection.BeginTransaction();
 			var query = DbConnection.Query.DeleteWord();
 			foreach (var word in wordList)
 			{
@@ -24,11 +27,15 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 					count.Increment(WordFlags.None, 1);
 			}
 
-			transaction.Commit();
+			transaction?.Commit();
 		}
 		catch (Exception ex)
 		{
-			LibLogger.Error<BatchWordDeletionJob>(ex, "Failed to commit word addition queries to the database.");
+			LibLogger.Error<BatchWordDeletionJob>(ex, "Failed to commit word deletion queries to the database.");
+		}
+		finally
+		{
+			transaction?.Dispose();
 		}
 
 		return count;

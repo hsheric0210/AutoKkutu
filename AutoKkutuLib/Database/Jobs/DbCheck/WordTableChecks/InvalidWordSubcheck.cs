@@ -41,7 +41,7 @@ internal class InvalidWordSubcheck : IWordTableSubcheck
 
 	public int Fix(DbConnectionBase db)
 	{
-		var job = new BatchWordDeletionJob(db);
+		var job = new BatchWordDeletionJob(db, false);
 		return job.Execute(invalidList).TotalCount;
 	}
 }

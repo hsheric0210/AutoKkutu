@@ -5,7 +5,11 @@ internal class RunVacuumJob : DbCheckSubtaskBase
 	{
 	}
 
-	protected override int RunCore() => Db.Query.Vacuum().Execute();
+	protected override int RunCore()
+	{
+		Db.Query.Vacuum().Execute();
+		return 0;
+	}
 
 	public override void BriefResult() { }
 }
