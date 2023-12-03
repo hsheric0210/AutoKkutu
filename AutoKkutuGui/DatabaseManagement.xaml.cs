@@ -34,7 +34,7 @@ public partial class DatabaseManagement : Window
 
 		var wordList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.Database) : new BatchWordAdditionJob(autoKkutu.NodeManager, autoKkutu.Browser, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
+		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.Database, regexp: options.HasFlag(BatchJobOptions.Regexp)) : new BatchWordAdditionJob(autoKkutu.NodeManager, autoKkutu.Browser, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
 	}
 
 	private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
@@ -161,9 +161,11 @@ public partial class DatabaseManagement : Window
 	{
 		var mode = BatchJobOptions.None;
 
-		// Remove
-		if (Batch_Remove.IsChecked ?? false)
+		if (Batch_Mode_Remove.IsSelected || Batch_Mode_Remove_Regexp.IsSelected)
 			mode |= BatchJobOptions.Remove;
+
+		if (Batch_Mode_Remove_Regexp.IsSelected)
+			mode |= BatchJobOptions.Regexp;
 
 		// Verify-before-Add
 		if (Batch_Verify.IsChecked ?? false)
@@ -230,6 +232,7 @@ public partial class DatabaseManagement : Window
 	{
 		None = 0 << 0,
 		Remove = 1 << 0,
-		Verify = 1 << 1
+		Verify = 1 << 1,
+		Regexp = 1 << 2
 	}
 }

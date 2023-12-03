@@ -23,7 +23,10 @@ public static class SqliteDatabaseHelper
 			{
 				var connection = SqliteDbConnection.Create(externalSQLiteFilePath);
 				if (connection == null)
+				{
 					LibLogger.Error(nameof(SqliteDatabaseHelper), "Failed to open SQLite connection");
+					return;
+				}
 
 				var args = new SQLiteImportArgs { destination = targetDatabase, source = connection };
 				var WordCount = LogImportProcess("Import words", () => ImportWordsFromExternalSQLite(args));

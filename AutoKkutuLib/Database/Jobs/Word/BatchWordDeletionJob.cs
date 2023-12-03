@@ -5,8 +5,13 @@ namespace AutoKkutuLib.Database.Jobs.Word;
 public sealed class BatchWordDeletionJob : BatchWordJob
 {
 	private readonly bool transactioned;
+	private readonly bool regexp;
 
-	public BatchWordDeletionJob(DbConnectionBase dbConnection, bool transactioned = true) : base(dbConnection) => this.transactioned = transactioned;
+	public BatchWordDeletionJob(DbConnectionBase dbConnection, bool transactioned = true, bool regexp = false) : base(dbConnection)
+	{
+		this.transactioned = transactioned;
+		this.regexp = regexp;
+	}
 
 	public override WordCount Execute(IEnumerable<string> wordList)
 	{
@@ -49,7 +54,7 @@ public sealed class BatchWordDeletionJob : BatchWordJob
 		try
 		{
 			LibLogger.Info<BatchWordAdditionJob>("Removing {word} from database...", word);
-			return query.Execute(word) > 0;
+			return query.Execute(word, regexp) > 0;
 		}
 		catch (Exception ex)
 		{

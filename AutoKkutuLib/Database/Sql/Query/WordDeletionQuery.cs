@@ -24,7 +24,7 @@ public class WordDeletionQuery : SqlQuery<int>
 		string query;
 		if (Regexp)
 		{
-			Word = "(?i)" + Word;
+			Word = "(?i)^" + Word + '$';
 			query = $"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.WordColumnName} REGEXP @Word;";
 		}
 		else

@@ -146,7 +146,9 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 			if (word.Regexp)
 			{
 				// 정규 표현식 검색
-				param.Add("@PrimaryWord", "(?i)" + word.Char); // '(?i) for Case-insensitive match - https://stackoverflow.com/a/43636
+				// '(?i) for Case-insensitive match - https://stackoverflow.com/a/43636
+				// '^' means start of the string, '$' means end of the string
+				param.Add("@PrimaryWord", "(?i)^" + word.Char + '$');
 
 				// SQLite: https://github.com/nalgeon/sqlean/blob/main/docs/regexp.md
 				// PostgreSQL: https://www.postgresql.org/docs/current/functions-matching.html

@@ -11,6 +11,6 @@ public class DeduplicationQuery : SqlQuery<int>
 	public override int Execute()
 	{
 		LibLogger.Debug<DeduplicationQuery>($"Deduplicating the table {DatabaseConstants.WordTableName}.");
-		return Connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE seq IN (SELECT seq FROM (SELECT seq, ROW_NUMBER() OVER w as rnum FROM {DatabaseConstants.WordTableName} WINDOW w AS (PARTITION BY word ORDER BY seq)) t WHERE t.rnum > 1);");
+		return Connection.Execute($"DELETE FROM {DatabaseConstants.WordTableName} WHERE {DatabaseConstants.SequenceColumnName} IN (SELECT {DatabaseConstants.SequenceColumnName} FROM (SELECT {DatabaseConstants.SequenceColumnName}, ROW_NUMBER() OVER w as rnum FROM {DatabaseConstants.WordTableName} WINDOW w AS (PARTITION BY {DatabaseConstants.WordColumnName} ORDER BY {DatabaseConstants.SequenceColumnName})) t WHERE t.rnum > 1);");
 	}
 }
