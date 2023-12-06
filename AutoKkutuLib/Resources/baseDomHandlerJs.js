@@ -29,6 +29,15 @@
         }
     }
 
+    if (!___getWordLength___) {
+        ___getWordLength___ = function () {
+            if (!___wordLengthDisplay___)
+                ___wordLengthDisplay___ = ___getElementsByClassName___.call(document, 'jjo-display-word-length')[0];
+
+            return ___wordLengthDisplay___?.textContent?.substring(1, 2) || '3'
+        }
+    }
+
     if (!___isMyTurn___) {
         ___isMyTurn___ = function () {
             if (!___myInputDisplay___)

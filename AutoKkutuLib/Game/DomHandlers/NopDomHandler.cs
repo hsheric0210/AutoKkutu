@@ -15,11 +15,13 @@ public sealed class NopDomHandler : IDomHandler
 	#region Handler implementation
 	public ValueTask<bool> GetIsMyTurn() => ValueTask.FromResult(false);
 
-	public ValueTask<string> GetPresentedWord() => ValueTask.FromResult<string>("");
+	public ValueTask<string> GetPresentedWord() => ValueTask.FromResult("");
+
+	public ValueTask<int> GetWordLength() => ValueTask.FromResult(3);
 
 	public ValueTask<int> GetRoundIndex() => ValueTask.FromResult(0);
 
-	public ValueTask<string> GetUnsupportedWord() => ValueTask.FromResult<string>("");
+	public ValueTask<string> GetUnsupportedWord() => ValueTask.FromResult("");
 
 	public ValueTask<GameMode> GetGameMode() => ValueTask.FromResult(GameMode.LastAndFirst);
 
@@ -27,9 +29,9 @@ public sealed class NopDomHandler : IDomHandler
 
 	public ValueTask<float> GetRoundTime() => ValueTask.FromResult(300f);
 
-	public ValueTask<string> GetExampleWord() => ValueTask.FromResult<string>("");
+	public ValueTask<string> GetExampleWord() => ValueTask.FromResult("");
 
-	public ValueTask<string> GetMissionChar() => ValueTask.FromResult<string>("");
+	public ValueTask<string> GetMissionChar() => ValueTask.FromResult("");
 
 	public ValueTask<IImmutableList<string>> GetWordInHistories() => ValueTask.FromResult<IImmutableList<string>>(ImmutableList<string>.Empty);
 	public ValueTask<int> GetTurnIndex() => ValueTask.FromResult(-1);

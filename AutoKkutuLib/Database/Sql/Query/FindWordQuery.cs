@@ -129,6 +129,10 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 				if (word.Char.Length == 2 || word.SubAvailable && word.SubChar!.Length == 2)
 					return DatabaseConstants.KkutuWordIndexColumnName;
 				break;
+
+			case GameMode.Jaqwi:
+			case GameMode.Hunmin:
+				return DatabaseConstants.ChoseongColumnName;
 		}
 		return DatabaseConstants.WordIndexColumnName;
 	}
@@ -181,8 +185,13 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 				ApplyExclusionFilter(attackWordFlag, ref filter);
 
 			// Only KungKungTta words if we're on KungKungTta mode
-			if (mode == GameMode.KungKungTta) // TODO: 3232-mode -> check KKT3 and KKT2
-				filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)WordFlags.KKT3} != 0)";
+			if (mode == GameMode.KungKungTta)
+			{
+				var flag = WordFlags.KKT3;
+				if (word.WordLength == 2)
+					flag = WordFlags.KKT2;
+				filter += $" AND ({DatabaseConstants.FlagsColumnName} & {(int)flag} != 0)";
+			}
 		}
 		var orderPriority = $"({CreateWordPriorityFuncCall(parameter.Condition.MissionChar, param)} + LENGTH({DatabaseConstants.WordColumnName}))";
 

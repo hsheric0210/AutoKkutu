@@ -112,7 +112,8 @@ public class BasicWebSocketHandler : IWebSocketHandler
 			new WordCondition(
 				json["char"]?.GetValue<string>() ?? "",
 				json["subChar"]?.GetValue<string>() ?? "",
-				json["mission"]?.GetValue<string>() ?? ""));
+				json["mission"]?.GetValue<string>() ?? "",
+				json["wordLength"]?.GetValue<int>() ?? 3));
 	}
 
 	// TODO: 'BFKKUTU'의 '두음법칙 무시' 조건 감지 - RoomHead에 '두음법칙 무시' 단어가 있는지 DOM 파싱해서 확인

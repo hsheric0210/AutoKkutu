@@ -61,16 +61,38 @@ namespace AutoKkutuGui.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;!-- If you messed up with this file and want to restore defaults, just delete and re-run the program. --&gt;
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+        ///&lt;themes&gt;
+        ///    &lt;theme ordinal=&quot;1&quot; id=&quot;10&quot; name=&quot;가톨릭&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;2&quot; id=&quot;20&quot; name=&quot;건설&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;3&quot; id=&quot;30&quot; name=&quot;경제&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;4&quot; id=&quot;40&quot; name=&quot;고적&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;5&quot; id=&quot;50&quot; name=&quot;고유&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;6&quot; id=&quot;60&quot; name=&quot;공업&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;7&quot; id=&quot;70&quot; name=&quot;광업&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;8&quot; id=&quot;80&quot; name=&quot;교육&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;9&quot; id=&quot;90&quot; name=&quot;교통&quot; /&gt;
+        ///    &lt;theme ordinal=&quot;10&quot; id=&quot;100&quot; name=&quot;군사&quot; /&gt;
+        ///    &lt;the [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string DefaultThemes {
+            get {
+                return ResourceManager.GetString("DefaultThemes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+        ///&lt;!-- If you messed up with this file and want to restore defaults, just delete and re-run the program. --&gt;
         ///&lt;servers&gt;
         ///    &lt;default&gt;
         ///        &lt;!-- Supported DOM Handlers: BasisHandler, BasicBypassHandler --&gt;
-        ///        &lt;domHandler&gt;BasicHandler&lt;/domHandler&gt;
+        ///        &lt;domHandler&gt;BasicDomHandler&lt;/domHandler&gt;
         ///
         ///        &lt;!-- Supported WebSocket Handlers: BasicHandler, RioDecodeHandler --&gt;
-        ///        &lt;webSocketHandler&gt;BasicHandler&lt;/webSocketHandler&gt;
+        ///        &lt;webSocketHandler&gt;BasicWebSocketHandler&lt;/webSocketHandler&gt;
         ///
-        ///        &lt;!-- Supported database types (case insensitive): SQLite, PostgreSQL(postgres, pgsql), MySQL(MariaDB) --&gt;        /// [rest of string was truncated]&quot;;.
+        ///        &lt;!-- Supported database types (case insensitive): SQL [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Servers {
             get {

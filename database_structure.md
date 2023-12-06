@@ -40,21 +40,21 @@
 
 #### 열 설명
 
-|열 이름|설명|
-|---:|:---|
-|seq|단어 번호; 매 단어 추가마다 증가됨|
-|word|단어|
-|word_index|단어 인덱스|
-|reverse_word_index|리버스 단어 인덱스 (앞말잇기용)|
-|kkutu_word_index|끄투 단어 인덱스 (끄투용)|
-|type|단어의 종류 (명사, 동사, 형용사, ...) (현재 사용되지 않음)|
-|theme_1|테마 비트마스크 1 (현재 사용되지 않음)|
-|theme_2|테마 비트마스크 2 (현재 사용되지 않음)|
-|theme_3|테마 비트마스크 3 (현재 사용되지 않음)|
-|theme_4|테마 비트마스크 4 (현재 사용되지 않음)|
-|choseong|단어 초성<br>한글 단어일 경우 초성만, 영어 단어일 경우 단어 전체가 저장됩니다|
-|meaning|단어 의미 (현재 사용되지 않음)|
-|flags|단어 속성 비트마스크 (끝말잇기 한방 단어, 앞말잇기 공격 단어, 가운뎃말잇기 한방 단어, ...)|
+|열 이름|타입|설명|
+|---:|---:|:---|
+|seq|INT, PRIMARY KEY, AUTOINCREMENT|단어 번호; 매 단어 추가마다 증가됨|
+|word|VARCHAR(256)|단어|
+|word_index|CHAR(1)|단어 인덱스|
+|reverse_word_index|CHAR(1)|리버스 단어 인덱스 (앞말잇기용)|
+|kkutu_word_index|VARCHAR(2)|끄투 단어 인덱스 (끄투용)|
+|type|INT|단어의 종류 (명사, 동사, 형용사, ...) (현재 사용되지 않음)|
+|theme_1|BIGINT|테마 비트마스크 1 (현재 사용되지 않음)|
+|theme_2|BIGINT|테마 비트마스크 2 (현재 사용되지 않음)|
+|theme_3|BIGINT|테마 비트마스크 3 (현재 사용되지 않음)|
+|theme_4|BIGINT|테마 비트마스크 4 (현재 사용되지 않음)|
+|choseong|VARCHAR(256)|단어 초성<br>한글 단어일 경우 초성만, 영어 단어일 경우 단어 전체가 저장됩니다|
+|meaning|TEXT|단어 의미 (현재 사용되지 않음)|
+|flags|INT|단어 속성 비트마스크 (끝말잇기 한방 단어, 앞말잇기 공격 단어, 가운뎃말잇기 한방 단어, ...)|
 
 #### 단어의 종류
 
@@ -117,7 +117,7 @@
 
 어쩌다가 쿵쿵따 한방단어와 공격단어 비트 사이에 한국어, 영어 비트가 끼어들어가버린 걸까...
 
-### endword_list, attackword_list, reverse_endword_list, reverse_attackword_list, kkutu_endword_list, kkutu_attackword_list, kkt_endword_list, kkt_attackword_list
+### endword_list, attackword_list, reverse_endword_list, reverse_attackword_list, kkt_endword_list, kkt_attackword_list
 
 예시:
 
@@ -127,6 +127,20 @@
 
 #### 열 설명
 
-|열 이름|설명|
-|---:|:---|
-|word_index|노드|
+|열 이름|타입|설명|
+|---:|---:|:---|
+|word_index|CHAR(1)|노드|
+
+### kkutu_endword_list, kkutu_attackword_list
+
+예시:
+
+|word_index|
+|:---:|
+|스림|
+
+#### 열 설명
+
+|열 이름|타입|설명|
+|---:|---:|:---|
+|word_index|VARCHAR(2)|노드|

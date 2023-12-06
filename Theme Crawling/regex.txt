@@ -1,0 +1,9 @@
+# Dumped from L element (localization) - JSON
+
+From: "theme_([\w]+)": "(.+)",
+To: <theme ordinal="1" id="$1" name="$2" />
+
+# Dumped from messages.properties - Java Properties
+
+From: word.theme.([\w]+)=(.+)
+To: <theme ordinal="1" id="$1" name="$2" />

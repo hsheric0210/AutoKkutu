@@ -16,6 +16,7 @@ public interface IDomHandler
 	ValueTask<bool> GetIsMyTurn();
 	ValueTask<string> GetMissionChar();
 	ValueTask<string> GetPresentedWord();
+	ValueTask<int> GetWordLength();
 	ValueTask<int> GetRoundIndex();
 	ValueTask<float> GetRoundTime();
 	ValueTask<float> GetTurnTime();

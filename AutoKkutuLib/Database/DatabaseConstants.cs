@@ -143,6 +143,7 @@ public static class DatabaseConstants
 
 	public const string ErrorGetColumnType = "Failed to get the data type of column '{0}' in table '{1}'";
 
+	public const int ThemeColumnCount = 4;
 	public const int MaxWordLength = 256;
 	public const int MaxWordPriorityLength = 131072; // 256(Max db word length) * 256(Max mission char count per word) * 2(For correct result)
 }

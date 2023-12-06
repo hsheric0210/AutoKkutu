@@ -218,4 +218,8 @@ public enum CommonNameRegistry
 	GetUserId,
 
 	GetGameSeq,
+
+	GetWordLength,
+
+	WordLengthDisplayCache
 }

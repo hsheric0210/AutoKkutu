@@ -46,7 +46,17 @@ public enum GameMode
 	/// <summary>
 	/// 자유 끝말잇기
 	/// </summary>
-	LastAndFirstFree
+	LastAndFirstFree,
+
+	/// <summary>
+	/// 자음퀴즈
+	/// </summary>
+	Jaqwi,
+
+	/// <summary>
+	/// 훈민정음
+	/// </summary>
+	Hunmin
 }
 
 public enum GameImplMode

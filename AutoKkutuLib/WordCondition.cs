@@ -31,15 +31,22 @@ public readonly struct WordCondition
 	public string MissionChar { get; }
 
 	/// <summary>
+	/// 쿵쿵따 모드에서 입력할 단어의 길이입니다.
+	/// 반드시 2 또는 3 둘 중 하나여야 합니다.
+	/// </summary>
+	public int WordLength { get; }
+
+	/// <summary>
 	/// 단어 검색 조건이 정규 표현식을 포함하는지의 여부를 나타냅니다.
 	/// </summary>
 	public bool Regexp { get; }
 
-	public WordCondition(string content, string substitution = "", string missionChar = "", bool regexp = false)
+	public WordCondition(string content, string substitution = "", string missionChar = "", int wordLength = 3, bool regexp = false)
 	{
 		Char = content;
 		SubChar = substitution;
 		MissionChar = missionChar;
+		WordLength = wordLength;
 		Regexp = regexp;
 	}
 
@@ -47,6 +54,7 @@ public readonly struct WordCondition
 		&& string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
 		&& string.Equals(MissionChar, other.MissionChar, StringComparison.OrdinalIgnoreCase)
 		&& Regexp == other.Regexp
+		&& WordLength == other.WordLength
 		&& (!SubAvailable || string.Equals(SubChar, other.SubChar, StringComparison.OrdinalIgnoreCase));
 
 	/// <summary>
@@ -66,6 +74,7 @@ public readonly struct WordCondition
 			return false;
 		return MissionChar == other.MissionChar
 			&& Regexp == other.Regexp
+			&& WordLength == other.WordLength
 			&& (string.Equals(Char, other.Char, StringComparison.OrdinalIgnoreCase)
 				|| SubAvailable && string.Equals(SubChar, other.Char, StringComparison.OrdinalIgnoreCase)
 				|| other.SubAvailable && string.Equals(Char, other.SubChar, StringComparison.OrdinalIgnoreCase)
@@ -77,7 +86,7 @@ public readonly struct WordCondition
 	/// </summary>
 	public bool IsEmpty() => string.IsNullOrEmpty(Char);
 
-	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar, Regexp);
+	public override int GetHashCode() => HashCode.Combine(Char, SubAvailable, SubChar, MissionChar, WordLength, Regexp);
 
 	public override string ToString()
 	{
@@ -90,6 +99,8 @@ public readonly struct WordCondition
 			builder.Append(", SubChar: ").Append(SubChar);
 		if (!string.IsNullOrEmpty(MissionChar))
 			builder.Append(", MissionChar: ").Append(MissionChar);
+		if (WordLength != 3) // not default value
+			builder.Append(", WordLength: ").Append(WordLength);
 		return builder.Append('}').ToString();
 	}
 

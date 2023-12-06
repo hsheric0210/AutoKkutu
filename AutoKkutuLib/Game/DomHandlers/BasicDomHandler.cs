@@ -21,6 +21,7 @@ public class BasicDomHandler : IDomHandler
 		var names = BrowserRandomNameMapping.BaseJs(browser);
 		names.GenerateScriptType("___getGameMode___", CommonNameRegistry.GameMode);
 		names.GenerateScriptType("___getPresentWord___", CommonNameRegistry.PresentedWord);
+		names.GenerateScriptType("___getWordLength___", CommonNameRegistry.GetWordLength);
 		names.GenerateScriptType("___isMyTurn___", CommonNameRegistry.IsMyTurn);
 		names.GenerateScriptType("___getTurnError___", CommonNameRegistry.TurnError);
 		names.GenerateScriptType("___getTurnTime___", CommonNameRegistry.TurnTime);
@@ -43,6 +44,7 @@ public class BasicDomHandler : IDomHandler
 		// cache properties
 		names.GenerateScriptType("___roomHeadMode___", CommonNameRegistry.RoomHeadModeCache);
 		names.GenerateScriptType("___gameDisplay___", CommonNameRegistry.GameDisplayCache);
+		names.GenerateScriptType("___wordLengthDisplay___", CommonNameRegistry.WordLengthDisplayCache);
 		names.GenerateScriptType("___myInputDisplay___", CommonNameRegistry.MyInputDisplayCache);
 		names.GenerateScriptType("___turnTimeDisplay___", CommonNameRegistry.TurnTimeDisplayCache);
 		names.GenerateScriptType("___roundTimeDisplay___", CommonNameRegistry.RoundTimeDisplayCache);
@@ -59,6 +61,8 @@ public class BasicDomHandler : IDomHandler
 	public virtual async ValueTask<bool> GetIsMyTurn() => await Browser.EvaluateJavaScriptBoolAsync(GetScriptNoArgFunctionName(CommonNameRegistry.IsMyTurn), errorMessage: nameof(GetIsMyTurn));
 
 	public virtual async ValueTask<string> GetPresentedWord() => await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.PresentedWord), errorPrefix: nameof(GetPresentedWord));
+
+	public virtual async ValueTask<int> GetWordLength() => int.TryParse(await Browser.EvaluateJavaScriptAsync(GetScriptNoArgFunctionName(CommonNameRegistry.GetWordLength), errorPrefix: nameof(GetWordLength)), out var length) ? length : 3;
 
 	public virtual async ValueTask<int> GetRoundIndex() => await Browser.EvaluateJavaScriptIntAsync(GetScriptNoArgFunctionName(CommonNameRegistry.RoundIndex), errorPrefix: nameof(GetRoundIndex));
 

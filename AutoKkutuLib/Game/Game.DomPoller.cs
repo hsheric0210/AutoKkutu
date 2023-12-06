@@ -192,12 +192,16 @@ public partial class Game
 
 		string cChar;
 		var cSubChar = string.Empty;
+		var wordLength = 3;
 		if (condition.Contains('(') && condition.Last() == ')')
 		{
 			var parentheseStartIndex = condition.IndexOf('(');
 			var parentheseEndIndex = condition.IndexOf(')');
 			cChar = condition[..parentheseStartIndex];
 			cSubChar = condition.Substring(parentheseStartIndex + 1, parentheseEndIndex - parentheseStartIndex - 1);
+
+			if (Session.GameMode == GameMode.KungKungTta)
+				wordLength = await domHandler.GetWordLength();
 		}
 		else if (condition.Length <= 1)
 		{
@@ -214,13 +218,19 @@ public partial class Game
 				return WordCondition.Empty;
 			}
 
-			return (WordCondition)converted;
+			var converted2 = (WordCondition)converted;
+
+			if (Session.GameMode == GameMode.KungKungTta)
+				wordLength = await domHandler.GetWordLength();
+			wordLength = wordLength == 3 ? 2 : 3; // 3232 모드에서는 상대가 3이면 그 다음 사람은 2, 그 다음 사람이 2이면 그 다음다음 사람은 3 이 반복됨
+
+			return new WordCondition(converted2.Char, converted2.SubChar, converted2.MissionChar, wordLength);
 		}
 		else
 		{
 			return WordCondition.Empty;
 		}
 
-		return new WordCondition(cChar, cSubChar, missionChar);
+		return new WordCondition(cChar, cSubChar, missionChar, wordLength);
 	}
 }
