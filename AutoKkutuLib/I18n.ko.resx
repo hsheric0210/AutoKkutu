@@ -149,11 +149,20 @@
   <data name="GameMode_All" xml:space="preserve">
     <value>전체</value>
   </data>
+  <data name="GameMode_All_English" xml:space="preserve">
+    <value>영어 전체</value>
+  </data>
+  <data name="GameMode_All_Korean" xml:space="preserve">
+    <value>한국어 전체</value>
+  </data>
   <data name="GameMode_FirstAndLast" xml:space="preserve">
     <value>앞말잇기</value>
   </data>
   <data name="GameMode_Free" xml:space="preserve">
     <value>자유</value>
+  </data>
+  <data name="GameMode_HunMin" xml:space="preserve">
+    <value>훈민정음</value>
   </data>
   <data name="GameMode_Kkutu" xml:space="preserve">
     <value>끄투</value>

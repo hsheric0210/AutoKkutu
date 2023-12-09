@@ -97,15 +97,18 @@ public class BasicWebSocketHandler : IWebSocketHandler
 			"EAW" or "KAW" => GameMode.Free,
 			"EJH" or "KJH" => GameMode.LastAndFirstFree,
 			"ETY" or "KTY" => GameMode.TypingBattle,
-			"KAD" or "EAD" => GameMode.All,
+			"KEA" => GameMode.All,
+			"KAD" => GameMode.AllKorean,
+			"EAD" => GameMode.AllEnglish,
+			"HUN" => GameMode.Hunmin,
 			_ => GameMode.None
 		};
-		return new WsRoom(modeString, mode, players, gaming, gameSeq);
+		return new(modeString, mode, players, gaming, gameSeq);
 	}
 
 	public virtual async ValueTask<WsClassicTurnStart> ParseClassicTurnStart(JsonNode json)
 	{
-		return new WsClassicTurnStart(
+		return new(
 			json["turn"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turn"),
 			json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"),
 			json["turnTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turnTime"),
@@ -130,7 +133,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 	public virtual async ValueTask<WsTurnError> ParseClassicTurnError(JsonNode json)
 	{
 		return new(
-			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("TurnError", "code"),
+			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("turnError", "code"),
 			json["value"]?.GetValue<string>());
 	}
 
@@ -143,6 +146,37 @@ public class BasicWebSocketHandler : IWebSocketHandler
 	public virtual async ValueTask<WsTypingBattleTurnStart> ParseTypingBattleTurnStart(JsonNode json) => new(json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"));
 
 	public virtual async ValueTask<WsTypingBattleTurnEnd> ParseTypingBattleTurnEnd(JsonNode json) => new(json["ok"]?.GetValue<bool>() ?? false);
+	public virtual async ValueTask<WsHunminRoundReady> ParseHunminRoundReady(JsonNode json)
+	{
+		return new(
+		json["round"]?.GetValue<int>() ?? throw InvalidWsMessage("roundReady", "round"),
+		new WordCondition(
+			json["theme"]?.GetValue<string>() ?? throw InvalidWsMessage("roundReady", "theme"),
+			json["mission"]?.GetValue<string>() ?? ""));
+	}
+
+	public virtual async ValueTask<WsHunminTurnStart> ParseHunminTurnStart(JsonNode json)
+	{
+		return new(
+			json["turn"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turn"),
+			json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"),
+			json["turnTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turnTime"),
+			json["mission"]?.GetValue<string>() ?? "");
+	}
+
+	public virtual async ValueTask<WsHunminTurnEnd> ParseHunminTurnEnd(JsonNode json)
+	{
+		return new(
+			json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"),
+			json["hint"]?.GetValue<string>() ?? "");
+	}
+
+	public virtual async ValueTask<WsHunminTurnError> ParseHunminTurnError(JsonNode json)
+	{
+		return new(
+			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("turnError", "code"),
+			json["value"]?.GetValue<string>());
+	}
 
 	public virtual void OnWebSocketMessage(JsonNode json) { }
 

@@ -95,3 +95,55 @@ public class WsTypingBattleTurnEnd
 		Ok = ok;
 	}
 }
+
+public class WsHunminRoundReady
+{
+	public int Round { get; }
+	public WordCondition Condition { get; }
+
+	public WsHunminRoundReady(int round, WordCondition condition)
+	{
+		Round = round;
+		Condition = condition;
+	}
+}
+
+public class WsHunminTurnStart
+{
+	public int Turn { get; }
+	public long RoundTime { get; }
+	public long TurnTime { get; }
+	public string? Mission { get; }
+
+	public WsHunminTurnStart(int turn, long roundTime, long turnTime, string? mission)
+	{
+		Turn = turn;
+		RoundTime = roundTime;
+		TurnTime = turnTime;
+		Mission = mission;
+	}
+}
+
+public class WsHunminTurnEnd
+{
+	public bool Ok { get; }
+	public string Hint { get; }
+
+	public WsHunminTurnEnd(bool ok, string hint)
+	{
+		Ok = ok;
+		Hint = hint;
+	}
+}
+
+public class WsHunminTurnError
+{
+	public TurnErrorCode Code { get; }
+	public string? Value { get; }
+
+	public WsHunminTurnError(TurnErrorCode code, string? value)
+	{
+		Code = code;
+		Value = value;
+	}
+}

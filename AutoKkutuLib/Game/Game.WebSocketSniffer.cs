@@ -56,7 +56,15 @@ public partial class Game
 				[webSocketHandler.MessageType_RoundReady] = SimpleHandler("roundReady", OnWsTypingBattleRoundReady, webSocketHandler.ParseTypingBattleRoundReady),
 				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turnStart", OnWsTypingBattleTurnStart, webSocketHandler.ParseTypingBattleTurnStart),
 				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnEnd", OnWsTypingBattleTurnEnd, webSocketHandler.ParseTypingBattleTurnEnd),
-			}
+			},
+			[GameImplMode.Hunmin] = new Dictionary<string, Func<JsonNode, Task>>
+			{
+				[webSocketHandler.MessageType_RoundReady] = SimpleHandler("roundReady", OnWsHunminRoundReady, webSocketHandler.ParseHunminRoundReady),
+				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turnStart", OnWsHunminTurnStart, webSocketHandler.ParseHunminTurnStart),
+				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnEnd", OnWsHunminTurnEnd, webSocketHandler.ParseHunminTurnEnd),
+				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnError", OnWsHunminTurnError, webSocketHandler.ParseHunminTurnError),
+			},
+
 		};
 		Browser.WebSocketMessage += OnWebSocketMessage;
 	}
@@ -169,5 +177,25 @@ public partial class Game
 	private void OnWsTypingBattleTurnEnd(WsTypingBattleTurnEnd data)
 	{
 		// TODO: Implement Typing-battle websocket handling
+	}
+
+	private void OnWsHunminRoundReady(WsHunminRoundReady data)
+	{
+
+	}
+
+	private void OnWsHunminTurnStart(WsHunminTurnStart data)
+	{
+
+	}
+
+	private void OnWsHunminTurnEnd(WsHunminTurnEnd data)
+	{
+
+	}
+
+	private void OnWsHunminTurnError(WsHunminTurnError data)
+	{
+
 	}
 }

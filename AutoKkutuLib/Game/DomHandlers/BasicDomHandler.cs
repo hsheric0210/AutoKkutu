@@ -93,6 +93,12 @@ public class BasicDomHandler : IDomHandler
 				case "전체":
 					return GameMode.All;
 
+				case "한국어 전체":
+					return GameMode.AllKorean;
+
+				case "영어 전체":
+					return GameMode.AllEnglish;
+
 				case "자유":
 					return GameMode.Free;
 
@@ -101,6 +107,9 @@ public class BasicDomHandler : IDomHandler
 
 				case "타자 대결":
 					return GameMode.TypingBattle;
+
+				case "훈민정음":
+					return GameMode.Hunmin;
 
 				default:
 					LibLogger.Warn<BasicDomHandler>("Unsupported game mode: {gameMode}", gameMode);

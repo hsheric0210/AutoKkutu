@@ -39,6 +39,16 @@ public enum GameMode
 	All,
 
 	/// <summary>
+	/// 한국어 전체
+	/// </summary>
+	AllKorean,
+
+	/// <summary>
+	/// 영어 전체
+	/// </summary>
+	AllEnglish,
+
+	/// <summary>
 	/// 자유
 	/// </summary>
 	Free,
@@ -47,11 +57,6 @@ public enum GameMode
 	/// 자유 끝말잇기
 	/// </summary>
 	LastAndFirstFree,
-
-	/// <summary>
-	/// 자음퀴즈
-	/// </summary>
-	Jaqwi,
 
 	/// <summary>
 	/// 훈민정음
@@ -70,7 +75,12 @@ public enum GameImplMode
 	/// <summary>
 	/// 타자 대결
 	/// </summary>
-	TypingBattle
+	TypingBattle,
+
+	/// <summary>
+	/// 훈민정음
+	/// </summary>
+	Hunmin
 }
 
 public static class GameImplModeExtension
@@ -88,6 +98,7 @@ public static class GameImplModeExtension
 			or GameMode.Free
 			or GameMode.LastAndFirstFree => GameImplMode.Classic,
 			GameMode.TypingBattle => GameImplMode.TypingBattle,
+			GameMode.Hunmin => GameImplMode.Hunmin,
 			_ => GameImplMode.None,
 		};
 	}

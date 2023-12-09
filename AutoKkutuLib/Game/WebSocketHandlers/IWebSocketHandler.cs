@@ -21,6 +21,10 @@ public interface IWebSocketHandler
 	ValueTask<WsTypingBattleTurnEnd> ParseTypingBattleTurnEnd(JsonNode json);
 	ValueTask<WsTypingBattleTurnStart> ParseTypingBattleTurnStart(JsonNode json);
 	ValueTask<WsWelcome> ParseWelcome(JsonNode json);
+	ValueTask<WsHunminRoundReady> ParseHunminRoundReady(JsonNode json);
+	ValueTask<WsHunminTurnStart> ParseHunminTurnStart(JsonNode json);
+	ValueTask<WsHunminTurnEnd> ParseHunminTurnEnd(JsonNode json);
+	ValueTask<WsHunminTurnError> ParseHunminTurnError(JsonNode json);
 	ValueTask RegisterInGameFunctions(ISet<int> alreadyRegistered);
 	ValueTask RegisterWebSocketFilter();
 }

@@ -130,7 +130,6 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 					return DatabaseConstants.KkutuWordIndexColumnName;
 				break;
 
-			case GameMode.Jaqwi:
 			case GameMode.Hunmin:
 				return DatabaseConstants.ChoseongColumnName;
 		}

@@ -168,11 +168,20 @@
   <data name="GameMode_All" xml:space="preserve">
     <value>All words</value>
   </data>
+  <data name="GameMode_All_English" xml:space="preserve">
+    <value>All English</value>
+  </data>
+  <data name="GameMode_All_Korean" xml:space="preserve">
+    <value>All Korean</value>
+  </data>
   <data name="GameMode_FirstAndLast" xml:space="preserve">
     <value>First and Last</value>
   </data>
   <data name="GameMode_Free" xml:space="preserve">
     <value>Free</value>
+  </data>
+  <data name="GameMode_HunMin" xml:space="preserve">
+    <value>Hunminjeongeum</value>
   </data>
   <data name="GameMode_Kkutu" xml:space="preserve">
     <value>Kkutu</value>

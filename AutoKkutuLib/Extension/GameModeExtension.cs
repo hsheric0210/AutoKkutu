@@ -90,8 +90,11 @@ public static class GameModeExtension
 		GameMode.KungKungTta => I18n.GameMode_KungKungTta,
 		GameMode.TypingBattle => I18n.GameMode_TypingBattle,
 		GameMode.All => I18n.GameMode_All,
+		GameMode.AllKorean => I18n.GameMode_All_Korean,
+		GameMode.AllEnglish => I18n.GameMode_All_English,
 		GameMode.Free => I18n.GameMode_Free,
 		GameMode.LastAndFirstFree => I18n.GameMode_LastAndFirstFree,
+		GameMode.Hunmin => I18n.GameMode_HunMin,
 		_ => null,
 	};
 }

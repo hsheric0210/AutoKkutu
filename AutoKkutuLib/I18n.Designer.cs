@@ -196,6 +196,24 @@ namespace AutoKkutuLib {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All English.
+        /// </summary>
+        public static string GameMode_All_English {
+            get {
+                return ResourceManager.GetString("GameMode_All_English", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All Korean.
+        /// </summary>
+        public static string GameMode_All_Korean {
+            get {
+                return ResourceManager.GetString("GameMode_All_Korean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to First and Last.
         /// </summary>
         public static string GameMode_FirstAndLast {
@@ -210,6 +228,15 @@ namespace AutoKkutuLib {
         public static string GameMode_Free {
             get {
                 return ResourceManager.GetString("GameMode_Free", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hunminjeongeum.
+        /// </summary>
+        public static string GameMode_HunMin {
+            get {
+                return ResourceManager.GetString("GameMode_HunMin", resourceCulture);
             }
         }
         

@@ -427,13 +427,22 @@ public partial class MainWindow : Window
 					gameMode = GameMode.KungKungTta;
 					break;
 				case 6:
-					gameMode = GameMode.All;
+					gameMode = GameMode.AllKorean;
 					break;
 				case 7:
-					gameMode = GameMode.Free;
+					gameMode = GameMode.AllEnglish;
 					break;
 				case 8:
+					gameMode = GameMode.All;
+					break;
+				case 9:
+					gameMode = GameMode.Free;
+					break;
+				case 10:
 					gameMode = GameMode.LastAndFirstFree;
+					break;
+				case 11:
+					gameMode = GameMode.Hunmin;
 					break;
 				default:
 					gameMode = mainInstance.AutoKkutu.Game.Session.GameMode;

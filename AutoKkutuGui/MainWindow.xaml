@@ -171,9 +171,12 @@
                                 <ComboBoxItem>가운뎃말잇기</ComboBoxItem>
                                 <ComboBoxItem>끄투</ComboBoxItem>
                                 <ComboBoxItem>쿵쿵따</ComboBoxItem>
+                                <ComboBoxItem>한국어 전체</ComboBoxItem>
+                                <ComboBoxItem>영어 전체</ComboBoxItem>
                                 <ComboBoxItem>전체</ComboBoxItem>
                                 <ComboBoxItem>자유</ComboBoxItem>
                                 <ComboBoxItem>자유 끝말잇기</ComboBoxItem>
+                                <ComboBoxItem>훈민정음</ComboBoxItem>
                             </ComboBox>
                             <TextBox x:Name="SearchMissionChar" Grid.Row="2" Grid.Column="1" Margin="2,0,15,10" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
                             <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,0,10,0" Padding="10,0,10,10" Text="미션 단어">
