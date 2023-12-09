@@ -14,7 +14,7 @@ public interface IWebSocketHandler
 
 	void OnWebSocketMessage(JsonNode json);
 	ValueTask<WsClassicTurnEnd> ParseClassicTurnEnd(JsonNode json);
-	ValueTask<WsTurnError> ParseClassicTurnError(JsonNode json);
+	ValueTask<WsClassicTurnError> ParseClassicTurnError(JsonNode json);
 	ValueTask<WsClassicTurnStart> ParseClassicTurnStart(JsonNode json);
 	ValueTask<WsRoom> ParseRoom(JsonNode json);
 	ValueTask<WsTypingBattleRoundReady> ParseTypingBattleRoundReady(JsonNode json);
@@ -23,8 +23,6 @@ public interface IWebSocketHandler
 	ValueTask<WsWelcome> ParseWelcome(JsonNode json);
 	ValueTask<WsHunminRoundReady> ParseHunminRoundReady(JsonNode json);
 	ValueTask<WsHunminTurnStart> ParseHunminTurnStart(JsonNode json);
-	ValueTask<WsHunminTurnEnd> ParseHunminTurnEnd(JsonNode json);
-	ValueTask<WsHunminTurnError> ParseHunminTurnError(JsonNode json);
 	ValueTask RegisterInGameFunctions(ISet<int> alreadyRegistered);
 	ValueTask RegisterWebSocketFilter();
 }

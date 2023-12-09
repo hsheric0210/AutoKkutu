@@ -102,7 +102,7 @@ public partial class Game
 			if (domTurnIndex != -1) // turnEnd: prev != -1
 			{
 				LibLogger.Verbose(gameDomPoller, "DOM Handler detected turn end (prevTurnIndex: {prev}, nowTurnIndex: {now}, isMyTurn: {myTurn})", domTurnIndex, turnIndexNow, domIsMyTurn);
-				NotifyClassicTurnEnd("");
+				NotifyClassicTurnEndOk("");
 				domIsMyTurn = false;
 			}
 
@@ -123,7 +123,7 @@ public partial class Game
 			NotifyWordHistories(histories);
 	}
 
-	private async ValueTask PollRound() => NotifyRound(await domHandler.GetRoundIndex());
+	private async ValueTask PollRound() => NotifyRoundChange(await domHandler.GetRoundIndex());
 
 	private async ValueTask PollWordError()
 	{
@@ -166,13 +166,7 @@ public partial class Game
 			return;
 		if (word.Contains(' ', StringComparison.Ordinal))
 			word = word[..word.IndexOf(' ', StringComparison.Ordinal)];
-		var tDelta = Environment.TickCount64 - currentPresentedWordCacheTime;
-		if (string.Equals(word, typingWordCache, StringComparison.OrdinalIgnoreCase) && tDelta <= 1000)
-			return;
-		typingWordCache = word;
-		currentPresentedWordCacheTime = Environment.TickCount64;
-		LibLogger.Verbose(gameDomPoller, "Word detected : {word} (delay: {delta})", word, tDelta);
-		TypingWordPresented?.Invoke(this, new WordPresentEventArgs(word));
+		NotifyTypingBattleWord(word);
 	}
 
 	private async ValueTask PollGameMode()
@@ -189,6 +183,8 @@ public partial class Game
 
 		if (string.IsNullOrEmpty(condition) || Session.GameMode.IsFreeMode())
 			return WordCondition.Empty;
+
+		condition = condition.TrimStart('<').TrimEnd('>'); // 훈민정음 등 모드 호환
 
 		string cChar;
 		var cSubChar = string.Empty;

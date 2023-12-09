@@ -26,6 +26,7 @@ public partial class Game
 			{
 				try
 				{
+					LibLogger.Verbose(gameWebSocketSniffer, "Start handling {messageType} message.", messageType);
 					handler(await parser(json));
 				}
 				catch (Exception ex)
@@ -47,22 +48,22 @@ public partial class Game
 		{
 			[GameImplMode.Classic] = new Dictionary<string, Func<JsonNode, Task>>
 			{
-				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turnStart", OnWsClassicTurnStart, webSocketHandler.ParseClassicTurnStart),
-				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnEnd", OnWsClassicTurnEnd, webSocketHandler.ParseClassicTurnEnd),
-				[webSocketHandler.MessageType_TurnError] = SimpleHandler("turnError", OnWsTurnError, webSocketHandler.ParseClassicTurnError)
+				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turn-start", OnWsClassicTurnStart, webSocketHandler.ParseClassicTurnStart),
+				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turn-end", OnWsClassicTurnEnd, webSocketHandler.ParseClassicTurnEnd),
+				[webSocketHandler.MessageType_TurnError] = SimpleHandler("turn-error", OnWsClassicTurnError, webSocketHandler.ParseClassicTurnError)
 			},
 			[GameImplMode.TypingBattle] = new Dictionary<string, Func<JsonNode, Task>>
 			{
-				[webSocketHandler.MessageType_RoundReady] = SimpleHandler("roundReady", OnWsTypingBattleRoundReady, webSocketHandler.ParseTypingBattleRoundReady),
-				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turnStart", OnWsTypingBattleTurnStart, webSocketHandler.ParseTypingBattleTurnStart),
-				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnEnd", OnWsTypingBattleTurnEnd, webSocketHandler.ParseTypingBattleTurnEnd),
+				[webSocketHandler.MessageType_RoundReady] = SimpleHandler("round-ready", OnWsTypingBattleRoundReady, webSocketHandler.ParseTypingBattleRoundReady),
+				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turn-start", OnWsTypingBattleTurnStart, webSocketHandler.ParseTypingBattleTurnStart),
+				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turn-end", OnWsTypingBattleTurnEnd, webSocketHandler.ParseTypingBattleTurnEnd),
 			},
 			[GameImplMode.Hunmin] = new Dictionary<string, Func<JsonNode, Task>>
 			{
-				[webSocketHandler.MessageType_RoundReady] = SimpleHandler("roundReady", OnWsHunminRoundReady, webSocketHandler.ParseHunminRoundReady),
-				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turnStart", OnWsHunminTurnStart, webSocketHandler.ParseHunminTurnStart),
-				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnEnd", OnWsHunminTurnEnd, webSocketHandler.ParseHunminTurnEnd),
-				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turnError", OnWsHunminTurnError, webSocketHandler.ParseHunminTurnError),
+				[webSocketHandler.MessageType_RoundReady] = SimpleHandler("round-ready", OnWsHunminRoundReady, webSocketHandler.ParseHunminRoundReady),
+				[webSocketHandler.MessageType_TurnStart] = SimpleHandler("turn-start", OnWsHunminTurnStart, webSocketHandler.ParseHunminTurnStart),
+				[webSocketHandler.MessageType_TurnEnd] = SimpleHandler("turn-end", OnWsClassicTurnEnd, webSocketHandler.ParseClassicTurnEnd),
+				[webSocketHandler.MessageType_TurnError] = SimpleHandler("turn-error", OnWsClassicTurnError, webSocketHandler.ParseClassicTurnError),
 			},
 
 		};
@@ -129,73 +130,12 @@ public partial class Game
 		NotifyGameMode(data.Mode);
 	}
 
-	private void OnWsClassicTurnStart(WsClassicTurnStart data)
-	{
-		LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn start: turn={turn} condition={condition}", data.Turn, data.Condition);
-		NotifyClassicTurnStart(false, data.Turn, data.Condition);
-	}
-
-	private void OnWsClassicTurnEnd(WsClassicTurnEnd data)
-	{
-		if (data.Ok)
-		{
-			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn end (ok): value='{value}'", data.Value);
-			NotifyClassicTurnEnd(data.Value ?? "");
-
-			if (!string.IsNullOrWhiteSpace(data.Value))
-				NotifyWordHistory(data.Value);
-		}
-
-		if (!string.IsNullOrWhiteSpace(data.Hint))
-		{
-			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn end (hint): hint='{hint}'", data.Hint);
-			NotifyWordHint(data.Hint);
-		}
-	}
-
-	private void OnWsTurnError(WsTurnError data)
+	private void OnWsClassicTurnError(WsClassicTurnError data)
 	{
 		if (!string.IsNullOrWhiteSpace(data.Value))
 		{
 			LibLogger.Debug(gameWebSocketSniffer, "WebSocket Handler detected turn error: value='{value}' errorCode={code}", data.Value, data.ErrorCode);
 			NotifyTurnError(data.Value, data.ErrorCode, false);
 		}
-	}
-
-	private void OnWsTypingBattleRoundReady(WsTypingBattleRoundReady data)
-	{
-		// TODO: Implement Typing-battle websocket handling
-	}
-
-
-	private void OnWsTypingBattleTurnStart(WsTypingBattleTurnStart data)
-	{
-		// TODO: Implement Typing-battle websocket handling
-	}
-
-
-	private void OnWsTypingBattleTurnEnd(WsTypingBattleTurnEnd data)
-	{
-		// TODO: Implement Typing-battle websocket handling
-	}
-
-	private void OnWsHunminRoundReady(WsHunminRoundReady data)
-	{
-
-	}
-
-	private void OnWsHunminTurnStart(WsHunminTurnStart data)
-	{
-
-	}
-
-	private void OnWsHunminTurnEnd(WsHunminTurnEnd data)
-	{
-
-	}
-
-	private void OnWsHunminTurnError(WsHunminTurnError data)
-	{
-
 	}
 }

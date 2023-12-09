@@ -74,6 +74,16 @@ public sealed class GameSessionState
 	/// </summary>
 	public bool ReturnMode { get; internal set; }
 
+	/// <summary>
+	/// (타자 대결 모드 한정) 타자 대결 단어 목록입니다. 모든 단어를 다 쓴 경우 다시 첫 단어부터 재사용됩니다.
+	/// </summary>
+	public int TypingWordIndex { get; internal set; }
+
+	/// <summary>
+	/// (타자 대결 모드 한정) 타자 대결 단어 목록입니다. 모든 단어를 다 쓴 경우 다시 첫 단어부터 재사용됩니다.
+	/// </summary>
+	public IImmutableList<string> TypingWordList { get; internal set; }
+
 	public GameSessionState(GameSessionState other)
 	{
 		MyUserId = other.MyUserId;

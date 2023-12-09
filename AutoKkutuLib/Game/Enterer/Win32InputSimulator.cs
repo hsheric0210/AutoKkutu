@@ -1,6 +1,4 @@
-﻿using AutoKkutuLib.Hangul;
-using System.Runtime.InteropServices;
-using static AutoKkutuLib.Game.Enterer.NativeInputSimulator;
+﻿using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
 public partial class Win32InputSimulator : NativeInputSimulator

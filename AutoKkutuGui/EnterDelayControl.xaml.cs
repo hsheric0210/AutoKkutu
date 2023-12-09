@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Controls;
 using static AutoKkutuGui.GuiUtils;
 

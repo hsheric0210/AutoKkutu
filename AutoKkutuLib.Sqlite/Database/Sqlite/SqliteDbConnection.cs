@@ -5,7 +5,6 @@ using AutoKkutuLib.Sqlite.Properties;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace AutoKkutuLib.Database.Sqlite;
 

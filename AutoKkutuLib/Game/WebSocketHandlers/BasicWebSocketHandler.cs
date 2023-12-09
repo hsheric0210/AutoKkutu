@@ -130,7 +130,7 @@ public class BasicWebSocketHandler : IWebSocketHandler
 			hint);
 	}
 
-	public virtual async ValueTask<WsTurnError> ParseClassicTurnError(JsonNode json)
+	public virtual async ValueTask<WsClassicTurnError> ParseClassicTurnError(JsonNode json)
 	{
 		return new(
 			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("turnError", "code"),
@@ -162,20 +162,6 @@ public class BasicWebSocketHandler : IWebSocketHandler
 			json["roundTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "roundTime"),
 			json["turnTime"]?.GetValue<int>() ?? throw InvalidWsMessage("turnStart", "turnTime"),
 			json["mission"]?.GetValue<string>() ?? "");
-	}
-
-	public virtual async ValueTask<WsHunminTurnEnd> ParseHunminTurnEnd(JsonNode json)
-	{
-		return new(
-			json["ok"]?.GetValue<bool>() ?? throw InvalidWsMessage("turnEnd", "ok"),
-			json["hint"]?.GetValue<string>() ?? "");
-	}
-
-	public virtual async ValueTask<WsHunminTurnError> ParseHunminTurnError(JsonNode json)
-	{
-		return new(
-			(TurnErrorCode?)json["code"]?.GetValue<int>() ?? throw InvalidWsMessage("turnError", "code"),
-			json["value"]?.GetValue<string>());
 	}
 
 	public virtual void OnWebSocketMessage(JsonNode json) { }

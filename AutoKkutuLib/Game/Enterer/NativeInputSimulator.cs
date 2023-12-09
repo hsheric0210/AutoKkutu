@@ -1,5 +1,4 @@
 ﻿using AutoKkutuLib.Hangul;
-using System.Runtime.InteropServices;
 
 namespace AutoKkutuLib.Game.Enterer;
 public abstract partial class NativeInputSimulator : InputSimulatorBase

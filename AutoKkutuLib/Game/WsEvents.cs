@@ -42,9 +42,9 @@ public class WsClassicTurnStart
 
 public class WsClassicTurnEnd
 {
-	public string? Hint { get; }
-	public string? Value { get; }
 	public bool Ok { get; }
+	public string? Value { get; }
+	public string? Hint { get; }
 	public WsClassicTurnEnd(bool ok, string? value, string? hint)
 	{
 		Ok = ok;
@@ -53,14 +53,14 @@ public class WsClassicTurnEnd
 	}
 }
 
-public class WsTurnError
+public class WsClassicTurnError
 {
 	/// <summary>
 	/// https://github.com/JJoriping/KKuTu/blob/a2c240bc31fe2dea31d26fb1cf7625b4645556a6/Server/lib/Web/lang/en_US.json#L213 참조
 	/// </summary>
 	public TurnErrorCode ErrorCode { get; }
 	public string? Value { get; }
-	public WsTurnError(TurnErrorCode errorCode, string? value)
+	public WsClassicTurnError(TurnErrorCode errorCode, string? value)
 	{
 		ErrorCode = errorCode;
 		Value = value;
@@ -113,37 +113,13 @@ public class WsHunminTurnStart
 	public int Turn { get; }
 	public long RoundTime { get; }
 	public long TurnTime { get; }
-	public string? Mission { get; }
+	public string Mission { get; }
 
-	public WsHunminTurnStart(int turn, long roundTime, long turnTime, string? mission)
+	public WsHunminTurnStart(int turn, long roundTime, long turnTime, string mission)
 	{
 		Turn = turn;
 		RoundTime = roundTime;
 		TurnTime = turnTime;
 		Mission = mission;
-	}
-}
-
-public class WsHunminTurnEnd
-{
-	public bool Ok { get; }
-	public string Hint { get; }
-
-	public WsHunminTurnEnd(bool ok, string hint)
-	{
-		Ok = ok;
-		Hint = hint;
-	}
-}
-
-public class WsHunminTurnError
-{
-	public TurnErrorCode Code { get; }
-	public string? Value { get; }
-
-	public WsHunminTurnError(TurnErrorCode code, string? value)
-	{
-		Code = code;
-		Value = value;
 	}
 }
