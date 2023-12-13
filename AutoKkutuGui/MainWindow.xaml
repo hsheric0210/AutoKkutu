@@ -39,7 +39,9 @@
             <Setter Property="MinHeight" Value="25" />
         </Style>
         <Style x:Key="BaseSearchBoxPlaceholder" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="Padding" Value="10,0,10,0" />
             <Setter Property="Foreground" Value="Gray" />
@@ -150,9 +152,9 @@
                             </Grid.ColumnDefinitions>
                             <Label Grid.Row="0" Grid.Column="0" Margin="10,10,0,0" VerticalAlignment="Bottom" Content="수동 검색" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Foreground="#FFFFFFFF" />
                             <CheckBox Name="RegexpSearch" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="정규표현식" Style="{StaticResource BaseCheckboxStyle}" />
-                            <Button Name="SubmitSearch" Grid.Row="1" Grid.Column="1" MinHeight="25" Margin="2,5,15,5" Click="SubmitSearch_Click" Content="검색" FontSize="14" Style="{StaticResource BaseButtonStyle}" />
-                            <TextBox x:Name="SearchField" Grid.Row="1" Grid.Column="0" Margin="15,0,2,0" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="15,0,15,0" Text="검색할 키워드를 입력해주세요">
+                            <Button Name="SubmitSearch" Grid.Row="1" Grid.Column="1" MinHeight="25" Margin="0,5,15,5" Click="SubmitSearch_Click" Content="검색" FontSize="14" Style="{StaticResource BaseButtonStyle}" />
+                            <TextBox x:Name="SearchField" Grid.Row="1" Grid.Column="0" Margin="15,5,0,5" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="15,0,0,0" Text="검색할 키워드">
                                 <TextBlock.Style>
                                     <Style BasedOn="{StaticResource BaseSearchBoxPlaceholder}" TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Hidden" />
@@ -164,7 +166,7 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <ComboBox x:Name="SearchGameMode" Grid.Row="2" Grid.Column="0" Margin="15,0,2,10" VerticalAlignment="Stretch" SelectedIndex="0">
+                            <ComboBox x:Name="SearchGameMode" Grid.Row="2" Grid.Column="0" Margin="15,5,0,5" VerticalAlignment="Stretch" SelectedIndex="0">
                                 <ComboBoxItem>현재 게임모드 따라가기</ComboBoxItem>
                                 <ComboBoxItem>끝말잇기</ComboBoxItem>
                                 <ComboBoxItem>앞말잇기</ComboBoxItem>
@@ -178,13 +180,38 @@
                                 <ComboBoxItem>자유 끝말잇기</ComboBoxItem>
                                 <ComboBoxItem>훈민정음</ComboBoxItem>
                             </ComboBox>
-                            <TextBox x:Name="SearchMissionChar" Grid.Row="2" Grid.Column="1" Margin="2,0,15,10" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
-                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,0,10,0" Padding="10,0,10,10" Text="미션 단어">
+                            <TextBox x:Name="SearchMissionChar" Grid.Row="2" Grid.Column="1" Margin="0,5,15,5" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,5,15,5" Text="미션 단어">
                                 <TextBlock.Style>
                                     <Style BasedOn="{StaticResource BaseSearchBoxPlaceholder}" TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Hidden" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Text, ElementName=SearchMissionChar}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <Grid Style="{StaticResource GroupHightlightGridStyle}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Margin="10,10,0,0" VerticalAlignment="Bottom" Content="장문 미리 입력" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Foreground="#FFFFFFFF" />
+                            <Button Name="PreEnterButton" Grid.Row="1" Grid.Column="1" MinHeight="25" Margin="0,5,15,5" Click="SubmitSearch_Click" Content="검색" FontSize="14" Style="{StaticResource BaseButtonStyle}" />
+                            <TextBox x:Name="PreEnterNodeField" Grid.Row="1" Grid.Column="0" Margin="15,5,0,5" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="15,0,0,0" Text="미리 입력할 장문 키워드">
+                                <TextBlock.Style>
+                                    <Style BasedOn="{StaticResource BaseSearchBoxPlaceholder}" TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchField}" Value="">
                                                 <Setter Property="Visibility" Value="Visible" />
                                             </DataTrigger>
                                         </Style.Triggers>
