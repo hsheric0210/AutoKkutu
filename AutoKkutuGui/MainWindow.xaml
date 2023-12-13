@@ -134,9 +134,7 @@
                     <Grid Name="SearchStatus" Grid.Row="2" Margin="5,0,5,0" VerticalAlignment="Bottom" Background="#FF444444">
                         <Image Name="SearchIcon" Width="25" Height="25" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Source="/images/warning.png" />
                         <Border MinWidth="200" MinHeight="80" Margin="35,5,5,5" HorizontalAlignment="Left" BorderBrush="{x:Null}">
-                            <TextBlock Name="SearchResult" VerticalAlignment="Center" FontSize="11" Foreground="#FFFFFFFF" TextWrapping="Wrap">
-                                총 112개의 단어 중, 30개 고려 27ms 소요. (한방 단어 사용)
-                            </TextBlock>
+                            <TextBlock Name="SearchResult" VerticalAlignment="Center" FontSize="11" Foreground="#FFFFFFFF" Text="데이터베이스가 연결되지 않았습니다.&#xD;&#xA;사이트가 로딩될 때까지 기다리세요..." TextWrapping="Wrap" />
                         </Border>
                     </Grid>
                     <StackPanel Grid.Row="3" Margin="5,5,5,0">
