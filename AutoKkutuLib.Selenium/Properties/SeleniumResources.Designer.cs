@@ -101,9 +101,9 @@ namespace AutoKkutuLib.Selenium.Properties {
         ///
         ///    &lt;!-- 프로그 [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Selenium {
+        internal static string DefaultBrowserConfig {
             get {
-                return ResourceManager.GetString("Selenium", resourceCulture);
+                return ResourceManager.GetString("DefaultBrowserConfig", resourceCulture);
             }
         }
     }

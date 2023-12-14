@@ -58,7 +58,7 @@ public static class ConsoleManager
 			Console.OutputEncoding = Encoding.UTF8;
 			if (DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND) == 0)
 				DrawErrorBox(string.Format(CultureInfo.CurrentCulture, I18n.DeleteConsoleMenuFailed, GetLastError()));
-			Console.WriteLine(string.Format(CultureInfo.CurrentCulture, I18n.ProgramIntroduction, MainWindow.VERSION));
+			Console.WriteLine(string.Format(CultureInfo.CurrentCulture, I18n.ProgramIntroduction, MainWindow.ProgramVersion));
 			Console.WriteLine(I18n.ConsoleIntroduction);
 			Console.WriteLine("");
 		}

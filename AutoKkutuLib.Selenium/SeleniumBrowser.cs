@@ -15,7 +15,7 @@ namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable
 {
 	private readonly static ReadOnlyCollection<IWebElement> emptyWebElements = new(new List<IWebElement>());
-	private const string ConfigFile = "Selenium.xml";
+	private const string BrowserConfigFile = "Browser.xml";
 
 	private readonly BrowserRandomNameMapping nameRandom;
 
@@ -41,10 +41,10 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		try
 		{
 			// Write default config
-			if (!File.Exists(ConfigFile))
-				File.WriteAllText(ConfigFile, SeleniumResources.Selenium);
+			if (!File.Exists(BrowserConfigFile))
+				File.WriteAllText(BrowserConfigFile, SeleniumResources.DefaultBrowserConfig);
 
-			using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+			using var stream = File.Open(BrowserConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 			var serializer = new XmlSerializer(typeof(SeleniumConfigDto));
 			config = (SeleniumConfigDto?)serializer.Deserialize(stream)!;
 		}

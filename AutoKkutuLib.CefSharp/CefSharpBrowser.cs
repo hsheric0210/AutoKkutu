@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 namespace AutoKkutuLib.CefSharp;
 public class CefSharpBrowser : BrowserBase
 {
-	private const string ConfigFile = "CefSharp.xml";
+	private const string BrowserConfigFile = "Browser.xml";
 	private readonly CefConfigDto config;
 	private ChromiumWebBrowser browser;
 
@@ -87,11 +87,11 @@ public class CefSharpBrowser : BrowserBase
 
 		try
 		{
-			if (!File.Exists(ConfigFile))
-				File.WriteAllText(ConfigFile, CefSharpResources.CefSharp);
+			if (!File.Exists(BrowserConfigFile))
+				File.WriteAllText(BrowserConfigFile, CefSharpResources.DefaultBrowserConfig);
 
 			var serializer = new XmlSerializer(typeof(CefConfigDto));
-			using var stream = File.Open(ConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+			using var stream = File.Open(BrowserConfigFile, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 			config = (CefConfigDto?)serializer.Deserialize(stream)!;
 		}
 		catch (Exception ex)

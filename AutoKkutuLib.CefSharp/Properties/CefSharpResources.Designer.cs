@@ -61,24 +61,6 @@ namespace AutoKkutuLib.CefSharp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
-        ///&lt;CefSharp xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
-        ///    &lt;!-- 기본적으로 모든 스크립트를 주입할 JavaScript 네임스페이스를 선택합니다. --&gt;
-        ///    &lt;JavaScriptInjectionBaseNamespace&gt;window&lt;/JavaScriptInjectionBaseNamespace&gt;
-        ///
-        ///    &lt;!-- 프로그램을 시작할 때 로드할 사이트 주소를 지정합니다. --&gt;
-        ///    &lt;MainPage&gt;https://kkutu.pink/&lt;/MainPage&gt;
-        ///
-        ///    &lt;!-- 리소스 파일들(cef.pak, devtools_resources.pak)이 위치한 폴더를 지정합니다. 빈 문자열로 둘 시 기본값이 사용됩니다. --&gt;
-        ///    &lt;!-- https://cefsharp.githu [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string CefSharp {
-            get {
-                return ResourceManager.GetString("CefSharp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to /* communicatorJs : AutoKkutu - CefSharp JSB communicator
         /// * 
         /// * Reserved names:
@@ -104,6 +86,24 @@ namespace AutoKkutuLib.CefSharp.Properties {
         public static string communicatorJs {
             get {
                 return ResourceManager.GetString("communicatorJs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+        ///&lt;CefSharp xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///    &lt;!-- 기본적으로 모든 스크립트를 주입할 JavaScript 네임스페이스를 선택합니다. --&gt;
+        ///    &lt;JavaScriptInjectionBaseNamespace&gt;window&lt;/JavaScriptInjectionBaseNamespace&gt;
+        ///
+        ///    &lt;!-- 프로그램을 시작할 때 로드할 사이트 주소를 지정합니다. --&gt;
+        ///    &lt;MainPage&gt;https://kkutu.pink/&lt;/MainPage&gt;
+        ///
+        ///    &lt;!-- 리소스 파일들(cef.pak, devtools_resources.pak)이 위치한 폴더를 지정합니다. 빈 문자열로 둘 시 기본값이 사용됩니다. --&gt;
+        ///    &lt;!-- https://cefsharp.githu [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string DefaultBrowserConfig {
+            get {
+                return ResourceManager.GetString("DefaultBrowserConfig", resourceCulture);
             }
         }
     }
