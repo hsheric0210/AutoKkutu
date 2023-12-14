@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.IO;
 using System.Windows;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -44,7 +46,8 @@ public partial class App : Application
 
 	private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
 	{
-		Log.Fatal((Exception)e.ExceptionObject, "Program crashed! Report this to the developer.");
+		Log.Fatal((Exception)e.ExceptionObject, "Unhandled exception!");
+		new CrashReportWriter("CrashReport_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss_fff", CultureInfo.InvariantCulture)).Write();
 		MessageBox.Show(e.ExceptionObject?.ToString(), "Unhandled Exception!", MessageBoxButton.OK, MessageBoxImage.Error);
 		Log.CloseAndFlush(); // Ensure all logs to be logged
 	}
