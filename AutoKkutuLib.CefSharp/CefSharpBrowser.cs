@@ -107,6 +107,13 @@ public class CefSharpBrowser : BrowserBase
 		var settings = CefConfigToCefSettings(config);
 		try
 		{
+			if (!string.IsNullOrWhiteSpace(config.ProxyIp))
+			{
+				// https://cefsharp.github.io/api/63.0.0/html/P_CefSharp_CefSharpSettings_Proxy.htms
+				// https://stackoverflow.com/a/51888690
+				CefSharpSettings.Proxy = new ProxyOptions(config.ProxyIp, config.ProxyPort.ToString(), config.ProxyAuthUserName, config.ProxyAuthPassword);
+			}
+
 			if (!Cef.IsInitialized && !Cef.Initialize(settings, false, (IApp?)null))
 				LibLogger.Warn<CefSharpBrowser>("CefSharp initialization failed.");
 		}
@@ -128,6 +135,7 @@ public class CefSharpBrowser : BrowserBase
 		LibLogger.Verbose<CefSharpBrowser>("Initializing CefSharp");
 
 		browser = new ChromiumWebBrowser();
+
 		// Prevent getting detected by 'window.CefSharp' property existence checks
 		browser.JavascriptObjectRepository.Settings.JavascriptBindingApiGlobalObjectName = jsbGlobalObjectName;
 		var bindingObject = new JavaScriptBindingObject();

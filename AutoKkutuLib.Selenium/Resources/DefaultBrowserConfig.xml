@@ -27,7 +27,8 @@
 
     <!-- IP 우회를 위한 프록시 서버를 사용하도록 설정합니다. 물론, 이는 단순히 CommandLineArguments 로 설정할 수도 있지만, 세부적인 설정 (ID, PW 인증 등)은 이 설정을 통해서 이루어져야 합니다. -->
     <!-- CommandLineArguments을 통한 프록시 서버 사용 옵션을 위해서는 다음 문서를 참조하세요: https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-proxy-resolution -->
-    <ProxyServer></ProxyServer>
+    <ProxyIp></ProxyIp>
+    <ProxyPort>0</ProxyPort>
     <ProxyAuthUserName></ProxyAuthUserName>
     <ProxyAuthPassword></ProxyAuthPassword>
     <!-- 예를 들어, 다음과 같이 구성하면 됩니다:

@@ -31,7 +31,10 @@ public class CefConfigDto
 	public List<string> CefCommandLineArgs { get; set; }
 
 	[XmlElement]
-	public string ProxyServer { get; set; }
+	public string ProxyIp { get; set; }
+
+	[XmlElement]
+	public int ProxyPort { get; set; }
 
 	[XmlElement]
 	public string ProxyAuthUserName { get; set; }

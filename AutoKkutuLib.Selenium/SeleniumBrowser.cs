@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using AutoKkutuLib.Browser;
 using System.Reflection;
 using System.Diagnostics;
+using OpenQA.Selenium.Chrome.ChromeDriverExtensions;
 
 namespace AutoKkutuLib.Selenium;
 public class SeleniumBrowser : BrowserBase, IDisposable
@@ -74,6 +75,31 @@ public class SeleniumBrowser : BrowserBase, IDisposable
 		opt.BinaryLocation = ReplaceCd(config.BinaryLocation);
 		opt.DebuggerAddress = NullIfWhiteSpace(config.DebuggerAddress);
 		opt.MinidumpPath = ReplaceCd(config.MinidumpPath);
+		if (!string.IsNullOrWhiteSpace(config.ProxyIp))
+		{
+			if (config.ProxyIp.StartsWith("http") && !string.IsNullOrWhiteSpace(config.ProxyAuthPassword))
+			{
+				// OpenQA.Selenium.Chrome.ChromeDriverExtensions is very convenient, but it only supports HTTP proxy
+				// https://github.com/RDavydenko/OpenQA.Selenium.Chrome.ChromeDriverExtensions/blob/18a0fba0c89adfd75765398232f5ecbbed1e5644/OpenQA.Selenium.Chrome.ChromeDriverExtensions/ChromeOptionsExtensions.cs#L17
+				opt.AddHttpProxy(config.ProxyIp, config.ProxyPort, config.ProxyAuthUserName, config.ProxyAuthPassword);
+			}
+			else
+			{
+				// https://stackoverflow.com/a/24237188
+				var addr = config.ProxyIp + ':' + config.ProxyPort;
+				opt.Proxy = new Proxy()
+				{
+					HttpProxy = addr,
+					FtpProxy = addr,
+					SslProxy = addr,
+					SocksProxy = addr,
+					Kind = ProxyKind.Manual,
+					IsAutoDetect = false,
+					SocksUserName = config.ProxyAuthUserName,
+					SocksPassword = config.ProxyAuthPassword
+				};
+			}
+		}
 
 		if (config.Arguments != null)
 			opt.AddArguments(config.Arguments.ToArray());

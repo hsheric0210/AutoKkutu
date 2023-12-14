@@ -11,6 +11,25 @@ public class SeleniumConfigDto
 	public string MainPage { get; set; }
 
 	[XmlElement]
+	public string UserDataDir { get; set; }
+
+	[XmlArray("Arguments")]
+	[XmlArrayItem("Argument")]
+	public List<string> Arguments { get; set; }
+
+	[XmlElement]
+	public string ProxyIp { get; set; }
+
+	[XmlElement]
+	public int ProxyPort { get; set; }
+
+	[XmlElement]
+	public string ProxyAuthUserName { get; set; }
+
+	[XmlElement]
+	public string ProxyAuthPassword { get; set; }
+
+	[XmlElement]
 	public string BinaryLocation { get; set; }
 
 	[XmlElement]
@@ -23,14 +42,7 @@ public class SeleniumConfigDto
 	public string MinidumpPath { get; set; }
 
 	[XmlElement]
-	public string UserDataDir { get; set; }
-
-	[XmlElement]
 	public string DriverExecutable { get; set; }
-
-	[XmlArray("Arguments")]
-	[XmlArrayItem("Argument")]
-	public List<string> Arguments { get; set; }
 
 	[XmlArray("ExcludedArguments")]
 	[XmlArrayItem("ExcludedArgument")]
