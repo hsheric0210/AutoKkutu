@@ -447,7 +447,6 @@ public partial class MainWindow : Window
 				default:
 					gameMode = mainInstance.AutoKkutu.Game.Session.GameMode;
 					break;
-
 			}
 
 			var missionChar = SearchMissionChar.Text;
@@ -462,6 +461,28 @@ public partial class MainWindow : Window
 
 			if (!(RegexpSearch.IsChecked ?? false)) // 힘들게 적은 정규표현식을 지워버리는 것 만큼 빡치는 일도 없음
 				SearchField.Text = "";
+		}
+	}
+
+	private void PreEnterNodeField_KeyDown(object? sender, KeyEventArgs e)
+	{
+		if (e.Key is Key.Enter or Key.Return)
+			PreEnterButton_Click(sender, e);
+	}
+
+	private void PreEnterButton_Click(object? sender, RoutedEventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(PreEnterNodeField.Text))
+		{
+			// TODO: 페이지가 아직 로드되지 않은 등, 입력할 수 없는 상황에서는 입력 필드 자체를 비활성화하던지 아니면 입력 시 오류를 띄우던지
+			mainInstance.PerformPreSearchAndPreInput(
+				mainInstance.AutoKkutu.Game.Session.GameMode,
+				new WordCondition(
+					PreEnterNodeField.Text,
+					missionChar: mainInstance.AutoKkutu.Game.Session.WordCondition.MissionChar
+				));
+
+			PreEnterNodeField.Text = "";
 		}
 	}
 }

@@ -202,8 +202,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Label Grid.Row="0" Grid.Column="0" Margin="10,10,0,0" VerticalAlignment="Bottom" Content="장문 미리 입력" FontFamily="/AutoKkutu;component/Resources/Font/#NanumBarunGothic" FontSize="20" Foreground="#FFFFFFFF" />
-                            <Button Name="PreEnterButton" Grid.Row="1" Grid.Column="1" MinHeight="25" Margin="0,5,15,5" Click="SubmitSearch_Click" Content="검색" FontSize="14" Style="{StaticResource BaseButtonStyle}" />
-                            <TextBox x:Name="PreEnterNodeField" Grid.Row="1" Grid.Column="0" Margin="15,5,0,5" KeyDown="SearchField_KeyDown" Style="{StaticResource BaseSearchBox}" />
+                            <Button Name="PreEnterButton" Grid.Row="1" Grid.Column="1" MinHeight="25" Margin="0,5,15,5" Click="PreEnterButton_Click" Content="검색" FontSize="14" Style="{StaticResource BaseButtonStyle}" />
+                            <TextBox x:Name="PreEnterNodeField" Grid.Row="1" Grid.Column="0" Margin="15,5,0,5" KeyDown="PreEnterNodeField_KeyDown" Style="{StaticResource BaseSearchBox}" />
                             <TextBlock Grid.Row="1" Grid.Column="0" Margin="15,0,0,0" Text="미리 입력할 장문 키워드">
                                 <TextBlock.Style>
                                     <Style BasedOn="{StaticResource BaseSearchBoxPlaceholder}" TargetType="TextBlock">

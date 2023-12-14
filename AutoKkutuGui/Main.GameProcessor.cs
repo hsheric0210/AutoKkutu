@@ -85,7 +85,7 @@ public partial class Main
 		}
 	}
 
-	private void TryAutoEnter(PathList list, bool usedPresearchResult = false)
+	private void TryAutoEnter(PathList list, bool flushPreinputPath = false)
 	{
 		if (!EntererManager.TryGetEnterer(AutoKkutu.Game, Preference.AutoEnterMode, out var enterer))
 		{
@@ -112,7 +112,7 @@ public partial class Main
 		else
 		{
 			var param = list.Details;
-			if (usedPresearchResult)
+			if (flushPreinputPath)
 				param = param.WithoutFlags(PathFlags.PreSearch); // Fixme: 이런 번거로운 방법 대신 더 나은 방법 생각해보기
 
 			enterer.RequestSend(new EnterInfo(opt, param, bestPath.Object.Content));
@@ -194,10 +194,10 @@ public partial class Main
 		{
 			if (preSearch is PathList list)
 			{
-				if (list.Details.Condition.IsSimilar(args.Condition))
+				if (list.Details.Condition.IsSimilar(args.Condition)) // pre-search 해 놓은 검색 결과가 여전히 유효함! 미리 입력해 놓은 단어 그대로 써 먹을 수 있음.
 				{
 					Log.Debug("Using the pre-search result for: {condition}", list.Details.Condition);
-					TryAutoEnter(list, usedPresearchResult: true);
+					TryAutoEnter(list, flushPreinputPath: true);
 					return;
 				}
 
@@ -248,17 +248,21 @@ public partial class Main
 			goto presearchFail;
 		}
 
-		Log.Verbose("Performing pre-search on: {condition}", condition);
-		AutoKkutu.PathFinder.FindPath(
-			args.Session.GameMode,
-			new PathDetails((WordCondition)condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
-			Preference.ActiveWordPreference);
-
+		PerformPreSearchAndPreInput(args.Session.GameMode, (WordCondition)condition);
 		return;
 
 presearchFail:
 		Log.Verbose("Pre-search result flushed.");
 		preSearch = null;
+	}
+
+	public void PerformPreSearchAndPreInput(GameMode gameMode, WordCondition condition)
+	{
+		Log.Verbose("Performing pre-search (+ pre-input) on: {condition}", condition);
+		AutoKkutu.PathFinder.FindPath(
+			gameMode,
+			new PathDetails(condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
+			Preference.ActiveWordPreference);
 	}
 
 	private void OnTypingWordPresented(object? sender, WordPresentEventArgs args)
