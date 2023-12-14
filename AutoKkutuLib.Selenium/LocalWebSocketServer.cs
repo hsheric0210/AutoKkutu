@@ -31,6 +31,7 @@ internal static class LocalWebSocketServer
 			if (size - offset <= 0)
 				return;
 			var msg = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
+			// 'r' = received, 's' = sent (TODO: 'R' = received but intercepted (modifiable), 'S' = sent but intercepted (modifiable))
 			if (msg[0] is 'r' or 's')
 			{
 				try

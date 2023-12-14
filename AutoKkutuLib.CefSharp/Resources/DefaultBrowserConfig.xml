@@ -1,20 +1,67 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <CefSharp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <!--                     -->
+    <!-- 자주 사용하는 설정 모음 -->
+    <!--                     -->
+
+
     <!-- 기본적으로 모든 스크립트를 주입할 JavaScript 네임스페이스를 선택합니다. -->
-    <JavaScriptInjectionBaseNamespace>window</JavaScriptInjectionBaseNamespace>
+    <!-- 예시로, 'window.crypto' 네임스페이스 선택 시 'window.crypto.5JUYKyTgMFEdCDXn'와 같은 네임스페이스를 생성하여 모든 요소들을 그 속에 주입합니다. -->
+    <JavaScriptInjectionBaseNamespace>window.sessionStorage</JavaScriptInjectionBaseNamespace>
 
     <!-- 프로그램을 시작할 때 로드할 사이트 주소를 지정합니다. -->
     <MainPage>https://kkutu.pink/</MainPage>
 
-    <!-- 리소스 파일들(cef.pak, devtools_resources.pak)이 위치한 폴더를 지정합니다. 빈 문자열로 둘 시 기본값이 사용됩니다. -->
-    <!-- https://cefsharp.github.io/api/81.3.x/html/P_CefSharp_CefSettingsBase_ResourcesDirPath.htm -->
-    <ResourcesDirPath></ResourcesDirPath>
-
     <!-- CefSharp의 기본 로그 파일명을 지정합니다. -->
-    <LogFile>CefSharp.log</LogFile>
+    <LogFile>Browser.log</LogFile>
+
+    <!-- User-Agent를 사용자가 직접 지정합니다. -->
+    <UserAgent></UserAgent>
+
+    <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath를 대체합니다. -->
+    <CachePath>%CURRENTDIR%\BrowserCache</CachePath>
+
+    <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
+    <!-- '%CURRENTDIR%' 은 현재 프로그램 실행 파일의 경로로 치환됩니다. -->
+    <RootCachePath>%CURRENTDIR%\BrowserCache</RootCachePath>
+
+    <!-- 사이트의 인증서 오류를 무시할지의 여부를 지정합니다. -->
+    <!-- 사이트 인증서 관련 오류를 내뿜으며 사이트 접속을 거부할 경우, 이 옵션을 true로 바꾸면 됩니다. -->
+    <IgnoreCertificateErrors>false</IgnoreCertificateErrors>
+
+    <!-- 브라우저에 넘길 추가적인 커맨드 라인 스위치와 변수들을 지정합니다. -->
+    <!--
+    <CommandLineArguments>
+        <Argument>-testSwitch</Argument>
+        <Argument>-testParameter=example123</Argument>
+    </CommandLineArguments>
+    -->
+
+    <!-- IP 우회를 위한 프록시 서버를 사용하도록 설정합니다. 물론, 이는 단순히 CommandLineArguments 로 설정할 수도 있지만, 세부적인 설정 (ID, PW 인증 등)은 이 설정을 통해서 이루어져야 합니다. -->
+    <!-- CommandLineArguments을 통한 프록시 서버 사용 옵션을 위해서는 다음 문서를 참조하세요: https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-proxy-resolution -->
+    <ProxyServer></ProxyServer>
+    <ProxyAuthUserName></ProxyAuthUserName>
+    <ProxyAuthPassword></ProxyAuthPassword>
+    <!-- 예를 들어, 다음과 같이 구성하면 됩니다:
+    <ProxyServer>sockts5://example.com:8080</ProxyServer>
+    <ProxyAuthUserName>abcd</ProxyAuthUserName>
+    <ProxyAuthPassword>password</ProxyAuthPassword>
+
+    만약 사용자 인증을 필요로 하지 않는 프록시 서버일 경우, AuthUserName과 AuthPassword는 입력하지 않아도 됩니다.
+    -->
+
+    <!--              -->
+    <!-- 고급 설정 모음 -->
+    <!--              -->
+
 
     <!-- CefSharp의 기본 로그 심각도를 지정합니다. 사용 가능한 값은 다음과 같습니다: Default, Verbose, Info, Warning, Error, Fatal, Disable -->
     <LogSeverity>Default</LogSeverity>
+
+    <!-- 리소스 파일들(cef.pak, devtools_resources.pak)이 위치한 폴더를 지정합니다. 빈 문자열로 둘 시 기본값이 사용됩니다. -->
+    <!-- https://cefsharp.github.io/api/81.3.x/html/P_CefSharp_CefSettingsBase_ResourcesDirPath.htm -->
+    <ResourcesDirPath></ResourcesDirPath>
 
     <!-- V8 자바스크립트 엔진을 초기화할 때 지정할 사용자 지정 플래그들을 지정합니다. -->
     <!-- https://cefsharp.github.io/api/63.0.0/html/P_CefSharp_CefSettings_JavascriptFlags.htm -->
@@ -36,10 +83,8 @@
     <!-- https://cefsharp.github.io/api/79.1.x/html/P_CefSharp_AbstractCefSettings_RemoteDebuggingPort.htm -->
     <RemoteDebuggingPort>0</RemoteDebuggingPort>
 
-    <!-- User-Agent를 사용자가 직접 지정합니다. -->
-    <UserAgent></UserAgent>
-
-    <!-- CefSharp가 프레임 내에 임베드되어 렌더링할 수 있도록 합니다. 이 값은 항상 true이어야 하며, false이면 브라우저가 로드되지 않습니다. -->
+    <!-- CefSharp가 프레임 내에 임베드되어 렌더링할 수 있도록 합니다. -->
+    <!-- 항상 true이어야 하며, false이면 브라우저가 로드되지 않습니다. -->
     <WindowlessRenderingEnabled>true</WindowlessRenderingEnabled>
 
     <!-- 세션 쿠키들을 보존할지의 여부를 지정합니다. -->
@@ -53,16 +98,14 @@
     <!-- https://cefsharp.github.io/api/63.0.0/html/P_CefSharp_BrowserSettings_AcceptLanguageList.htm -->
     <AcceptLanguageList>en-US,en,ko-KR,ko</AcceptLanguageList>
 
-    <!-- 웹사이트가 로딩되기 전, 브라우저의 배경 화면 색을 지정합니다. 색상은 RGB hex color를 int형으로 변환한 결과이어야 합니다. (예시: rgb(64, 128, 192) = #4080c0 = 4227264) -->
+    <!-- 웹사이트가 로딩되기 전, 브라우저의 배경 화면 색을 지정합니다. -->
+    <!-- 색상은 RGB hex color를 int형으로 변환한 결과이어야 합니다. (예시: rgb(64, 128, 192) = #4080c0 = 4227264) -->
     <BackgroundColor>0</BackgroundColor>
 
     <UncaughtExceptionStackSize>0</UncaughtExceptionStackSize>
 
     <!-- 브라우저의 UI 언어를 지정합니다. -->
     <Locale>ko</Locale>
-
-    <!-- 사이트의 인증서 오류를 무시할지의 여부를 지정합니다. -->
-    <IgnoreCertificateErrors>false</IgnoreCertificateErrors>
 
     <CookieableSchemesList></CookieableSchemesList>
 
@@ -73,23 +116,9 @@
     <!-- 브라우저에 커맨드 라인 스위치들과 변수들을 넘기는 막을지 말지 여부를 지정합니다. -->
     <CommandLineArgsDisabled>false</CommandLineArgsDisabled>
 
-    <!-- 브라우저에 넘길 추가적인 커맨드 라인 스위치와 변수들을 지정합니다. -->
-    <!--
-    <CommandLineArguments>
-        <Argument>-testSwitch</Argument>
-        <Argument>-testParameter=example123</Argument>
-    </CommandLineArguments>
-    -->
-
     <!-- CEF의 메세지 처리 스레드와 프로그램의 메세지 처리 스레드를 분리합니다. 이 옵션은 항상 true이어야 하며, false일 시 오류가 발생합니다. -->
     <!-- https://cefsharp.github.io/api/91.1.x/html/P_CefSharp_CefSettingsBase_MultiThreadedMessageLoop.htm -->
     <MultiThreadedMessageLoop>true</MultiThreadedMessageLoop>
-
-    <!-- 캐시 파일들이 저장될 폴더를 지정합니다. UserDataPath가 이미 지정되었을 시 무시됩니다. -->
-    <CachePath>%CURRENTDIR%\CefUserData</CachePath>
-
-    <!-- 모든 캐시, 유저 데이터를 저장할 폴더를 지정합니다. -->
-    <RootCachePath>%CURRENTDIR%\CefUserData</RootCachePath>
 
     <!-- 이 옵션은 항상 false이어야 하며, true일 시 오류가 발생합니다. -->
     <ExternalMessagePump>false</ExternalMessagePump>
