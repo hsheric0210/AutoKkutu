@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKkutuLib.Selenium", "Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExamplePlugin", "ExamplePlugin\ExamplePlugin.csproj", "{F61396BC-7C74-4CF5-94E2-9B3AD341E8BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKkutuLib.MITMProxy", "AutoKkutuLib.MITMProxy\AutoKkutuLib.MITMProxy.csproj", "{6A8030C8-9365-453B-9CB1-16705463D5B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -371,6 +373,42 @@ Global
 		{F61396BC-7C74-4CF5-94E2-9B3AD341E8BB}.ReleaseSelenium|x64.Build.0 = Release|Any CPU
 		{F61396BC-7C74-4CF5-94E2-9B3AD341E8BB}.ReleaseSelenium|x86.ActiveCfg = Release|Any CPU
 		{F61396BC-7C74-4CF5-94E2-9B3AD341E8BB}.ReleaseSelenium|x86.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Debug|x64.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Debug|x86.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugCefSharp|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugCefSharp|Any CPU.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugCefSharp|x64.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugCefSharp|x64.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugCefSharp|x86.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugCefSharp|x86.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugSelenium|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugSelenium|Any CPU.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugSelenium|x64.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugSelenium|x64.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugSelenium|x86.ActiveCfg = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.DebugSelenium|x86.Build.0 = Debug|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Release|x64.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Release|x64.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Release|x86.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.Release|x86.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseCefSharp|Any CPU.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseCefSharp|Any CPU.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseCefSharp|x64.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseCefSharp|x64.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseCefSharp|x86.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseCefSharp|x86.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseSelenium|Any CPU.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseSelenium|Any CPU.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseSelenium|x64.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseSelenium|x64.Build.0 = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseSelenium|x86.ActiveCfg = Release|Any CPU
+		{6A8030C8-9365-453B-9CB1-16705463D5B4}.ReleaseSelenium|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

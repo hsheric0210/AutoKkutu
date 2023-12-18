@@ -213,4 +213,8 @@
         <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="119.1.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Gui\" />
+    </ItemGroup>
+
 </Project>
