@@ -6,7 +6,7 @@ configuration:
 environment:
   sonarcloud_apikey:
     secure: yvB8aN0TIdgxBpIu4otx4bAAOFTXvf4lCvabOeU7Z4eck6xzqlVfB99dQmT3bc+9
-  JAVA_HOME: C:\Program Files\Java\jdk15
+  JAVA_HOME: C:\Program Files\Java\jdk17
 platform:
 - x64
 build_script:
