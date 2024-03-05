@@ -1,4 +1,4 @@
-# AutoKkutu - KKutu-Helper 기반 끄투 단어 추천 및 자동 입력기
+# AutoKkutu :: 끄투의 자동화
 
 <p align="center" style="text-align:center">
     <img alt="AutoKkutu logo" src="logo.png">
@@ -15,7 +15,7 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=hsheric0210_AutoKkutu&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=hsheric0210_AutoKkutu)
 
 AutoKkutu는 끄투 헬퍼 V (KKutu-Helper V) Release v5.6.8500 버전을 개조하여 만들어졌습니다.
-원 프로그램은 [여기](https://drive.google.com/file/d/1p_vTzLbkIPz-NBLuhEKTdK3ij55u7KNk/view?usp=sharing)에서, 글은 [여기](https://gall.dcinside.com/mgallery/board/view/?id=kkutu&no=395)에서 보실 수 있습니다.
+원 프로그램은 [여기](https://drive.google.com/file/d/1p_vTzLbkIPz-NBLuhEKTdK3ij55u7KNk/view?usp=sharing)에서, 글은 [여기](https://gall.dcinside.com/mgallery/board/view/?id=kkutu&no=395)에서 보실 수 있습니다. 원본 프로그램에서는 CloudPlatform UI를 사용했지만, 이 부분은 개발 과정에서 제거되었습니다.
 (제작자가 프로그램 리버싱 후 수정을 허용하였습니다)
 
 >현재 Selenium 버전 사용 시, 브라우저 창과 메인 GUI를 닫아도 프로그램이 종료되지 않는(콘솔 창이 꺼지지 않는) 문제가 있습니다.
