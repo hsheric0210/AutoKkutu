@@ -13,7 +13,7 @@ internal class InvalidWordSubcheck : IWordTableSubcheck
 
 	private bool IsInvalid(string content)
 	{
-		if (content.Length == 1)
+		if (content.Length <= 1)
 			return true;
 
 		var first = content[0];
