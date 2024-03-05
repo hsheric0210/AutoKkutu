@@ -1,10 +1,10 @@
 ﻿using AutoKkutuLib;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Enterer;
 using AutoKkutuLib.Hangul;
+using AutoKkutuLib.Path;
 using Serilog;
 using System;
 using System.ComponentModel;
@@ -119,7 +119,7 @@ public partial class MainWindow : Window
 	private void Main_AutoKkutuInitialized(object? sender, AutoKkutuInitializedEventArgs args)
 	{
 		this.UpdateStatusMessage(StatusMessage.Wait);
-		UpdateSearchState(null, false);
+		UpdateSearchState(PathFindResult.Empty(PathDetails.Empty));
 		Dispatcher.Invoke(() =>
 		{
 			// Update database icon
@@ -133,7 +133,7 @@ public partial class MainWindow : Window
 		});
 	}
 
-	private void Main_SearchStateChanged(object? sender, SearchStateChangedEventArgs args) => UpdateSearchState(args.Arguments, args.IsEndWord);
+	private void Main_SearchStateChanged(object? sender, PathFindResultUpdateEventArgs args) => UpdateSearchState(args.Arguments);
 
 	private void Main_StatusMessageChanged(object? sender, StatusMessageChangedEventArgs args) => this.UpdateStatusMessage(args.Status, args.GetFormatterArguments());
 
@@ -350,42 +350,31 @@ public partial class MainWindow : Window
 			SubmitSearch_Click(sender, e);
 	}
 
-	private void UpdateSearchState(PathUpdateEventArgs? arg, bool IsEnd = false)
-	{
-		string Result;
-		if (arg == null)
-		{
-			Result = IsEnd ? I18n.PathFinderUnavailable : I18n.PathFinderWaiting;
-		}
-		else
-		{
-			Result = CreatePathResultExplain(arg);
-		}
-		Dispatcher.Invoke(() => SearchResult.Text = Result);
-	}
+	private void UpdateSearchState(PathFindResult arg) => Dispatcher.Invoke(() => SearchResult.Text = CreatePathResultExplain(arg));
 
-	private static string CreatePathResultExplain(PathUpdateEventArgs arg)
+	private static string CreatePathResultExplain(PathFindResult arg)
 	{
 		var parameter = arg.Details;
+
 		var filter = $"'{parameter.Condition.Char}'";
 		if (parameter.Condition.SubAvailable)
 			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_Or, filter, $"'{parameter.Condition.SubChar}'");
 		if (!string.IsNullOrWhiteSpace(parameter.Condition.MissionChar))
 			filter = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview_MissionChar, filter, parameter.Condition.MissionChar);
+
 		var FilterText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderSearchOverview, filter);
 		var SpecialFilterText = "";
-		string FindResult;
+
+		var FindResult = arg.Result switch
+		{
+			PathFindResultType.Found => string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.FoundWordList.Count, arg.FilteredWordList.Count),
+			PathFindResultType.NotFound => string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.FoundWordList.Count),
+			PathFindResultType.EndWord => I18n.PathFinderUnavailable,
+			_ => I18n.PathFinderError,
+		};
+
 		var ElapsedTimeText = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderTookTime, arg.TimeMillis);
-		if (arg.Result == PathFindResultType.Found)
-		{
-			FindResult = string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFound, arg.FoundWordList.Count, arg.FilteredWordList.Count);
-		}
-		else
-		{
-			FindResult = arg.Result == PathFindResultType.NotFound
-				? string.Format(CultureInfo.CurrentCulture, I18n.PathFinderFoundButEmpty, arg.FoundWordList.Count)
-				: I18n.PathFinderError;
-		}
+
 		if (parameter.HasFlag(PathFlags.UseEndWord))
 			SpecialFilterText += ", " + I18n.PathFinderEndWord;
 		if (parameter.HasFlag(PathFlags.UseAttackWord))
@@ -453,11 +442,17 @@ public partial class MainWindow : Window
 			if (string.IsNullOrWhiteSpace(missionChar))
 				missionChar = mainInstance.AutoKkutu.Game.Session.WordCondition.MissionChar;
 
-			mainInstance.AutoKkutu.PathFinder.FindPath(gameMode, new PathDetails(
+			var details = new PathDetails(
 				InitialLaw.ApplyInitialLaw(new WordCondition(SearchField.Text, missionChar: missionChar ?? "", regexp: RegexpSearch.IsChecked ?? false)),
 				mainInstance.SetupPathFinderFlags(PathFlags.DoNotAutoEnter | PathFlags.DoNotCheckExpired),
 				mainInstance.Preference.ReturnModeEnabled,
-				mainInstance.Preference.MaxDisplayedWordCount), mainInstance.Preference.ActiveWordPreference);
+				mainInstance.Preference.MaxDisplayedWordCount);
+
+			mainInstance.AutoKkutu.CreatePathFinder()
+				.SetGameMode(gameMode)
+				.SetPathDetails(details)
+				.SetWordPreference(mainInstance.Preference.ActiveWordPreference)
+				.BeginFind(mainInstance.OnPathUpdated);
 
 			if (!(RegexpSearch.IsChecked ?? false)) // 힘들게 적은 정규표현식을 지워버리는 것 만큼 빡치는 일도 없음
 				SearchField.Text = "";

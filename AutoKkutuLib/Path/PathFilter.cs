@@ -1,7 +1,7 @@
 ﻿using ConcurrentCollections;
 using System.Collections.Immutable;
 
-namespace AutoKkutuLib.Database.Path;
+namespace AutoKkutuLib.Path;
 
 /// <summary>
 /// Holder and handler class for special words such as already-used words, unsupported words, inexistent words, etc.

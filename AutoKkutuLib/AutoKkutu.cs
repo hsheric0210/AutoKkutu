@@ -1,7 +1,8 @@
 ﻿using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Path;
+using AutoKkutuLib.Database.Helper;
 using AutoKkutuLib.Game;
+using AutoKkutuLib.Path;
 
 namespace AutoKkutuLib;
 
@@ -17,7 +18,6 @@ public partial class AutoKkutu : IDisposable
 
 	public PathFilter PathFilter { get; }
 	public NodeManager NodeManager { get; }
-	public PathFinder PathFinder { get; }
 	#endregion
 
 	#region Module sub-element exposure wrapper (to enforce Law of Demeter)
@@ -39,15 +39,16 @@ public partial class AutoKkutu : IDisposable
 		Database = dbConnection;
 		PathFilter = new PathFilter();
 		NodeManager = new NodeManager(dbConnection);
-		PathFinder = new PathFinder(NodeManager, PathFilter);
 
 		Game = game;
 
 		RegisterInterconnections(game);
-		RegisterEventRedirects(game, PathFinder);
+		RegisterEventRedirects(game);
 	}
 
 	public bool HasSameHost(string serverHost) => this.serverHost.Equals(serverHost, StringComparison.OrdinalIgnoreCase);
+
+	public PathFinder CreatePathFinder() => new PathFinder(NodeManager, PathFilter);
 
 	#region Disposal
 	protected virtual void Dispose(bool disposing)
@@ -58,7 +59,7 @@ public partial class AutoKkutu : IDisposable
 			if (disposing && Game != null)
 			{
 				UnregisterInterconnections(Game);
-				UnregisterEventRedirects(Game, PathFinder);
+				UnregisterEventRedirects(Game);
 
 				Game.Dispose();
 				Database.Dispose();

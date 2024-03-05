@@ -3,10 +3,10 @@ using AutoKkutuGui.Enterer;
 using AutoKkutuLib;
 using AutoKkutuLib.Browser;
 using AutoKkutuLib.Database;
-using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.DomHandlers;
 using AutoKkutuLib.Game.Enterer;
+using AutoKkutuLib.Path;
 using Serilog;
 using System;
 using System.Linq;
@@ -32,7 +32,7 @@ public partial class Main
 	public event EventHandler? BrowserInitialized;
 	public event EventHandler<AutoKkutuInitializedEventArgs>? AutoKkutuInitialized;
 	public event EventHandler<PathListUpdateEventArgs>? PathListUpdated;
-	public event EventHandler<SearchStateChangedEventArgs>? SearchStateChanged;
+	public event EventHandler<PathFindResultUpdateEventArgs>? SearchStateChanged;
 	public event EventHandler<StatusMessageChangedEventArgs>? StatusMessageChanged;
 	public event EventHandler? NoPathAvailable;
 	public event EventHandler<AllPathTimeOverEventArgs>? AllPathTimeOver;
@@ -81,7 +81,7 @@ public partial class Main
 		}
 	}
 
-	private void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathUpdateEventArgs? arguments, bool isEndWord = false) => SearchStateChanged?.Invoke(this, new SearchStateChangedEventArgs(arguments, isEndWord));
+	private void UpdateSearchState(/* TODO: Don't pass EventArgs directly as parameter. Destruct and reconstruct it first. */ PathFindResult arguments) => SearchStateChanged?.Invoke(this, new PathFindResultUpdateEventArgs(arguments));
 
 	private void UpdateStatusMessage(StatusMessage status, params object?[] formatterArgs) => StatusMessageChanged?.Invoke(this, new StatusMessageChangedEventArgs(status, formatterArgs));
 
@@ -101,10 +101,11 @@ public partial class Main
 	private void StartPathScan(GameMode gameMode, WordCondition condition, PathFlags additionalFlags = PathFlags.None)
 	{
 		var flags = SetupPathFinderFlags(additionalFlags);
-		AutoKkutu.PathFinder.FindPath(
-			gameMode,
-			new PathDetails(condition, flags, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
-			Preference.ActiveWordPreference);
+		AutoKkutu.CreatePathFinder()
+			.SetGameMode(gameMode)
+			.SetPathDetails(new PathDetails(condition, flags, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount))
+			.SetWordPreference(Preference.ActiveWordPreference)
+			.BeginFind(OnPathUpdated);
 	}
 
 	public void SendMessage(string message)

@@ -1,54 +1,39 @@
 ﻿using AutoKkutuLib;
-using AutoKkutuLib.Database.Path;
+using AutoKkutuLib.Path;
 using System;
 using System.Collections.Immutable;
 
 namespace AutoKkutuGui;
 public class PathListUpdateEventArgs : EventArgs
 {
-    public IImmutableList<GuiPathObject> GuiPathList;
-    public PathListUpdateEventArgs(IImmutableList<GuiPathObject> pathList) => GuiPathList = pathList;
+	public IImmutableList<GuiPathObject> GuiPathList;
+	public PathListUpdateEventArgs(IImmutableList<GuiPathObject> pathList) => GuiPathList = pathList;
 }
 
-public class SearchStateChangedEventArgs : EventArgs
+public class PathFindResultUpdateEventArgs : EventArgs
 {
-    public PathUpdateEventArgs? Arguments
-    {
-        get;
-    }
+	public PathFindResult Arguments { get; }
 
-    public bool IsEndWord
-    {
-        get;
-    }
-
-    public SearchStateChangedEventArgs(PathUpdateEventArgs? arguments, bool isEndWord = false)
-    {
-        Arguments = arguments;
-        IsEndWord = isEndWord;
-    }
+	public PathFindResultUpdateEventArgs(PathFindResult arguments) => Arguments = arguments;
 }
 
 public class StatusMessageChangedEventArgs : EventArgs
 {
-    private readonly object?[] formatterArguments;
+	private readonly object?[] formatterArguments;
 
-    public StatusMessage Status
-    {
-        get;
-    }
+	public StatusMessage Status { get; }
 
-    public object?[] GetFormatterArguments() => formatterArguments;
+	public object?[] GetFormatterArguments() => formatterArguments;
 
-    public StatusMessageChangedEventArgs(StatusMessage status, params object?[] formatterArgs)
-    {
-        Status = status;
-        formatterArguments = formatterArgs;
-    }
+	public StatusMessageChangedEventArgs(StatusMessage status, params object?[] formatterArgs)
+	{
+		Status = status;
+		formatterArguments = formatterArgs;
+	}
 }
 
 public class AutoKkutuInitializedEventArgs : EventArgs
 {
-    public AutoKkutu Instance { get; }
-    public AutoKkutuInitializedEventArgs(AutoKkutu instance) => Instance = instance;
+	public AutoKkutu Instance { get; }
+	public AutoKkutuInitializedEventArgs(AutoKkutu instance) => Instance = instance;
 }

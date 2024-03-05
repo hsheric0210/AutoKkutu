@@ -1,10 +1,10 @@
 ﻿//#define SELENIUM
 using AutoKkutuLib;
 using AutoKkutuLib.Database.Jobs;
-using AutoKkutuLib.Database.Path;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 using AutoKkutuLib.Game.Enterer;
+using AutoKkutuLib.Path;
 using Serilog;
 using System;
 using System.Collections.Immutable;
@@ -34,7 +34,7 @@ public partial class Main
 	// 다음 라운드 시작 단어에 대해 미리 Pre-search 및 입력 수행.
 	private void OnRoundChanged(object? sender, EventArgs e) => preSearch = null; // Invalidate pre-search result on round changed
 
-	private void OnPathUpdated(object? sender, PathUpdateEventArgs args)
+	public void OnPathUpdated(PathFindResult args)
 	{
 		// TryAutoEnter에서는 Enter요청 넣은 직후에 해당 단어를 사용 가능한 목록에서 삭제해 버리기 때문에
 		// Pre-input하다가 턴 시작되서 입력 완료하려 할 때, 단어를 찾을 수 없다는 메시지를 띄움.
@@ -124,7 +124,8 @@ public partial class Main
 
 	private void OnGameEnded(object? sender, EventArgs e)
 	{
-		UpdateSearchState(null, false);
+		// TODO: move this to Lib: AutoKkutu.Mediator.cs
+		//UpdateSearchState(PathFindResult.Empty(PathDetails.Empty));
 		if (Preference.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
@@ -259,10 +260,11 @@ presearchFail:
 	public void PerformPreSearchAndPreInput(GameMode gameMode, WordCondition condition)
 	{
 		Log.Verbose("Performing pre-search (+ pre-input) on: {condition}", condition);
-		AutoKkutu.PathFinder.FindPath(
-			gameMode,
-			new PathDetails(condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount),
-			Preference.ActiveWordPreference);
+		AutoKkutu.CreatePathFinder()
+			.SetGameMode(gameMode)
+			.SetPathDetails(new PathDetails(condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount))
+			.SetWordPreference(Preference.ActiveWordPreference)
+			.BeginFind(OnPathUpdated);
 	}
 
 	private void OnTypingWordPresented(object? sender, WordPresentEventArgs args)

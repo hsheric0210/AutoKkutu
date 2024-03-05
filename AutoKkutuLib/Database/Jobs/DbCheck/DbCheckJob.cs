@@ -1,6 +1,6 @@
 ﻿using AutoKkutuLib.Browser;
+using AutoKkutuLib.Database.Helper;
 using AutoKkutuLib.Database.Jobs.DbCheck.WordTableChecks;
-using AutoKkutuLib.Database.Path;
 using Dapper;
 
 namespace AutoKkutuLib.Database.Jobs.DbCheck;

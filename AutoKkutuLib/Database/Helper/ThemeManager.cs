@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace AutoKkutuLib.Database.Path;
+namespace AutoKkutuLib.Database.Helper;
 public class ThemeManager
 {
 	private readonly ISet<Theme> themes;

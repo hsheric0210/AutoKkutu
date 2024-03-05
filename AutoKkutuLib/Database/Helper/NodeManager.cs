@@ -1,7 +1,7 @@
 ﻿using AutoKkutuLib.Extension;
 using System.Globalization;
 
-namespace AutoKkutuLib.Database.Path;
+namespace AutoKkutuLib.Database.Helper;
 
 public class NodeManager
 {

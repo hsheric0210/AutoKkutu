@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Database.Path;
+﻿using AutoKkutuLib.Database.Helper;
 using AutoKkutuLib.Extension;
 using AutoKkutuLib.Game;
 

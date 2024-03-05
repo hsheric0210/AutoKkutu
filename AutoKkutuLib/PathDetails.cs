@@ -104,5 +104,6 @@ public enum PathFindResultType
 {
 	Found,
 	NotFound,
+	EndWord,
 	Error
 }

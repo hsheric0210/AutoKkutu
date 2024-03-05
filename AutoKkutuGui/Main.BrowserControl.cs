@@ -74,7 +74,6 @@ public partial class Main
 		game.Start();
 
 		AutoKkutu = new AutoKkutu(serverHost, db, game);
-		AutoKkutu.PathFinder.PathUpdated += OnPathUpdated;
 		AutoKkutu.GameEnded += OnGameEnded;
 		AutoKkutu.GameModeChanged += OnGameModeChange;
 		AutoKkutu.TurnStarted += OnTurnStarted;

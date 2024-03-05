@@ -1,5 +1,5 @@
 ﻿using AutoKkutuLib.Browser;
-using AutoKkutuLib.Database.Path;
+using AutoKkutuLib.Database.Helper;
 using AutoKkutuLib.Database.Sql.Query;
 using System.Data;
 

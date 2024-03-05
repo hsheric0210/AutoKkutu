@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Database.Path;
+﻿using AutoKkutuLib.Database.Helper;
 using AutoKkutuLib.Game;
 
 namespace AutoKkutuLib;
@@ -18,11 +18,7 @@ public partial class AutoKkutu
 	public event EventHandler<WordHistoryEventArgs>? DiscoverWordHistory;
 	public event EventHandler<WordPresentEventArgs>? HintWordPresented;
 
-	// PathFinder
-	public event EventHandler<PathFinderStateEventArgs>? FindStateChanged;
-	public event EventHandler<PathUpdateEventArgs>? PathUpdated;
-
-	private void RegisterEventRedirects(IGame game, PathFinder pathFinder)
+	private void RegisterEventRedirects(IGame game)
 	{
 		game.GameStarted += Game_GameStarted;
 		game.GameEnded += Game_GameEnded;
@@ -36,12 +32,9 @@ public partial class AutoKkutu
 		game.HintWordPresented += Game_HintWordPresented;
 		game.TypingWordPresented += Game_TypingWordPresented;
 		game.DiscoverWordHistory += Game_DiscoverWordHistory;
-
-		pathFinder.FindStateChanged += PathFinder_FindStateChanged;
-		pathFinder.PathUpdated += PathFinder_PathUpdated;
 	}
 
-	private void UnregisterEventRedirects(IGame game, PathFinder pathFinder)
+	private void UnregisterEventRedirects(IGame game)
 	{
 		game.GameStarted -= Game_GameStarted;
 		game.GameEnded -= Game_GameEnded;
@@ -55,9 +48,6 @@ public partial class AutoKkutu
 		game.TypingWordPresented -= Game_TypingWordPresented;
 		game.DiscoverWordHistory -= Game_DiscoverWordHistory;
 
-		pathFinder.FindStateChanged -= PathFinder_FindStateChanged;
-		pathFinder.PathUpdated -= PathFinder_PathUpdated;
-
 		// Clear event listeners: https://stackoverflow.com/a/9513372
 		GameStarted = null;
 		GameEnded = null;
@@ -70,8 +60,6 @@ public partial class AutoKkutu
 		TypingWordPresented = null;
 		DiscoverWordHistory = null;
 		HintWordPresented = null;
-		FindStateChanged = null;
-		PathUpdated = null;
 	}
 
 	private void Game_GameStarted(object? sender, EventArgs e) => GameStarted?.Invoke(sender, e);
@@ -85,7 +73,4 @@ public partial class AutoKkutu
 	private void Game_TypingWordPresented(object? sender, WordPresentEventArgs e) => TypingWordPresented?.Invoke(sender, e);
 	private void Game_DiscoverWordHistory(object? sender, WordHistoryEventArgs e) => DiscoverWordHistory?.Invoke(sender, e);
 	private void Game_HintWordPresented(object? sender, WordPresentEventArgs e) => HintWordPresented?.Invoke(sender, e);
-
-	private void PathFinder_FindStateChanged(object? sender, PathFinderStateEventArgs e) => FindStateChanged?.Invoke(sender, e);
-	private void PathFinder_PathUpdated(object? sender, PathUpdateEventArgs e) => PathUpdated?.Invoke(sender, e);
 }

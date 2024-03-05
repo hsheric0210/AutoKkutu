@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace AutoKkutuLib.Database.Path;
+namespace AutoKkutuLib.Database.Helper;
 internal sealed class WordFlagsRecalculator
 {
 	private readonly NodeManager nodeManager;

@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Database.Path;
+﻿using AutoKkutuLib.Database.Helper;
 using Dapper;
 
 namespace AutoKkutuLib.Database.Jobs.DbCheck.WordTableChecks;

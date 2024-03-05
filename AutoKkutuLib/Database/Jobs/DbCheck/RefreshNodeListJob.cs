@@ -1,4 +1,4 @@
-﻿using AutoKkutuLib.Database.Path;
+﻿using AutoKkutuLib.Database.Helper;
 
 namespace AutoKkutuLib.Database.Jobs.DbCheck;
 internal class RefreshNodeListJob : DbCheckSubtaskBase
