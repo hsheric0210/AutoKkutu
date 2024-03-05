@@ -1,4 +1,10 @@
 # AutoKkutu - KKutu-Helper 기반 끄투 단어 추천 및 자동 입력기
+
+<p align="center" style="text-align:center">
+    <img alt="AutoKkutu logo" src="logo.png">
+    <p align="center">로고 제작에 사용된 모레미 이미지는 <a href="https://github.com/JJoriping">쪼리핑</a>님에 의해 제작되었습니다.</p>
+</p>
+
 [![Build status](https://ci.appveyor.com/api/projects/status/u0rt1gkhv7lbi7e4?svg=true)](https://ci.appveyor.com/project/hsheric0210/autokkutu)
 [![Issues](https://img.shields.io/github/issues/hsheric0210/AutoKkutu.svg)](https://github.com/hsheric0210/AutoKkutu/issues)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/hsheric0210/AutoKkutu)
@@ -10,7 +16,7 @@
 
 AutoKkutu는 끄투 헬퍼 V (KKutu-Helper V) Release v5.6.8500 버전을 개조하여 만들어졌습니다.
 원 프로그램은 [여기](https://drive.google.com/file/d/1p_vTzLbkIPz-NBLuhEKTdK3ij55u7KNk/view?usp=sharing)에서, 글은 [여기](https://gall.dcinside.com/mgallery/board/view/?id=kkutu&no=395)에서 보실 수 있습니다.
-(제작자가 리버싱 후 수정 허용함)
+(제작자가 프로그램 리버싱 후 수정을 허용하였습니다)
 
 >현재 Selenium 버전 사용 시, 브라우저 창과 메인 GUI를 닫아도 프로그램이 종료되지 않는(콘솔 창이 꺼지지 않는) 문제가 있습니다.
 >프로그램을 종료하시려면 콘솔 창에서 `Ctrl+C`나 `Ctrl+Break`를 눌러 종료해 주세요.
