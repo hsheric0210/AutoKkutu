@@ -109,7 +109,8 @@ public class PathFinder
 
 			StateChanged?.Invoke(this, new PathFinderStateEventArgs(PathFinderState.Finding));
 
-			var availableWordList = pathFilter.FilterPathList(totalWordList, details.ReuseAlreadyUsed);
+			;
+			var availableWordList = pathFilter.MarkPathList(totalWordList, details.ReuseAlreadyUsed).Where(path => path.Marks != 0).ToImmutableList(); // filter out marked-as-unavailable paths
 
 			LibLogger.Info<PathFinder>(I18n.PathFinder_FoundPath_Ready, totalWordList.Count, stopWatch.ElapsedMilliseconds);
 			return PathFindResult.Finished(details, totalWordList, availableWordList, stopWatch.ElapsedMilliseconds);
@@ -143,12 +144,23 @@ public class PathFinder
 		var len = random.Next(64, 256);
 
 		// 맨 윗줄에 미션 글자 들어간 단어 추가
-		if (!string.IsNullOrWhiteSpace(details.Condition.MissionChar))
-			generatedWordList.Add(new PathObject(firstChar + random.NextString(random.Next(16, 64), false) + new string(details.Condition.MissionChar[0], len) + random.NextString(random.Next(16, 64), false), WordCategories.None, len));
+		for (var i = 0; i < details.RandomGeneratedCount; i++)
+		{
+			if (!string.IsNullOrWhiteSpace(details.Condition.MissionChar))
+			{
+				generatedWordList.Add(new PathObject
+				{
+					Content = firstChar + random.NextString(random.Next(16, 64), false) + new string(details.Condition.MissionChar[0], len) + random.NextString(random.Next(16, 64), false),
+					Categories = WordCategories.None,
+					MissionCharCount = len
+				});
+			}
+			else
+			{
+				generatedWordList.Add(new PathObject { Content = firstChar + random.NextString(len, false) });
+			}
+		}
 
-		// 무작위 단어 10개 추가 (TODO: 개수 조정할 수 있도록 하기)
-		for (var i = 0; i < 10; i++)
-			generatedWordList.Add(new PathObject(firstChar + random.NextString(len, false), WordCategories.None, 0));
 		stopwatch.Stop();
 
 		var list = generatedWordList.ToImmutableList();

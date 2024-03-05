@@ -33,7 +33,7 @@ public partial class DatabaseManagement : Window
 
 		var wordList = content.Trim().Split(Environment.NewLine.ToCharArray());
 
-		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.Database, regexp: options.HasFlag(BatchJobOptions.Regexp)) : new BatchWordAdditionJob(autoKkutu.NodeManager, autoKkutu.Browser, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
+		((BatchWordJob)(options.HasFlag(BatchJobOptions.Remove) ? new BatchWordDeletionJob(autoKkutu.Database, regexp: options.HasFlag(BatchJobOptions.Regexp)) : new BatchWordAdditionJob(autoKkutu.Database.NodeManager, autoKkutu.Browser, flags, options.HasFlag(BatchJobOptions.Verify)))).Execute(wordList);
 	}
 
 	private void Batch_Submit_Click(object sender, RoutedEventArgs e) => BatchWordJob(Batch_Input.Text, GetBatchWordJobFlags(), GetBatchAddWordDatabaseAttributes());
@@ -107,7 +107,7 @@ public partial class DatabaseManagement : Window
 		return type;
 	}
 
-	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DbCheckJob(autoKkutu.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, autoKkutu.Browser);
+	private void CheckDB_Start_Click(object sender, RoutedEventArgs e) => new DbCheckJob(autoKkutu.Database.NodeManager).CheckDB(Use_OnlineDic.IsChecked ?? false, autoKkutu.Browser);
 
 	private WordFlags GetBatchAddWordDatabaseAttributes()
 	{

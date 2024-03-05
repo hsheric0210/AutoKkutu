@@ -129,7 +129,7 @@ public partial class Main
 		if (Preference.AutoDBUpdateEnabled)
 		{
 			UpdateStatusMessage(StatusMessage.DatabaseIntegrityCheck, I18n.Status_AutoUpdate);
-			var updateTask = new DbUpdateJob(AutoKkutu.NodeManager, AutoKkutu.PathFilter);
+			var updateTask = new DbUpdateJob(AutoKkutu.Database.NodeManager, AutoKkutu.PathFilter);
 			var opts = DbUpdateJob.DbUpdateCategories.None;
 			if (Preference.AutoDBWordAddEnabled)
 				opts |= DbUpdateJob.DbUpdateCategories.Add;
@@ -262,7 +262,13 @@ presearchFail:
 		Log.Verbose("Performing pre-search (+ pre-input) on: {condition}", condition);
 		AutoKkutu.CreatePathFinder()
 			.SetGameMode(gameMode)
-			.SetPathDetails(new PathDetails(condition, SetupPathFinderFlags() | PathFlags.PreSearch, Preference.ReturnModeEnabled, Preference.MaxDisplayedWordCount))
+			.SetPathDetails(new PathDetails
+			{
+				Condition = condition,
+				Flags = SetupPathFinderFlags() | PathFlags.PreSearch,
+				ReuseAlreadyUsed = Preference.ReturnModeEnabled,
+				MaxDisplayed = Preference.MaxDisplayedWordCount
+			})
 			.SetWordPreference(Preference.ActiveWordPreference)
 			.BeginFind(OnPathUpdated);
 	}

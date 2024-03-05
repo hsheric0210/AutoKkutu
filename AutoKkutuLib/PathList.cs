@@ -42,7 +42,7 @@ public readonly struct PathList : IEnumerable<PathObject>
 		var remain = Math.Max(300, remainingTurnTime); // clamp to min. 300ms
 		LibLogger.Verbose<PathList>("(TimeFilter) turnTime={time}, clamped={cTime}", remainingTurnTime, remain);
 
-		var arr = list.Where(po => delay.GetMaxDelay(po?.Content) <= remain).ToArray(); // 딜레이가 항상 최악으로 적용된다고 가정하고 탐색
+		var arr = list.Where(po => delay.GetMaxDelay(po.Content) <= remain).ToArray(); // 딜레이가 항상 최악으로 적용된다고 가정하고 탐색
 		if (arr.Length > 0)
 		{
 			// 굳이 길지만 남은 턴 시간 안에 다 입력을 끝마칠 수 있을지 보장되지 않은 단어들을 위험부담을 감수하고 추천하기보다는
@@ -57,7 +57,7 @@ public readonly struct PathList : IEnumerable<PathObject>
 		{
 			LibLogger.Warn<PathList>("There is no optimal words to enter in turn time {turnTime}ms in list. Finding the possible one.", remain);
 
-			arr = list.Where(po => delay.GetMinDelay(po?.Content) <= remain).ToArray();
+			arr = list.Where(po => delay.GetMinDelay(po.Content) <= remain).ToArray();
 			if (arr.Length > 0)
 			{
 				var path = RandomElement(arr, randomSelectionRange);
@@ -71,8 +71,7 @@ public readonly struct PathList : IEnumerable<PathObject>
 		LibLogger.Warn<PathList>(I18n.TimeFilter_TimeOver, remain);
 
 		var closest = list.MinBy(w => delay.GetMaxDelay(w.Content));
-		if (closest != null)
-			LibLogger.Verbose<PathList>("(TimeFilter) Closest word to the delay: {word} (minTime: {minTime}, maxTime: {maxTime})", closest.Content, delay.GetMinDelay(closest.Content), delay.GetMaxDelay(closest.Content));
+		LibLogger.Verbose<PathList>("(TimeFilter) Closest word to the delay: {word} (minTime: {minTime}, maxTime: {maxTime})", closest.Content, delay.GetMinDelay(closest.Content), delay.GetMaxDelay(closest.Content));
 
 		return BestPath.AllFilteredOut();
 	}

@@ -77,7 +77,7 @@ public class FindWordQuery : SqlQuery<IImmutableList<PathObject>>
 					(WordFlags)found.Flags,
 					param.Condition.MissionChar,
 					out var missionCharCount);
-				result.Add(new PathObject(wordString, categories, missionCharCount));
+				result.Add(new PathObject { Content = wordString, Categories = categories, MissionCharCount = missionCharCount });
 			}
 		}
 		catch

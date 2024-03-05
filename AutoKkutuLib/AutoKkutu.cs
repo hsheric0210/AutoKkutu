@@ -17,7 +17,6 @@ public partial class AutoKkutu : IDisposable
 	public IGame Game { get; }
 
 	public PathFilter PathFilter { get; }
-	public NodeManager NodeManager { get; }
 	#endregion
 
 	#region Module sub-element exposure wrapper (to enforce Law of Demeter)
@@ -38,7 +37,6 @@ public partial class AutoKkutu : IDisposable
 
 		Database = dbConnection;
 		PathFilter = new PathFilter();
-		NodeManager = new NodeManager(dbConnection);
 
 		Game = game;
 
@@ -48,7 +46,7 @@ public partial class AutoKkutu : IDisposable
 
 	public bool HasSameHost(string serverHost) => this.serverHost.Equals(serverHost, StringComparison.OrdinalIgnoreCase);
 
-	public PathFinder CreatePathFinder() => new PathFinder(NodeManager, PathFilter);
+	public PathFinder CreatePathFinder() => new PathFinder(Database.NodeManager, PathFilter);
 
 	#region Disposal
 	protected virtual void Dispose(bool disposing)

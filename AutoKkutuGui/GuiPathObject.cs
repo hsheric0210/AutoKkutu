@@ -48,21 +48,18 @@ public record GuiPathObject
 		get;
 	}
 
-	public bool AlreadyUsed => Underlying.AlreadyUsed;
-	public bool Excluded => Underlying.Excluded;
-	public bool RemoveQueued => Underlying.RemoveQueued;
+	public bool AlreadyUsed => Underlying.Marks.HasFlag(PathMarks.AlreadyUsed);
+	public bool Excluded => Underlying.Marks.HasFlag(PathMarks.Excluded);
+	public bool RemoveQueued => Underlying.Marks.HasFlag(PathMarks.RemoveQueued);
 
-	public string Decorations => Underlying.AlreadyUsed || Underlying.Excluded || Underlying.RemoveQueued ? "Strikethrough" : "None";
+	public string Decorations => Underlying.Marks != 0 ? "Strikethrough" : "None";
 
-	public string FontWeight => Underlying.RemoveQueued ? "Bold" : "Normal";
+	public string FontWeight => Underlying.Marks.HasFlag(PathMarks.RemoveQueued) ? "Bold" : "Normal";
 
-	public string FontStyle => Underlying.RemoveQueued ? "Italic" : "Normal";
+	public string FontStyle => Underlying.Marks.HasFlag(PathMarks.RemoveQueued) ? "Italic" : "Normal";
 
 	public GuiPathObject(PathObject pathObject)
 	{
-		if (pathObject is null)
-			throw new ArgumentNullException(nameof(pathObject));
-
 		Underlying = pathObject;
 
 		var prefs = Main.GetInstance().Preference;

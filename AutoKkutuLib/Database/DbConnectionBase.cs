@@ -1,4 +1,5 @@
-﻿using AutoKkutuLib.Database.Sql;
+﻿using AutoKkutuLib.Database.Helper;
+using AutoKkutuLib.Database.Sql;
 using AutoKkutuLib.Database.Sql.Query;
 using System.Data;
 
@@ -9,6 +10,7 @@ public abstract class DbConnectionBase : IDbConnection
 	static DbConnectionBase() => typeof(WordModel).RegisterMapping();
 
 	private IDbConnection Connection { get; }
+	public NodeManager NodeManager { get; }
 
 	public abstract QueryFactory Query { get; }
 
@@ -26,7 +28,11 @@ public abstract class DbConnectionBase : IDbConnection
 
 	public ConnectionState State => Connection.State;
 
-	protected DbConnectionBase(IDbConnection connection) => Connection = connection;
+	protected DbConnectionBase(IDbConnection connection)
+	{
+		Connection = connection;
+		NodeManager = new NodeManager(this);
+	}
 
 	protected virtual void Dispose(bool disposing)
 	{
