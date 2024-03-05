@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Immutable;
 
 namespace AutoKkutuLib;
+
+/// <summary>
+/// <para>단어의 목록을 나타냅니다.</para>
+/// <para>단순한 목록 자료구조에 더해 최적의 단어 선정 및 이미 사용한 단어를 목록에서 제거하는 기능을 추가적으로 탑재한 객체입니다.</para>
+/// </summary>
 public readonly struct PathList : IEnumerable<PathObject>
 {
 	private readonly List<PathObject> list;

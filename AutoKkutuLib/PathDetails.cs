@@ -3,6 +3,9 @@ using System.Text;
 
 namespace AutoKkutuLib;
 
+/// <summary>
+/// <para>단어 검색 시 추가적으로 지정할 옵션들을 나타냅니다.</para>
+/// </summary>
 public readonly struct PathDetails
 {
 	public static PathDetails Empty { get; } = new PathDetails

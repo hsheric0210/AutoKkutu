@@ -3,7 +3,8 @@
 namespace AutoKkutuLib;
 
 /// <summary>
-/// 단어 검색 조건을 나타냅니다
+/// <para>단어를 검색할 기본적인 조건을 나타냅니다.</para>
+/// <para>기본적인 검색 조건에는 시작 글자(또는 끝 글자), 두 번째 시작(또는 끝) 글자 (두음법칙 등 적용 시), 미션 글자 등이 속합니다.</para>
 /// </summary>
 public readonly struct WordCondition
 {

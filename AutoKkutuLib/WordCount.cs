@@ -1,4 +1,8 @@
 ﻿namespace AutoKkutuLib;
+
+/// <summary>
+/// 단어 일괄 처리 작업을 할 때, 종류별로 처리된 단어들의 개수를 일일히 기록하는 구조체입니다.
+/// </summary>
 public struct WordCount : IEquatable<WordCount>
 {
 	public int TotalCount { get; private set; }

@@ -1,7 +1,8 @@
 ﻿namespace AutoKkutuLib;
 
 /// <summary>
-/// 데이터베이스의 'flags' 행에 해당하는 비스마스크 플래그를 나타냅니다.
+/// <para>데이터베이스의 'flags' 행에 해당하는 비스마스크 플래그를 나타냅니다.</para>
+/// <para>'flags' 행에는 해당 단어가 어느 게임 모드의 어느 범주의 단어인지가 기록됩니다. (예를 들어, 해당 단어가 끝말잇기의 한방 단어라면 1번째 비트마스크가 활성화됩니다)</para>
 /// </summary>
 [Flags]
 public enum WordFlags
